@@ -1,5 +1,13 @@
 import React from "react";
 import ToDo from "./components/ToDo";
+import Nav from "./components/Nav";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from '@tanstack/react-query'
+
+const queryClient = new QueryClient()
 
 import "./App.css";
 
@@ -14,16 +22,11 @@ function App() {
         <link rel="stylesheet" type="text/css" href="/public/index.css" />
       </head>
       <body>
-        <nav>
-          <div className="logo">
-              ToDos
-          </div>
-          <div className="nav-right">
-              <a href="#">Login</a>
-          </div>
-        </nav>
+        <QueryClientProvider client={queryClient}>
+          <Nav />
 
-        <ToDo />
+          <ToDo />
+        </QueryClientProvider>
       </body>
     </html>
   );

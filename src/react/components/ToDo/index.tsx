@@ -1,22 +1,19 @@
 "use client";
 
-import React, { Key, useEffect, useState } from "react";
+import React, { Key } from "react";
 import { v4 as uuidv4 } from 'uuid';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
+
 import { ToDoItem } from "../../../types/ToDo";
 
 const ToDo = () => {
-  const [todos, setTodos] = useState<ToDoItem[]>([]);
-  
-  useEffect(() => {
-    fetch('/api/todos')
-      .then(response => response.json())
-      .then((result) => {
-        setTodos(result);
-      })
-      .catch((error: Error) => {
-        console.error(error);
-      });
-    }, []);
+  const queryClient = useQueryClient();
+
+  const { isPending, error, data: todos } = useQuery({
+    queryKey: ['todos'],
+    queryFn: () =>
+      fetch('/api/todos').then((res) => res.json()),
+  });
 
   const handleFormSubmit = async (formData: FormData) => {
     const newTodo = {
@@ -30,14 +27,7 @@ const ToDo = () => {
     });
     
     if (response.status === 200) {
-      fetch('/api/todos')
-        .then(response => response.json())
-        .then((result) => {
-          setTodos(result);
-        })
-        .catch((error: Error) => {
-          console.error(error);
-        });
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
     } else {
       alert("error");
     }
@@ -49,14 +39,7 @@ const ToDo = () => {
     });
     
     if (response.status === 200) {
-      fetch('/api/todos')
-        .then(response => response.json())
-        .then((result) => {
-          setTodos(result);
-        })
-        .catch((error: Error) => {
-          console.error(error);
-        });
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
     } else {
       alert("error");
     }
@@ -69,9 +52,13 @@ const ToDo = () => {
         <button type="submit" id="add-todo">Add Me</button>
       </form>
 
+      {error && 'An error has occurred: ' + error.message}
+      
+      {isPending && 'Loading...'}
+
       <ul id="todo-list">
-        {todos.length > 0 && 
-          todos.map(todo => {
+        {todos?.length > 0 && 
+          todos.map((todo: ToDoItem) => {
             return (
               <li className="todo-item" key={todo.id}>
                 {todo.message}
