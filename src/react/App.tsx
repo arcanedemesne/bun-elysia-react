@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
+import ToDo from "./components/ToDo";
+
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0);
   return (
     <html>
       <head>
@@ -9,10 +11,19 @@ function App() {
         <title>Bun, Elysia & React</title>
         <meta name="description" content="Bun, Elysia & React" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" type="text/css" href="/public/index.css" />
       </head>
       <body>
-        <h1>Counter {count}</h1>
-        <button onClick={() => setCount(count + 1)}>Increment</button>
+        <nav>
+          <div className="logo">
+              ToDos
+          </div>
+          <div className="nav-right">
+              <a href="#">Login</a>
+          </div>
+        </nav>
+
+        <ToDo />
       </body>
     </html>
   );

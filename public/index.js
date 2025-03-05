@@ -15641,26 +15641,158 @@ var require_client = __commonJS((exports, module) => {
 });
 
 // src/react/index.tsx
-var import_react2 = __toESM(require_react(), 1);
+var import_react3 = __toESM(require_react(), 1);
 var import_client = __toESM(require_client(), 1);
 
 // src/react/App.tsx
+var import_react2 = __toESM(require_react(), 1);
+
+// src/react/components/ToDo/index.tsx
 var import_react = __toESM(require_react(), 1);
+
+// node_modules/uuid/dist/esm-browser/stringify.js
+var byteToHex = [];
+for (let i = 0;i < 256; ++i) {
+  byteToHex.push((i + 256).toString(16).slice(1));
+}
+function unsafeStringify(arr, offset = 0) {
+  return (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
+}
+
+// node_modules/uuid/dist/esm-browser/rng.js
+var getRandomValues;
+var rnds8 = new Uint8Array(16);
+function rng() {
+  if (!getRandomValues) {
+    if (typeof crypto === "undefined" || !crypto.getRandomValues) {
+      throw new Error("crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported");
+    }
+    getRandomValues = crypto.getRandomValues.bind(crypto);
+  }
+  return getRandomValues(rnds8);
+}
+
+// node_modules/uuid/dist/esm-browser/native.js
+var randomUUID = typeof crypto !== "undefined" && crypto.randomUUID && crypto.randomUUID.bind(crypto);
+var native_default = { randomUUID };
+
+// node_modules/uuid/dist/esm-browser/v4.js
+function v4(options, buf, offset) {
+  if (native_default.randomUUID && !buf && !options) {
+    return native_default.randomUUID();
+  }
+  options = options || {};
+  const rnds = options.random ?? options.rng?.() ?? rng();
+  if (rnds.length < 16) {
+    throw new Error("Random bytes length must be >= 16");
+  }
+  rnds[6] = rnds[6] & 15 | 64;
+  rnds[8] = rnds[8] & 63 | 128;
+  if (buf) {
+    offset = offset || 0;
+    if (offset < 0 || offset + 16 > buf.length) {
+      throw new RangeError(`UUID byte range ${offset}:${offset + 15} is out of buffer bounds`);
+    }
+    for (let i = 0;i < 16; ++i) {
+      buf[offset + i] = rnds[i];
+    }
+    return buf;
+  }
+  return unsafeStringify(rnds);
+}
+var v4_default = v4;
+// src/react/components/ToDo/index.tsx
+"use client";
+var ToDo = () => {
+  const [todos, setTodos] = import_react.useState([]);
+  import_react.useEffect(() => {
+    fetch("/api/todos").then((response) => response.json()).then((result) => {
+      setTodos(result);
+    }).catch((error) => {
+      console.error(error);
+    });
+  }, []);
+  const handleFormSubmit = async (formData) => {
+    const newTodo = {
+      id: v4_default(),
+      message: formData.get("todoMessage")
+    };
+    const response = await fetch("api/todos", {
+      method: "POST",
+      body: JSON.stringify(newTodo)
+    });
+    if (response.status === 200) {
+      fetch("/api/todos").then((response2) => response2.json()).then((result) => {
+        setTodos(result);
+      }).catch((error) => {
+        console.error(error);
+      });
+    } else {
+      alert("error");
+    }
+  };
+  const handleDeleteToDo = async (id) => {
+    const response = await fetch(`api/todos/${id}`, {
+      method: "DELETE"
+    });
+    if (response.status === 200) {
+      fetch("/api/todos").then((response2) => response2.json()).then((result) => {
+        setTodos(result);
+      }).catch((error) => {
+        console.error(error);
+      });
+    } else {
+      alert("error");
+    }
+  };
+  return /* @__PURE__ */ import_react.default.createElement("div", {
+    className: "container"
+  }, /* @__PURE__ */ import_react.default.createElement("form", {
+    action: handleFormSubmit
+  }, /* @__PURE__ */ import_react.default.createElement("input", {
+    type: "text",
+    name: "todoMessage",
+    id: "todo-input",
+    placeholder: "Add a new todo..."
+  }), /* @__PURE__ */ import_react.default.createElement("button", {
+    type: "submit",
+    id: "add-todo"
+  }, "Add Me")), /* @__PURE__ */ import_react.default.createElement("ul", {
+    id: "todo-list"
+  }, todos.length > 0 && todos.map((todo) => {
+    return /* @__PURE__ */ import_react.default.createElement("li", {
+      className: "todo-item",
+      key: todo.id
+    }, todo.message, /* @__PURE__ */ import_react.default.createElement("button", {
+      onClick: () => handleDeleteToDo(todo.id)
+    }, "trash"));
+  })));
+};
+var ToDo_default = ToDo;
+
+// src/react/App.tsx
 function App() {
-  const [count, setCount] = import_react.useState(0);
-  return /* @__PURE__ */ import_react.default.createElement("html", null, /* @__PURE__ */ import_react.default.createElement("head", null, /* @__PURE__ */ import_react.default.createElement("meta", {
+  return /* @__PURE__ */ import_react2.default.createElement("html", null, /* @__PURE__ */ import_react2.default.createElement("head", null, /* @__PURE__ */ import_react2.default.createElement("meta", {
     charSet: "utf-8"
-  }), /* @__PURE__ */ import_react.default.createElement("title", null, "Bun, Elysia & React"), /* @__PURE__ */ import_react.default.createElement("meta", {
+  }), /* @__PURE__ */ import_react2.default.createElement("title", null, "Bun, Elysia & React"), /* @__PURE__ */ import_react2.default.createElement("meta", {
     name: "description",
     content: "Bun, Elysia & React"
-  }), /* @__PURE__ */ import_react.default.createElement("meta", {
+  }), /* @__PURE__ */ import_react2.default.createElement("meta", {
     name: "viewport",
     content: "width=device-width, initial-scale=1"
-  })), /* @__PURE__ */ import_react.default.createElement("body", null, /* @__PURE__ */ import_react.default.createElement("h1", null, "Counter ", count), /* @__PURE__ */ import_react.default.createElement("button", {
-    onClick: () => setCount(count + 1)
-  }, "Increment")));
+  }), /* @__PURE__ */ import_react2.default.createElement("link", {
+    rel: "stylesheet",
+    type: "text/css",
+    href: "/public/index.css"
+  })), /* @__PURE__ */ import_react2.default.createElement("body", null, /* @__PURE__ */ import_react2.default.createElement("nav", null, /* @__PURE__ */ import_react2.default.createElement("div", {
+    className: "logo"
+  }, "ToDos"), /* @__PURE__ */ import_react2.default.createElement("div", {
+    className: "nav-right"
+  }, /* @__PURE__ */ import_react2.default.createElement("a", {
+    href: "#"
+  }, "Login"))), /* @__PURE__ */ import_react2.default.createElement(ToDo_default, null)));
 }
 var App_default = App;
 
 // src/react/index.tsx
-import_client.hydrateRoot(document, /* @__PURE__ */ import_react2.default.createElement(App_default, null));
+import_client.hydrateRoot(document, /* @__PURE__ */ import_react3.default.createElement(App_default, null));
