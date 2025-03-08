@@ -1,17 +1,24 @@
 import React from "react";
+import { Routes, Route, useLocation, Outlet } from "react-router-dom";
+
 import ToDo from "./components/ToDo";
 import Nav from "./components/Nav";
-import {
-  QueryClient,
-  QueryClientProvider,
-  useQuery,
-} from '@tanstack/react-query'
-
-const queryClient = new QueryClient()
+import { HydrationBoundary, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import "./App.css";
 
-function App() {
+const App = ({ dehydratedState  }: { dehydratedState: any}) => {
+  const location = useLocation();
+  
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: Infinity, // Prevent refetching on client
+        gcTime: Infinity,
+      },
+    },
+  });
+
   return (
     <html>
       <head>
@@ -19,13 +26,21 @@ function App() {
         <title>Bun, Elysia & React</title>
         <meta name="description" content="Bun, Elysia & React" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script src="/public/index.js" type="module" defer />
         <link rel="stylesheet" type="text/css" href="/public/index.css" />
       </head>
       <body>
         <QueryClientProvider client={queryClient}>
-          <Nav />
+          <HydrationBoundary state={dehydratedState}>
+            
+            <Nav />
+            <Outlet />
 
-          <ToDo />
+            <Routes location={location}>
+              <Route path="/" element={<ToDo />} />
+              <Route path="/login" element={<>Login Page</>} />
+            </Routes>
+          </HydrationBoundary>
         </QueryClientProvider>
       </body>
     </html>
