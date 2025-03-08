@@ -1,15 +1,20 @@
 import React from "react";
 import { Routes, Route, useLocation, Outlet } from "react-router-dom";
+import {
+  DehydratedState,
+  HydrationBoundary,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 
 import ToDo from "./components/ToDo";
 import Nav from "./components/Nav";
-import { HydrationBoundary, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import "./App.css";
 
-const App = ({ dehydratedState  }: { dehydratedState: any}) => {
+const App = ({ dehydratedState }: { dehydratedState: DehydratedState }) => {
   const location = useLocation();
-  
+
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -28,11 +33,11 @@ const App = ({ dehydratedState  }: { dehydratedState: any}) => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <script src="/public/index.js" type="module" defer />
         <link rel="stylesheet" type="text/css" href="/public/index.css" />
+        <link rel="icon" type="image/x-icon" href="/public/favicon.ico" />
       </head>
       <body>
         <QueryClientProvider client={queryClient}>
           <HydrationBoundary state={dehydratedState}>
-            
             <Nav />
             <Outlet />
 
