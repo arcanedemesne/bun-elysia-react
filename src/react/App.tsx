@@ -11,6 +11,7 @@ import ToDo from "./components/ToDo";
 import Nav from "./components/Nav";
 
 import "./App.css";
+import Login from "./components/Login";
 
 const App = ({ dehydratedState }: { dehydratedState: DehydratedState }) => {
   const location = useLocation();
@@ -33,6 +34,7 @@ const App = ({ dehydratedState }: { dehydratedState: DehydratedState }) => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <script src="/public/index.js" type="module" defer />
         <link rel="stylesheet" type="text/css" href="/public/index.css" />
+        <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
         <link rel="icon" type="image/x-icon" href="/public/favicon.ico" />
       </head>
       <body>
@@ -43,7 +45,7 @@ const App = ({ dehydratedState }: { dehydratedState: DehydratedState }) => {
 
             <Routes location={location}>
               <Route path="/" element={<ToDo />} />
-              <Route path="/login" element={<>Login Page</>} />
+              <Route path="/login" element={<Login />} />
             </Routes>
           </HydrationBoundary>
         </QueryClientProvider>

@@ -16218,7 +16218,7 @@ var require_jsx_runtime = __commonJS((exports, module) => {
 });
 
 // src/react/index.tsx
-var import_react4 = __toESM(require_react(), 1);
+var import_react5 = __toESM(require_react(), 1);
 
 // node_modules/react-router/dist/development/chunk-K6CSEXPM.mjs
 var React3 = __toESM(require_react(), 1);
@@ -18117,7 +18117,7 @@ var encoder = new TextEncoder;
 var import_client = __toESM(require_client(), 1);
 
 // src/react/App.tsx
-var import_react3 = __toESM(require_react(), 1);
+var import_react4 = __toESM(require_react(), 1);
 
 // node_modules/@tanstack/query-core/build/modern/subscribable.js
 var Subscribable = class {
@@ -20607,45 +20607,124 @@ var ToDo = () => {
     }
   };
   return /* @__PURE__ */ import_react.default.createElement("div", {
-    className: "container"
+    className: "flex justify-center bg-gray-100"
+  }, /* @__PURE__ */ import_react.default.createElement("div", {
+    className: "w-full rounded bg-white p-8 shadow-md"
+  }, /* @__PURE__ */ import_react.default.createElement("h1", {
+    className: "mb-4 text-center text-2xl font-bold"
+  }, "Todo List"), /* @__PURE__ */ import_react.default.createElement("div", {
+    className: "mb-4"
   }, /* @__PURE__ */ import_react.default.createElement("form", {
     action: handleFormSubmit
+  }, /* @__PURE__ */ import_react.default.createElement("div", {
+    className: "flex items-center"
   }, /* @__PURE__ */ import_react.default.createElement("input", {
     type: "text",
     name: "todoMessage",
-    id: "todo-input",
-    placeholder: "Add a new todo..."
+    placeholder: "Add a new todo...",
+    className: "flex-grow rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
   }), /* @__PURE__ */ import_react.default.createElement("button", {
     type: "submit",
-    id: "add-todo"
-  }, "Add Me")), error && "An error has occurred: " + error.message, isPending && "Loading...", /* @__PURE__ */ import_react.default.createElement("ul", {
-    id: "todo-list"
-  }, todos?.length > 0 && todos.map((todo) => {
+    className: "ml-2 cursor-pointer rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 font-bold text-white transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
+  }, "Add Me")))), error && "An error has occurred: " + error.message, isPending && "Loading...", /* @__PURE__ */ import_react.default.createElement("ul", null, todos?.length > 0 && todos.map((todo) => {
     return /* @__PURE__ */ import_react.default.createElement("li", {
-      className: "todo-item",
-      key: todo.id
+      key: todo.id,
+      className: "flex items-center justify-between border-b p-3"
     }, todo.message, /* @__PURE__ */ import_react.default.createElement("button", {
-      onClick: () => handleDeleteToDo(todo.id)
-    }, "trash"));
-  })));
+      onClick: () => handleDeleteToDo(todo.id),
+      className: "cursor-pointer text-red-500 hover:text-red-700"
+    }, /* @__PURE__ */ import_react.default.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      className: "h-6 w-6"
+    }, /* @__PURE__ */ import_react.default.createElement("polyline", {
+      points: "3 6 5 6 21 6"
+    }), /* @__PURE__ */ import_react.default.createElement("path", {
+      d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+    }), /* @__PURE__ */ import_react.default.createElement("line", {
+      x1: "10",
+      y1: "11",
+      x2: "10",
+      y2: "17"
+    }), /* @__PURE__ */ import_react.default.createElement("line", {
+      x1: "14",
+      y1: "11",
+      x2: "14",
+      y2: "17"
+    }))));
+  }))));
 };
 var ToDo_default = ToDo;
 
 // src/react/components/Nav/index.tsx
 var import_react2 = __toESM(require_react(), 1);
 var Nav = () => {
-  return /* @__PURE__ */ import_react2.default.createElement("nav", null, /* @__PURE__ */ import_react2.default.createElement("div", {
-    className: "logo"
-  }, /* @__PURE__ */ import_react2.default.createElement(Link, {
+  return /* @__PURE__ */ import_react2.default.createElement("nav", {
+    className: "bg-gray-800 p-4 flex items-center justify-between"
+  }, /* @__PURE__ */ import_react2.default.createElement("div", {
+    className: "flex items-center"
+  }, /* @__PURE__ */ import_react2.default.createElement("img", {
+    src: "/public/bun.png",
+    alt: "Logo",
+    height: 50,
+    className: "h-8 mr-4"
+  }), /* @__PURE__ */ import_react2.default.createElement(Link, {
     to: "/",
-    style: { textDecoration: "none", color: "black" }
-  }, "ToDos")), /* @__PURE__ */ import_react2.default.createElement("div", {
-    className: "nav-right"
-  }, /* @__PURE__ */ import_react2.default.createElement(Link, {
+    className: "text-white font-bold text-lg"
+  }, "ToDos")), /* @__PURE__ */ import_react2.default.createElement("div", null, /* @__PURE__ */ import_react2.default.createElement(Link, {
+    className: "text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium",
     to: "/login"
   }, "Login")));
 };
 var Nav_default = Nav;
+
+// src/react/components/Login/index.tsx
+var import_react3 = __toESM(require_react(), 1);
+var Login = () => {
+  return /* @__PURE__ */ import_react3.default.createElement("div", {
+    className: "flex h-screen items-center justify-center"
+  }, /* @__PURE__ */ import_react3.default.createElement("div", {
+    className: "w-96 rounded bg-white p-8 shadow-md"
+  }, /* @__PURE__ */ import_react3.default.createElement("h2", {
+    className: "mb-6 text-center text-2xl font-semibold"
+  }, "Login"), /* @__PURE__ */ import_react3.default.createElement("form", null, /* @__PURE__ */ import_react3.default.createElement("div", {
+    className: "mb-4"
+  }, /* @__PURE__ */ import_react3.default.createElement("label", {
+    htmlFor: "username",
+    className: "mb-2 block text-sm font-bold text-gray-700"
+  }, "Username"), /* @__PURE__ */ import_react3.default.createElement("input", {
+    type: "text",
+    id: "username",
+    name: "username",
+    className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
+    placeholder: "Enter username"
+  })), /* @__PURE__ */ import_react3.default.createElement("div", {
+    className: "mb-6"
+  }, /* @__PURE__ */ import_react3.default.createElement("label", {
+    htmlFor: "password",
+    className: "mb-2 block text-sm font-bold text-gray-700"
+  }, "Password"), /* @__PURE__ */ import_react3.default.createElement("input", {
+    type: "password",
+    id: "password",
+    name: "password",
+    className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
+    placeholder: "Enter password"
+  })), /* @__PURE__ */ import_react3.default.createElement("div", {
+    className: "flex items-center justify-between"
+  }, /* @__PURE__ */ import_react3.default.createElement("a", {
+    href: "#",
+    className: "inline-block align-baseline text-sm font-semibold text-purple-500 hover:text-purple-800"
+  }, "Forgot Password?"), /* @__PURE__ */ import_react3.default.createElement("button", {
+    type: "submit",
+    className: "ml-2 cursor-pointer rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 font-bold text-white transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
+  }, "Sign In")))));
+};
+var Login_default = Login;
 
 // src/react/App.tsx
 var App = ({ dehydratedState }) => {
@@ -20658,38 +20737,40 @@ var App = ({ dehydratedState }) => {
       }
     }
   });
-  return /* @__PURE__ */ import_react3.default.createElement("html", null, /* @__PURE__ */ import_react3.default.createElement("head", null, /* @__PURE__ */ import_react3.default.createElement("meta", {
+  return /* @__PURE__ */ import_react4.default.createElement("html", null, /* @__PURE__ */ import_react4.default.createElement("head", null, /* @__PURE__ */ import_react4.default.createElement("meta", {
     charSet: "utf-8"
-  }), /* @__PURE__ */ import_react3.default.createElement("title", null, "Bun, Elysia & React"), /* @__PURE__ */ import_react3.default.createElement("meta", {
+  }), /* @__PURE__ */ import_react4.default.createElement("title", null, "Bun, Elysia & React"), /* @__PURE__ */ import_react4.default.createElement("meta", {
     name: "description",
     content: "Bun, Elysia & React"
-  }), /* @__PURE__ */ import_react3.default.createElement("meta", {
+  }), /* @__PURE__ */ import_react4.default.createElement("meta", {
     name: "viewport",
     content: "width=device-width, initial-scale=1"
-  }), /* @__PURE__ */ import_react3.default.createElement("script", {
+  }), /* @__PURE__ */ import_react4.default.createElement("script", {
     src: "/public/index.js",
     type: "module",
     defer: true
-  }), /* @__PURE__ */ import_react3.default.createElement("link", {
+  }), /* @__PURE__ */ import_react4.default.createElement("link", {
     rel: "stylesheet",
     type: "text/css",
     href: "/public/index.css"
-  }), /* @__PURE__ */ import_react3.default.createElement("link", {
+  }), /* @__PURE__ */ import_react4.default.createElement("script", {
+    src: "https://unpkg.com/@tailwindcss/browser@4"
+  }), /* @__PURE__ */ import_react4.default.createElement("link", {
     rel: "icon",
     type: "image/x-icon",
     href: "/public/favicon.ico"
-  })), /* @__PURE__ */ import_react3.default.createElement("body", null, /* @__PURE__ */ import_react3.default.createElement(QueryClientProvider, {
+  })), /* @__PURE__ */ import_react4.default.createElement("body", null, /* @__PURE__ */ import_react4.default.createElement(QueryClientProvider, {
     client: queryClient
-  }, /* @__PURE__ */ import_react3.default.createElement(HydrationBoundary, {
+  }, /* @__PURE__ */ import_react4.default.createElement(HydrationBoundary, {
     state: dehydratedState
-  }, /* @__PURE__ */ import_react3.default.createElement(Nav_default, null), /* @__PURE__ */ import_react3.default.createElement(Outlet, null), /* @__PURE__ */ import_react3.default.createElement(Routes, {
+  }, /* @__PURE__ */ import_react4.default.createElement(Nav_default, null), /* @__PURE__ */ import_react4.default.createElement(Outlet, null), /* @__PURE__ */ import_react4.default.createElement(Routes, {
     location
-  }, /* @__PURE__ */ import_react3.default.createElement(Route, {
+  }, /* @__PURE__ */ import_react4.default.createElement(Route, {
     path: "/",
-    element: /* @__PURE__ */ import_react3.default.createElement(ToDo_default, null)
-  }), /* @__PURE__ */ import_react3.default.createElement(Route, {
+    element: /* @__PURE__ */ import_react4.default.createElement(ToDo_default, null)
+  }), /* @__PURE__ */ import_react4.default.createElement(Route, {
     path: "/login",
-    element: /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, "Login Page")
+    element: /* @__PURE__ */ import_react4.default.createElement(Login_default, null)
   }))))));
 };
 var App_default = App;
@@ -20697,6 +20778,6 @@ var App_default = App;
 // src/react/index.tsx
 var dehydratedState = window.__QUERY_STATE__;
 delete window.__QUERY_STATE__;
-import_client.hydrateRoot(document, /* @__PURE__ */ import_react4.default.createElement(BrowserRouter, null, /* @__PURE__ */ import_react4.default.createElement(App_default, {
+import_client.hydrateRoot(document, /* @__PURE__ */ import_react5.default.createElement(BrowserRouter, null, /* @__PURE__ */ import_react5.default.createElement(App_default, {
   dehydratedState
 })));
