@@ -12,8 +12,14 @@ import Nav from "./components/Nav";
 
 import "./App.css";
 import Login from "./components/Login";
+import HomePage from "./components/Home";
+import { loginRoute, registerRoute, todoRoute } from "../constants";
+import Register from "./components/Register";
 
-const App = ({ dehydratedState }: { dehydratedState: DehydratedState }) => {
+type AppProps = {
+  dehydratedState: DehydratedState;
+};
+const App = ({ dehydratedState }: AppProps) => {
   const location = useLocation();
 
   const queryClient = new QueryClient({
@@ -44,8 +50,10 @@ const App = ({ dehydratedState }: { dehydratedState: DehydratedState }) => {
             <Outlet />
 
             <Routes location={location}>
-              <Route path="/" element={<ToDo />} />
-              <Route path="/login" element={<Login />} />
+              <Route path="/" element={<HomePage />} />
+              <Route path={`${todoRoute}`} element={<ToDo />} />
+              <Route path={`${loginRoute}`} element={<Login />} />
+              <Route path={`${registerRoute}`} element={<Register />} />
             </Routes>
           </HydrationBoundary>
         </QueryClientProvider>

@@ -1,52 +1,91 @@
 "use client";
 
-import React, { Key } from "react";
+import React, {
+  ChangeEvent,
+  Key,
+  useActionState,
+  useRef,
+  useState,
+} from "react";
 import { v4 as uuidv4 } from "uuid";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 
 import { ToDoItem } from "../../../types/ToDo";
+import usePersistentForm from "../../hooks/usePersistentForm";
+import { apiPrefix, todoRoute } from "../../../constants";
 
 const ToDo = () => {
   const queryClient = useQueryClient();
+  const [output, formAction, isPending] = useActionState<
+    string | undefined,
+    FormData
+  >(async (prev, formData) => {
+    await handleFormSubmit(formData);
+    return `handleFormSubmit`;
+  }, undefined);
+
+  const formRef = useRef<HTMLFormElement>(null);
+  usePersistentForm(formRef);
+
+  const [errorMessage, setErrorMessage] = useState("");
+  const [message, setMessage] = useState("");
 
   const {
-    isPending,
+    isPending: isGetPending,
     error,
     data: todos,
   } = useQuery({
     queryKey: ["todoData"],
-    queryFn: () => fetch("/api/todos").then((res) => res.json()),
+    queryFn: () =>
+      fetch(`/${apiPrefix}/${todoRoute}`).then((res) => res.json()),
+  });
+
+  const createToDoMutation = useMutation({
+    mutationFn: async () => {
+      ("use server");
+
+      const newTodo = {
+        id: uuidv4(),
+        message,
+      } as ToDoItem;
+
+      return await fetch(`/${apiPrefix}/${todoRoute}`, {
+        method: "POST",
+        body: JSON.stringify(newTodo),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["todoData"] });
+      queryClient.refetchQueries({ queryKey: ["todoData"] });
+      setMessage("");
+    },
+    onError: (error) => {
+      setErrorMessage(error.message);
+    },
   });
 
   const handleFormSubmit = async (formData: FormData) => {
-    "use server";
+    const message = formData.get("todoMessage");
 
-    const newTodo = {
-      id: uuidv4(),
-      message: formData.get("todoMessage"),
-    } as ToDoItem;
-
-    const response = await fetch("api/todos", {
-      method: "POST",
-      body: JSON.stringify(newTodo),
-    });
-
-    if (response.status === 200) {
-      queryClient.invalidateQueries({ queryKey: ["todoData"] });
-    } else {
-      alert("error");
+    setErrorMessage("");
+    if (message!.length < 6) {
+      setErrorMessage("Must be at least 6 characters long.");
+      return;
     }
+
+    createToDoMutation.mutate();
   };
 
   const handleDeleteToDo = async (id: Key) => {
-    "use server";
+    ("use server");
 
-    const response = await fetch(`api/todos/${id}`, {
+    const response = await fetch(`/${apiPrefix}/${todoRoute}/${id}`, {
       method: "DELETE",
     });
 
     if (response.status === 200) {
       queryClient.invalidateQueries({ queryKey: ["todoData"] });
+      queryClient.refetchQueries({ queryKey: ["todoData"] });
     } else {
       alert("error");
     }
@@ -57,12 +96,22 @@ const ToDo = () => {
       <div className="w-full rounded bg-white p-8 shadow-md">
         <h1 className="mb-4 text-center text-2xl font-bold">Todo List</h1>
 
+        {errorMessage && (
+          <div className="mt-2 flex items-center text-sm text-red-500">
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
         <div className="mb-4">
-          <form action={handleFormSubmit}>
+          <form action={formAction} ref={formRef}>
             <div className="flex items-center">
               <input
                 type="text"
                 name="todoMessage"
+                value={message}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                  setMessage(e.target.value);
+                }}
                 placeholder="Add a new todo..."
                 className="flex-grow rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
               />
@@ -78,7 +127,7 @@ const ToDo = () => {
 
         {error && "An error has occurred: " + error.message}
 
-        {isPending && "Loading..."}
+        {isGetPending && "Loading..."}
 
         <ul>
           {todos?.length > 0 &&
@@ -92,6 +141,7 @@ const ToDo = () => {
                   <button
                     onClick={() => handleDeleteToDo(todo.id)}
                     className="cursor-pointer text-red-500 hover:text-red-700"
+                    disabled={isPending}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

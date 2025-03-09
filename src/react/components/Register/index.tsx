@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useActionState, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { LoginInfo } from "../../../types/LoginInfo";
 import usePersistentForm from "../../hooks/usePersistentForm";
 import { apiPrefix, authPrefix, loginRoute, registerRoute, todoRoute } from "../../../constants";
 
-const Login = () => {
+const Register = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -28,8 +28,14 @@ const Login = () => {
   const handleFormSubmit = async (formData: FormData) => {
     const username = formData.get("username")!;
     const password = formData.get("password")!;
+    const confirmPassword = formData.get("confirmPassword")!;
 
     if (username.length <= 3 || password.length < 6) {
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrorMessage("Passwords must match");
       return;
     }
 
@@ -40,7 +46,7 @@ const Login = () => {
       password,
     } as LoginInfo;
 
-    const response = await fetch(`${apiPrefix}/${authPrefix}/${loginRoute}`, {
+    const response = await fetch(`${apiPrefix}/${authPrefix}/${registerRoute}`, {
       method: "POST",
       body: JSON.stringify(loginInfo),
     });
@@ -59,7 +65,7 @@ const Login = () => {
   return (
     <div className="flex h-screen items-center justify-center">
       <div className="w-96 rounded bg-white p-8 shadow-md">
-        <h2 className="mb-6 text-center text-2xl font-semibold">Login</h2>
+        <h2 className="mb-6 text-center text-2xl font-semibold">Register</h2>
 
         {errorMessage && (
           <div className="mt-2 flex items-center text-sm text-red-500">
@@ -100,19 +106,35 @@ const Login = () => {
             />
           </div>
 
+          <div className="mb-6">
+            <label
+              htmlFor="confirmPassword"
+              className="mb-2 block text-sm font-bold text-gray-700"
+            >
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              className="w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+              placeholder="Confirm password"
+            />
+          </div>
+
           <div className="flex items-center justify-between">
-            <Link
-              to={`/${registerRoute}`}
+            <a
+              href={`/${loginRoute}`}
               className="inline-block align-baseline text-sm font-semibold text-purple-500 hover:text-purple-800"
             >
-              Not a member yet? Register here!
-            </Link>
+              Already a member?
+            </a>
             <button
               type="submit"
               disabled={isPending}
               className="ml-2 cursor-pointer rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 font-bold text-white transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
             >
-              Sign In
+              Register
             </button>
           </div>
         </form>
@@ -121,4 +143,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;

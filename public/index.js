@@ -996,7 +996,7 @@ var require_react = __commonJS((exports, module) => {
   }
 });
 
-// node_modules/cookie/dist/index.js
+// node_modules/react-router/node_modules/cookie/dist/index.js
 var require_dist = __commonJS((exports) => {
   Object.defineProperty(exports, "__esModule", { value: true });
   exports.parse = parse;
@@ -16218,7 +16218,7 @@ var require_jsx_runtime = __commonJS((exports, module) => {
 });
 
 // src/react/index.tsx
-var import_react5 = __toESM(require_react(), 1);
+var import_react8 = __toESM(require_react(), 1);
 
 // node_modules/react-router/dist/development/chunk-K6CSEXPM.mjs
 var React3 = __toESM(require_react(), 1);
@@ -16264,15 +16264,15 @@ function warning(cond, message) {
 function createKey() {
   return Math.random().toString(36).substring(2, 10);
 }
-function getHistoryState(location, index) {
+function getHistoryState(location2, index) {
   return {
-    usr: location.state,
-    key: location.key,
+    usr: location2.state,
+    key: location2.key,
     idx: index
   };
 }
 function createLocation(current, to, state = null, key) {
-  let location = {
+  let location2 = {
     pathname: typeof current === "string" ? current : current.pathname,
     search: "",
     hash: "",
@@ -16280,7 +16280,7 @@ function createLocation(current, to, state = null, key) {
     state,
     key: to && to.key || key || createKey()
   };
-  return location;
+  return location2;
 }
 function createPath({
   pathname = "/",
@@ -16337,12 +16337,12 @@ function getUrlBasedHistory(getLocation, createHref2, validateLocation, options 
   }
   function push(to, state) {
     action = "PUSH";
-    let location = createLocation(history.location, to, state);
+    let location2 = createLocation(history.location, to, state);
     if (validateLocation)
-      validateLocation(location, to);
+      validateLocation(location2, to);
     index = getIndex() + 1;
-    let historyState = getHistoryState(location, index);
-    let url = history.createHref(location);
+    let historyState = getHistoryState(location2, index);
+    let url = history.createHref(location2);
     try {
       globalHistory.pushState(historyState, "", url);
     } catch (error) {
@@ -16357,12 +16357,12 @@ function getUrlBasedHistory(getLocation, createHref2, validateLocation, options 
   }
   function replace2(to, state) {
     action = "REPLACE";
-    let location = createLocation(history.location, to, state);
+    let location2 = createLocation(history.location, to, state);
     if (validateLocation)
-      validateLocation(location, to);
+      validateLocation(location2, to);
     index = getIndex();
-    let historyState = getHistoryState(location, index);
-    let url = history.createHref(location);
+    let historyState = getHistoryState(location2, index);
+    let url = history.createHref(location2);
     globalHistory.replaceState(historyState, "", url);
     if (v5Compat && listener) {
       listener({ action, location: history.location, delta: 0 });
@@ -16419,8 +16419,8 @@ function matchRoutes(routes, locationArg, basename = "/") {
   return matchRoutesImpl(routes, locationArg, basename, false);
 }
 function matchRoutesImpl(routes, locationArg, basename, allowPartial) {
-  let location = typeof locationArg === "string" ? parsePath(locationArg) : locationArg;
-  let pathname = stripBasename(location.pathname || "/", basename);
+  let location2 = typeof locationArg === "string" ? parsePath(locationArg) : locationArg;
+  let pathname = stripBasename(location2.pathname || "/", basename);
   if (pathname == null) {
     return null;
   }
@@ -16839,15 +16839,15 @@ function useRoutesImpl(routes, locationArg, dataRouterState, future) {
 Please change the parent <Route path="${parentPath}"> to <Route path="${parentPath === "/" ? "*" : `${parentPath}/*`}">.`);
   }
   let locationFromContext = useLocation();
-  let location;
+  let location2;
   if (locationArg) {
     let parsedLocationArg = typeof locationArg === "string" ? parsePath(locationArg) : locationArg;
     invariant(parentPathnameBase === "/" || parsedLocationArg.pathname?.startsWith(parentPathnameBase), `When overriding the location using \`<Routes location>\` or \`useRoutes(routes, location)\`, the location pathname must begin with the portion of the URL pathname that was matched by all parent routes. The current pathname base is "${parentPathnameBase}" but pathname "${parsedLocationArg.pathname}" was given in the \`location\` prop.`);
-    location = parsedLocationArg;
+    location2 = parsedLocationArg;
   } else {
-    location = locationFromContext;
+    location2 = locationFromContext;
   }
-  let pathname = location.pathname || "/";
+  let pathname = location2.pathname || "/";
   let remainingPathname = pathname;
   if (parentPathnameBase !== "/") {
     let parentSegments = parentPathnameBase.replace(/^\//, "").split("/");
@@ -16856,8 +16856,8 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
   }
   let matches = !isStatic && dataRouterState && dataRouterState.matches && dataRouterState.matches.length > 0 ? dataRouterState.matches : matchRoutes(routes, { pathname: remainingPathname });
   if (ENABLE_DEV_WARNINGS) {
-    warning(parentRoute || matches != null, `No routes matched location "${location.pathname}${location.search}${location.hash}" `);
-    warning(matches == null || matches[matches.length - 1].route.element !== undefined || matches[matches.length - 1].route.Component !== undefined || matches[matches.length - 1].route.lazy !== undefined, `Matched leaf route at location "${location.pathname}${location.search}${location.hash}" does not have an element or Component. This means it will render an <Outlet /> with a null value by default resulting in an "empty" page.`);
+    warning(parentRoute || matches != null, `No routes matched location "${location2.pathname}${location2.search}${location2.hash}" `);
+    warning(matches == null || matches[matches.length - 1].route.element !== undefined || matches[matches.length - 1].route.Component !== undefined || matches[matches.length - 1].route.lazy !== undefined, `Matched leaf route at location "${location2.pathname}${location2.search}${location2.hash}" does not have an element or Component. This means it will render an <Outlet /> with a null value by default resulting in an "empty" page.`);
   }
   let renderedMatches = _renderMatches(matches && matches.map((match) => Object.assign({}, match, {
     params: Object.assign({}, parentParams, match.params),
@@ -16879,7 +16879,7 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
           hash: "",
           state: null,
           key: "default",
-          ...location
+          ...location2
         },
         navigationType: "POP"
       }
@@ -17175,9 +17175,9 @@ function Router({
 }
 function Routes({
   children,
-  location
+  location: location2
 }) {
-  return useRoutes(createRoutesFromChildren(children), location);
+  return useRoutes(createRoutesFromChildren(children), location2);
 }
 function createRoutesFromChildren(children, parentPath = []) {
   let routes = [];
@@ -17354,7 +17354,7 @@ async function getKeyedPrefetchLinks(matches, manifest, routeModules) {
   }));
   return dedupeLinkDescriptors(links.flat(1).filter(isHtmlLinkDescriptor).filter((link) => link.rel === "stylesheet" || link.rel === "preload").map((link) => link.rel === "stylesheet" ? { ...link, rel: "prefetch", as: "style" } : { ...link, rel: "prefetch" }));
 }
-function getNewMatchesForLinks(page, nextMatches, currentMatches, manifest, location, mode) {
+function getNewMatchesForLinks(page, nextMatches, currentMatches, manifest, location2, mode) {
   let isNew = (match, index) => {
     if (!currentMatches[index])
       return true;
@@ -17377,7 +17377,7 @@ function getNewMatchesForLinks(page, nextMatches, currentMatches, manifest, loca
       }
       if (match.route.shouldRevalidate) {
         let routeChoice = match.route.shouldRevalidate({
-          currentUrl: new URL(location.pathname + location.search + location.hash, window.origin),
+          currentUrl: new URL(location2.pathname + location2.search + location2.hash, window.origin),
           currentParams: currentMatches[0]?.params || {},
           nextUrl: new URL(page, window.origin),
           nextParams: match.params,
@@ -17568,14 +17568,14 @@ function PrefetchPageLinksImpl({
   matches: nextMatches,
   ...linkProps
 }) {
-  let location = useLocation();
+  let location2 = useLocation();
   let { manifest, routeModules } = useFrameworkContext();
   let { basename } = useDataRouterContext2();
   let { loaderData, matches } = useDataRouterStateContext();
-  let newMatchesForData = React9.useMemo(() => getNewMatchesForLinks(page, nextMatches, matches, manifest, location, "data"), [page, nextMatches, matches, manifest, location]);
-  let newMatchesForAssets = React9.useMemo(() => getNewMatchesForLinks(page, nextMatches, matches, manifest, location, "assets"), [page, nextMatches, matches, manifest, location]);
+  let newMatchesForData = React9.useMemo(() => getNewMatchesForLinks(page, nextMatches, matches, manifest, location2, "data"), [page, nextMatches, matches, manifest, location2]);
+  let newMatchesForAssets = React9.useMemo(() => getNewMatchesForLinks(page, nextMatches, matches, manifest, location2, "assets"), [page, nextMatches, matches, manifest, location2]);
   let dataHrefs = React9.useMemo(() => {
-    if (page === location.pathname + location.search + location.hash) {
+    if (page === location2.pathname + location2.search + location2.hash) {
       return [];
     }
     let routesParams = /* @__PURE__ */ new Set;
@@ -17604,7 +17604,7 @@ function PrefetchPageLinksImpl({
   }, [
     basename,
     loaderData,
-    location,
+    location2,
     manifest,
     newMatchesForData,
     nextMatches,
@@ -17758,12 +17758,12 @@ var NavLink = React10.forwardRef(function NavLinkWithRef({
   ...rest
 }, ref) {
   let path = useResolvedPath(to, { relative: rest.relative });
-  let location = useLocation();
+  let location2 = useLocation();
   let routerState = React10.useContext(DataRouterStateContext);
   let { navigator: navigator2, basename } = React10.useContext(NavigationContext);
   let isTransitioning = routerState != null && useViewTransitionState(path) && viewTransition === true;
   let toPathname = navigator2.encodeLocation ? navigator2.encodeLocation(path).pathname : path.pathname;
-  let locationPathname = location.pathname;
+  let locationPathname = location2.pathname;
   let nextLocationPathname = routerState && routerState.navigation && routerState.navigation.location ? routerState.navigation.location.pathname : null;
   if (!caseSensitive) {
     locationPathname = locationPathname.toLowerCase();
@@ -17859,14 +17859,14 @@ function ScrollRestoration({
 }) {
   let remixContext = React10.useContext(FrameworkContext);
   let { basename } = React10.useContext(NavigationContext);
-  let location = useLocation();
+  let location2 = useLocation();
   let matches = useMatches();
   useScrollRestoration({ getKey, storageKey });
   let ssrKey = React10.useMemo(() => {
     if (!remixContext || !getKey)
       return null;
-    let userKey = getScrollRestorationKey(location, matches, basename, getKey);
-    return userKey !== location.key ? userKey : null;
+    let userKey = getScrollRestorationKey(location2, matches, basename, getKey);
+    return userKey !== location2.key ? userKey : null;
   }, []);
   if (!remixContext || remixContext.isSpaMode) {
     return null;
@@ -17918,12 +17918,12 @@ function useLinkClickHandler(to, {
   viewTransition
 } = {}) {
   let navigate = useNavigate();
-  let location = useLocation();
+  let location2 = useLocation();
   let path = useResolvedPath(to, { relative });
   return React10.useCallback((event) => {
     if (shouldProcessLinkClick(event, target)) {
       event.preventDefault();
-      let replace2 = replaceProp !== undefined ? replaceProp : createPath(location) === createPath(path);
+      let replace2 = replaceProp !== undefined ? replaceProp : createPath(location2) === createPath(path);
       navigate(to, {
         replace: replace2,
         state,
@@ -17933,7 +17933,7 @@ function useLinkClickHandler(to, {
       });
     }
   }, [
-    location,
+    location2,
     navigate,
     path,
     replaceProp,
@@ -17985,9 +17985,9 @@ function useFormAction(action, { relative } = {}) {
   invariant(routeContext, "useFormAction must be used inside a RouteContext");
   let [match] = routeContext.matches.slice(-1);
   let path = { ...useResolvedPath(action ? action : ".", { relative }) };
-  let location = useLocation();
+  let location2 = useLocation();
   if (action == null) {
-    path.search = location.search;
+    path.search = location2.search;
     let params = new URLSearchParams(path.search);
     let indexValues = params.getAll("index");
     let hasNakedIndexParam = indexValues.some((v) => v === "");
@@ -18008,20 +18008,20 @@ function useFormAction(action, { relative } = {}) {
 }
 var SCROLL_RESTORATION_STORAGE_KEY = "react-router-scroll-positions";
 var savedScrollPositions = {};
-function getScrollRestorationKey(location, matches, basename, getKey) {
+function getScrollRestorationKey(location2, matches, basename, getKey) {
   let key = null;
   if (getKey) {
     if (basename !== "/") {
       key = getKey({
-        ...location,
-        pathname: stripBasename(location.pathname, basename) || location.pathname
+        ...location2,
+        pathname: stripBasename(location2.pathname, basename) || location2.pathname
       }, matches);
     } else {
-      key = getKey(location, matches);
+      key = getKey(location2, matches);
     }
   }
   if (key == null) {
-    key = location.key;
+    key = location2.key;
   }
   return key;
 }
@@ -18032,7 +18032,7 @@ function useScrollRestoration({
   let { router } = useDataRouterContext3("useScrollRestoration");
   let { restoreScrollPosition, preventScrollReset } = useDataRouterState2("useScrollRestoration");
   let { basename } = React10.useContext(NavigationContext);
-  let location = useLocation();
+  let location2 = useLocation();
   let matches = useMatches();
   let navigation = useNavigation();
   React10.useEffect(() => {
@@ -18043,7 +18043,7 @@ function useScrollRestoration({
   }, []);
   usePageHide(React10.useCallback(() => {
     if (navigation.state === "idle") {
-      let key = getScrollRestorationKey(location, matches, basename, getKey);
+      let key = getScrollRestorationKey(location2, matches, basename, getKey);
       savedScrollPositions[key] = window.scrollY;
     }
     try {
@@ -18052,7 +18052,7 @@ function useScrollRestoration({
       warning(false, `Failed to save scroll positions in sessionStorage, <ScrollRestoration /> will not work properly (${error}).`);
     }
     window.history.scrollRestoration = "auto";
-  }, [navigation.state, getKey, basename, location, matches, storageKey]));
+  }, [navigation.state, getKey, basename, location2, matches, storageKey]));
   if (typeof document !== "undefined") {
     React10.useLayoutEffect(() => {
       try {
@@ -18064,7 +18064,7 @@ function useScrollRestoration({
       }
     }, [storageKey]);
     React10.useLayoutEffect(() => {
-      let disableScrollRestoration = router?.enableScrollRestoration(savedScrollPositions, () => window.scrollY, getKey ? (location2, matches2) => getScrollRestorationKey(location2, matches2, basename, getKey) : undefined);
+      let disableScrollRestoration = router?.enableScrollRestoration(savedScrollPositions, () => window.scrollY, getKey ? (location22, matches2) => getScrollRestorationKey(location22, matches2, basename, getKey) : undefined);
       return () => disableScrollRestoration && disableScrollRestoration();
     }, [router, basename, getKey]);
     React10.useLayoutEffect(() => {
@@ -18075,8 +18075,8 @@ function useScrollRestoration({
         window.scrollTo(0, restoreScrollPosition);
         return;
       }
-      if (location.hash) {
-        let el = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+      if (location2.hash) {
+        let el = document.getElementById(decodeURIComponent(location2.hash.slice(1)));
         if (el) {
           el.scrollIntoView();
           return;
@@ -18086,7 +18086,7 @@ function useScrollRestoration({
         return;
       }
       window.scrollTo(0, 0);
-    }, [location, restoreScrollPosition, preventScrollReset]);
+    }, [location2, restoreScrollPosition, preventScrollReset]);
   }
 }
 function usePageHide(callback, options) {
@@ -18117,7 +18117,7 @@ var encoder = new TextEncoder;
 var import_client = __toESM(require_client(), 1);
 
 // src/react/App.tsx
-var import_react4 = __toESM(require_react(), 1);
+var import_react7 = __toESM(require_react(), 1);
 
 // node_modules/@tanstack/query-core/build/modern/subscribable.js
 var Subscribable = class {
@@ -20237,6 +20237,96 @@ function shouldAssignObserverCurrentProperties(observer, optimisticResult) {
   return false;
 }
 
+// node_modules/@tanstack/query-core/build/modern/mutationObserver.js
+var MutationObserver2 = class extends Subscribable {
+  #client;
+  #currentResult = undefined;
+  #currentMutation;
+  #mutateOptions;
+  constructor(client, options) {
+    super();
+    this.#client = client;
+    this.setOptions(options);
+    this.bindMethods();
+    this.#updateResult();
+  }
+  bindMethods() {
+    this.mutate = this.mutate.bind(this);
+    this.reset = this.reset.bind(this);
+  }
+  setOptions(options) {
+    const prevOptions = this.options;
+    this.options = this.#client.defaultMutationOptions(options);
+    if (!shallowEqualObjects(this.options, prevOptions)) {
+      this.#client.getMutationCache().notify({
+        type: "observerOptionsUpdated",
+        mutation: this.#currentMutation,
+        observer: this
+      });
+    }
+    if (prevOptions?.mutationKey && this.options.mutationKey && hashKey(prevOptions.mutationKey) !== hashKey(this.options.mutationKey)) {
+      this.reset();
+    } else if (this.#currentMutation?.state.status === "pending") {
+      this.#currentMutation.setOptions(this.options);
+    }
+  }
+  onUnsubscribe() {
+    if (!this.hasListeners()) {
+      this.#currentMutation?.removeObserver(this);
+    }
+  }
+  onMutationUpdate(action) {
+    this.#updateResult();
+    this.#notify(action);
+  }
+  getCurrentResult() {
+    return this.#currentResult;
+  }
+  reset() {
+    this.#currentMutation?.removeObserver(this);
+    this.#currentMutation = undefined;
+    this.#updateResult();
+    this.#notify();
+  }
+  mutate(variables, options) {
+    this.#mutateOptions = options;
+    this.#currentMutation?.removeObserver(this);
+    this.#currentMutation = this.#client.getMutationCache().build(this.#client, this.options);
+    this.#currentMutation.addObserver(this);
+    return this.#currentMutation.execute(variables);
+  }
+  #updateResult() {
+    const state = this.#currentMutation?.state ?? getDefaultState2();
+    this.#currentResult = {
+      ...state,
+      isPending: state.status === "pending",
+      isSuccess: state.status === "success",
+      isError: state.status === "error",
+      isIdle: state.status === "idle",
+      mutate: this.mutate,
+      reset: this.reset
+    };
+  }
+  #notify(action) {
+    notifyManager.batch(() => {
+      if (this.#mutateOptions && this.hasListeners()) {
+        const variables = this.#currentResult.variables;
+        const context = this.#currentResult.context;
+        if (action?.type === "success") {
+          this.#mutateOptions.onSuccess?.(action.data, variables, context);
+          this.#mutateOptions.onSettled?.(action.data, null, variables, context);
+        } else if (action?.type === "error") {
+          this.#mutateOptions.onError?.(action.error, variables, context);
+          this.#mutateOptions.onSettled?.(undefined, action.error, variables, context);
+        }
+      }
+      this.listeners.forEach((listener) => {
+        listener(this.#currentResult);
+      });
+    });
+  }
+};
+
 // node_modules/@tanstack/query-core/build/modern/hydration.js
 function defaultTransformerFn(data2) {
   return data2;
@@ -20513,8 +20603,27 @@ var HydrationBoundary = ({
   return children;
 };
 
+// node_modules/@tanstack/react-query/build/modern/useMutation.js
+var React21 = __toESM(require_react(), 1);
+"use client";
+function useMutation(options, queryClient) {
+  const client = useQueryClient(queryClient);
+  const [observer] = React21.useState(() => new MutationObserver2(client, options));
+  React21.useEffect(() => {
+    observer.setOptions(options);
+  }, [observer, options]);
+  const result = React21.useSyncExternalStore(React21.useCallback((onStoreChange) => observer.subscribe(notifyManager.batchCalls(onStoreChange)), [observer]), () => observer.getCurrentResult(), () => observer.getCurrentResult());
+  const mutate = React21.useCallback((variables, mutateOptions) => {
+    observer.mutate(variables, mutateOptions).catch(noop2);
+  }, [observer]);
+  if (result.error && shouldThrowError(observer.options.throwOnError, [result.error])) {
+    throw result.error;
+  }
+  return { ...result, mutate, mutateAsync: result.mutate };
+}
+
 // src/react/components/ToDo/index.tsx
-var import_react = __toESM(require_react(), 1);
+var import_react2 = __toESM(require_react(), 1);
 
 // node_modules/uuid/dist/esm-browser/stringify.js
 var byteToHex = [];
@@ -20567,73 +20676,136 @@ function v4(options, buf, offset) {
   return unsafeStringify(rnds);
 }
 var v4_default = v4;
+// src/react/hooks/usePersistentForm.tsx
+var import_react = __toESM(require_react(), 1);
+var usePersistentForm = (ref) => {
+  if (ref === null)
+    return;
+  import_react.useEffect(() => {
+    if (!ref.current) {
+      throw new Error("Form ref is not defined.");
+    }
+    const form = ref.current;
+    const handleReset = (e) => {
+      e.preventDefault();
+    };
+    form.addEventListener("reset", handleReset);
+    return () => {
+      form.removeEventListener("reset", handleReset);
+    };
+  }, []);
+};
+var usePersistentForm_default = usePersistentForm;
+
+// src/constants.ts
+var apiPrefix = "api";
+var authPrefix = "auth";
+var todoRoute = "todos";
+var loginRoute = "login";
+var registerRoute = "register";
+var logoutRoute = "logout";
+var checkRoute = "check";
+var ACCESS_TOKEN_EXP = 5 * 60;
+var REFRESH_TOKEN_EXP = 7 * 86400;
+
 // src/react/components/ToDo/index.tsx
 "use client";
 var ToDo = () => {
   const queryClient = useQueryClient();
+  const [output, formAction, isPending] = import_react2.useActionState(async (prev, formData) => {
+    await handleFormSubmit(formData);
+    return `handleFormSubmit`;
+  }, undefined);
+  const formRef = import_react2.useRef(null);
+  usePersistentForm_default(formRef);
+  const [errorMessage, setErrorMessage] = import_react2.useState("");
+  const [message, setMessage] = import_react2.useState("");
   const {
-    isPending,
+    isPending: isGetPending,
     error,
     data: todos
   } = useQuery({
     queryKey: ["todoData"],
-    queryFn: () => fetch("/api/todos").then((res) => res.json())
+    queryFn: () => fetch(`/${apiPrefix}/${todoRoute}`).then((res) => res.json())
+  });
+  const createToDoMutation = useMutation({
+    mutationFn: async () => {
+      "use server";
+      const newTodo = {
+        id: v4_default(),
+        message
+      };
+      return await fetch(`/${apiPrefix}/${todoRoute}`, {
+        method: "POST",
+        body: JSON.stringify(newTodo)
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["todoData"] });
+      queryClient.refetchQueries({ queryKey: ["todoData"] });
+      setMessage("");
+    },
+    onError: (error2) => {
+      setErrorMessage(error2.message);
+    }
   });
   const handleFormSubmit = async (formData) => {
-    "use server";
-    const newTodo = {
-      id: v4_default(),
-      message: formData.get("todoMessage")
-    };
-    const response = await fetch("api/todos", {
-      method: "POST",
-      body: JSON.stringify(newTodo)
-    });
-    if (response.status === 200) {
-      queryClient.invalidateQueries({ queryKey: ["todoData"] });
-    } else {
-      alert("error");
+    const message2 = formData.get("todoMessage");
+    setErrorMessage("");
+    if (message2.length < 6) {
+      setErrorMessage("Must be at least 6 characters long.");
+      return;
     }
+    createToDoMutation.mutate();
   };
   const handleDeleteToDo = async (id) => {
     "use server";
-    const response = await fetch(`api/todos/${id}`, {
+    const response = await fetch(`/${apiPrefix}/${todoRoute}/${id}`, {
       method: "DELETE"
     });
     if (response.status === 200) {
       queryClient.invalidateQueries({ queryKey: ["todoData"] });
+      queryClient.refetchQueries({ queryKey: ["todoData"] });
     } else {
       alert("error");
     }
   };
-  return /* @__PURE__ */ import_react.default.createElement("div", {
+  return /* @__PURE__ */ import_react2.default.createElement("div", {
     className: "flex justify-center bg-gray-100"
-  }, /* @__PURE__ */ import_react.default.createElement("div", {
+  }, /* @__PURE__ */ import_react2.default.createElement("div", {
     className: "w-full rounded bg-white p-8 shadow-md"
-  }, /* @__PURE__ */ import_react.default.createElement("h1", {
+  }, /* @__PURE__ */ import_react2.default.createElement("h1", {
     className: "mb-4 text-center text-2xl font-bold"
-  }, "Todo List"), /* @__PURE__ */ import_react.default.createElement("div", {
+  }, "Todo List"), errorMessage && /* @__PURE__ */ import_react2.default.createElement("div", {
+    className: "mt-2 flex items-center text-sm text-red-500"
+  }, /* @__PURE__ */ import_react2.default.createElement("span", null, errorMessage)), /* @__PURE__ */ import_react2.default.createElement("div", {
     className: "mb-4"
-  }, /* @__PURE__ */ import_react.default.createElement("form", {
-    action: handleFormSubmit
-  }, /* @__PURE__ */ import_react.default.createElement("div", {
+  }, /* @__PURE__ */ import_react2.default.createElement("form", {
+    action: formAction,
+    ref: formRef
+  }, /* @__PURE__ */ import_react2.default.createElement("div", {
     className: "flex items-center"
-  }, /* @__PURE__ */ import_react.default.createElement("input", {
+  }, /* @__PURE__ */ import_react2.default.createElement("input", {
     type: "text",
     name: "todoMessage",
+    value: message,
+    onChange: (e) => {
+      setMessage(e.target.value);
+    },
     placeholder: "Add a new todo...",
     className: "flex-grow rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-  }), /* @__PURE__ */ import_react.default.createElement("button", {
+  }), /* @__PURE__ */ import_react2.default.createElement("button", {
     type: "submit",
     className: "ml-2 cursor-pointer rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 font-bold text-white transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
-  }, "Add Me")))), error && "An error has occurred: " + error.message, isPending && "Loading...", /* @__PURE__ */ import_react.default.createElement("ul", null, todos?.length > 0 && todos.map((todo) => {
-    return /* @__PURE__ */ import_react.default.createElement("li", {
+  }, "Add Me")))), error && "An error has occurred: " + error.message, isGetPending && "Loading...", /* @__PURE__ */ import_react2.default.createElement("ul", null, todos?.length > 0 && todos.map((todo) => {
+    return /* @__PURE__ */ import_react2.default.createElement("li", {
       key: todo.id,
       className: "flex items-center justify-between border-b p-3"
-    }, todo.message, /* @__PURE__ */ import_react.default.createElement("button", {
+    }, todo.message, /* @__PURE__ */ import_react2.default.createElement("button", {
       onClick: () => handleDeleteToDo(todo.id),
-      className: "cursor-pointer text-red-500 hover:text-red-700"
-    }, /* @__PURE__ */ import_react.default.createElement("svg", {
+      className: "cursor-pointer text-red-500 hover:text-red-700",
+      disabled: isPending
+    }, /* @__PURE__ */ import_react2.default.createElement("svg", {
       xmlns: "http://www.w3.org/2000/svg",
       viewBox: "0 0 24 24",
       fill: "none",
@@ -20642,16 +20814,16 @@ var ToDo = () => {
       strokeLinecap: "round",
       strokeLinejoin: "round",
       className: "h-6 w-6"
-    }, /* @__PURE__ */ import_react.default.createElement("polyline", {
+    }, /* @__PURE__ */ import_react2.default.createElement("polyline", {
       points: "3 6 5 6 21 6"
-    }), /* @__PURE__ */ import_react.default.createElement("path", {
+    }), /* @__PURE__ */ import_react2.default.createElement("path", {
       d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-    }), /* @__PURE__ */ import_react.default.createElement("line", {
+    }), /* @__PURE__ */ import_react2.default.createElement("line", {
       x1: "10",
       y1: "11",
       x2: "10",
       y2: "17"
-    }), /* @__PURE__ */ import_react.default.createElement("line", {
+    }), /* @__PURE__ */ import_react2.default.createElement("line", {
       x1: "14",
       y1: "11",
       x2: "14",
@@ -20662,73 +20834,259 @@ var ToDo = () => {
 var ToDo_default = ToDo;
 
 // src/react/components/Nav/index.tsx
-var import_react2 = __toESM(require_react(), 1);
+var import_react3 = __toESM(require_react(), 1);
 var Nav = () => {
-  return /* @__PURE__ */ import_react2.default.createElement("nav", {
-    className: "bg-gray-800 p-4 flex items-center justify-between"
-  }, /* @__PURE__ */ import_react2.default.createElement("div", {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const { isPending, error, data: data2 } = useQuery({
+    queryKey: ["loginCheck"],
+    queryFn: () => fetch(`/${apiPrefix}/${authPrefix}/${checkRoute}`).then((res) => res.json())
+  });
+  const { authenticated, username } = data2 || {
+    authenticated: false,
+    username: ""
+  };
+  const handleLogout = async () => {
+    "use server";
+    const response = await fetch(`${apiPrefix}/${authPrefix}/${logoutRoute}`, {
+      method: "POST"
+    });
+    if (response.status === 200) {
+      queryClient.invalidateQueries({ queryKey: ["loginCheck"] });
+      queryClient.refetchQueries({ queryKey: ["loginCheck"] });
+      location.href = "/login";
+    } else {
+      alert("error");
+    }
+  };
+  return /* @__PURE__ */ import_react3.default.createElement("nav", {
+    className: "flex items-center justify-between bg-gray-800 p-4"
+  }, /* @__PURE__ */ import_react3.default.createElement("div", {
     className: "flex items-center"
-  }, /* @__PURE__ */ import_react2.default.createElement("img", {
+  }, /* @__PURE__ */ import_react3.default.createElement("img", {
     src: "/public/bun.png",
     alt: "Logo",
     height: 50,
-    className: "h-8 mr-4"
-  }), /* @__PURE__ */ import_react2.default.createElement(Link, {
+    className: "mr-4 h-8"
+  }), /* @__PURE__ */ import_react3.default.createElement(Link, {
     to: "/",
-    className: "text-white font-bold text-lg"
-  }, "ToDos")), /* @__PURE__ */ import_react2.default.createElement("div", null, /* @__PURE__ */ import_react2.default.createElement(Link, {
-    className: "text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium",
+    className: "text-lg font-bold text-white"
+  }, "ToDos App")), /* @__PURE__ */ import_react3.default.createElement("div", null, !authenticated && /* @__PURE__ */ import_react3.default.createElement(Link, {
+    className: "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white",
     to: "/login"
-  }, "Login")));
+  }, "Login"), authenticated && /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, /* @__PURE__ */ import_react3.default.createElement(Link, {
+    className: "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white",
+    to: "/todos"
+  }, "Todos"), /* @__PURE__ */ import_react3.default.createElement("span", {
+    className: "text-white"
+  }, "Hi ", username), /* @__PURE__ */ import_react3.default.createElement("span", {
+    onClick: handleLogout,
+    className: "cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
+  }, "Logout"))));
 };
 var Nav_default = Nav;
 
 // src/react/components/Login/index.tsx
-var import_react3 = __toESM(require_react(), 1);
+var import_react4 = __toESM(require_react(), 1);
+"use client";
 var Login = () => {
-  return /* @__PURE__ */ import_react3.default.createElement("div", {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [output, formAction, isPending] = import_react4.useActionState(async (prev, formData) => {
+    await handleFormSubmit(formData);
+    return `handleFormSubmit`;
+  }, undefined);
+  const formRef = import_react4.useRef(null);
+  usePersistentForm_default(formRef);
+  const [errorMessage, setErrorMessage] = import_react4.useState("");
+  const handleFormSubmit = async (formData) => {
+    const username = formData.get("username");
+    const password = formData.get("password");
+    if (username.length <= 3 || password.length < 6) {
+      return;
+    }
+    const loginInfo = {
+      username,
+      password
+    };
+    const response = await fetch(`${apiPrefix}/${authPrefix}/${loginRoute}`, {
+      method: "POST",
+      body: JSON.stringify(loginInfo)
+    });
+    const result = await response.json();
+    if (response.status === 200 && result.successful) {
+      queryClient.invalidateQueries({ queryKey: ["loginCheck"] });
+      queryClient.refetchQueries({ queryKey: ["loginCheck"] });
+      location.href = `/${todoRoute}`;
+    } else {
+      setErrorMessage(result.errorMessage);
+    }
+  };
+  return /* @__PURE__ */ import_react4.default.createElement("div", {
     className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react3.default.createElement("div", {
+  }, /* @__PURE__ */ import_react4.default.createElement("div", {
     className: "w-96 rounded bg-white p-8 shadow-md"
-  }, /* @__PURE__ */ import_react3.default.createElement("h2", {
+  }, /* @__PURE__ */ import_react4.default.createElement("h2", {
     className: "mb-6 text-center text-2xl font-semibold"
-  }, "Login"), /* @__PURE__ */ import_react3.default.createElement("form", null, /* @__PURE__ */ import_react3.default.createElement("div", {
+  }, "Login"), errorMessage && /* @__PURE__ */ import_react4.default.createElement("div", {
+    className: "mt-2 flex items-center text-sm text-red-500"
+  }, /* @__PURE__ */ import_react4.default.createElement("span", null, errorMessage)), /* @__PURE__ */ import_react4.default.createElement("form", {
+    action: formAction,
+    ref: formRef
+  }, /* @__PURE__ */ import_react4.default.createElement("div", {
     className: "mb-4"
-  }, /* @__PURE__ */ import_react3.default.createElement("label", {
+  }, /* @__PURE__ */ import_react4.default.createElement("label", {
     htmlFor: "username",
     className: "mb-2 block text-sm font-bold text-gray-700"
-  }, "Username"), /* @__PURE__ */ import_react3.default.createElement("input", {
+  }, "Username"), /* @__PURE__ */ import_react4.default.createElement("input", {
     type: "text",
     id: "username",
     name: "username",
     className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
     placeholder: "Enter username"
-  })), /* @__PURE__ */ import_react3.default.createElement("div", {
+  })), /* @__PURE__ */ import_react4.default.createElement("div", {
     className: "mb-6"
-  }, /* @__PURE__ */ import_react3.default.createElement("label", {
+  }, /* @__PURE__ */ import_react4.default.createElement("label", {
     htmlFor: "password",
     className: "mb-2 block text-sm font-bold text-gray-700"
-  }, "Password"), /* @__PURE__ */ import_react3.default.createElement("input", {
+  }, "Password"), /* @__PURE__ */ import_react4.default.createElement("input", {
     type: "password",
     id: "password",
     name: "password",
     className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
     placeholder: "Enter password"
-  })), /* @__PURE__ */ import_react3.default.createElement("div", {
+  })), /* @__PURE__ */ import_react4.default.createElement("div", {
     className: "flex items-center justify-between"
-  }, /* @__PURE__ */ import_react3.default.createElement("a", {
-    href: "#",
+  }, /* @__PURE__ */ import_react4.default.createElement(Link, {
+    to: `/${registerRoute}`,
     className: "inline-block align-baseline text-sm font-semibold text-purple-500 hover:text-purple-800"
-  }, "Forgot Password?"), /* @__PURE__ */ import_react3.default.createElement("button", {
+  }, "Not a member yet? Register here!"), /* @__PURE__ */ import_react4.default.createElement("button", {
     type: "submit",
+    disabled: isPending,
     className: "ml-2 cursor-pointer rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 font-bold text-white transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
   }, "Sign In")))));
 };
 var Login_default = Login;
 
+// src/react/components/Home/index.tsx
+var import_react5 = __toESM(require_react(), 1);
+var HomePage = () => {
+  return /* @__PURE__ */ import_react5.default.createElement("div", {
+    className: "flex h-screen items-center justify-center"
+  }, /* @__PURE__ */ import_react5.default.createElement("div", {
+    className: "text-center"
+  }, /* @__PURE__ */ import_react5.default.createElement("h1", {
+    className: "mb-4 text-4xl font-bold text-gray-800"
+  }, "Welcome!"), /* @__PURE__ */ import_react5.default.createElement("p", {
+    className: "mb-8 text-lg text-gray-600"
+  }, "A ToDo app built with Bun, Elysia, and React Server Components"), /* @__PURE__ */ import_react5.default.createElement("a", {
+    href: `/${loginRoute}`,
+    className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
+  }, "Login to begin")));
+};
+var Home_default = HomePage;
+
+// src/react/components/Register/index.tsx
+var import_react6 = __toESM(require_react(), 1);
+"use client";
+var Register = () => {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [output, formAction, isPending] = import_react6.useActionState(async (prev, formData) => {
+    await handleFormSubmit(formData);
+    return `handleFormSubmit`;
+  }, undefined);
+  const formRef = import_react6.useRef(null);
+  usePersistentForm_default(formRef);
+  const [errorMessage, setErrorMessage] = import_react6.useState("");
+  const handleFormSubmit = async (formData) => {
+    const username = formData.get("username");
+    const password = formData.get("password");
+    const confirmPassword = formData.get("confirmPassword");
+    if (username.length <= 3 || password.length < 6) {
+      return;
+    }
+    if (password !== confirmPassword) {
+      setErrorMessage("Passwords must match");
+      return;
+    }
+    const loginInfo = {
+      username,
+      password
+    };
+    const response = await fetch(`${apiPrefix}/${authPrefix}/${registerRoute}`, {
+      method: "POST",
+      body: JSON.stringify(loginInfo)
+    });
+    const result = await response.json();
+    if (response.status === 200 && result.successful) {
+      queryClient.invalidateQueries({ queryKey: ["loginCheck"] });
+      queryClient.refetchQueries({ queryKey: ["loginCheck"] });
+      location.href = `/${todoRoute}`;
+    } else {
+      setErrorMessage(result.errorMessage);
+    }
+  };
+  return /* @__PURE__ */ import_react6.default.createElement("div", {
+    className: "flex h-screen items-center justify-center"
+  }, /* @__PURE__ */ import_react6.default.createElement("div", {
+    className: "w-96 rounded bg-white p-8 shadow-md"
+  }, /* @__PURE__ */ import_react6.default.createElement("h2", {
+    className: "mb-6 text-center text-2xl font-semibold"
+  }, "Register"), errorMessage && /* @__PURE__ */ import_react6.default.createElement("div", {
+    className: "mt-2 flex items-center text-sm text-red-500"
+  }, /* @__PURE__ */ import_react6.default.createElement("span", null, errorMessage)), /* @__PURE__ */ import_react6.default.createElement("form", {
+    action: formAction,
+    ref: formRef
+  }, /* @__PURE__ */ import_react6.default.createElement("div", {
+    className: "mb-4"
+  }, /* @__PURE__ */ import_react6.default.createElement("label", {
+    htmlFor: "username",
+    className: "mb-2 block text-sm font-bold text-gray-700"
+  }, "Username"), /* @__PURE__ */ import_react6.default.createElement("input", {
+    type: "text",
+    id: "username",
+    name: "username",
+    className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
+    placeholder: "Enter username"
+  })), /* @__PURE__ */ import_react6.default.createElement("div", {
+    className: "mb-6"
+  }, /* @__PURE__ */ import_react6.default.createElement("label", {
+    htmlFor: "password",
+    className: "mb-2 block text-sm font-bold text-gray-700"
+  }, "Password"), /* @__PURE__ */ import_react6.default.createElement("input", {
+    type: "password",
+    id: "password",
+    name: "password",
+    className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
+    placeholder: "Enter password"
+  })), /* @__PURE__ */ import_react6.default.createElement("div", {
+    className: "mb-6"
+  }, /* @__PURE__ */ import_react6.default.createElement("label", {
+    htmlFor: "confirmPassword",
+    className: "mb-2 block text-sm font-bold text-gray-700"
+  }, "Confirm Password"), /* @__PURE__ */ import_react6.default.createElement("input", {
+    type: "password",
+    id: "confirmPassword",
+    name: "confirmPassword",
+    className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
+    placeholder: "Confirm password"
+  })), /* @__PURE__ */ import_react6.default.createElement("div", {
+    className: "flex items-center justify-between"
+  }, /* @__PURE__ */ import_react6.default.createElement("a", {
+    href: `/${loginRoute}`,
+    className: "inline-block align-baseline text-sm font-semibold text-purple-500 hover:text-purple-800"
+  }, "Already a member?"), /* @__PURE__ */ import_react6.default.createElement("button", {
+    type: "submit",
+    disabled: isPending,
+    className: "ml-2 cursor-pointer rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 font-bold text-white transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
+  }, "Register")))));
+};
+var Register_default = Register;
+
 // src/react/App.tsx
 var App = ({ dehydratedState }) => {
-  const location = useLocation();
+  const location2 = useLocation();
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -20737,40 +21095,46 @@ var App = ({ dehydratedState }) => {
       }
     }
   });
-  return /* @__PURE__ */ import_react4.default.createElement("html", null, /* @__PURE__ */ import_react4.default.createElement("head", null, /* @__PURE__ */ import_react4.default.createElement("meta", {
+  return /* @__PURE__ */ import_react7.default.createElement("html", null, /* @__PURE__ */ import_react7.default.createElement("head", null, /* @__PURE__ */ import_react7.default.createElement("meta", {
     charSet: "utf-8"
-  }), /* @__PURE__ */ import_react4.default.createElement("title", null, "Bun, Elysia & React"), /* @__PURE__ */ import_react4.default.createElement("meta", {
+  }), /* @__PURE__ */ import_react7.default.createElement("title", null, "Bun, Elysia & React"), /* @__PURE__ */ import_react7.default.createElement("meta", {
     name: "description",
     content: "Bun, Elysia & React"
-  }), /* @__PURE__ */ import_react4.default.createElement("meta", {
+  }), /* @__PURE__ */ import_react7.default.createElement("meta", {
     name: "viewport",
     content: "width=device-width, initial-scale=1"
-  }), /* @__PURE__ */ import_react4.default.createElement("script", {
+  }), /* @__PURE__ */ import_react7.default.createElement("script", {
     src: "/public/index.js",
     type: "module",
     defer: true
-  }), /* @__PURE__ */ import_react4.default.createElement("link", {
+  }), /* @__PURE__ */ import_react7.default.createElement("link", {
     rel: "stylesheet",
     type: "text/css",
     href: "/public/index.css"
-  }), /* @__PURE__ */ import_react4.default.createElement("script", {
+  }), /* @__PURE__ */ import_react7.default.createElement("script", {
     src: "https://unpkg.com/@tailwindcss/browser@4"
-  }), /* @__PURE__ */ import_react4.default.createElement("link", {
+  }), /* @__PURE__ */ import_react7.default.createElement("link", {
     rel: "icon",
     type: "image/x-icon",
     href: "/public/favicon.ico"
-  })), /* @__PURE__ */ import_react4.default.createElement("body", null, /* @__PURE__ */ import_react4.default.createElement(QueryClientProvider, {
+  })), /* @__PURE__ */ import_react7.default.createElement("body", null, /* @__PURE__ */ import_react7.default.createElement(QueryClientProvider, {
     client: queryClient
-  }, /* @__PURE__ */ import_react4.default.createElement(HydrationBoundary, {
+  }, /* @__PURE__ */ import_react7.default.createElement(HydrationBoundary, {
     state: dehydratedState
-  }, /* @__PURE__ */ import_react4.default.createElement(Nav_default, null), /* @__PURE__ */ import_react4.default.createElement(Outlet, null), /* @__PURE__ */ import_react4.default.createElement(Routes, {
-    location
-  }, /* @__PURE__ */ import_react4.default.createElement(Route, {
+  }, /* @__PURE__ */ import_react7.default.createElement(Nav_default, null), /* @__PURE__ */ import_react7.default.createElement(Outlet, null), /* @__PURE__ */ import_react7.default.createElement(Routes, {
+    location: location2
+  }, /* @__PURE__ */ import_react7.default.createElement(Route, {
     path: "/",
-    element: /* @__PURE__ */ import_react4.default.createElement(ToDo_default, null)
-  }), /* @__PURE__ */ import_react4.default.createElement(Route, {
-    path: "/login",
-    element: /* @__PURE__ */ import_react4.default.createElement(Login_default, null)
+    element: /* @__PURE__ */ import_react7.default.createElement(Home_default, null)
+  }), /* @__PURE__ */ import_react7.default.createElement(Route, {
+    path: `${todoRoute}`,
+    element: /* @__PURE__ */ import_react7.default.createElement(ToDo_default, null)
+  }), /* @__PURE__ */ import_react7.default.createElement(Route, {
+    path: `${loginRoute}`,
+    element: /* @__PURE__ */ import_react7.default.createElement(Login_default, null)
+  }), /* @__PURE__ */ import_react7.default.createElement(Route, {
+    path: `${registerRoute}`,
+    element: /* @__PURE__ */ import_react7.default.createElement(Register_default, null)
   }))))));
 };
 var App_default = App;
@@ -20778,6 +21142,6 @@ var App_default = App;
 // src/react/index.tsx
 var dehydratedState = window.__QUERY_STATE__;
 delete window.__QUERY_STATE__;
-import_client.hydrateRoot(document, /* @__PURE__ */ import_react5.default.createElement(BrowserRouter, null, /* @__PURE__ */ import_react5.default.createElement(App_default, {
+import_client.hydrateRoot(document, /* @__PURE__ */ import_react8.default.createElement(BrowserRouter, null, /* @__PURE__ */ import_react8.default.createElement(App_default, {
   dehydratedState
 })));
