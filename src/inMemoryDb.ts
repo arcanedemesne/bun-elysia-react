@@ -11,14 +11,22 @@ export default class InMemoryDB {
   ) {}
 
   initDB = async () => {
-    this.todos.push({ id: uuidv4(), message: "This is a todo item" });
-    this.users.push({
+    const testUser = {
       id: uuidv4(),
       username: "jenny",
       password: await Bun.password.hash("123456"),
 
       isOnline: false,
       refreshToken: null,
-    });
+    };
+
+    const testMessage = {
+      id: uuidv4(),
+      userId: testUser.id,
+      message: "This is an example todo item.",
+    };
+
+    this.todos.push(testMessage);
+    this.users.push(testUser);
   };
 }

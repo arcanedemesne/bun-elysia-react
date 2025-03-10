@@ -47,8 +47,6 @@ const Login = () => {
 
     const result = await response.json();
     if (response.status === 200 && result.successful) {
-      queryClient.invalidateQueries({ queryKey: ["loginCheck"] });
-      queryClient.refetchQueries({ queryKey: ["loginCheck"] });
       location.href = `/${todoRoute}`; // should navigate, but there's a race condition with user state in server
       //navigate(`/${todoRoute}`);
     } else {

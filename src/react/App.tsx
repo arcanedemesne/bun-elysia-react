@@ -15,11 +15,15 @@ import Login from "./components/Login";
 import HomePage from "./components/Home";
 import { loginRoute, registerRoute, todoRoute } from "../constants";
 import Register from "./components/Register";
+import { UserDTO } from "../types/UserDTO";
+import ForbiddenPage from "./components/Forbidden";
 
 type AppProps = {
   dehydratedState: DehydratedState;
+  user: UserDTO;
 };
-const App = ({ dehydratedState }: AppProps) => {
+
+const App = ({ dehydratedState, user }: AppProps) => {
   const location = useLocation();
 
   const queryClient = new QueryClient({
@@ -46,12 +50,12 @@ const App = ({ dehydratedState }: AppProps) => {
       <body>
         <QueryClientProvider client={queryClient}>
           <HydrationBoundary state={dehydratedState}>
-            <Nav />
+            <Nav user={user} />
             <Outlet />
 
             <Routes location={location}>
               <Route path="/" element={<HomePage />} />
-              <Route path={`${todoRoute}`} element={<ToDo />} />
+              <Route path={`${todoRoute}`} element={user.id ? <ToDo user={user} /> : <ForbiddenPage />} />
               <Route path={`${loginRoute}`} element={<Login />} />
               <Route path={`${registerRoute}`} element={<Register />} />
             </Routes>

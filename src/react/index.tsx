@@ -9,7 +9,10 @@ import App from './App';
 const dehydratedState = window.__QUERY_STATE__;
 delete window.__QUERY_STATE__;
 
+const userDto = window.__USER_DATA__;
+delete window.__USER_DATA__;
+
 hydrateRoot(document, 
 <BrowserRouter>
-  <App dehydratedState={dehydratedState} />
+  <App dehydratedState={dehydratedState} user={userDto} />
 </BrowserRouter>);

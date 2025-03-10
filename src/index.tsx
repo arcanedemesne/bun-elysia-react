@@ -29,6 +29,7 @@ import {
   todoRoute,
   userRoute,
 } from "./constants";
+import { UserDTO } from "./types/UserDTO";
 
 const getExpTimestamp = (secondsFromNow: number) => {
   return Math.floor(Date.now() / 1000) + secondsFromNow;
@@ -75,7 +76,7 @@ const app = new Elysia()
   )
 
   // MAIN ROUTE
-  .get("*", async ({ request }) => {
+  .get("*", async ({ request, cookie: { accessToken }, jwt }) => {
     const url = new URL(request.url).pathname;
 
     const queryClient = new QueryClient({
@@ -91,11 +92,27 @@ const app = new Elysia()
 
     const dehydratedState = dehydrate(queryClient);
     const dehydratedString = JSON.stringify(dehydratedState);
+    
+    let userDTO = { id: "", username: "" } as UserDTO;
+    if (accessToken.value) {
+      const jwtPayload = await jwt.verify(accessToken.value);
+      if (jwtPayload) {
+        const userId = jwtPayload.sub;
+        const user = inMemoryDB.users.find((user) => user.id === userId);
+        if (user?.isOnline) {
+          userDTO = {
+            id: user.id,
+            username: user.username,
+          };
+        }
+      }
+    }
+    const userDtoString = JSON.stringify(userDTO);
 
     // render the app component to a readable stream
     const stream = await renderToReadableStream(
       <StaticRouter location={url}>
-        <App dehydratedState={dehydratedState} />
+        <App dehydratedState={dehydratedState} user={userDTO} />
       </StaticRouter>,
       {
         onError(error) {
@@ -105,7 +122,7 @@ const app = new Elysia()
     );
 
     const modifiedStream = stream.pipeThrough(
-      new ScriptInjectionStream(dehydratedString),
+      new ScriptInjectionStream(dehydratedString, userDtoString),
     );
 
     const response = new Response(modifiedStream, {
@@ -165,13 +182,12 @@ const app = new Elysia()
 
   // TODOS
   .get(`/${apiPrefix}/${todoRoute}`, ({ inMemoryDB }) => inMemoryDB.todos)
-  .get(`/${apiPrefix}/${todoRoute}/:id`, ({ inMemoryDB, params: { id } }) => {
-    const todo = inMemoryDB.todos.find((todo) => todo.id === id);
-    if (!todo) {
-      error(404);
-    }
-    return todo;
-  })
+  .get(
+    `/${apiPrefix}/${todoRoute}/:userId`,
+    ({ inMemoryDB, params: { userId } }) => {
+      return inMemoryDB.todos.filter((todo) => todo.userId === userId);
+    },
+  )
   .post(`/${apiPrefix}/${todoRoute}`, ({ inMemoryDB, body }) => {
     const parsed = JSON.parse(body as string);
     inMemoryDB.todos.push(parsed as ToDoItem);
@@ -437,7 +453,11 @@ const app = new Elysia()
           throw new Error("Access token is invalid");
         }
 
-        return { authenticated: true, username: user.username }; // Include username in response
+        const returnUserData = {
+          username: user.username,
+          id: user.id,
+        } as UserDTO;
+        return { authenticated: true, user: returnUserData }; // Include username in response
       } catch (error) {
         set.status = 401;
         return { authenticated: false };

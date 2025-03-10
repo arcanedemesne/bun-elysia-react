@@ -4,27 +4,16 @@ import { Link, useNavigate } from "react-router";
 import {
   apiPrefix,
   authPrefix,
-  checkRoute,
   logoutRoute,
 } from "../../../constants";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { UserDTO } from "../../../types/UserDTO";
 
-const Nav = () => {
-  const queryClient = useQueryClient();
+type NavProps = {
+  user: UserDTO;
+};
+
+const Nav = ({ user }: NavProps) => {
   const navigate = useNavigate();
-
-  const { isPending, error, data } = useQuery({
-    queryKey: ["loginCheck"],
-    queryFn: () =>
-      fetch(`/${apiPrefix}/${authPrefix}/${checkRoute}`).then((res) =>
-        res.json(),
-      ),
-  });
-
-  const { authenticated, username } = data || {
-    authenticated: false,
-    username: "",
-  };
 
   const handleLogout = async () => {
     ("use server");
@@ -34,8 +23,6 @@ const Nav = () => {
     });
 
     if (response.status === 200) {
-      queryClient.invalidateQueries({ queryKey: ["loginCheck"] });
-      queryClient.refetchQueries({ queryKey: ["loginCheck"] });
       location.href = "/login"; // should navigate, but there's a race condition with user state in server
       //navigate("/login");
     } else {
@@ -57,7 +44,7 @@ const Nav = () => {
         </Link>
       </div>
       <div>
-        {!authenticated && (
+        {!user.id && (
           <Link
             className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
             to="/login"
@@ -65,7 +52,7 @@ const Nav = () => {
             Login
           </Link>
         )}
-        {authenticated && (
+        {user.id && (
           <>
             <Link
               className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
@@ -73,7 +60,7 @@ const Nav = () => {
             >
               Todos
             </Link>
-            <span className="text-white">Hi {username}</span>
+            <span className="text-white">Hi {user.username}</span>
             <span
               onClick={handleLogout}
               className="cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"

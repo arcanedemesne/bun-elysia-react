@@ -16218,7 +16218,7 @@ var require_jsx_runtime = __commonJS((exports, module) => {
 });
 
 // src/react/index.tsx
-var import_react8 = __toESM(require_react(), 1);
+var import_react9 = __toESM(require_react(), 1);
 
 // node_modules/react-router/dist/development/chunk-K6CSEXPM.mjs
 var React3 = __toESM(require_react(), 1);
@@ -18117,7 +18117,7 @@ var encoder = new TextEncoder;
 var import_client = __toESM(require_client(), 1);
 
 // src/react/App.tsx
-var import_react7 = __toESM(require_react(), 1);
+var import_react8 = __toESM(require_react(), 1);
 
 // node_modules/@tanstack/query-core/build/modern/subscribable.js
 var Subscribable = class {
@@ -20704,35 +20704,35 @@ var todoRoute = "todos";
 var loginRoute = "login";
 var registerRoute = "register";
 var logoutRoute = "logout";
-var checkRoute = "check";
 var ACCESS_TOKEN_EXP = 5 * 60;
 var REFRESH_TOKEN_EXP = 7 * 86400;
 
 // src/react/components/ToDo/index.tsx
 "use client";
-var ToDo = () => {
+var ToDo = ({ user }) => {
   const queryClient = useQueryClient();
   const [output, formAction, isPending] = import_react2.useActionState(async (prev, formData) => {
     await handleFormSubmit(formData);
     return `handleFormSubmit`;
   }, undefined);
-  const formRef = import_react2.useRef(null);
-  usePersistentForm_default(formRef);
   const [errorMessage, setErrorMessage] = import_react2.useState("");
   const [message, setMessage] = import_react2.useState("");
+  const formRef = import_react2.useRef(null);
+  usePersistentForm_default(formRef);
   const {
     isPending: isGetPending,
     error,
     data: todos
   } = useQuery({
-    queryKey: ["todoData"],
-    queryFn: () => fetch(`/${apiPrefix}/${todoRoute}`).then((res) => res.json())
+    queryKey: ["todoData", user.id],
+    queryFn: () => fetch(`/${apiPrefix}/${todoRoute}/${user.id}`).then((res) => res.json())
   });
   const createToDoMutation = useMutation({
     mutationFn: async () => {
       "use server";
       const newTodo = {
         id: v4_default(),
+        userId: user.id,
         message
       };
       return await fetch(`/${apiPrefix}/${todoRoute}`, {
@@ -20741,8 +20741,8 @@ var ToDo = () => {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["todoData"] });
-      queryClient.refetchQueries({ queryKey: ["todoData"] });
+      queryClient.invalidateQueries({ queryKey: ["todoData", user.id] });
+      queryClient.refetchQueries({ queryKey: ["todoData", user.id] });
       setMessage("");
     },
     onError: (error2) => {
@@ -20764,8 +20764,8 @@ var ToDo = () => {
       method: "DELETE"
     });
     if (response.status === 200) {
-      queryClient.invalidateQueries({ queryKey: ["todoData"] });
-      queryClient.refetchQueries({ queryKey: ["todoData"] });
+      queryClient.invalidateQueries({ queryKey: ["todoData", user.id] });
+      queryClient.refetchQueries({ queryKey: ["todoData", user.id] });
     } else {
       alert("error");
     }
@@ -20835,25 +20835,14 @@ var ToDo_default = ToDo;
 
 // src/react/components/Nav/index.tsx
 var import_react3 = __toESM(require_react(), 1);
-var Nav = () => {
-  const queryClient = useQueryClient();
+var Nav = ({ user }) => {
   const navigate = useNavigate();
-  const { isPending, error, data: data2 } = useQuery({
-    queryKey: ["loginCheck"],
-    queryFn: () => fetch(`/${apiPrefix}/${authPrefix}/${checkRoute}`).then((res) => res.json())
-  });
-  const { authenticated, username } = data2 || {
-    authenticated: false,
-    username: ""
-  };
   const handleLogout = async () => {
     "use server";
     const response = await fetch(`${apiPrefix}/${authPrefix}/${logoutRoute}`, {
       method: "POST"
     });
     if (response.status === 200) {
-      queryClient.invalidateQueries({ queryKey: ["loginCheck"] });
-      queryClient.refetchQueries({ queryKey: ["loginCheck"] });
       location.href = "/login";
     } else {
       alert("error");
@@ -20871,15 +20860,15 @@ var Nav = () => {
   }), /* @__PURE__ */ import_react3.default.createElement(Link, {
     to: "/",
     className: "text-lg font-bold text-white"
-  }, "ToDos App")), /* @__PURE__ */ import_react3.default.createElement("div", null, !authenticated && /* @__PURE__ */ import_react3.default.createElement(Link, {
+  }, "ToDos App")), /* @__PURE__ */ import_react3.default.createElement("div", null, !user.id && /* @__PURE__ */ import_react3.default.createElement(Link, {
     className: "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white",
     to: "/login"
-  }, "Login"), authenticated && /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, /* @__PURE__ */ import_react3.default.createElement(Link, {
+  }, "Login"), user.id && /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, /* @__PURE__ */ import_react3.default.createElement(Link, {
     className: "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white",
     to: "/todos"
   }, "Todos"), /* @__PURE__ */ import_react3.default.createElement("span", {
     className: "text-white"
-  }, "Hi ", username), /* @__PURE__ */ import_react3.default.createElement("span", {
+  }, "Hi ", user.username), /* @__PURE__ */ import_react3.default.createElement("span", {
     onClick: handleLogout,
     className: "cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
   }, "Logout"))));
@@ -20915,8 +20904,6 @@ var Login = () => {
     });
     const result = await response.json();
     if (response.status === 200 && result.successful) {
-      queryClient.invalidateQueries({ queryKey: ["loginCheck"] });
-      queryClient.refetchQueries({ queryKey: ["loginCheck"] });
       location.href = `/${todoRoute}`;
     } else {
       setErrorMessage(result.errorMessage);
@@ -21084,8 +21071,26 @@ var Register = () => {
 };
 var Register_default = Register;
 
+// src/react/components/Forbidden/index.tsx
+var import_react7 = __toESM(require_react(), 1);
+var ForbiddenPage = () => {
+  return /* @__PURE__ */ import_react7.default.createElement("div", {
+    className: "flex h-screen items-center justify-center"
+  }, /* @__PURE__ */ import_react7.default.createElement("div", {
+    className: "text-center"
+  }, /* @__PURE__ */ import_react7.default.createElement("h1", {
+    className: "mb-4 text-4xl font-bold text-gray-800"
+  }, "403 Forbidden"), /* @__PURE__ */ import_react7.default.createElement("p", {
+    className: "mb-8 text-lg text-gray-600"
+  }, "You must be logged in to access this page!"), /* @__PURE__ */ import_react7.default.createElement("a", {
+    href: `/${loginRoute}`,
+    className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
+  }, "Login to begin")));
+};
+var Forbidden_default = ForbiddenPage;
+
 // src/react/App.tsx
-var App = ({ dehydratedState }) => {
+var App = ({ dehydratedState, user }) => {
   const location2 = useLocation();
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -21095,46 +21100,50 @@ var App = ({ dehydratedState }) => {
       }
     }
   });
-  return /* @__PURE__ */ import_react7.default.createElement("html", null, /* @__PURE__ */ import_react7.default.createElement("head", null, /* @__PURE__ */ import_react7.default.createElement("meta", {
+  return /* @__PURE__ */ import_react8.default.createElement("html", null, /* @__PURE__ */ import_react8.default.createElement("head", null, /* @__PURE__ */ import_react8.default.createElement("meta", {
     charSet: "utf-8"
-  }), /* @__PURE__ */ import_react7.default.createElement("title", null, "Bun, Elysia & React"), /* @__PURE__ */ import_react7.default.createElement("meta", {
+  }), /* @__PURE__ */ import_react8.default.createElement("title", null, "Bun, Elysia & React"), /* @__PURE__ */ import_react8.default.createElement("meta", {
     name: "description",
     content: "Bun, Elysia & React"
-  }), /* @__PURE__ */ import_react7.default.createElement("meta", {
+  }), /* @__PURE__ */ import_react8.default.createElement("meta", {
     name: "viewport",
     content: "width=device-width, initial-scale=1"
-  }), /* @__PURE__ */ import_react7.default.createElement("script", {
+  }), /* @__PURE__ */ import_react8.default.createElement("script", {
     src: "/public/index.js",
     type: "module",
     defer: true
-  }), /* @__PURE__ */ import_react7.default.createElement("link", {
+  }), /* @__PURE__ */ import_react8.default.createElement("link", {
     rel: "stylesheet",
     type: "text/css",
     href: "/public/index.css"
-  }), /* @__PURE__ */ import_react7.default.createElement("script", {
+  }), /* @__PURE__ */ import_react8.default.createElement("script", {
     src: "https://unpkg.com/@tailwindcss/browser@4"
-  }), /* @__PURE__ */ import_react7.default.createElement("link", {
+  }), /* @__PURE__ */ import_react8.default.createElement("link", {
     rel: "icon",
     type: "image/x-icon",
     href: "/public/favicon.ico"
-  })), /* @__PURE__ */ import_react7.default.createElement("body", null, /* @__PURE__ */ import_react7.default.createElement(QueryClientProvider, {
+  })), /* @__PURE__ */ import_react8.default.createElement("body", null, /* @__PURE__ */ import_react8.default.createElement(QueryClientProvider, {
     client: queryClient
-  }, /* @__PURE__ */ import_react7.default.createElement(HydrationBoundary, {
+  }, /* @__PURE__ */ import_react8.default.createElement(HydrationBoundary, {
     state: dehydratedState
-  }, /* @__PURE__ */ import_react7.default.createElement(Nav_default, null), /* @__PURE__ */ import_react7.default.createElement(Outlet, null), /* @__PURE__ */ import_react7.default.createElement(Routes, {
+  }, /* @__PURE__ */ import_react8.default.createElement(Nav_default, {
+    user
+  }), /* @__PURE__ */ import_react8.default.createElement(Outlet, null), /* @__PURE__ */ import_react8.default.createElement(Routes, {
     location: location2
-  }, /* @__PURE__ */ import_react7.default.createElement(Route, {
+  }, /* @__PURE__ */ import_react8.default.createElement(Route, {
     path: "/",
-    element: /* @__PURE__ */ import_react7.default.createElement(Home_default, null)
-  }), /* @__PURE__ */ import_react7.default.createElement(Route, {
+    element: /* @__PURE__ */ import_react8.default.createElement(Home_default, null)
+  }), /* @__PURE__ */ import_react8.default.createElement(Route, {
     path: `${todoRoute}`,
-    element: /* @__PURE__ */ import_react7.default.createElement(ToDo_default, null)
-  }), /* @__PURE__ */ import_react7.default.createElement(Route, {
+    element: user.id ? /* @__PURE__ */ import_react8.default.createElement(ToDo_default, {
+      user
+    }) : /* @__PURE__ */ import_react8.default.createElement(Forbidden_default, null)
+  }), /* @__PURE__ */ import_react8.default.createElement(Route, {
     path: `${loginRoute}`,
-    element: /* @__PURE__ */ import_react7.default.createElement(Login_default, null)
-  }), /* @__PURE__ */ import_react7.default.createElement(Route, {
+    element: /* @__PURE__ */ import_react8.default.createElement(Login_default, null)
+  }), /* @__PURE__ */ import_react8.default.createElement(Route, {
     path: `${registerRoute}`,
-    element: /* @__PURE__ */ import_react7.default.createElement(Register_default, null)
+    element: /* @__PURE__ */ import_react8.default.createElement(Register_default, null)
   }))))));
 };
 var App_default = App;
@@ -21142,6 +21151,9 @@ var App_default = App;
 // src/react/index.tsx
 var dehydratedState = window.__QUERY_STATE__;
 delete window.__QUERY_STATE__;
-import_client.hydrateRoot(document, /* @__PURE__ */ import_react8.default.createElement(BrowserRouter, null, /* @__PURE__ */ import_react8.default.createElement(App_default, {
-  dehydratedState
+var userDto = window.__USER_DATA__;
+delete window.__USER_DATA__;
+import_client.hydrateRoot(document, /* @__PURE__ */ import_react9.default.createElement(BrowserRouter, null, /* @__PURE__ */ import_react9.default.createElement(App_default, {
+  dehydratedState,
+  user: userDto
 })));

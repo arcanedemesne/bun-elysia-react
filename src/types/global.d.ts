@@ -1,3 +1,4 @@
 interface Window {
-  __QUERY_STATE__?: any; // Or specify a more specific type if possible
+  __QUERY_STATE__?: any;
+  __USER_DATA__?: any;
 }

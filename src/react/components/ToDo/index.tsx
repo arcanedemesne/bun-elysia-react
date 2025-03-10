@@ -13,8 +13,13 @@ import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { ToDoItem } from "../../../types/ToDo";
 import usePersistentForm from "../../hooks/usePersistentForm";
 import { apiPrefix, todoRoute } from "../../../constants";
+import { UserDTO } from "../../../types/UserDTO";
 
-const ToDo = () => {
+type ToDoProps = {
+  user: UserDTO;
+};
+
+const ToDo = ({ user }: ToDoProps) => {
   const queryClient = useQueryClient();
   const [output, formAction, isPending] = useActionState<
     string | undefined,
@@ -23,21 +28,21 @@ const ToDo = () => {
     await handleFormSubmit(formData);
     return `handleFormSubmit`;
   }, undefined);
-
-  const formRef = useRef<HTMLFormElement>(null);
-  usePersistentForm(formRef);
-
+  
   const [errorMessage, setErrorMessage] = useState("");
   const [message, setMessage] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
+
+  usePersistentForm(formRef);
 
   const {
     isPending: isGetPending,
     error,
     data: todos,
   } = useQuery({
-    queryKey: ["todoData"],
+    queryKey: ["todoData", user.id],
     queryFn: () =>
-      fetch(`/${apiPrefix}/${todoRoute}`).then((res) => res.json()),
+      fetch(`/${apiPrefix}/${todoRoute}/${user.id}`).then((res) => res.json()),
   });
 
   const createToDoMutation = useMutation({
@@ -46,6 +51,7 @@ const ToDo = () => {
 
       const newTodo = {
         id: uuidv4(),
+        userId: user.id,
         message,
       } as ToDoItem;
 
@@ -55,8 +61,8 @@ const ToDo = () => {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["todoData"] });
-      queryClient.refetchQueries({ queryKey: ["todoData"] });
+      queryClient.invalidateQueries({ queryKey: ["todoData", user.id] });
+      queryClient.refetchQueries({ queryKey: ["todoData", user.id] });
       setMessage("");
     },
     onError: (error) => {
@@ -84,8 +90,8 @@ const ToDo = () => {
     });
 
     if (response.status === 200) {
-      queryClient.invalidateQueries({ queryKey: ["todoData"] });
-      queryClient.refetchQueries({ queryKey: ["todoData"] });
+      queryClient.invalidateQueries({ queryKey: ["todoData", user.id] });
+      queryClient.refetchQueries({ queryKey: ["todoData", user.id] });
     } else {
       alert("error");
     }
