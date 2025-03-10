@@ -24,6 +24,7 @@ import {
   hostPort,
   loginRoute,
   logoutRoute,
+  refreshRoute,
   registerRoute,
   secret,
   todoRoute,
@@ -145,6 +146,7 @@ const app = new Elysia()
         pathname.startsWith(`/${apiPrefix}/${authPrefix}/${registerRoute}`) ||
         pathname.startsWith(`/${apiPrefix}/${authPrefix}/${logoutRoute}`) ||
         pathname.startsWith(`/${apiPrefix}/${authPrefix}/${checkRoute}`) ||
+        pathname.startsWith(`/${apiPrefix}/${authPrefix}/${refreshRoute}`) ||
         pathname.startsWith("/public/") ||
         pathname.endsWith(".css") ||
         pathname.endsWith(".js") ||
@@ -361,8 +363,9 @@ const app = new Elysia()
     },
   )
 
+  // REFRESH
   .post(
-    `/${apiPrefix}/${authPrefix}/refresh`,
+    `/${apiPrefix}/${authPrefix}/${refreshRoute}`,
     async ({ cookie: { accessToken, refreshToken }, jwt, set }) => {
       if (!refreshToken.value) {
         // handle error for refresh token is not available
@@ -412,20 +415,21 @@ const app = new Elysia()
         path: "/",
       });
 
+      user.isOnline = true;
       user.refreshToken = refreshJWTToken;
 
+      set.status == 200;
       return {
         message: "Access token generated successfully",
-        data: {
-          accessToken: accessJWTToken,
-          refreshToken: refreshJWTToken,
-        },
       };
     },
   )
+
+  // CHECK AUTH
   .get(
     `/${apiPrefix}/${authPrefix}/${checkRoute}`,
     async ({ cookie: { accessToken }, jwt, set }) => {
+
       if (!accessToken) {
         set.status = 401;
         return { authenticated: false };
@@ -453,11 +457,7 @@ const app = new Elysia()
           throw new Error("Access token is invalid");
         }
 
-        const returnUserData = {
-          username: user.username,
-          id: user.id,
-        } as UserDTO;
-        return { authenticated: true, user: returnUserData }; // Include username in response
+        return { authenticated: true }; // Include username in response
       } catch (error) {
         set.status = 401;
         return { authenticated: false };

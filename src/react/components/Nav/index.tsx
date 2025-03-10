@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router";
 
-import { apiPrefix, authPrefix, logoutRoute } from "../../../constants";
+import { apiPrefix, authPrefix, loginRoute, logoutRoute } from "../../../constants";
 import { UserDTO } from "../../../types/UserDTO";
 
 type NavProps = {
@@ -19,8 +19,8 @@ const Nav = ({ user }: NavProps) => {
     });
 
     if (response.status === 200) {
-      location.href = "/login"; // should navigate, but there's a race condition with user state in server
-      //navigate("/login");
+      location.href = `${loginRoute}`; // should navigate, but there's a race condition with user state in server
+      //navigate(`${loginRoute}`);
     } else {
       alert("error");
     }

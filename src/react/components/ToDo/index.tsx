@@ -14,6 +14,8 @@ import { ToDoItem } from "../../../types/ToDo";
 import usePersistentForm from "../../hooks/usePersistentForm";
 import { apiPrefix, todoRoute } from "../../../constants";
 import { UserDTO } from "../../../types/UserDTO";
+import useAuthCheck from "../../hooks/useCheckAuth";
+import { apiFetch } from "../../api";
 
 type ToDoProps = {
   user: UserDTO;
@@ -21,6 +23,9 @@ type ToDoProps = {
 
 const ToDo = ({ user }: ToDoProps) => {
   const queryClient = useQueryClient();
+
+  useAuthCheck();
+
   const [output, formAction, isPending] = useActionState<
     string | undefined,
     FormData
@@ -42,7 +47,7 @@ const ToDo = ({ user }: ToDoProps) => {
   } = useQuery({
     queryKey: ["todoData", user.id],
     queryFn: () =>
-      fetch(`/${apiPrefix}/${todoRoute}/${user.id}`).then((res) => res.json()),
+      apiFetch(`/${apiPrefix}/${todoRoute}/${user.id}`),
   });
 
   const createToDoMutation = useMutation({
@@ -55,7 +60,7 @@ const ToDo = ({ user }: ToDoProps) => {
         message,
       } as ToDoItem;
 
-      return await fetch(`/${apiPrefix}/${todoRoute}`, {
+      return await apiFetch(`/${apiPrefix}/${todoRoute}`, {
         method: "POST",
         body: JSON.stringify(newTodo),
       });
@@ -85,7 +90,7 @@ const ToDo = ({ user }: ToDoProps) => {
   const handleDeleteToDo = async (id: Key) => {
     ("use server");
 
-    const response = await fetch(`/${apiPrefix}/${todoRoute}/${id}`, {
+    const response = await apiFetch(`/${apiPrefix}/${todoRoute}/${id}`, {
       method: "DELETE",
     });
 

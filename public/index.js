@@ -16218,7 +16218,7 @@ var require_jsx_runtime = __commonJS((exports, module) => {
 });
 
 // src/react/index.tsx
-var import_react9 = __toESM(require_react(), 1);
+var import_react10 = __toESM(require_react(), 1);
 
 // node_modules/react-router/dist/development/chunk-K6CSEXPM.mjs
 var React3 = __toESM(require_react(), 1);
@@ -18117,7 +18117,7 @@ var encoder = new TextEncoder;
 var import_client = __toESM(require_client(), 1);
 
 // src/react/App.tsx
-var import_react8 = __toESM(require_react(), 1);
+var import_react9 = __toESM(require_react(), 1);
 
 // node_modules/@tanstack/query-core/build/modern/subscribable.js
 var Subscribable = class {
@@ -20623,7 +20623,7 @@ function useMutation(options, queryClient) {
 }
 
 // src/react/components/ToDo/index.tsx
-var import_react2 = __toESM(require_react(), 1);
+var import_react3 = __toESM(require_react(), 1);
 
 // node_modules/uuid/dist/esm-browser/stringify.js
 var byteToHex = [];
@@ -20704,20 +20704,77 @@ var todoRoute = "todos";
 var loginRoute = "login";
 var registerRoute = "register";
 var logoutRoute = "logout";
+var checkRoute = "check";
+var refreshRoute = "refresh";
 var ACCESS_TOKEN_EXP = 5 * 60;
 var REFRESH_TOKEN_EXP = 7 * 86400;
+
+// src/react/hooks/useCheckAuth.tsx
+var import_react2 = __toESM(require_react(), 1);
+var useAuthCheck = () => {
+  const queryClient = useQueryClient();
+  const { isPending, data: data2, refetch } = useQuery({
+    queryKey: ["loginCheck"],
+    queryFn: () => fetch(`/${apiPrefix}/${authPrefix}/${checkRoute}`).then((res) => res.json()),
+    refetchOnWindowFocus: false,
+    enabled: true
+  });
+  import_react2.useEffect(() => {
+    const interval = setInterval(() => {
+      refetch();
+    }, 30 * 1000);
+    const { authenticated } = data2 || { authenticated: undefined };
+    if (authenticated !== undefined && !authenticated && !isPending) {
+      location.href = `${loginRoute}`;
+    }
+    return () => {
+      queryClient.invalidateQueries({ queryKey: ["loginCheck"] });
+      queryClient.refetchQueries({ queryKey: ["loginCheck"] });
+      clearInterval(interval);
+    };
+  }, [refetch, data2, queryClient]);
+};
+var useCheckAuth_default = useAuthCheck;
+
+// src/react/api/index.ts
+async function apiFetch(url, options = {}) {
+  let response = await fetch(url, options);
+  if (response.status === 401) {
+    try {
+      await refreshToken();
+      response = await fetch(url, options);
+    } catch (refreshError) {
+      throw refreshError;
+    }
+  }
+  if (!response.ok) {
+    throw new Error((await response.json()).error);
+  }
+  if (options.method === "POST" || options.method === "DELETE")
+    return response;
+  return await response.json();
+}
+async function refreshToken() {
+  const response = await fetch(`${apiPrefix}/${authPrefix}/${refreshRoute}`, {
+    method: "POST"
+  });
+  if (!response.ok) {
+    throw new Error("Failed to refresh token");
+  }
+}
 
 // src/react/components/ToDo/index.tsx
 "use client";
 var ToDo = ({ user }) => {
   const queryClient = useQueryClient();
-  const [output, formAction, isPending] = import_react2.useActionState(async (prev, formData) => {
+  useCheckAuth_default();
+  const [output, formAction, isPending] = import_react3.useActionState(async (prev, formData) => {
     await handleFormSubmit(formData);
     return `handleFormSubmit`;
   }, undefined);
-  const [errorMessage, setErrorMessage] = import_react2.useState("");
-  const [message, setMessage] = import_react2.useState("");
-  const formRef = import_react2.useRef(null);
+  const [errorMessage, setErrorMessage] = import_react3.useState("");
+  const [message, setMessage] = import_react3.useState("");
+  const formRef = import_react3.useRef(null);
   usePersistentForm_default(formRef);
   const {
     isPending: isGetPending,
@@ -20725,7 +20782,7 @@ var ToDo = ({ user }) => {
     data: todos
   } = useQuery({
     queryKey: ["todoData", user.id],
-    queryFn: () => fetch(`/${apiPrefix}/${todoRoute}/${user.id}`).then((res) => res.json())
+    queryFn: () => apiFetch(`/${apiPrefix}/${todoRoute}/${user.id}`)
   });
   const createToDoMutation = useMutation({
     mutationFn: async () => {
@@ -20735,7 +20792,7 @@ var ToDo = ({ user }) => {
         userId: user.id,
         message
       };
-      return await fetch(`/${apiPrefix}/${todoRoute}`, {
+      return await apiFetch(`/${apiPrefix}/${todoRoute}`, {
         method: "POST",
         body: JSON.stringify(newTodo)
       });
@@ -20760,7 +20817,7 @@ var ToDo = ({ user }) => {
   };
   const handleDeleteToDo = async (id) => {
     "use server";
-    const response = await fetch(`/${apiPrefix}/${todoRoute}/${id}`, {
+    const response = await apiFetch(`/${apiPrefix}/${todoRoute}/${id}`, {
       method: "DELETE"
     });
     if (response.status === 200) {
@@ -20770,22 +20827,22 @@ var ToDo = ({ user }) => {
       alert("error");
     }
   };
-  return /* @__PURE__ */ import_react2.default.createElement("div", {
+  return /* @__PURE__ */ import_react3.default.createElement("div", {
     className: "flex justify-center bg-gray-100"
-  }, /* @__PURE__ */ import_react2.default.createElement("div", {
+  }, /* @__PURE__ */ import_react3.default.createElement("div", {
     className: "w-full rounded bg-white p-8 shadow-md"
-  }, /* @__PURE__ */ import_react2.default.createElement("h1", {
+  }, /* @__PURE__ */ import_react3.default.createElement("h1", {
     className: "mb-4 text-center text-2xl font-bold"
-  }, "Todo List"), errorMessage && /* @__PURE__ */ import_react2.default.createElement("div", {
+  }, "Todo List"), errorMessage && /* @__PURE__ */ import_react3.default.createElement("div", {
     className: "mt-2 flex items-center text-sm text-red-500"
-  }, /* @__PURE__ */ import_react2.default.createElement("span", null, errorMessage)), /* @__PURE__ */ import_react2.default.createElement("div", {
+  }, /* @__PURE__ */ import_react3.default.createElement("span", null, errorMessage)), /* @__PURE__ */ import_react3.default.createElement("div", {
     className: "mb-4"
-  }, /* @__PURE__ */ import_react2.default.createElement("form", {
+  }, /* @__PURE__ */ import_react3.default.createElement("form", {
     action: formAction,
     ref: formRef
-  }, /* @__PURE__ */ import_react2.default.createElement("div", {
+  }, /* @__PURE__ */ import_react3.default.createElement("div", {
     className: "flex items-center"
-  }, /* @__PURE__ */ import_react2.default.createElement("input", {
+  }, /* @__PURE__ */ import_react3.default.createElement("input", {
     type: "text",
     name: "todoMessage",
     value: message,
@@ -20794,18 +20851,18 @@ var ToDo = ({ user }) => {
     },
     placeholder: "Add a new todo...",
     className: "flex-grow rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-  }), /* @__PURE__ */ import_react2.default.createElement("button", {
+  }), /* @__PURE__ */ import_react3.default.createElement("button", {
     type: "submit",
     className: "ml-2 cursor-pointer rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 font-bold text-white transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
-  }, "Add")))), error && "An error has occurred: " + error.message, isGetPending && "Loading...", /* @__PURE__ */ import_react2.default.createElement("ul", null, todos?.length > 0 && todos.map((todo) => {
-    return /* @__PURE__ */ import_react2.default.createElement("li", {
+  }, "Add")))), error && "An error has occurred: " + error.message, isGetPending && "Loading...", /* @__PURE__ */ import_react3.default.createElement("ul", null, todos?.length > 0 && todos.map((todo) => {
+    return /* @__PURE__ */ import_react3.default.createElement("li", {
       key: todo.id,
       className: "flex items-center justify-between border-b p-3"
-    }, todo.message, /* @__PURE__ */ import_react2.default.createElement("button", {
+    }, todo.message, /* @__PURE__ */ import_react3.default.createElement("button", {
       onClick: () => handleDeleteToDo(todo.id),
       className: "cursor-pointer text-red-500 hover:text-red-700",
       disabled: isPending
-    }, /* @__PURE__ */ import_react2.default.createElement("svg", {
+    }, /* @__PURE__ */ import_react3.default.createElement("svg", {
       xmlns: "http://www.w3.org/2000/svg",
       viewBox: "0 0 24 24",
       fill: "none",
@@ -20814,16 +20871,16 @@ var ToDo = ({ user }) => {
       strokeLinecap: "round",
       strokeLinejoin: "round",
       className: "h-6 w-6"
-    }, /* @__PURE__ */ import_react2.default.createElement("polyline", {
+    }, /* @__PURE__ */ import_react3.default.createElement("polyline", {
       points: "3 6 5 6 21 6"
-    }), /* @__PURE__ */ import_react2.default.createElement("path", {
+    }), /* @__PURE__ */ import_react3.default.createElement("path", {
       d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-    }), /* @__PURE__ */ import_react2.default.createElement("line", {
+    }), /* @__PURE__ */ import_react3.default.createElement("line", {
       x1: "10",
       y1: "11",
       x2: "10",
       y2: "17"
-    }), /* @__PURE__ */ import_react2.default.createElement("line", {
+    }), /* @__PURE__ */ import_react3.default.createElement("line", {
       x1: "14",
       y1: "11",
       x2: "14",
@@ -20834,7 +20891,7 @@ var ToDo = ({ user }) => {
 var ToDo_default = ToDo;
 
 // src/react/components/Nav/index.tsx
-var import_react3 = __toESM(require_react(), 1);
+var import_react4 = __toESM(require_react(), 1);
 var Nav = ({ user }) => {
   const navigate = useNavigate();
   const handleLogout = async () => {
@@ -20843,16 +20900,16 @@ var Nav = ({ user }) => {
       method: "POST"
     });
     if (response.status === 200) {
-      location.href = "/login";
+      location.href = `${loginRoute}`;
     } else {
       alert("error");
     }
   };
-  return /* @__PURE__ */ import_react3.default.createElement("nav", {
+  return /* @__PURE__ */ import_react4.default.createElement("nav", {
     className: "flex items-center justify-between bg-gray-800 p-4"
-  }, /* @__PURE__ */ import_react3.default.createElement("div", {
+  }, /* @__PURE__ */ import_react4.default.createElement("div", {
     className: "flex items-center"
-  }, /* @__PURE__ */ import_react3.default.createElement("img", {
+  }, /* @__PURE__ */ import_react4.default.createElement("img", {
     src: "/public/bun.png",
     alt: "Logo",
     height: 50,
@@ -20860,37 +20917,37 @@ var Nav = ({ user }) => {
     onClick: () => {
       navigate("/");
     }
-  }), /* @__PURE__ */ import_react3.default.createElement(Link, {
+  }), /* @__PURE__ */ import_react4.default.createElement(Link, {
     to: "/",
     className: "text-lg font-bold text-white"
-  }, "ToDos App")), /* @__PURE__ */ import_react3.default.createElement("div", null, !user.id && /* @__PURE__ */ import_react3.default.createElement(Link, {
+  }, "ToDos App")), /* @__PURE__ */ import_react4.default.createElement("div", null, !user.id && /* @__PURE__ */ import_react4.default.createElement(Link, {
     className: "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white",
     to: "/login"
-  }, "Login"), user.id && /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, /* @__PURE__ */ import_react3.default.createElement(Link, {
+  }, "Login"), user.id && /* @__PURE__ */ import_react4.default.createElement(import_react4.default.Fragment, null, /* @__PURE__ */ import_react4.default.createElement(Link, {
     className: "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white",
     to: "/todos"
-  }, "Todos"), /* @__PURE__ */ import_react3.default.createElement("span", {
+  }, "Todos"), /* @__PURE__ */ import_react4.default.createElement("span", {
     onClick: handleLogout,
     className: "cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
-  }, "Logout"), /* @__PURE__ */ import_react3.default.createElement("span", {
+  }, "Logout"), /* @__PURE__ */ import_react4.default.createElement("span", {
     className: "border-spacing-1 rounded-md border px-3 py-2 text-sm font-medium text-gray-300"
   }, user.username))));
 };
 var Nav_default = Nav;
 
 // src/react/components/Login/index.tsx
-var import_react4 = __toESM(require_react(), 1);
+var import_react5 = __toESM(require_react(), 1);
 "use client";
 var Login = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [output, formAction, isPending] = import_react4.useActionState(async (prev, formData) => {
+  const [output, formAction, isPending] = import_react5.useActionState(async (prev, formData) => {
     await handleFormSubmit(formData);
     return `handleFormSubmit`;
   }, undefined);
-  const formRef = import_react4.useRef(null);
+  const formRef = import_react5.useRef(null);
   usePersistentForm_default(formRef);
-  const [errorMessage, setErrorMessage] = import_react4.useState("");
+  const [errorMessage, setErrorMessage] = import_react5.useState("");
   const handleFormSubmit = async (formData) => {
     const username = formData.get("username");
     const password = formData.get("password");
@@ -20912,45 +20969,45 @@ var Login = () => {
       setErrorMessage(result.errorMessage);
     }
   };
-  return /* @__PURE__ */ import_react4.default.createElement("div", {
+  return /* @__PURE__ */ import_react5.default.createElement("div", {
     className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react4.default.createElement("div", {
+  }, /* @__PURE__ */ import_react5.default.createElement("div", {
     className: "w-96 rounded bg-white p-8 shadow-md"
-  }, /* @__PURE__ */ import_react4.default.createElement("h2", {
+  }, /* @__PURE__ */ import_react5.default.createElement("h2", {
     className: "mb-6 text-center text-2xl font-semibold"
-  }, "Login"), errorMessage && /* @__PURE__ */ import_react4.default.createElement("div", {
+  }, "Login"), errorMessage && /* @__PURE__ */ import_react5.default.createElement("div", {
     className: "mt-2 flex items-center text-sm text-red-500"
-  }, /* @__PURE__ */ import_react4.default.createElement("span", null, errorMessage)), /* @__PURE__ */ import_react4.default.createElement("form", {
+  }, /* @__PURE__ */ import_react5.default.createElement("span", null, errorMessage)), /* @__PURE__ */ import_react5.default.createElement("form", {
     action: formAction,
     ref: formRef
-  }, /* @__PURE__ */ import_react4.default.createElement("div", {
+  }, /* @__PURE__ */ import_react5.default.createElement("div", {
     className: "mb-4"
-  }, /* @__PURE__ */ import_react4.default.createElement("label", {
+  }, /* @__PURE__ */ import_react5.default.createElement("label", {
     htmlFor: "username",
     className: "mb-2 block text-sm font-bold text-gray-700"
-  }, "Username"), /* @__PURE__ */ import_react4.default.createElement("input", {
+  }, "Username"), /* @__PURE__ */ import_react5.default.createElement("input", {
     type: "text",
     id: "username",
     name: "username",
     className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
     placeholder: "Enter username"
-  })), /* @__PURE__ */ import_react4.default.createElement("div", {
+  })), /* @__PURE__ */ import_react5.default.createElement("div", {
     className: "mb-6"
-  }, /* @__PURE__ */ import_react4.default.createElement("label", {
+  }, /* @__PURE__ */ import_react5.default.createElement("label", {
     htmlFor: "password",
     className: "mb-2 block text-sm font-bold text-gray-700"
-  }, "Password"), /* @__PURE__ */ import_react4.default.createElement("input", {
+  }, "Password"), /* @__PURE__ */ import_react5.default.createElement("input", {
     type: "password",
     id: "password",
     name: "password",
     className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
     placeholder: "Enter password"
-  })), /* @__PURE__ */ import_react4.default.createElement("div", {
+  })), /* @__PURE__ */ import_react5.default.createElement("div", {
     className: "flex items-center justify-between"
-  }, /* @__PURE__ */ import_react4.default.createElement(Link, {
+  }, /* @__PURE__ */ import_react5.default.createElement(Link, {
     to: `/${registerRoute}`,
     className: "inline-block align-baseline text-sm font-semibold text-purple-500 hover:text-purple-800"
-  }, "Not a member yet? Register here!"), /* @__PURE__ */ import_react4.default.createElement("button", {
+  }, "Not a member yet? Register here!"), /* @__PURE__ */ import_react5.default.createElement("button", {
     type: "submit",
     disabled: isPending,
     className: "ml-2 cursor-pointer rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 font-bold text-white transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
@@ -20959,17 +21016,17 @@ var Login = () => {
 var Login_default = Login;
 
 // src/react/components/Home/index.tsx
-var import_react5 = __toESM(require_react(), 1);
+var import_react6 = __toESM(require_react(), 1);
 var HomePage = () => {
-  return /* @__PURE__ */ import_react5.default.createElement("div", {
+  return /* @__PURE__ */ import_react6.default.createElement("div", {
     className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react5.default.createElement("div", {
+  }, /* @__PURE__ */ import_react6.default.createElement("div", {
     className: "text-center"
-  }, /* @__PURE__ */ import_react5.default.createElement("h1", {
+  }, /* @__PURE__ */ import_react6.default.createElement("h1", {
     className: "mb-4 text-4xl font-bold text-gray-800"
-  }, "Welcome!"), /* @__PURE__ */ import_react5.default.createElement("p", {
+  }, "Welcome!"), /* @__PURE__ */ import_react6.default.createElement("p", {
     className: "mb-8 text-lg text-gray-600"
-  }, "A ToDo app built with Bun, Elysia, and React Server Components"), /* @__PURE__ */ import_react5.default.createElement("a", {
+  }, "A ToDo app built with Bun, Elysia, and React Server Components"), /* @__PURE__ */ import_react6.default.createElement("a", {
     href: `/${loginRoute}`,
     className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
   }, "Login to begin")));
@@ -20977,18 +21034,18 @@ var HomePage = () => {
 var Home_default = HomePage;
 
 // src/react/components/Register/index.tsx
-var import_react6 = __toESM(require_react(), 1);
+var import_react7 = __toESM(require_react(), 1);
 "use client";
 var Register = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [output, formAction, isPending] = import_react6.useActionState(async (prev, formData) => {
+  const [output, formAction, isPending] = import_react7.useActionState(async (prev, formData) => {
     await handleFormSubmit(formData);
     return `handleFormSubmit`;
   }, undefined);
-  const formRef = import_react6.useRef(null);
+  const formRef = import_react7.useRef(null);
   usePersistentForm_default(formRef);
-  const [errorMessage, setErrorMessage] = import_react6.useState("");
+  const [errorMessage, setErrorMessage] = import_react7.useState("");
   const handleFormSubmit = async (formData) => {
     const username = formData.get("username");
     const password = formData.get("password");
@@ -21017,56 +21074,56 @@ var Register = () => {
       setErrorMessage(result.errorMessage);
     }
   };
-  return /* @__PURE__ */ import_react6.default.createElement("div", {
+  return /* @__PURE__ */ import_react7.default.createElement("div", {
     className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react6.default.createElement("div", {
+  }, /* @__PURE__ */ import_react7.default.createElement("div", {
     className: "w-96 rounded bg-white p-8 shadow-md"
-  }, /* @__PURE__ */ import_react6.default.createElement("h2", {
+  }, /* @__PURE__ */ import_react7.default.createElement("h2", {
     className: "mb-6 text-center text-2xl font-semibold"
-  }, "Register"), errorMessage && /* @__PURE__ */ import_react6.default.createElement("div", {
+  }, "Register"), errorMessage && /* @__PURE__ */ import_react7.default.createElement("div", {
     className: "mt-2 flex items-center text-sm text-red-500"
-  }, /* @__PURE__ */ import_react6.default.createElement("span", null, errorMessage)), /* @__PURE__ */ import_react6.default.createElement("form", {
+  }, /* @__PURE__ */ import_react7.default.createElement("span", null, errorMessage)), /* @__PURE__ */ import_react7.default.createElement("form", {
     action: formAction,
     ref: formRef
-  }, /* @__PURE__ */ import_react6.default.createElement("div", {
+  }, /* @__PURE__ */ import_react7.default.createElement("div", {
     className: "mb-4"
-  }, /* @__PURE__ */ import_react6.default.createElement("label", {
+  }, /* @__PURE__ */ import_react7.default.createElement("label", {
     htmlFor: "username",
     className: "mb-2 block text-sm font-bold text-gray-700"
-  }, "Username"), /* @__PURE__ */ import_react6.default.createElement("input", {
+  }, "Username"), /* @__PURE__ */ import_react7.default.createElement("input", {
     type: "text",
     id: "username",
     name: "username",
     className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
     placeholder: "Enter username"
-  })), /* @__PURE__ */ import_react6.default.createElement("div", {
+  })), /* @__PURE__ */ import_react7.default.createElement("div", {
     className: "mb-6"
-  }, /* @__PURE__ */ import_react6.default.createElement("label", {
+  }, /* @__PURE__ */ import_react7.default.createElement("label", {
     htmlFor: "password",
     className: "mb-2 block text-sm font-bold text-gray-700"
-  }, "Password"), /* @__PURE__ */ import_react6.default.createElement("input", {
+  }, "Password"), /* @__PURE__ */ import_react7.default.createElement("input", {
     type: "password",
     id: "password",
     name: "password",
     className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
     placeholder: "Enter password"
-  })), /* @__PURE__ */ import_react6.default.createElement("div", {
+  })), /* @__PURE__ */ import_react7.default.createElement("div", {
     className: "mb-6"
-  }, /* @__PURE__ */ import_react6.default.createElement("label", {
+  }, /* @__PURE__ */ import_react7.default.createElement("label", {
     htmlFor: "confirmPassword",
     className: "mb-2 block text-sm font-bold text-gray-700"
-  }, "Confirm Password"), /* @__PURE__ */ import_react6.default.createElement("input", {
+  }, "Confirm Password"), /* @__PURE__ */ import_react7.default.createElement("input", {
     type: "password",
     id: "confirmPassword",
     name: "confirmPassword",
     className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
     placeholder: "Confirm password"
-  })), /* @__PURE__ */ import_react6.default.createElement("div", {
+  })), /* @__PURE__ */ import_react7.default.createElement("div", {
     className: "flex items-center justify-between"
-  }, /* @__PURE__ */ import_react6.default.createElement("a", {
+  }, /* @__PURE__ */ import_react7.default.createElement("a", {
     href: `/${loginRoute}`,
     className: "inline-block align-baseline text-sm font-semibold text-purple-500 hover:text-purple-800"
-  }, "Already a member?"), /* @__PURE__ */ import_react6.default.createElement("button", {
+  }, "Already a member?"), /* @__PURE__ */ import_react7.default.createElement("button", {
     type: "submit",
     disabled: isPending,
     className: "ml-2 cursor-pointer rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 font-bold text-white transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
@@ -21075,17 +21132,17 @@ var Register = () => {
 var Register_default = Register;
 
 // src/react/components/Forbidden/index.tsx
-var import_react7 = __toESM(require_react(), 1);
+var import_react8 = __toESM(require_react(), 1);
 var ForbiddenPage = () => {
-  return /* @__PURE__ */ import_react7.default.createElement("div", {
+  return /* @__PURE__ */ import_react8.default.createElement("div", {
     className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react7.default.createElement("div", {
+  }, /* @__PURE__ */ import_react8.default.createElement("div", {
     className: "text-center"
-  }, /* @__PURE__ */ import_react7.default.createElement("h1", {
+  }, /* @__PURE__ */ import_react8.default.createElement("h1", {
     className: "mb-4 text-4xl font-bold text-gray-800"
-  }, "403 Forbidden"), /* @__PURE__ */ import_react7.default.createElement("p", {
+  }, "403 Forbidden"), /* @__PURE__ */ import_react8.default.createElement("p", {
     className: "mb-8 text-lg text-gray-600"
-  }, "You must be logged in to access this page!"), /* @__PURE__ */ import_react7.default.createElement("a", {
+  }, "You must be logged in to access this page!"), /* @__PURE__ */ import_react8.default.createElement("a", {
     href: `/${loginRoute}`,
     className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
   }, "Login to begin")));
@@ -21103,50 +21160,50 @@ var App = ({ dehydratedState, user }) => {
       }
     }
   });
-  return /* @__PURE__ */ import_react8.default.createElement("html", null, /* @__PURE__ */ import_react8.default.createElement("head", null, /* @__PURE__ */ import_react8.default.createElement("meta", {
+  return /* @__PURE__ */ import_react9.default.createElement("html", null, /* @__PURE__ */ import_react9.default.createElement("head", null, /* @__PURE__ */ import_react9.default.createElement("meta", {
     charSet: "utf-8"
-  }), /* @__PURE__ */ import_react8.default.createElement("title", null, "Bun, Elysia & React"), /* @__PURE__ */ import_react8.default.createElement("meta", {
+  }), /* @__PURE__ */ import_react9.default.createElement("title", null, "Bun, Elysia & React"), /* @__PURE__ */ import_react9.default.createElement("meta", {
     name: "description",
     content: "Bun, Elysia & React"
-  }), /* @__PURE__ */ import_react8.default.createElement("meta", {
+  }), /* @__PURE__ */ import_react9.default.createElement("meta", {
     name: "viewport",
     content: "width=device-width, initial-scale=1"
-  }), /* @__PURE__ */ import_react8.default.createElement("script", {
+  }), /* @__PURE__ */ import_react9.default.createElement("script", {
     src: "/public/index.js",
     type: "module",
     defer: true
-  }), /* @__PURE__ */ import_react8.default.createElement("link", {
+  }), /* @__PURE__ */ import_react9.default.createElement("link", {
     rel: "stylesheet",
     type: "text/css",
     href: "/public/index.css"
-  }), /* @__PURE__ */ import_react8.default.createElement("script", {
+  }), /* @__PURE__ */ import_react9.default.createElement("script", {
     src: "https://unpkg.com/@tailwindcss/browser@4"
-  }), /* @__PURE__ */ import_react8.default.createElement("link", {
+  }), /* @__PURE__ */ import_react9.default.createElement("link", {
     rel: "icon",
     type: "image/x-icon",
     href: "/public/favicon.ico"
-  })), /* @__PURE__ */ import_react8.default.createElement("body", null, /* @__PURE__ */ import_react8.default.createElement(QueryClientProvider, {
+  })), /* @__PURE__ */ import_react9.default.createElement("body", null, /* @__PURE__ */ import_react9.default.createElement(QueryClientProvider, {
     client: queryClient
-  }, /* @__PURE__ */ import_react8.default.createElement(HydrationBoundary, {
+  }, /* @__PURE__ */ import_react9.default.createElement(HydrationBoundary, {
     state: dehydratedState
-  }, /* @__PURE__ */ import_react8.default.createElement(Nav_default, {
+  }, /* @__PURE__ */ import_react9.default.createElement(Nav_default, {
     user
-  }), /* @__PURE__ */ import_react8.default.createElement(Outlet, null), /* @__PURE__ */ import_react8.default.createElement(Routes, {
+  }), /* @__PURE__ */ import_react9.default.createElement(Outlet, null), /* @__PURE__ */ import_react9.default.createElement(Routes, {
     location: location2
-  }, /* @__PURE__ */ import_react8.default.createElement(Route, {
+  }, /* @__PURE__ */ import_react9.default.createElement(Route, {
     path: "/",
-    element: /* @__PURE__ */ import_react8.default.createElement(Home_default, null)
-  }), /* @__PURE__ */ import_react8.default.createElement(Route, {
+    element: /* @__PURE__ */ import_react9.default.createElement(Home_default, null)
+  }), /* @__PURE__ */ import_react9.default.createElement(Route, {
     path: `${todoRoute}`,
-    element: user.id ? /* @__PURE__ */ import_react8.default.createElement(ToDo_default, {
+    element: user.id ? /* @__PURE__ */ import_react9.default.createElement(ToDo_default, {
       user
-    }) : /* @__PURE__ */ import_react8.default.createElement(Forbidden_default, null)
-  }), /* @__PURE__ */ import_react8.default.createElement(Route, {
+    }) : /* @__PURE__ */ import_react9.default.createElement(Forbidden_default, null)
+  }), /* @__PURE__ */ import_react9.default.createElement(Route, {
     path: `${loginRoute}`,
-    element: /* @__PURE__ */ import_react8.default.createElement(Login_default, null)
-  }), /* @__PURE__ */ import_react8.default.createElement(Route, {
+    element: /* @__PURE__ */ import_react9.default.createElement(Login_default, null)
+  }), /* @__PURE__ */ import_react9.default.createElement(Route, {
     path: `${registerRoute}`,
-    element: /* @__PURE__ */ import_react8.default.createElement(Register_default, null)
+    element: /* @__PURE__ */ import_react9.default.createElement(Register_default, null)
   }))))));
 };
 var App_default = App;
@@ -21156,7 +21213,7 @@ var dehydratedState = window.__QUERY_STATE__;
 delete window.__QUERY_STATE__;
 var userDto = window.__USER_DATA__;
 delete window.__USER_DATA__;
-import_client.hydrateRoot(document, /* @__PURE__ */ import_react9.default.createElement(BrowserRouter, null, /* @__PURE__ */ import_react9.default.createElement(App_default, {
+import_client.hydrateRoot(document, /* @__PURE__ */ import_react10.default.createElement(BrowserRouter, null, /* @__PURE__ */ import_react10.default.createElement(App_default, {
   dehydratedState,
   user: userDto
 })));
