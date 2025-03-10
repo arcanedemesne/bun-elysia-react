@@ -125,7 +125,7 @@ const ToDo = ({ user }: ToDoProps) => {
                 type="submit"
                 className="ml-2 cursor-pointer rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 font-bold text-white transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
               >
-                Add Me
+                Add
               </button>
             </div>
           </form>

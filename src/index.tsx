@@ -76,7 +76,7 @@ const app = new Elysia()
   )
 
   // MAIN ROUTE
-  .get("*", async ({ request, cookie: { accessToken }, jwt }) => {
+  .get("*", async ({ request, cookie: { accessToken }, jwt, inMemoryDB }) => {
     const url = new URL(request.url).pathname;
 
     const queryClient = new QueryClient({
@@ -92,7 +92,7 @@ const app = new Elysia()
 
     const dehydratedState = dehydrate(queryClient);
     const dehydratedString = JSON.stringify(dehydratedState);
-    
+
     let userDTO = { id: "", username: "" } as UserDTO;
     if (accessToken.value) {
       const jwtPayload = await jwt.verify(accessToken.value);

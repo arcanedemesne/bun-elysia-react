@@ -20797,7 +20797,7 @@ var ToDo = ({ user }) => {
   }), /* @__PURE__ */ import_react2.default.createElement("button", {
     type: "submit",
     className: "ml-2 cursor-pointer rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 font-bold text-white transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
-  }, "Add Me")))), error && "An error has occurred: " + error.message, isGetPending && "Loading...", /* @__PURE__ */ import_react2.default.createElement("ul", null, todos?.length > 0 && todos.map((todo) => {
+  }, "Add")))), error && "An error has occurred: " + error.message, isGetPending && "Loading...", /* @__PURE__ */ import_react2.default.createElement("ul", null, todos?.length > 0 && todos.map((todo) => {
     return /* @__PURE__ */ import_react2.default.createElement("li", {
       key: todo.id,
       className: "flex items-center justify-between border-b p-3"
@@ -20856,7 +20856,10 @@ var Nav = ({ user }) => {
     src: "/public/bun.png",
     alt: "Logo",
     height: 50,
-    className: "mr-4 h-8"
+    className: "mr-4 h-8 cursor-pointer",
+    onClick: () => {
+      navigate("/");
+    }
   }), /* @__PURE__ */ import_react3.default.createElement(Link, {
     to: "/",
     className: "text-lg font-bold text-white"
@@ -20867,11 +20870,11 @@ var Nav = ({ user }) => {
     className: "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white",
     to: "/todos"
   }, "Todos"), /* @__PURE__ */ import_react3.default.createElement("span", {
-    className: "text-white"
-  }, "Hi ", user.username), /* @__PURE__ */ import_react3.default.createElement("span", {
     onClick: handleLogout,
     className: "cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
-  }, "Logout"))));
+  }, "Logout"), /* @__PURE__ */ import_react3.default.createElement("span", {
+    className: "border-spacing-1 rounded-md border px-3 py-2 text-sm font-medium text-gray-300"
+  }, user.username))));
 };
 var Nav_default = Nav;
 
