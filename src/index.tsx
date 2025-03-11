@@ -17,12 +17,10 @@ import {
   apiPrefix,
   authPrefix,
   checkRoute,
-  hostPort,
   loginRoute,
   logoutRoute,
   refreshRoute,
   registerRoute,
-  secret,
   todoRoute,
   userRoute,
 } from "./constants";
@@ -66,13 +64,13 @@ const app = new Elysia()
   .use(swagger())
   .use(
     cookie({
-      secret,
+      secret: process.env.JWT_SECRET,
     }),
   )
   .use(
     jwt({
       name: "jwt",
-      secret,
+      secret: process.env.JWT_SECRET as string,
     }),
   )
 
@@ -509,7 +507,7 @@ const app = new Elysia()
     },
   )
 
-  .listen(hostPort);
+  .listen(Number(process.env.HOST_PORT));
 
 const apiHost = `${app.server?.hostname}:${app.server?.port}`;
 

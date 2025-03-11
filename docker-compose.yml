@@ -22,6 +22,7 @@ services:
       dockerfile: Dockerfile
     environment:
       NODE_ENV: development
+      POSTGRES_PORT: 5432
       POSTGRES_HOST: todo_postgres_db
       POSTGRES_USER: todo_user
       POSTGRES_PASSWORD: todo_password
@@ -53,6 +54,9 @@ services:
       - "3000:3000"
     environment:
       NODE_ENV: development
+      HOST_PORT: 3000
+      JWT_SECRET: secret-key-for-todo-app
+      POSTGRES_PORT: 5432
       POSTGRES_HOST: todo_postgres_db
       POSTGRES_USER: todo_user
       POSTGRES_PASSWORD: todo_password
