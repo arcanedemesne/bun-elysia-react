@@ -1,10 +1,6 @@
-import { Key } from "react";
-
-export type User = {
-  id: Key;
+export type UserInsert = {
   username: string;
   password: string;
-
   isOnline: boolean,
   refreshToken: string | null,
 }

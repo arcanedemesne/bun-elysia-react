@@ -1,6 +1,4 @@
-import { Key } from "react";
-
 export type UserDTO = {
-  id: Key;
+  id: string;
   username: string;
 }

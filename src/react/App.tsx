@@ -15,7 +15,7 @@ import Login from "./components/Login";
 import HomePage from "./components/Home";
 import { loginRoute, registerRoute, todoRoute } from "../constants";
 import Register from "./components/Register";
-import { UserDTO } from "../types/UserDTO";
+import { UserDTO } from "../types/User/UserDTO";
 import ForbiddenPage from "./components/Forbidden";
 
 type AppProps = {

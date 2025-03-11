@@ -2,26 +2,25 @@
 
 import React, {
   ChangeEvent,
-  Key,
   useActionState,
   useRef,
   useState,
 } from "react";
-import { v4 as uuidv4 } from "uuid";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 
-import { ToDoItem } from "../../../types/ToDo";
+import { ToDo } from "../../../types/ToDo/ToDo";
+import { ToDoInsert } from "../../../types/ToDo/ToDoInsert";
+import { UserDTO } from "../../../types/User/UserDTO";
 import usePersistentForm from "../../hooks/usePersistentForm";
 import { apiPrefix, todoRoute } from "../../../constants";
-import { UserDTO } from "../../../types/UserDTO";
 import useAuthCheck from "../../hooks/useCheckAuth";
 import { apiFetch } from "../../api";
 
-type ToDoProps = {
+type ToDoPageProps = {
   user: UserDTO;
 };
 
-const ToDo = ({ user }: ToDoProps) => {
+const ToDoPage = ({ user }: ToDoPageProps) => {
   const queryClient = useQueryClient();
 
   useAuthCheck();
@@ -55,10 +54,9 @@ const ToDo = ({ user }: ToDoProps) => {
       ("use server");
 
       const newTodo = {
-        id: uuidv4(),
         userId: user.id,
         message,
-      } as ToDoItem;
+      } as ToDoInsert;
 
       return await apiFetch(`/${apiPrefix}/${todoRoute}`, {
         method: "POST",
@@ -87,7 +85,7 @@ const ToDo = ({ user }: ToDoProps) => {
     createToDoMutation.mutate();
   };
 
-  const handleDeleteToDo = async (id: Key) => {
+  const handleDeleteToDo = async (id: string) => {
     ("use server");
 
     const response = await apiFetch(`/${apiPrefix}/${todoRoute}/${id}`, {
@@ -142,7 +140,7 @@ const ToDo = ({ user }: ToDoProps) => {
 
         <ul>
           {todos?.length > 0 &&
-            todos.map((todo: ToDoItem) => {
+            todos.map((todo: ToDo) => {
               return (
                 <li
                   key={todo.id}
@@ -179,4 +177,4 @@ const ToDo = ({ user }: ToDoProps) => {
   );
 };
 
-export default ToDo;
+export default ToDoPage;

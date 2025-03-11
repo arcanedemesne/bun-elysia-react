@@ -1,0 +1,71 @@
+version: "3.8"
+services:
+  todo_postgres_db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: todo_user
+      POSTGRES_PASSWORD: todo_password
+      POSTGRES_DB: todo_database
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U todo_user -d todo_database"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  init_todo_postgres_db:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: development
+      POSTGRES_HOST: todo_postgres_db
+      POSTGRES_USER: todo_user
+      POSTGRES_PASSWORD: todo_password
+      POSTGRES_DB: todo_database
+    depends_on:
+      todo_postgres_db:
+        condition: service_healthy
+    command: bun run src/init-db.ts
+
+  todo_pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: adminpassword
+    ports:
+      - "5050:80"
+    depends_on:
+      todo_postgres_db:
+        condition: service_healthy
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    restart: always
+
+  todo_app_ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      POSTGRES_HOST: todo_postgres_db
+      POSTGRES_USER: todo_user
+      POSTGRES_PASSWORD: todo_password
+      POSTGRES_DB: todo_database
+    depends_on:
+      todo_postgres_db:
+        condition: service_healthy
+      init_todo_postgres_db:
+        condition: service_completed_successfully # Wait for init-db to complete
+    volumes:
+      - ./src:/app/src # Mount only the src folder
+    command: bun run src/index.tsx
+
+volumes:
+  postgres_data:
+  pgadmin_data:

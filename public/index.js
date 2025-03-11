@@ -20744,6 +20744,7 @@ async function apiFetch(url, options = {}) {
       await refreshToken();
       response = await fetch(url, options);
     } catch (refreshError) {
+      location.href = `${loginRoute}`;
       throw refreshError;
     }
   }

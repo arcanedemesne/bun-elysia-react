@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router";
 
 import { apiPrefix, authPrefix, loginRoute, logoutRoute } from "../../../constants";
-import { UserDTO } from "../../../types/UserDTO";
+import { UserDTO } from "../../../types/User/UserDTO";
 
 type NavProps = {
   user: UserDTO;

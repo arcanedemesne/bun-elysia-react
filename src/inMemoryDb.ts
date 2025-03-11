@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 
-import { ToDoItem } from "./types/ToDo";
-import { User } from "./types/User";
+import { ToDoItem } from "./types/ToDo/ToDo";
+import { User } from "./types/User/User";
 
 // db
 export default class InMemoryDB {

@@ -13,7 +13,7 @@ async function apiFetch(url: string, options: RequestInit = {}) {
       await refreshToken();
       response = await fetch(url, options); // Retry
     } catch (refreshError) {
-      //location.href = `${loginRoute}`;
+      location.href = `${loginRoute}`;
       throw refreshError;
     }
   }
@@ -33,7 +33,6 @@ async function refreshToken() {
   });
 
   if (!response.ok) {
-    //location.href = `${loginRoute}`;
     throw new Error("Failed to refresh token");
   }
 }

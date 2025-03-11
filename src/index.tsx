@@ -7,13 +7,9 @@ import { staticPlugin } from "@elysiajs/static";
 import jwt from "@elysiajs/jwt";
 import { cookie } from "@elysiajs/cookie";
 import { renderToReadableStream } from "react-dom/server";
-import { v4 as uuidv4 } from "uuid";
 
 import App from "./react/App";
-import { ToDoItem } from "./types/ToDo";
 import ScriptInjectionStream from "./scriptInjectionStream";
-import InMemoryDB from "./inMemoryDb";
-import { User } from "./types/User";
 import { LoginInfo } from "./types/LoginInfo";
 import {
   ACCESS_TOKEN_EXP,
@@ -30,7 +26,12 @@ import {
   todoRoute,
   userRoute,
 } from "./constants";
-import { UserDTO } from "./types/UserDTO";
+import userRepository from "./respositories/userRepository";
+import todoRepository from "./respositories/todoRepository";
+import { UserDTO } from "./types/User/UserDTO";
+import { UserUpdate } from "./types/User/UserUpdate";
+import { UserInsert } from "./types/User/UserInsert";
+import { ToDoInsert } from "./types/ToDo/ToDoInsert";
 
 const getExpTimestamp = (secondsFromNow: number) => {
   return Math.floor(Date.now() / 1000) + secondsFromNow;
@@ -41,13 +42,17 @@ await Bun.build({
   outdir: "./public",
 });
 
-async function fetchData(queryClient: QueryClient, url: string) {
+async function fetchData(
+  queryClient: QueryClient,
+  url: string,
+  userId: string,
+) {
   if (url === "/todos") {
     await queryClient.prefetchQuery({
-      queryKey: ["todoData"],
+      queryKey: ["todoData", userId],
       queryFn: async () => {
         const response = await app.handle(
-          new Request(`${apiHost}/${apiPrefix}/${todoRoute}`),
+          new Request(`${apiHost}/${apiPrefix}/${todoRoute}/${userId}`),
         );
         const data = await response.json();
         return data;
@@ -56,14 +61,9 @@ async function fetchData(queryClient: QueryClient, url: string) {
   }
 }
 
-// Init DB
-const inMemoryDB = new InMemoryDB();
-inMemoryDB.initDB();
-
 const app = new Elysia()
   .use(staticPlugin())
   .use(swagger())
-  .decorate("inMemoryDB", inMemoryDB)
   .use(
     cookie({
       secret,
@@ -77,7 +77,7 @@ const app = new Elysia()
   )
 
   // MAIN ROUTE
-  .get("*", async ({ request, cookie: { accessToken }, jwt, inMemoryDB }) => {
+  .get("*", async ({ request, cookie: { accessToken }, jwt }) => {
     const url = new URL(request.url).pathname;
 
     const queryClient = new QueryClient({
@@ -89,8 +89,6 @@ const app = new Elysia()
       },
     });
 
-    await fetchData(queryClient, url);
-
     const dehydratedState = dehydrate(queryClient);
     const dehydratedString = JSON.stringify(dehydratedState);
 
@@ -99,7 +97,7 @@ const app = new Elysia()
       const jwtPayload = await jwt.verify(accessToken.value);
       if (jwtPayload) {
         const userId = jwtPayload.sub;
-        const user = inMemoryDB.users.find((user) => user.id === userId);
+        const user = await userRepository().getUserById(userId!);
         if (user?.isOnline) {
           userDTO = {
             id: user.id,
@@ -108,6 +106,11 @@ const app = new Elysia()
         }
       }
     }
+
+    if (userDTO) {
+      await fetchData(queryClient, url, userDTO.id);
+    }
+
     const userDtoString = JSON.stringify(userDTO);
 
     // render the app component to a readable stream
@@ -134,111 +137,110 @@ const app = new Elysia()
   })
 
   // get user during request
-  .derive(
-    async ({ inMemoryDB, jwt, cookie: { accessToken }, set, request }) => {
-      const url = new URL(request.url);
-      const pathname = url.pathname;
+  .derive(async ({ jwt, cookie: { accessToken }, set, request }) => {
+    const url = new URL(request.url);
+    const pathname = url.pathname;
 
-      // Exclude static asset paths
-      if (
-        pathname === "/" ||
-        pathname.startsWith(`/${apiPrefix}/${authPrefix}/${loginRoute}`) ||
-        pathname.startsWith(`/${apiPrefix}/${authPrefix}/${registerRoute}`) ||
-        pathname.startsWith(`/${apiPrefix}/${authPrefix}/${logoutRoute}`) ||
-        pathname.startsWith(`/${apiPrefix}/${authPrefix}/${checkRoute}`) ||
-        pathname.startsWith(`/${apiPrefix}/${authPrefix}/${refreshRoute}`) ||
-        pathname.startsWith("/public/") ||
-        pathname.endsWith(".css") ||
-        pathname.endsWith(".js") ||
-        pathname.endsWith(".ico")
-      ) {
-        return {}; // Skip authorization check
-      }
+    // Exclude static asset paths
+    if (
+      pathname === "/" ||
+      pathname.startsWith(`/${apiPrefix}/${authPrefix}/${loginRoute}`) ||
+      pathname.startsWith(`/${apiPrefix}/${authPrefix}/${registerRoute}`) ||
+      pathname.startsWith(`/${apiPrefix}/${authPrefix}/${logoutRoute}`) ||
+      pathname.startsWith(`/${apiPrefix}/${authPrefix}/${checkRoute}`) ||
+      pathname.startsWith(`/${apiPrefix}/${authPrefix}/${refreshRoute}`) ||
+      pathname.startsWith("/public/") ||
+      pathname.endsWith(".css") ||
+      pathname.endsWith(".js") ||
+      pathname.endsWith(".ico")
+    ) {
+      return {}; // Skip authorization check
+    }
 
-      if (!accessToken.value) {
-        // handle error for access token is not available
-        set.status = 401;
-        throw new Error("Access token is missing");
-      }
-      const jwtPayload = await jwt.verify(accessToken.value);
-      if (!jwtPayload) {
-        // handle error for access token is tempted or incorrect
-        set.status = 403;
-        throw new Error("Access token is invalid");
-      }
+    if (!accessToken.value) {
+      // handle error for access token is not available
+      set.status = 401;
+      throw new Error("Access token is missing");
+    }
+    const jwtPayload = await jwt.verify(accessToken.value);
+    if (!jwtPayload) {
+      // handle error for access token is tempted or incorrect
+      set.status = 403;
+      throw new Error("Access token is invalid");
+    }
 
-      const userId = jwtPayload.sub;
-      const user = inMemoryDB.users.find((user) => user.id === userId);
+    const userId = jwtPayload.sub;
+    const user = await userRepository().getUserById(userId!);
 
-      if (!user) {
-        // handle error for user not found from the provided access token
-        set.status = 403;
-        throw new Error("Access token is invalid");
-      }
+    if (!user) {
+      // handle error for user not found from the provided access token
+      set.status = 403;
+      throw new Error("Access token is invalid");
+    }
 
-      return {
-        user,
-      };
-    },
-  )
+    return {
+      user,
+    };
+  })
 
   // TODOS
-  .get(`/${apiPrefix}/${todoRoute}`, ({ inMemoryDB }) => inMemoryDB.todos)
   .get(
-    `/${apiPrefix}/${todoRoute}/:userId`,
-    ({ inMemoryDB, params: { userId } }) => {
-      return inMemoryDB.todos.filter((todo) => todo.userId === userId);
-    },
+    `/${apiPrefix}/${todoRoute}`,
+    async () => await todoRepository().getToDos(),
   )
-  .post(`/${apiPrefix}/${todoRoute}`, ({ inMemoryDB, body }) => {
-    const parsed = JSON.parse(body as string);
-    inMemoryDB.todos.push(parsed as ToDoItem);
+  .get(`/${apiPrefix}/${todoRoute}/:userId`, async ({ params: { userId } }) => {
+    return await todoRepository().getToDosByUserId(userId);
   })
-  .delete(
-    `/${apiPrefix}/${todoRoute}/:id`,
-    ({ inMemoryDB, params: { id } }) => {
-      const index = inMemoryDB.todos.findIndex(
-        (todo: ToDoItem) => todo.id === id,
-      );
-      inMemoryDB.todos.splice(index, 1);
-    },
-  )
+  .post(`/${apiPrefix}/${todoRoute}`, async ({ body }) => {
+    const parsed = JSON.parse(body as string);
+    const todo = await todoRepository().insertToDo(parsed as ToDoInsert);
+    if (!todo) {
+      error(409);
+    }
+    return todo;
+  })
+  .delete(`/${apiPrefix}/${todoRoute}/:id`, async ({ params: { id } }) => {
+    const success = await todoRepository().deleteToDo(id);
+    if (!success) {
+      error(404);
+    }
+  })
 
   // USERS
-  .get(`/${apiPrefix}/${userRoute}`, ({ inMemoryDB }) => inMemoryDB.users)
-  .get(`/${apiPrefix}/${userRoute}/:id`, ({ inMemoryDB, params: { id } }) => {
-    const user = inMemoryDB.users.find((user) => user.id === id);
+  .get(
+    `/${apiPrefix}/${userRoute}`,
+    async () => await userRepository().getUsers(),
+  )
+  .get(`/${apiPrefix}/${userRoute}/:id`, async ({ params: { id } }) => {
+    const user = await userRepository().getUserById(id);
     if (!user) {
       error(404);
     }
     return user;
   })
-  .post(`/${apiPrefix}/${userRoute}`, ({ inMemoryDB, body }) => {
+  .post(`/${apiPrefix}/${userRoute}`, async ({ body }) => {
     const parsed = JSON.parse(body as string);
-    inMemoryDB.users.push(parsed as User);
+    const user = await userRepository().insertUser(parsed as UserInsert);
+    if (!user) {
+      error(409);
+    }
+    return user;
   })
-  .delete(
-    `/${apiPrefix}/${userRoute}/:id`,
-    ({ inMemoryDB, params: { id } }) => {
-      const index = inMemoryDB.users.findIndex((user: User) => user.id === id);
-      inMemoryDB.users.splice(index, 1);
-    },
-  )
+  .delete(`/${apiPrefix}/${userRoute}/:id`, async ({ params: { id } }) => {
+    const success = await userRepository().deleteUser(id);
+    if (!success) {
+      error(404);
+    }
+  })
 
   // LOGIN
   .post(
     `/${apiPrefix}/${authPrefix}/${loginRoute}`,
-    async ({
-      inMemoryDB,
-      body,
-      jwt,
-      cookie: { accessToken, refreshToken },
-      set,
-    }) => {
+    async ({ body, jwt, cookie: { accessToken, refreshToken }, set }) => {
       const loginInfo = JSON.parse(body as string) as LoginInfo;
 
-      const user = inMemoryDB.users.find(
-        (user: User) => user.username === loginInfo.username,
+      const user = await userRepository().getUserByUsername(
+        loginInfo.username.toString(),
       );
       if (!user) {
         set.status = 404;
@@ -277,14 +279,18 @@ const app = new Elysia()
           path: "/",
         });
 
-        user.isOnline = true;
-        user.refreshToken = refreshJWTToken;
+        const updatedUser = await userRepository().updateUser(user.id, {
+          isOnline: true,
+          refreshToken: refreshJWTToken,
+        } as UserUpdate);
 
-        set.status = 200;
-        return {
-          successful: true,
-          errorMessage: "",
-        };
+        if (updatedUser?.isOnline) {
+          set.status = 200;
+          return {
+            successful: true,
+            errorMessage: "",
+          };
+        }
       }
       set.status = 401;
       return {
@@ -297,17 +303,11 @@ const app = new Elysia()
   // REGISTER
   .post(
     `/${apiPrefix}/${authPrefix}/${registerRoute}`,
-    async ({
-      inMemoryDB,
-      body,
-      jwt,
-      cookie: { accessToken, refreshToken },
-      set,
-    }) => {
+    async ({ body, jwt, cookie: { accessToken, refreshToken }, set }) => {
       const loginInfo = JSON.parse(body as string) as LoginInfo;
 
-      const user = inMemoryDB.users.find(
-        (user: User) => user.username === loginInfo.username,
+      const user = await userRepository().getUserByUsername(
+        loginInfo.username.toString(),
       );
       if (user) {
         set.status = 422;
@@ -318,18 +318,24 @@ const app = new Elysia()
       }
 
       const newUser = {
-        id: uuidv4(),
         username: loginInfo.username,
         password: await Bun.password.hash(loginInfo.password.toString()),
 
         isOnline: false,
         refreshToken: null,
-      } as User;
+      } as UserInsert;
 
-      inMemoryDB.users.push(newUser);
+      const insertedUser = await userRepository().insertUser(newUser);
+      if (!insertedUser) {
+        set.status = 409;
+        return {
+          successful: false,
+          errorMessage: "Error creating user",
+        };
+      }
 
       const token = await jwt.sign({
-        sub: newUser.id.toString(),
+        sub: insertedUser.id.toString(),
         exp: getExpTimestamp(ACCESS_TOKEN_EXP),
       });
 
@@ -342,7 +348,7 @@ const app = new Elysia()
       });
 
       const refreshJWTToken = await jwt.sign({
-        sub: newUser.id.toString(),
+        sub: insertedUser.id.toString(),
         exp: getExpTimestamp(REFRESH_TOKEN_EXP),
       });
       refreshToken.set({
@@ -352,13 +358,22 @@ const app = new Elysia()
         path: "/",
       });
 
-      newUser.isOnline = true;
-      newUser.refreshToken = refreshJWTToken;
+      const updatedUser = await userRepository().updateUser(insertedUser.id, {
+        isOnline: true,
+        refreshToken: refreshJWTToken,
+      } as UserUpdate);
 
-      set.status = 200;
+      if (updatedUser?.isOnline) {
+        set.status = 200;
+        return {
+          successful: true,
+          errorMessage: "",
+        };
+      }
+      set.status = 401;
       return {
-        successful: true,
-        errorMessage: "",
+        successful: false,
+        errorMessage: "Failed to update user with token",
       };
     },
   )
@@ -384,7 +399,7 @@ const app = new Elysia()
       const userId = jwtPayload.sub;
 
       // verify user exists or not
-      const user = inMemoryDB.users.find((user: User) => user.id === userId);
+      const user = await userRepository().getUserById(userId!);
 
       if (!user) {
         // handle error for user not found from the provided refresh token
@@ -415,12 +430,22 @@ const app = new Elysia()
         path: "/",
       });
 
-      user.isOnline = true;
-      user.refreshToken = refreshJWTToken;
+      const updatedUser = await userRepository().updateUser(user.id, {
+        isOnline: true,
+        refreshToken: refreshJWTToken,
+      } as UserUpdate);
 
-      set.status == 200;
+      if (updatedUser?.isOnline) {
+        set.status = 200;
+        return {
+          successful: true,
+          message: "Access token generated successfully",
+        };
+      }
+      set.status = 401;
       return {
-        message: "Access token generated successfully",
+        successful: false,
+        errorMessage: "Failed to update user with token",
       };
     },
   )
@@ -429,7 +454,6 @@ const app = new Elysia()
   .get(
     `/${apiPrefix}/${authPrefix}/${checkRoute}`,
     async ({ cookie: { accessToken }, jwt, set }) => {
-
       if (!accessToken) {
         set.status = 401;
         return { authenticated: false };
@@ -449,7 +473,7 @@ const app = new Elysia()
         }
 
         const userId = jwtPayload.sub;
-        const user = inMemoryDB.users.find((user) => user.id === userId);
+        const user = await userRepository().getUserById(userId!);
 
         if (!user || !user.isOnline) {
           // handle error for user not found from the provided access token
@@ -457,7 +481,7 @@ const app = new Elysia()
           throw new Error("Access token is invalid");
         }
 
-        return { authenticated: true }; // Include username in response
+        return { authenticated: true };
       } catch (error) {
         set.status = 401;
         return { authenticated: false };
@@ -466,17 +490,18 @@ const app = new Elysia()
   )
   .post(
     `/${apiPrefix}/${authPrefix}/${logoutRoute}`,
-    ({ cookie: { accessToken, refreshToken }, set }) => {
-      // verify user exists or not
-      const user = inMemoryDB.users.find(
-        (user: User) => user.id === accessToken.value,
-      );
-
-      if (user) {
-        user.isOnline = false;
-        user.refreshToken = null;
+    async ({ cookie: { accessToken, refreshToken }, set, jwt }) => {
+      const jwtPayload = await jwt.verify(accessToken.value);
+      if (jwtPayload) {
+        // verify user exists or not
+        const user = await userRepository().getUserById(jwtPayload.sub!);
+        if (user) {
+          await userRepository().updateUser(user.id, {
+            isOnline: false,
+            refreshToken: null,
+          } as UserUpdate);
+        }
       }
-
       accessToken.remove();
       refreshToken.remove();
       set.status = 200;
