@@ -20655,7 +20655,7 @@ var registerRoute = "register";
 var logoutRoute = "logout";
 var checkRoute = "check";
 var refreshRoute = "refresh";
-var ACCESS_TOKEN_EXP = 5 * 60;
+var ACCESS_TOKEN_EXP = 60 * 60;
 var REFRESH_TOKEN_EXP = 7 * 86400;
 
 // src/react/hooks/useCheckAuth.tsx

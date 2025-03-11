@@ -8,5 +8,5 @@ export const registerRoute = "register";
 export const logoutRoute = "logout";
 export const checkRoute = "check";
 export const refreshRoute = "refresh";
-export const ACCESS_TOKEN_EXP = 5 * 60; // 5 minutes
+export const ACCESS_TOKEN_EXP = 60 * 60; // 1 hour
 export const REFRESH_TOKEN_EXP = 7 * 86400; // 7 days
