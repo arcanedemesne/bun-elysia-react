@@ -35,8 +35,10 @@ async function initializeDatabase() {
       // Drop tables in development mode
       if (process.env.NODE_ENV === "development") {
         console.log("Dropping existing tables in development mode...");
-        await sql`DROP TABLE IF EXISTS todos`;
-        await sql`DROP TABLE IF EXISTS users`;
+        await sql`DROP TABLE IF EXISTS users_teams CASCADE`;
+        await sql`DROP TABLE IF EXISTS teams CASCADE`;
+        await sql`DROP TABLE IF EXISTS users CASCADE`;
+        await sql`DROP TABLE IF EXISTS todos CASCADE`;
         console.log("Tables dropped.");
       }
 
@@ -51,11 +53,30 @@ async function initializeDatabase() {
         )
       `;
 
+      // Create teams table
+      await sql`
+        CREATE TABLE IF NOT EXISTS teams (
+          id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+          name VARCHAR(255) UNIQUE NOT NULL,
+          "createdBy" UUID REFERENCES users (id) NOT NULL
+        )
+      `;
+
+      // Create users-teams bridge table
+      await sql`
+        CREATE TABLE IF NOT EXISTS users_teams (
+          "userId" UUID REFERENCES users (id) NOT NULL,
+          "teamId" UUID REFERENCES teams (id) NOT NULL,
+          UNIQUE ("userId", "teamId")
+        )
+      `;
+
       // Create todos table
       await sql`
         CREATE TABLE IF NOT EXISTS todos (
           id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-          "userId" UUID REFERENCES users (id),
+          "userId" UUID REFERENCES users (id) NOT NULL,
+          "teamId" UUID REFERENCES teams (id),
           message VARCHAR(255) NOT NULL
         )
       `;

@@ -3,11 +3,13 @@ import { swagger } from "@elysiajs/swagger";
 import { staticPlugin } from "@elysiajs/static";
 import jwt from "@elysiajs/jwt";
 import { cookie } from "@elysiajs/cookie";
+
+import { deriveUser } from "./deriveUser";
+import { mainRoutes } from "./routes/main.routes";
 import { authRoutes } from "./routes/auth.routes";
 import { todoRoutes } from "./routes/todo.routes";
 import { userRoutes } from "./routes/user.routes";
-import { mainRoutes } from "./routes/main.routes";
-import { deriveUser } from "./deriveUser";
+import { teamRoutes } from "./routes/team.routes";
 
 await Bun.build({
   entrypoints: ["./src/react/index.tsx"],
@@ -40,6 +42,9 @@ const app = new Elysia()
 
   // USERS
   .use(userRoutes)
+  
+  // TEAMS
+  .use(teamRoutes)
 
   // AUTH
   .use(authRoutes)

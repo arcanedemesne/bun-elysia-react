@@ -1,7 +1,14 @@
 import React from "react";
 import { Link, useNavigate } from "react-router";
 
-import { apiPrefix, authPrefix, loginRoute, logoutRoute } from "../../../constants";
+import {
+  apiPrefix,
+  authPrefix,
+  loginRoute,
+  logoutRoute,
+  todoRoute,
+  teamRoute,
+} from "../../../constants";
 import { UserDTO } from "../../../types/User/UserDTO";
 
 type NavProps = {
@@ -46,7 +53,7 @@ const Nav = ({ user }: NavProps) => {
         {!user.id && (
           <Link
             className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
-            to="/login"
+            to={`/${loginRoute}`}
           >
             Login
           </Link>
@@ -55,9 +62,15 @@ const Nav = ({ user }: NavProps) => {
           <>
             <Link
               className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
-              to="/todos"
+              to={`/${todoRoute}`}
             >
               Todos
+            </Link>
+            <Link
+              className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
+              to={`/${teamRoute}`}
+            >
+              Teams
             </Link>
             <span
               onClick={handleLogout}

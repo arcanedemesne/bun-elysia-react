@@ -3,6 +3,7 @@ export const apiPrefix = "api";
 export const authPrefix = "auth";
 export const todoRoute = "todos";
 export const userRoute = "users";
+export const teamRoute = "teams";
 export const loginRoute = "login";
 export const registerRoute = "register";
 export const logoutRoute = "logout";
