@@ -1,8 +1,7 @@
 import sql from "../db";
 import { z } from "zod";
 
-import { ToDo } from "../types/ToDo/ToDo";
-import { ToDoInsert } from "../types/ToDo/ToDoInsert";
+import { ToDo, ToDoInsert } from "../types";
 
 const todoSchema = z.object({
   id: z.string().uuid(),
@@ -17,7 +16,7 @@ const todoInsertSchema = z.object({
   message: z.string(),
 });
 
-const todoRepository = () => {
+export const todoRepository = () => {
   return {
     async getToDos(): Promise<ToDo[]> {
       try {
@@ -82,5 +81,3 @@ const todoRepository = () => {
     },
   };
 };
-
-export default todoRepository;

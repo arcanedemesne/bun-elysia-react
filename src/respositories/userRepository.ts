@@ -1,9 +1,7 @@
 import sql from "../db";
 import { z } from "zod";
 
-import { User } from "../types/User/User";
-import { UserUpdate } from "../types/User/UserUpdate";
-import { UserInsert } from "../types/User/UserInsert";
+import { User, UserUpdate, UserInsert } from "../types";
 
 const userSchema = z.object({
   id: z.string().uuid(),
@@ -29,7 +27,7 @@ const userUpdateSchema = z.object({
   refreshToken: z.string().nullable().optional(),
 });
 
-const userRepository = () => {
+export const userRepository = () => {
   return {
     async getUsers(): Promise<User[]> {
       try {
@@ -150,20 +148,17 @@ const userRepository = () => {
     },
     async deleteUser(id: string): Promise<boolean> {
       try {
-        const result = await sql`DELETE FROM users WHERE id = ${id}`;
+        let result = await sql`DELETE FROM users_teams WHERE "userId" = ${id}`;
 
-        // Check if any rows were deleted
+        result = await sql`DELETE FROM users WHERE id = ${id}`;
         if (result.count > 0) {
           return true; // User deleted successfully
-        } else {
-          return false; // User not found
         }
+        return false; // User not found
       } catch (error) {
-        console.error("Error deleting user:", error);
+        console.error("Error deleting team:", error);
         return false;
       }
     },
   };
 };
-
-export default userRepository;

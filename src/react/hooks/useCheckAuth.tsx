@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiPrefix, authPrefix, checkRoute, loginRoute } from "../../constants";
 
-const useAuthCheck = () => {
+export const useAuthCheck = () => {
   const queryClient = useQueryClient();
 
   const { isPending, data, refetch } = useQuery({
@@ -34,5 +34,3 @@ const useAuthCheck = () => {
     };
   }, [refetch, data, queryClient]);
 };
-
-export default useAuthCheck;

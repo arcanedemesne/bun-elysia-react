@@ -1,4 +1,5 @@
 import Elysia from "elysia";
+
 import {
   apiPrefix,
   authPrefix,
@@ -8,7 +9,8 @@ import {
   refreshRoute,
   registerRoute,
 } from "./constants";
-import userRepository from "./respositories/userRepository";
+import { JwtContext } from "./types";
+import { userRepository } from "./respositories";
 
 export const deriveUser = (app: Elysia<any, any, any, any, JwtContext>) => {
   return app.derive(async ({ jwt, cookie: { accessToken }, set, request }) => {

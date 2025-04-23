@@ -9,13 +9,13 @@ import {
   todoRoute,
   teamRoute,
 } from "../../../constants";
-import { UserDTO } from "../../../types/User/UserDTO";
+import { UserDTO } from "../../../types";
 
 type NavProps = {
   user: UserDTO;
 };
 
-const Nav = ({ user }: NavProps) => {
+export const Nav = ({ user }: NavProps) => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -87,5 +87,3 @@ const Nav = ({ user }: NavProps) => {
     </nav>
   );
 };
-
-export default Nav;

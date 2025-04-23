@@ -1,13 +1,13 @@
 import React from "react";
 import { loginRoute } from "../../../constants";
 
-const ForbiddenPage = () => {
+export const NotFoundPage = () => {
   return (
     <div className="flex h-screen items-center justify-center">
       <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold text-gray-800">403 Forbidden</h1>
+        <h1 className="mb-4 text-4xl font-bold text-gray-800">404 Not Found</h1>
         <p className="mb-8 text-lg text-gray-600">
-          You must be logged in to access this page!
+          We couldn't find what you were looking for.
         </p>
         <a
           href={`/${loginRoute}`}
@@ -19,5 +19,3 @@ const ForbiddenPage = () => {
     </div>
   );
 };
-
-export default ForbiddenPage;

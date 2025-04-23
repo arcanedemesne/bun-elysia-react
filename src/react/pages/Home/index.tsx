@@ -1,7 +1,7 @@
 import React from "react";
 import { loginRoute } from "../../../constants";
 
-const HomePage = () => {
+export const HomePage = () => {
   return (
     <div className="flex h-screen items-center justify-center">
       <div className="text-center">
@@ -19,5 +19,3 @@ const HomePage = () => {
     </div>
   );
 };
-
-export default HomePage;

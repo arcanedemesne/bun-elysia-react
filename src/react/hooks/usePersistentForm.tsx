@@ -1,12 +1,11 @@
 import { RefObject, useEffect } from "react";
 
-const usePersistentForm = (ref: RefObject<HTMLFormElement | null>) => {
-  if (ref === null)
-    return;
+export const usePersistentForm = (ref: RefObject<HTMLFormElement | null>) => {
+  if (ref === null) return;
 
   useEffect(() => {
     if (!ref.current) {
-      throw new Error('Form ref is not defined.');
+      throw new Error("Form ref is not defined.");
     }
 
     const form = ref.current;
@@ -15,11 +14,9 @@ const usePersistentForm = (ref: RefObject<HTMLFormElement | null>) => {
       e.preventDefault();
     };
 
-    form.addEventListener('reset', handleReset);
+    form.addEventListener("reset", handleReset);
     return () => {
-      form.removeEventListener('reset', handleReset);
+      form.removeEventListener("reset", handleReset);
     };
   }, []);
 };
-
-export default usePersistentForm;

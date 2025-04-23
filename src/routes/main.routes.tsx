@@ -6,9 +6,10 @@ import { dehydrate, QueryClient } from "@tanstack/react-query";
 
 import App from "../react/App";
 import ScriptInjectionStream from "../scriptInjectionStream";
-import { UserDTO } from "../types/User/UserDTO";
-import userRepository from "../respositories/userRepository";
+
 import { apiPrefix, todoRoute } from "../constants";
+import { JwtContext, UserDTO } from "../types";
+import { userRepository } from "../respositories";
 
 export const mainRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
   const apiHost = `${app.server?.hostname}:${app.server?.port}`;

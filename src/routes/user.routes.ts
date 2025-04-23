@@ -1,7 +1,8 @@
 import Elysia, { error } from "elysia";
+
 import { apiPrefix, userRoute } from "../constants";
-import userRepository from "../respositories/userRepository";
-import { UserInsert } from "../types/User/UserInsert";
+import { userRepository } from "../respositories";
+import { UserInsert ,JwtContext } from "../types";
 
 export const userRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
   return app.group(`/${apiPrefix}/${userRoute}`, (group) =>

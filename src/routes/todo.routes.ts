@@ -1,7 +1,8 @@
 import Elysia, { error } from "elysia";
+
 import { apiPrefix, todoRoute } from "../constants";
-import todoRepository from "../respositories/todoRepository";
-import { ToDoInsert } from "../types/ToDo/ToDoInsert";
+import { todoRepository } from "../respositories";
+import { JwtContext, ToDoInsert } from "../types";
 
 export const todoRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
   return app.group(`/${apiPrefix}/${todoRoute}`, (group) =>

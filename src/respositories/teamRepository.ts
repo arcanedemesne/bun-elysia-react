@@ -1,14 +1,20 @@
 import sql from "../db";
 import { z } from "zod";
 
-import { Team } from "../types/Team/Team";
-import { TeamUpdate } from "../types/Team/TeamUpdate";
-import { TeamInsert } from "../types/Team/TeamInsert";
+import { TeamUpdate, TeamInsert, TeamDTO, UserDTO } from "../types";
+
+const memberSchema = z.object({
+  id: z.string().uuid(),
+  username: z.string(),
+});
+
+const membersSchema = z.array(memberSchema);
 
 const teamSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
-  createdBy: z.string(),
+  createdBy: memberSchema,
+  members: z.array(memberSchema).default([]),
 });
 
 const teamsSchema = z.array(teamSchema);
@@ -23,59 +29,116 @@ const teamUpdateSchema = z.object({
   createdBy: z.string(),
 });
 
-const teamRepository = () => {
+export const teamRepository = () => {
+  const getMembers = async (teamId: string): Promise<UserDTO[]> => {
+    try {
+      const members = await sql`
+        SELECT DISTINCT u.id, u.username
+          FROM teams t
+            INNER JOIN users_teams ut
+            ON ut."teamId" = t.id
+            INNER JOIN users u
+            ON u.id = ut."userId"
+          WHERE t.id = ${teamId}`;
+
+      if (members.length === 0) {
+        return [];
+      }
+
+      const validatedMembers = membersSchema.parse(members);
+      return validatedMembers as UserDTO[];
+    } catch (error) {
+      console.error("Error getting team members:", error);
+      return [];
+    }
+  };
+
   return {
-    async getTeams(): Promise<Team[]> {
+    async getTeams(): Promise<TeamDTO[]> {
       try {
         const teams = await sql`
-          SELECT id, name, "createdBy"
-          FROM teams`;
+          SELECT DISTINCT
+            t.id, t.name,
+            (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
+              FROM users u WHERE u.id = t."createdBy") AS "createdBy"
+          FROM teams t
+            INNER JOIN users_teams ut
+            ON ut."teamId" = t.id`;
 
         const validatedTeams = teamsSchema.parse(teams);
-        return validatedTeams as Team[];
+        const response = validatedTeams as TeamDTO[];
+
+        for (let i = 0; i < response.length; i++) {
+          const t = response[i];
+          const members = await getMembers(t.id);
+          t.members.push(...members);
+        }
+
+        return response;
       } catch (error) {
         console.error("Error getting teams:", error);
         return [];
       }
     },
-    async getTeamById(id: string): Promise<Team | null> {
+    async getTeamById(id: string): Promise<TeamDTO | null> {
       try {
         const teams = await sql`
-          SELECT id, name, "createdBy"
-          FROM teams WHERE id = ${id}`;
+          SELECT DISTINCT
+            t.id, t.name,
+            (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
+              FROM users u WHERE u.id = t."createdBy") AS "createdBy"
+          FROM teams t
+            INNER JOIN users_teams ut
+            ON ut."teamId" = t.id
+          WHERE t.id = ${id}`;
 
         if (teams.length === 0) {
           return null;
         }
 
         const validatedTeam = teamSchema.parse(teams[0]);
-        return validatedTeam as Team;
+        const response = validatedTeam as TeamDTO;
+
+        response.members = await getMembers(validatedTeam.id);
+
+        return response;
       } catch (error) {
         console.error("Error getting team by id:", error);
         return null;
       }
     },
-    async getTeamsByUserId(userId: string): Promise<Team[] | null> {
+    async getTeamsByUserId(userId: string): Promise<TeamDTO[] | null> {
       try {
         const teams = await sql`
-          SELECT id, name, "createdBy"
+          SELECT DISTINCT
+            t.id, t.name,
+            (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
+              FROM users u WHERE u.id = t."createdBy") AS "createdBy"
           FROM teams t
-          INNER JOIN users_teams ut
-          ON t.id == ut."teamId"
-          WHERE "userId" = ${userId}}`;
+            INNER JOIN users_teams ut
+            ON ut."teamId" = t.id
+            WHERE ut."userId" = ${userId}`;
 
         if (teams.length === 0) {
           return null;
         }
 
         const validatedTeams = teamsSchema.parse(teams);
-        return validatedTeams as Team[];
+        const response = validatedTeams as TeamDTO[];
+
+        for (let i = 0; i < response.length; i++) {
+          const t = response[i];
+          const members = await getMembers(t.id);
+          t.members.push(...members);
+        }
+
+        return response;
       } catch (error) {
-        console.error("Error getting team by teamname:", error);
+        console.error("Error getting team by user id:", error);
         return null;
       }
     },
-    async insertTeam(teamData: TeamInsert): Promise<Team | null> {
+    async insertTeam(teamData: TeamInsert): Promise<TeamDTO | null> {
       try {
         const validatedTeamData = teamInsertSchema.parse(teamData);
 
@@ -89,7 +152,7 @@ const teamRepository = () => {
           return null; // Insertion failed
         }
 
-        const team = insertedTeams[0] as Team
+        const team = insertedTeams[0] as TeamDTO;
         const insertedBridge = await sql`
           INSERT INTO users_teams ("userId", "teamId")
           VALUES (${validatedTeamData.createdBy}, ${team.id})
@@ -106,7 +169,10 @@ const teamRepository = () => {
         return null;
       }
     },
-    async updateTeam(id: string, updateData: TeamUpdate): Promise<Team | null> {
+    async updateTeam(
+      id: string,
+      updateData: TeamUpdate,
+    ): Promise<TeamDTO | null> {
       try {
         const validatedUpdateData = teamUpdateSchema.parse(updateData);
 
@@ -138,7 +204,7 @@ const teamRepository = () => {
         }
 
         const validatedTeam = teamSchema.parse(updatedTeams[0]);
-        return validatedTeam as Team; // Return the updated team
+        return validatedTeam as TeamDTO; // Return the updated team
       } catch (error) {
         console.error("Error updating team:", error);
         return null;
@@ -146,14 +212,11 @@ const teamRepository = () => {
     },
     async deleteTeam(id: string): Promise<boolean> {
       try {
-        let  result = await sql`DELETE FROM users_teams WHERE "teamId" = ${id}`;
+        let result = await sql`DELETE FROM users_teams WHERE "teamId" = ${id}`;
 
-        // Check if any rows were deleted
+        result = await sql`DELETE FROM teams WHERE id = ${id}`;
         if (result.count > 0) {
-          result = await sql`DELETE FROM teams WHERE id = ${id}`;
-          if (result.count > 0) {
-            return true; // Team deleted successfully
-          }
+          return true; // Team deleted successfully
         }
         return false; // Team not found
       } catch (error) {
@@ -163,5 +226,3 @@ const teamRepository = () => {
     },
   };
 };
-
-export default teamRepository;

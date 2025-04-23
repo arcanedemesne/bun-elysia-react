@@ -1,17 +1,18 @@
 import Elysia, { error } from "elysia";
+
 import { apiPrefix, teamRoute } from "../constants";
-import teamRepository from "../respositories/teamRepository";
-import { TeamInsert } from "../types/Team/TeamInsert";
+import { teamRepository } from "../respositories";
+import { TeamInsert, JwtContext } from "../types";
 
 export const teamRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
   return app.group(`/${apiPrefix}/${teamRoute}`, (group) =>
     group
-      .get(``, async () => await teamRepository().getTeams())
-      .get(
-        `?userId=:userId`,
-        async ({ params: { userId } }) =>
-          await teamRepository().getTeamsByUserId(userId),
-      )
+      .get(``, async ({ query }) => {
+        if (query.userId) {
+          return await teamRepository().getTeamsByUserId(query.userId);
+        }
+        return await teamRepository().getTeams();
+      })
       .get(`/:id`, async ({ params: { id } }) => {
         const team = await teamRepository().getTeamById(id);
         if (!team) {

@@ -16218,7 +16218,7 @@ var require_jsx_runtime = __commonJS((exports, module) => {
 });
 
 // src/react/index.tsx
-var import_react11 = __toESM(require_react(), 1);
+var import_react20 = __toESM(require_react(), 1);
 
 // node_modules/react-router/dist/development/chunk-K6CSEXPM.mjs
 var React3 = __toESM(require_react(), 1);
@@ -18117,7 +18117,7 @@ var encoder = new TextEncoder;
 var import_client = __toESM(require_client(), 1);
 
 // src/react/App.tsx
-var import_react10 = __toESM(require_react(), 1);
+var import_react19 = __toESM(require_react(), 1);
 
 // node_modules/@tanstack/query-core/build/modern/subscribable.js
 var Subscribable = class {
@@ -20622,29 +20622,8 @@ function useMutation(options, queryClient) {
   return { ...result, mutate, mutateAsync: result.mutate };
 }
 
-// src/react/components/ToDo/index.tsx
-var import_react3 = __toESM(require_react(), 1);
-
-// src/react/hooks/usePersistentForm.tsx
+// src/react/pages/Forbidden/index.tsx
 var import_react = __toESM(require_react(), 1);
-var usePersistentForm = (ref) => {
-  if (ref === null)
-    return;
-  import_react.useEffect(() => {
-    if (!ref.current) {
-      throw new Error("Form ref is not defined.");
-    }
-    const form = ref.current;
-    const handleReset = (e) => {
-      e.preventDefault();
-    };
-    form.addEventListener("reset", handleReset);
-    return () => {
-      form.removeEventListener("reset", handleReset);
-    };
-  }, []);
-};
-var usePersistentForm_default = usePersistentForm;
 
 // src/constants.ts
 var apiPrefix = "api";
@@ -20659,8 +20638,42 @@ var refreshRoute = "refresh";
 var ACCESS_TOKEN_EXP = 60 * 60;
 var REFRESH_TOKEN_EXP = 7 * 86400;
 
-// src/react/hooks/useCheckAuth.tsx
+// src/react/pages/Forbidden/index.tsx
+var ForbiddenPage = () => {
+  return /* @__PURE__ */ import_react.default.createElement("div", {
+    className: "flex h-screen items-center justify-center"
+  }, /* @__PURE__ */ import_react.default.createElement("div", {
+    className: "text-center"
+  }, /* @__PURE__ */ import_react.default.createElement("h1", {
+    className: "mb-4 text-4xl font-bold text-gray-800"
+  }, "403 Forbidden"), /* @__PURE__ */ import_react.default.createElement("p", {
+    className: "mb-8 text-lg text-gray-600"
+  }, "You must be logged in to access this page!"), /* @__PURE__ */ import_react.default.createElement("a", {
+    href: `/${loginRoute}`,
+    className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
+  }, "Login to begin")));
+};
+// src/react/pages/Home/index.tsx
 var import_react2 = __toESM(require_react(), 1);
+var HomePage = () => {
+  return /* @__PURE__ */ import_react2.default.createElement("div", {
+    className: "flex h-screen items-center justify-center"
+  }, /* @__PURE__ */ import_react2.default.createElement("div", {
+    className: "text-center"
+  }, /* @__PURE__ */ import_react2.default.createElement("h1", {
+    className: "mb-4 text-4xl font-bold text-gray-800"
+  }, "Welcome!"), /* @__PURE__ */ import_react2.default.createElement("p", {
+    className: "mb-8 text-lg text-gray-600"
+  }, "A ToDo app built with Bun, Elysia, and React Server Components"), /* @__PURE__ */ import_react2.default.createElement("a", {
+    href: `/${loginRoute}`,
+    className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
+  }, "Login to begin")));
+};
+// src/react/pages/Login/index.tsx
+var import_react14 = __toESM(require_react(), 1);
+
+// src/react/hooks/useCheckAuth.tsx
+var import_react3 = __toESM(require_react(), 1);
 var useAuthCheck = () => {
   const queryClient = useQueryClient();
   const { isPending, data: data2, refetch } = useQuery({
@@ -20669,7 +20682,7 @@ var useAuthCheck = () => {
     refetchOnWindowFocus: false,
     enabled: true
   });
-  import_react2.useEffect(() => {
+  import_react3.useEffect(() => {
     const interval = setInterval(() => {
       refetch();
     }, 30 * 1000);
@@ -20684,7 +20697,34 @@ var useAuthCheck = () => {
     };
   }, [refetch, data2, queryClient]);
 };
-var useCheckAuth_default = useAuthCheck;
+// src/react/hooks/usePersistentForm.tsx
+var import_react4 = __toESM(require_react(), 1);
+var usePersistentForm = (ref) => {
+  if (ref === null)
+    return;
+  import_react4.useEffect(() => {
+    if (!ref.current) {
+      throw new Error("Form ref is not defined.");
+    }
+    const form = ref.current;
+    const handleReset = (e) => {
+      e.preventDefault();
+    };
+    form.addEventListener("reset", handleReset);
+    return () => {
+      form.removeEventListener("reset", handleReset);
+    };
+  }, []);
+};
+// src/react/components/Card/CardGrid.tsx
+var import_react5 = __toESM(require_react(), 1);
+var CardGrid = ({ children }) => {
+  return /* @__PURE__ */ import_react5.default.createElement("div", {
+    className: "grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+  }, children);
+};
+// src/react/components/Card/TeamCard.tsx
+var import_react7 = __toESM(require_react(), 1);
 
 // src/react/api/index.ts
 async function apiFetch(url, options = {}) {
@@ -20714,19 +20754,449 @@ async function refreshToken() {
   }
 }
 
-// src/react/components/ToDo/index.tsx
-"use client";
-var ToDoPage = ({ user }) => {
+// src/react/components/Card/CardBase.tsx
+var import_react6 = __toESM(require_react(), 1);
+var CardBase = ({ children }) => {
+  return /* @__PURE__ */ import_react6.default.createElement("div", {
+    className: "rounded-md bg-white p-4 shadow-md"
+  }, children);
+};
+
+// src/react/components/Card/TeamCard.tsx
+var TeamCard = ({ team, children }) => {
   const queryClient = useQueryClient();
-  useCheckAuth_default();
-  const [output, formAction, isPending] = import_react3.useActionState(async (prev, formData) => {
+  const handleDeleteTeam = async (id) => {
+    "use server";
+    const response = await apiFetch(`/${apiPrefix}/${teamRoute}/${id}`, {
+      method: "DELETE"
+    });
+    if (response.status === 200) {
+      queryClient.invalidateQueries({ queryKey: ["teamData"] });
+      queryClient.refetchQueries({ queryKey: ["teamData"] });
+    } else {
+      alert("error");
+    }
+  };
+  return /* @__PURE__ */ import_react7.default.createElement(CardBase, null, /* @__PURE__ */ import_react7.default.createElement("div", {
+    className: "mb-2 flex items-center justify-between"
+  }, /* @__PURE__ */ import_react7.default.createElement("h3", {
+    className: "text-lg font-semibold text-gray-800"
+  }, team.name), /* @__PURE__ */ import_react7.default.createElement("button", {
+    onClick: () => handleDeleteTeam(team.id),
+    className: "cursor-pointer text-red-500 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+  }, /* @__PURE__ */ import_react7.default.createElement(TrashIcon, null))), /* @__PURE__ */ import_react7.default.createElement("p", {
+    className: "mb-1 text-sm text-gray-600"
+  }, "Created by:", " ", /* @__PURE__ */ import_react7.default.createElement("span", {
+    className: "font-medium"
+  }, team.createdBy.username)), /* @__PURE__ */ import_react7.default.createElement("div", {
+    title: team.members.map((m) => m.username).join(", "),
+    className: "text-sm text-gray-500"
+  }, team.members.length, " Member(s):", team.members.length > 0 && /* @__PURE__ */ import_react7.default.createElement("span", {
+    className: "ml-1 text-xs text-gray-400"
+  }, team.members.slice(0, 3).map((m) => m.username).join(", "), team.members.length > 3 && ", ...")), children);
+};
+// src/react/components/Card/ToDoCard.tsx
+var import_react8 = __toESM(require_react(), 1);
+var ToDoCard = ({ todo, children }) => {
+  const queryClient = useQueryClient();
+  const handleDeleteToDo = async (id) => {
+    "use server";
+    const response = await apiFetch(`/${apiPrefix}/${todoRoute}/${id}`, {
+      method: "DELETE"
+    });
+    if (response.status === 200) {
+      queryClient.invalidateQueries({ queryKey: ["todoData"] });
+      queryClient.refetchQueries({ queryKey: ["todoData"] });
+    } else {
+      alert("error");
+    }
+  };
+  return /* @__PURE__ */ import_react8.default.createElement(CardBase, null, /* @__PURE__ */ import_react8.default.createElement("div", {
+    className: "mb-2 flex items-center justify-between"
+  }, /* @__PURE__ */ import_react8.default.createElement("p", {
+    className: "mb-1 text-sm text-gray-600"
+  }, todo.message), /* @__PURE__ */ import_react8.default.createElement("button", {
+    onClick: () => handleDeleteToDo(todo.id),
+    className: "cursor-pointer text-red-500 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+  }, /* @__PURE__ */ import_react8.default.createElement(TrashIcon, null))), children);
+};
+// src/react/components/ErrorMessage/ErrorMessage.tsx
+var import_react9 = __toESM(require_react(), 1);
+var ErrorMessage = ({ children }) => {
+  return /* @__PURE__ */ import_react9.default.createElement(import_react9.default.Fragment, null, children && /* @__PURE__ */ import_react9.default.createElement("div", {
+    className: "mt-2 flex items-center text-sm text-red-500"
+  }, /* @__PURE__ */ import_react9.default.createElement("span", null, children)));
+};
+// src/react/components/Icons/TrashIcon.tsx
+var import_react10 = __toESM(require_react(), 1);
+var TrashIcon = () => /* @__PURE__ */ import_react10.default.createElement("svg", {
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: "2",
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+  className: "h-5 w-5"
+}, /* @__PURE__ */ import_react10.default.createElement("polyline", {
+  points: "3 6 5 6 21 6"
+}), /* @__PURE__ */ import_react10.default.createElement("path", {
+  d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+}), /* @__PURE__ */ import_react10.default.createElement("line", {
+  x1: "10",
+  y1: "11",
+  x2: "10",
+  y2: "17"
+}), /* @__PURE__ */ import_react10.default.createElement("line", {
+  x1: "14",
+  y1: "11",
+  x2: "14",
+  y2: "17"
+}));
+// src/react/components/Layouts/AuthLayout.tsx
+var import_react11 = __toESM(require_react(), 1);
+var AuthLayout = ({
+  title,
+  children
+}) => {
+  return /* @__PURE__ */ import_react11.default.createElement("div", {
+    className: "flex h-screen items-center justify-center"
+  }, /* @__PURE__ */ import_react11.default.createElement("div", {
+    className: "w-96 rounded bg-white p-8 shadow-md"
+  }, /* @__PURE__ */ import_react11.default.createElement("h1", {
+    className: "mb-6 text-center text-2xl font-semibold"
+  }, title), children));
+};
+// src/react/components/Layouts/PageLayout.tsx
+var import_react12 = __toESM(require_react(), 1);
+var Layout = ({
+  title,
+  children
+}) => {
+  return /* @__PURE__ */ import_react12.default.createElement("div", {
+    className: "flex justify-center bg-gray-100"
+  }, /* @__PURE__ */ import_react12.default.createElement("div", {
+    className: "w-full rounded bg-white p-8 shadow-md"
+  }, /* @__PURE__ */ import_react12.default.createElement("h1", {
+    className: "mb-4 text-center text-2xl font-bold"
+  }, title), children));
+};
+// src/react/components/Nav/index.tsx
+var import_react13 = __toESM(require_react(), 1);
+var Nav = ({ user }) => {
+  const navigate = useNavigate();
+  const handleLogout = async () => {
+    "use server";
+    const response = await fetch(`${apiPrefix}/${authPrefix}/${logoutRoute}`, {
+      method: "POST"
+    });
+    if (response.status === 200) {
+      location.href = `${loginRoute}`;
+    } else {
+      alert("error");
+    }
+  };
+  return /* @__PURE__ */ import_react13.default.createElement("nav", {
+    className: "flex items-center justify-between bg-gray-800 p-4"
+  }, /* @__PURE__ */ import_react13.default.createElement("div", {
+    className: "flex items-center"
+  }, /* @__PURE__ */ import_react13.default.createElement("img", {
+    src: "/public/bun.png",
+    alt: "Logo",
+    height: 50,
+    className: "mr-4 h-8 cursor-pointer",
+    onClick: () => {
+      navigate("/");
+    }
+  }), /* @__PURE__ */ import_react13.default.createElement(Link, {
+    to: "/",
+    className: "text-lg font-bold text-white"
+  }, "ToDos App")), /* @__PURE__ */ import_react13.default.createElement("div", null, !user.id && /* @__PURE__ */ import_react13.default.createElement(Link, {
+    className: "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white",
+    to: `/${loginRoute}`
+  }, "Login"), user.id && /* @__PURE__ */ import_react13.default.createElement(import_react13.default.Fragment, null, /* @__PURE__ */ import_react13.default.createElement(Link, {
+    className: "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white",
+    to: `/${todoRoute}`
+  }, "Todos"), /* @__PURE__ */ import_react13.default.createElement(Link, {
+    className: "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white",
+    to: `/${teamRoute}`
+  }, "Teams"), /* @__PURE__ */ import_react13.default.createElement("span", {
+    onClick: handleLogout,
+    className: "cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
+  }, "Logout"), /* @__PURE__ */ import_react13.default.createElement("span", {
+    className: "border-spacing-1 rounded-md border px-3 py-2 text-sm font-medium text-gray-300"
+  }, user.username))));
+};
+// src/react/pages/Login/index.tsx
+"use client";
+var Login = () => {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [output, formAction, isPending] = import_react14.useActionState(async (prev, formData) => {
     await handleFormSubmit(formData);
     return `handleFormSubmit`;
   }, undefined);
-  const [errorMessage, setErrorMessage] = import_react3.useState("");
-  const [message, setMessage] = import_react3.useState("");
-  const formRef = import_react3.useRef(null);
-  usePersistentForm_default(formRef);
+  const formRef = import_react14.useRef(null);
+  usePersistentForm(formRef);
+  const [errorMessage, setErrorMessage] = import_react14.useState("");
+  const handleFormSubmit = async (formData) => {
+    const username = formData.get("username");
+    const password = formData.get("password");
+    if (username.length <= 3 || password.length < 6) {
+      return;
+    }
+    const loginInfo = {
+      username,
+      password
+    };
+    const response = await fetch(`${apiPrefix}/${authPrefix}/${loginRoute}`, {
+      method: "POST",
+      body: JSON.stringify(loginInfo)
+    });
+    const result = await response.json();
+    if (response.status === 200 && result.successful) {
+      location.href = `/${todoRoute}`;
+    } else {
+      setErrorMessage(result.errorMessage);
+    }
+  };
+  return /* @__PURE__ */ import_react14.default.createElement(AuthLayout, {
+    title: "Login"
+  }, /* @__PURE__ */ import_react14.default.createElement(ErrorMessage, null, errorMessage), /* @__PURE__ */ import_react14.default.createElement("form", {
+    action: formAction,
+    ref: formRef
+  }, /* @__PURE__ */ import_react14.default.createElement("div", {
+    className: "mb-4"
+  }, /* @__PURE__ */ import_react14.default.createElement("label", {
+    htmlFor: "username",
+    className: "mb-2 block text-sm font-bold text-gray-700"
+  }, "Username"), /* @__PURE__ */ import_react14.default.createElement("input", {
+    type: "text",
+    id: "username",
+    name: "username",
+    className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
+    placeholder: "Enter username"
+  })), /* @__PURE__ */ import_react14.default.createElement("div", {
+    className: "mb-6"
+  }, /* @__PURE__ */ import_react14.default.createElement("label", {
+    htmlFor: "password",
+    className: "mb-2 block text-sm font-bold text-gray-700"
+  }, "Password"), /* @__PURE__ */ import_react14.default.createElement("input", {
+    type: "password",
+    id: "password",
+    name: "password",
+    className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
+    placeholder: "Enter password"
+  })), /* @__PURE__ */ import_react14.default.createElement("div", {
+    className: "flex items-center justify-between"
+  }, /* @__PURE__ */ import_react14.default.createElement(Link, {
+    to: `/${registerRoute}`,
+    className: "inline-block align-baseline text-sm font-semibold text-purple-500 hover:text-purple-800"
+  }, "Not a member yet? Register here!"), /* @__PURE__ */ import_react14.default.createElement("button", {
+    type: "submit",
+    disabled: isPending,
+    className: "ml-2 cursor-pointer rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 font-bold text-white transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
+  }, "Sign In"))));
+};
+// src/react/pages/NotFound/index.tsx
+var import_react15 = __toESM(require_react(), 1);
+var NotFoundPage = () => {
+  return /* @__PURE__ */ import_react15.default.createElement("div", {
+    className: "flex h-screen items-center justify-center"
+  }, /* @__PURE__ */ import_react15.default.createElement("div", {
+    className: "text-center"
+  }, /* @__PURE__ */ import_react15.default.createElement("h1", {
+    className: "mb-4 text-4xl font-bold text-gray-800"
+  }, "404 Not Found"), /* @__PURE__ */ import_react15.default.createElement("p", {
+    className: "mb-8 text-lg text-gray-600"
+  }, "We couldn't find what you were looking for."), /* @__PURE__ */ import_react15.default.createElement("a", {
+    href: `/${loginRoute}`,
+    className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
+  }, "Login to begin")));
+};
+// src/react/pages/Register/index.tsx
+var import_react16 = __toESM(require_react(), 1);
+"use client";
+var Register = () => {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [output, formAction, isPending] = import_react16.useActionState(async (prev, formData) => {
+    await handleFormSubmit(formData);
+    return `handleFormSubmit`;
+  }, undefined);
+  const formRef = import_react16.useRef(null);
+  usePersistentForm(formRef);
+  const [errorMessage, setErrorMessage] = import_react16.useState("");
+  const handleFormSubmit = async (formData) => {
+    const username = formData.get("username");
+    const password = formData.get("password");
+    const confirmPassword = formData.get("confirmPassword");
+    if (username.length <= 3 || password.length < 6) {
+      return;
+    }
+    if (password !== confirmPassword) {
+      setErrorMessage("Passwords must match");
+      return;
+    }
+    const loginInfo = {
+      username,
+      password
+    };
+    const response = await fetch(`${apiPrefix}/${authPrefix}/${registerRoute}`, {
+      method: "POST",
+      body: JSON.stringify(loginInfo)
+    });
+    const result = await response.json();
+    if (response.status === 200 && result.successful) {
+      queryClient.invalidateQueries({ queryKey: ["loginCheck"] });
+      queryClient.refetchQueries({ queryKey: ["loginCheck"] });
+      location.href = `/${todoRoute}`;
+    } else {
+      setErrorMessage(result.errorMessage);
+    }
+  };
+  return /* @__PURE__ */ import_react16.default.createElement(AuthLayout, {
+    title: "Register"
+  }, /* @__PURE__ */ import_react16.default.createElement(ErrorMessage, null, errorMessage), /* @__PURE__ */ import_react16.default.createElement("form", {
+    action: formAction,
+    ref: formRef
+  }, /* @__PURE__ */ import_react16.default.createElement("div", {
+    className: "mb-4"
+  }, /* @__PURE__ */ import_react16.default.createElement("label", {
+    htmlFor: "username",
+    className: "mb-2 block text-sm font-bold text-gray-700"
+  }, "Username"), /* @__PURE__ */ import_react16.default.createElement("input", {
+    type: "text",
+    id: "username",
+    name: "username",
+    className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
+    placeholder: "Enter username"
+  })), /* @__PURE__ */ import_react16.default.createElement("div", {
+    className: "mb-6"
+  }, /* @__PURE__ */ import_react16.default.createElement("label", {
+    htmlFor: "password",
+    className: "mb-2 block text-sm font-bold text-gray-700"
+  }, "Password"), /* @__PURE__ */ import_react16.default.createElement("input", {
+    type: "password",
+    id: "password",
+    name: "password",
+    className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
+    placeholder: "Enter password"
+  })), /* @__PURE__ */ import_react16.default.createElement("div", {
+    className: "mb-6"
+  }, /* @__PURE__ */ import_react16.default.createElement("label", {
+    htmlFor: "confirmPassword",
+    className: "mb-2 block text-sm font-bold text-gray-700"
+  }, "Confirm Password"), /* @__PURE__ */ import_react16.default.createElement("input", {
+    type: "password",
+    id: "confirmPassword",
+    name: "confirmPassword",
+    className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
+    placeholder: "Confirm password"
+  })), /* @__PURE__ */ import_react16.default.createElement("div", {
+    className: "flex items-center justify-between"
+  }, /* @__PURE__ */ import_react16.default.createElement("a", {
+    href: `/${loginRoute}`,
+    className: "inline-block align-baseline text-sm font-semibold text-purple-500 hover:text-purple-800"
+  }, "Already a member?"), /* @__PURE__ */ import_react16.default.createElement("button", {
+    type: "submit",
+    disabled: isPending,
+    className: "ml-2 cursor-pointer rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 font-bold text-white transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
+  }, "Register"))));
+};
+// src/react/pages/Team/index.tsx
+var import_react17 = __toESM(require_react(), 1);
+"use client";
+var TeamPage = ({ user }) => {
+  const queryClient = useQueryClient();
+  useAuthCheck();
+  const [output, formAction, isPending] = import_react17.useActionState(async (prev, formData) => {
+    await handleFormSubmit(formData);
+    return `handleFormSubmit`;
+  }, undefined);
+  const [errorMessage, setErrorMessage] = import_react17.useState("");
+  const [message, setMessage] = import_react17.useState("");
+  const formRef = import_react17.useRef(null);
+  usePersistentForm(formRef);
+  const {
+    isPending: isGetPending,
+    error,
+    data: teams
+  } = useQuery({
+    queryKey: ["teamData"],
+    queryFn: () => apiFetch(`/${apiPrefix}/${teamRoute}?userId=${user.id}`)
+  });
+  const createTeamMutation = useMutation({
+    mutationFn: async (name) => {
+      "use server";
+      const newTeam = {
+        name,
+        createdBy: user.id
+      };
+      return await apiFetch(`/${apiPrefix}/${teamRoute}`, {
+        method: "POST",
+        body: JSON.stringify(newTeam)
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["teamData"] });
+      queryClient.refetchQueries({ queryKey: ["teamData"] });
+      setMessage("");
+    },
+    onError: (error2) => {
+      setErrorMessage(error2.message);
+    }
+  });
+  const handleFormSubmit = async (formData) => {
+    const name = formData.get("name");
+    setErrorMessage("");
+    if (name.length < 6) {
+      setErrorMessage("Must be at least 6 characters long.");
+      return;
+    }
+    createTeamMutation.mutate(name?.toString());
+  };
+  return /* @__PURE__ */ import_react17.default.createElement(Layout, {
+    title: "Team List"
+  }, /* @__PURE__ */ import_react17.default.createElement(ErrorMessage, null, errorMessage), /* @__PURE__ */ import_react17.default.createElement("div", {
+    className: "mb-4"
+  }, /* @__PURE__ */ import_react17.default.createElement("form", {
+    action: formAction,
+    ref: formRef
+  }, /* @__PURE__ */ import_react17.default.createElement("div", {
+    className: "flex items-center"
+  }, /* @__PURE__ */ import_react17.default.createElement("input", {
+    type: "text",
+    name: "name",
+    value: message,
+    onChange: (e) => {
+      setMessage(e.target.value);
+    },
+    placeholder: "Add a new team...",
+    className: "flex-grow rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+  }), /* @__PURE__ */ import_react17.default.createElement("button", {
+    type: "submit",
+    disabled: isPending,
+    className: "ml-2 cursor-pointer rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 font-bold text-white transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
+  }, "Add")))), error && /* @__PURE__ */ import_react17.default.createElement(ErrorMessage, null, `An error has occurred: ${error.message}`), isGetPending && "Loading...", /* @__PURE__ */ import_react17.default.createElement(CardGrid, null, teams && teams.map((team) => /* @__PURE__ */ import_react17.default.createElement(TeamCard, {
+    key: team.id,
+    team
+  }))));
+};
+// src/react/pages/ToDo/index.tsx
+var import_react18 = __toESM(require_react(), 1);
+"use client";
+var ToDoPage = ({ user }) => {
+  const queryClient = useQueryClient();
+  useAuthCheck();
+  const [output, formAction, isPending] = import_react18.useActionState(async (prev, formData) => {
+    await handleFormSubmit(formData);
+    return `handleFormSubmit`;
+  }, undefined);
+  const [errorMessage, setErrorMessage] = import_react18.useState("");
+  const [message, setMessage] = import_react18.useState("");
+  const formRef = import_react18.useRef(null);
+  usePersistentForm(formRef);
   const {
     isPending: isGetPending,
     error,
@@ -20765,34 +21235,16 @@ var ToDoPage = ({ user }) => {
     }
     createToDoMutation.mutate();
   };
-  const handleDeleteToDo = async (id) => {
-    "use server";
-    const response = await apiFetch(`/${apiPrefix}/${todoRoute}/${id}`, {
-      method: "DELETE"
-    });
-    if (response.status === 200) {
-      queryClient.invalidateQueries({ queryKey: ["todoData", user.id] });
-      queryClient.refetchQueries({ queryKey: ["todoData", user.id] });
-    } else {
-      alert("error");
-    }
-  };
-  return /* @__PURE__ */ import_react3.default.createElement("div", {
-    className: "flex justify-center bg-gray-100"
-  }, /* @__PURE__ */ import_react3.default.createElement("div", {
-    className: "w-full rounded bg-white p-8 shadow-md"
-  }, /* @__PURE__ */ import_react3.default.createElement("h1", {
-    className: "mb-4 text-center text-2xl font-bold"
-  }, "Todo List"), errorMessage && /* @__PURE__ */ import_react3.default.createElement("div", {
-    className: "mt-2 flex items-center text-sm text-red-500"
-  }, /* @__PURE__ */ import_react3.default.createElement("span", null, errorMessage)), /* @__PURE__ */ import_react3.default.createElement("div", {
+  return /* @__PURE__ */ import_react18.default.createElement(Layout, {
+    title: "ToDo List"
+  }, /* @__PURE__ */ import_react18.default.createElement(ErrorMessage, null, errorMessage), /* @__PURE__ */ import_react18.default.createElement("div", {
     className: "mb-4"
-  }, /* @__PURE__ */ import_react3.default.createElement("form", {
+  }, /* @__PURE__ */ import_react18.default.createElement("form", {
     action: formAction,
     ref: formRef
-  }, /* @__PURE__ */ import_react3.default.createElement("div", {
+  }, /* @__PURE__ */ import_react18.default.createElement("div", {
     className: "flex items-center"
-  }, /* @__PURE__ */ import_react3.default.createElement("input", {
+  }, /* @__PURE__ */ import_react18.default.createElement("input", {
     type: "text",
     name: "todoMessage",
     value: message,
@@ -20801,434 +21253,15 @@ var ToDoPage = ({ user }) => {
     },
     placeholder: "Add a new todo...",
     className: "flex-grow rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-  }), /* @__PURE__ */ import_react3.default.createElement("button", {
-    type: "submit",
-    className: "ml-2 cursor-pointer rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 font-bold text-white transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
-  }, "Add")))), error && "An error has occurred: " + error.message, isGetPending && "Loading...", /* @__PURE__ */ import_react3.default.createElement("ul", null, todos?.length > 0 && todos.map((todo) => {
-    return /* @__PURE__ */ import_react3.default.createElement("li", {
-      key: todo.id,
-      className: "flex items-center justify-between border-b p-3"
-    }, todo.message, /* @__PURE__ */ import_react3.default.createElement("button", {
-      onClick: () => handleDeleteToDo(todo.id),
-      className: "cursor-pointer text-red-500 hover:text-red-700",
-      disabled: isPending
-    }, /* @__PURE__ */ import_react3.default.createElement("svg", {
-      xmlns: "http://www.w3.org/2000/svg",
-      viewBox: "0 0 24 24",
-      fill: "none",
-      stroke: "currentColor",
-      strokeWidth: "2",
-      strokeLinecap: "round",
-      strokeLinejoin: "round",
-      className: "h-6 w-6"
-    }, /* @__PURE__ */ import_react3.default.createElement("polyline", {
-      points: "3 6 5 6 21 6"
-    }), /* @__PURE__ */ import_react3.default.createElement("path", {
-      d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-    }), /* @__PURE__ */ import_react3.default.createElement("line", {
-      x1: "10",
-      y1: "11",
-      x2: "10",
-      y2: "17"
-    }), /* @__PURE__ */ import_react3.default.createElement("line", {
-      x1: "14",
-      y1: "11",
-      x2: "14",
-      y2: "17"
-    }))));
-  }))));
-};
-var ToDo_default = ToDoPage;
-
-// src/react/components/Team/index.tsx
-var import_react4 = __toESM(require_react(), 1);
-"use client";
-var TeamPage = ({ user }) => {
-  const queryClient = useQueryClient();
-  useCheckAuth_default();
-  const [output, formAction, isPending] = import_react4.useActionState(async (prev, formData) => {
-    await handleFormSubmit(formData);
-    return `handleFormSubmit`;
-  }, undefined);
-  const [errorMessage, setErrorMessage] = import_react4.useState("");
-  const [message, setMessage] = import_react4.useState("");
-  const formRef = import_react4.useRef(null);
-  usePersistentForm_default(formRef);
-  const {
-    isPending: isGetPending,
-    error,
-    data: teams
-  } = useQuery({
-    queryKey: ["teamData", user.id],
-    queryFn: () => apiFetch(`/${apiPrefix}/${teamRoute}?userId=${user.id}`)
-  });
-  const createTeamMutation = useMutation({
-    mutationFn: async (name) => {
-      "use server";
-      const newTeam = {
-        name,
-        createdBy: user.id
-      };
-      return await apiFetch(`/${apiPrefix}/${teamRoute}`, {
-        method: "POST",
-        body: JSON.stringify(newTeam)
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["teamData", user.id] });
-      queryClient.refetchQueries({ queryKey: ["teamData", user.id] });
-      setMessage("");
-    },
-    onError: (error2) => {
-      setErrorMessage(error2.message);
-    }
-  });
-  const handleFormSubmit = async (formData) => {
-    const name = formData.get("name");
-    setErrorMessage("");
-    if (name.length < 6) {
-      setErrorMessage("Must be at least 6 characters long.");
-      return;
-    }
-    createTeamMutation.mutate(name?.toString());
-  };
-  const handleDeleteTeam = async (id) => {
-    "use server";
-    const response = await apiFetch(`/${apiPrefix}/${teamRoute}/${id}`, {
-      method: "DELETE"
-    });
-    if (response.status === 200) {
-      queryClient.invalidateQueries({ queryKey: ["teamData", user.id] });
-      queryClient.refetchQueries({ queryKey: ["teamData", user.id] });
-    } else {
-      alert("error");
-    }
-  };
-  return /* @__PURE__ */ import_react4.default.createElement("div", {
-    className: "flex justify-center bg-gray-100"
-  }, /* @__PURE__ */ import_react4.default.createElement("div", {
-    className: "w-full rounded bg-white p-8 shadow-md"
-  }, /* @__PURE__ */ import_react4.default.createElement("h1", {
-    className: "mb-4 text-center text-2xl font-bold"
-  }, "Team List"), errorMessage && /* @__PURE__ */ import_react4.default.createElement("div", {
-    className: "mt-2 flex items-center text-sm text-red-500"
-  }, /* @__PURE__ */ import_react4.default.createElement("span", null, errorMessage)), /* @__PURE__ */ import_react4.default.createElement("div", {
-    className: "mb-4"
-  }, /* @__PURE__ */ import_react4.default.createElement("form", {
-    action: formAction,
-    ref: formRef
-  }, /* @__PURE__ */ import_react4.default.createElement("div", {
-    className: "flex items-center"
-  }, /* @__PURE__ */ import_react4.default.createElement("input", {
-    type: "text",
-    name: "name",
-    value: message,
-    onChange: (e) => {
-      setMessage(e.target.value);
-    },
-    placeholder: "Add a new team...",
-    className: "flex-grow rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-  }), /* @__PURE__ */ import_react4.default.createElement("button", {
-    type: "submit",
-    className: "ml-2 cursor-pointer rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 font-bold text-white transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
-  }, "Add")))), error && "An error has occurred: " + error.message, isGetPending && "Loading...", /* @__PURE__ */ import_react4.default.createElement("ul", null, teams?.length > 0 && teams.map((team) => {
-    return /* @__PURE__ */ import_react4.default.createElement("li", {
-      key: team.id,
-      className: "flex items-center justify-between border-b p-3"
-    }, team.name, " (", team.createdBy, ")", /* @__PURE__ */ import_react4.default.createElement("button", {
-      onClick: () => handleDeleteTeam(team.id),
-      className: "cursor-pointer text-red-500 hover:text-red-700",
-      disabled: isPending
-    }, /* @__PURE__ */ import_react4.default.createElement("svg", {
-      xmlns: "http://www.w3.org/2000/svg",
-      viewBox: "0 0 24 24",
-      fill: "none",
-      stroke: "currentColor",
-      strokeWidth: "2",
-      strokeLinecap: "round",
-      strokeLinejoin: "round",
-      className: "h-6 w-6"
-    }, /* @__PURE__ */ import_react4.default.createElement("polyline", {
-      points: "3 6 5 6 21 6"
-    }), /* @__PURE__ */ import_react4.default.createElement("path", {
-      d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-    }), /* @__PURE__ */ import_react4.default.createElement("line", {
-      x1: "10",
-      y1: "11",
-      x2: "10",
-      y2: "17"
-    }), /* @__PURE__ */ import_react4.default.createElement("line", {
-      x1: "14",
-      y1: "11",
-      x2: "14",
-      y2: "17"
-    }))));
-  }))));
-};
-var Team_default = TeamPage;
-
-// src/react/components/Nav/index.tsx
-var import_react5 = __toESM(require_react(), 1);
-var Nav = ({ user }) => {
-  const navigate = useNavigate();
-  const handleLogout = async () => {
-    "use server";
-    const response = await fetch(`${apiPrefix}/${authPrefix}/${logoutRoute}`, {
-      method: "POST"
-    });
-    if (response.status === 200) {
-      location.href = `${loginRoute}`;
-    } else {
-      alert("error");
-    }
-  };
-  return /* @__PURE__ */ import_react5.default.createElement("nav", {
-    className: "flex items-center justify-between bg-gray-800 p-4"
-  }, /* @__PURE__ */ import_react5.default.createElement("div", {
-    className: "flex items-center"
-  }, /* @__PURE__ */ import_react5.default.createElement("img", {
-    src: "/public/bun.png",
-    alt: "Logo",
-    height: 50,
-    className: "mr-4 h-8 cursor-pointer",
-    onClick: () => {
-      navigate("/");
-    }
-  }), /* @__PURE__ */ import_react5.default.createElement(Link, {
-    to: "/",
-    className: "text-lg font-bold text-white"
-  }, "ToDos App")), /* @__PURE__ */ import_react5.default.createElement("div", null, !user.id && /* @__PURE__ */ import_react5.default.createElement(Link, {
-    className: "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white",
-    to: `/${loginRoute}`
-  }, "Login"), user.id && /* @__PURE__ */ import_react5.default.createElement(import_react5.default.Fragment, null, /* @__PURE__ */ import_react5.default.createElement(Link, {
-    className: "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white",
-    to: `/${todoRoute}`
-  }, "Todos"), /* @__PURE__ */ import_react5.default.createElement(Link, {
-    className: "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white",
-    to: `/${teamRoute}`
-  }, "Teams"), /* @__PURE__ */ import_react5.default.createElement("span", {
-    onClick: handleLogout,
-    className: "cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
-  }, "Logout"), /* @__PURE__ */ import_react5.default.createElement("span", {
-    className: "border-spacing-1 rounded-md border px-3 py-2 text-sm font-medium text-gray-300"
-  }, user.username))));
-};
-var Nav_default = Nav;
-
-// src/react/components/Login/index.tsx
-var import_react6 = __toESM(require_react(), 1);
-"use client";
-var Login = () => {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const [output, formAction, isPending] = import_react6.useActionState(async (prev, formData) => {
-    await handleFormSubmit(formData);
-    return `handleFormSubmit`;
-  }, undefined);
-  const formRef = import_react6.useRef(null);
-  usePersistentForm_default(formRef);
-  const [errorMessage, setErrorMessage] = import_react6.useState("");
-  const handleFormSubmit = async (formData) => {
-    const username = formData.get("username");
-    const password = formData.get("password");
-    if (username.length <= 3 || password.length < 6) {
-      return;
-    }
-    const loginInfo = {
-      username,
-      password
-    };
-    const response = await fetch(`${apiPrefix}/${authPrefix}/${loginRoute}`, {
-      method: "POST",
-      body: JSON.stringify(loginInfo)
-    });
-    const result = await response.json();
-    if (response.status === 200 && result.successful) {
-      location.href = `/${todoRoute}`;
-    } else {
-      setErrorMessage(result.errorMessage);
-    }
-  };
-  return /* @__PURE__ */ import_react6.default.createElement("div", {
-    className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react6.default.createElement("div", {
-    className: "w-96 rounded bg-white p-8 shadow-md"
-  }, /* @__PURE__ */ import_react6.default.createElement("h2", {
-    className: "mb-6 text-center text-2xl font-semibold"
-  }, "Login"), errorMessage && /* @__PURE__ */ import_react6.default.createElement("div", {
-    className: "mt-2 flex items-center text-sm text-red-500"
-  }, /* @__PURE__ */ import_react6.default.createElement("span", null, errorMessage)), /* @__PURE__ */ import_react6.default.createElement("form", {
-    action: formAction,
-    ref: formRef
-  }, /* @__PURE__ */ import_react6.default.createElement("div", {
-    className: "mb-4"
-  }, /* @__PURE__ */ import_react6.default.createElement("label", {
-    htmlFor: "username",
-    className: "mb-2 block text-sm font-bold text-gray-700"
-  }, "Username"), /* @__PURE__ */ import_react6.default.createElement("input", {
-    type: "text",
-    id: "username",
-    name: "username",
-    className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
-    placeholder: "Enter username"
-  })), /* @__PURE__ */ import_react6.default.createElement("div", {
-    className: "mb-6"
-  }, /* @__PURE__ */ import_react6.default.createElement("label", {
-    htmlFor: "password",
-    className: "mb-2 block text-sm font-bold text-gray-700"
-  }, "Password"), /* @__PURE__ */ import_react6.default.createElement("input", {
-    type: "password",
-    id: "password",
-    name: "password",
-    className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
-    placeholder: "Enter password"
-  })), /* @__PURE__ */ import_react6.default.createElement("div", {
-    className: "flex items-center justify-between"
-  }, /* @__PURE__ */ import_react6.default.createElement(Link, {
-    to: `/${registerRoute}`,
-    className: "inline-block align-baseline text-sm font-semibold text-purple-500 hover:text-purple-800"
-  }, "Not a member yet? Register here!"), /* @__PURE__ */ import_react6.default.createElement("button", {
+  }), /* @__PURE__ */ import_react18.default.createElement("button", {
     type: "submit",
     disabled: isPending,
     className: "ml-2 cursor-pointer rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 font-bold text-white transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
-  }, "Sign In")))));
+  }, "Add")))), error && /* @__PURE__ */ import_react18.default.createElement(ErrorMessage, null, `An error has occurred: ${error.message}`), isGetPending && "Loading...", /* @__PURE__ */ import_react18.default.createElement(CardGrid, null, todos && todos.map((todo) => /* @__PURE__ */ import_react18.default.createElement(ToDoCard, {
+    key: todo.id,
+    todo
+  }))));
 };
-var Login_default = Login;
-
-// src/react/components/Home/index.tsx
-var import_react7 = __toESM(require_react(), 1);
-var HomePage = () => {
-  return /* @__PURE__ */ import_react7.default.createElement("div", {
-    className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react7.default.createElement("div", {
-    className: "text-center"
-  }, /* @__PURE__ */ import_react7.default.createElement("h1", {
-    className: "mb-4 text-4xl font-bold text-gray-800"
-  }, "Welcome!"), /* @__PURE__ */ import_react7.default.createElement("p", {
-    className: "mb-8 text-lg text-gray-600"
-  }, "A ToDo app built with Bun, Elysia, and React Server Components"), /* @__PURE__ */ import_react7.default.createElement("a", {
-    href: `/${loginRoute}`,
-    className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
-  }, "Login to begin")));
-};
-var Home_default = HomePage;
-
-// src/react/components/Register/index.tsx
-var import_react8 = __toESM(require_react(), 1);
-"use client";
-var Register = () => {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const [output, formAction, isPending] = import_react8.useActionState(async (prev, formData) => {
-    await handleFormSubmit(formData);
-    return `handleFormSubmit`;
-  }, undefined);
-  const formRef = import_react8.useRef(null);
-  usePersistentForm_default(formRef);
-  const [errorMessage, setErrorMessage] = import_react8.useState("");
-  const handleFormSubmit = async (formData) => {
-    const username = formData.get("username");
-    const password = formData.get("password");
-    const confirmPassword = formData.get("confirmPassword");
-    if (username.length <= 3 || password.length < 6) {
-      return;
-    }
-    if (password !== confirmPassword) {
-      setErrorMessage("Passwords must match");
-      return;
-    }
-    const loginInfo = {
-      username,
-      password
-    };
-    const response = await fetch(`${apiPrefix}/${authPrefix}/${registerRoute}`, {
-      method: "POST",
-      body: JSON.stringify(loginInfo)
-    });
-    const result = await response.json();
-    if (response.status === 200 && result.successful) {
-      queryClient.invalidateQueries({ queryKey: ["loginCheck"] });
-      queryClient.refetchQueries({ queryKey: ["loginCheck"] });
-      location.href = `/${todoRoute}`;
-    } else {
-      setErrorMessage(result.errorMessage);
-    }
-  };
-  return /* @__PURE__ */ import_react8.default.createElement("div", {
-    className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react8.default.createElement("div", {
-    className: "w-96 rounded bg-white p-8 shadow-md"
-  }, /* @__PURE__ */ import_react8.default.createElement("h2", {
-    className: "mb-6 text-center text-2xl font-semibold"
-  }, "Register"), errorMessage && /* @__PURE__ */ import_react8.default.createElement("div", {
-    className: "mt-2 flex items-center text-sm text-red-500"
-  }, /* @__PURE__ */ import_react8.default.createElement("span", null, errorMessage)), /* @__PURE__ */ import_react8.default.createElement("form", {
-    action: formAction,
-    ref: formRef
-  }, /* @__PURE__ */ import_react8.default.createElement("div", {
-    className: "mb-4"
-  }, /* @__PURE__ */ import_react8.default.createElement("label", {
-    htmlFor: "username",
-    className: "mb-2 block text-sm font-bold text-gray-700"
-  }, "Username"), /* @__PURE__ */ import_react8.default.createElement("input", {
-    type: "text",
-    id: "username",
-    name: "username",
-    className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
-    placeholder: "Enter username"
-  })), /* @__PURE__ */ import_react8.default.createElement("div", {
-    className: "mb-6"
-  }, /* @__PURE__ */ import_react8.default.createElement("label", {
-    htmlFor: "password",
-    className: "mb-2 block text-sm font-bold text-gray-700"
-  }, "Password"), /* @__PURE__ */ import_react8.default.createElement("input", {
-    type: "password",
-    id: "password",
-    name: "password",
-    className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
-    placeholder: "Enter password"
-  })), /* @__PURE__ */ import_react8.default.createElement("div", {
-    className: "mb-6"
-  }, /* @__PURE__ */ import_react8.default.createElement("label", {
-    htmlFor: "confirmPassword",
-    className: "mb-2 block text-sm font-bold text-gray-700"
-  }, "Confirm Password"), /* @__PURE__ */ import_react8.default.createElement("input", {
-    type: "password",
-    id: "confirmPassword",
-    name: "confirmPassword",
-    className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500",
-    placeholder: "Confirm password"
-  })), /* @__PURE__ */ import_react8.default.createElement("div", {
-    className: "flex items-center justify-between"
-  }, /* @__PURE__ */ import_react8.default.createElement("a", {
-    href: `/${loginRoute}`,
-    className: "inline-block align-baseline text-sm font-semibold text-purple-500 hover:text-purple-800"
-  }, "Already a member?"), /* @__PURE__ */ import_react8.default.createElement("button", {
-    type: "submit",
-    disabled: isPending,
-    className: "ml-2 cursor-pointer rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 font-bold text-white transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
-  }, "Register")))));
-};
-var Register_default = Register;
-
-// src/react/components/Forbidden/index.tsx
-var import_react9 = __toESM(require_react(), 1);
-var ForbiddenPage = () => {
-  return /* @__PURE__ */ import_react9.default.createElement("div", {
-    className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react9.default.createElement("div", {
-    className: "text-center"
-  }, /* @__PURE__ */ import_react9.default.createElement("h1", {
-    className: "mb-4 text-4xl font-bold text-gray-800"
-  }, "403 Forbidden"), /* @__PURE__ */ import_react9.default.createElement("p", {
-    className: "mb-8 text-lg text-gray-600"
-  }, "You must be logged in to access this page!"), /* @__PURE__ */ import_react9.default.createElement("a", {
-    href: `/${loginRoute}`,
-    className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
-  }, "Login to begin")));
-};
-var Forbidden_default = ForbiddenPage;
-
 // src/react/App.tsx
 var App = ({ dehydratedState, user }) => {
   const location2 = useLocation();
@@ -21240,55 +21273,58 @@ var App = ({ dehydratedState, user }) => {
       }
     }
   });
-  return /* @__PURE__ */ import_react10.default.createElement("html", null, /* @__PURE__ */ import_react10.default.createElement("head", null, /* @__PURE__ */ import_react10.default.createElement("meta", {
+  return /* @__PURE__ */ import_react19.default.createElement("html", null, /* @__PURE__ */ import_react19.default.createElement("head", null, /* @__PURE__ */ import_react19.default.createElement("meta", {
     charSet: "utf-8"
-  }), /* @__PURE__ */ import_react10.default.createElement("title", null, "Bun, Elysia & React"), /* @__PURE__ */ import_react10.default.createElement("meta", {
+  }), /* @__PURE__ */ import_react19.default.createElement("title", null, "Bun, Elysia & React"), /* @__PURE__ */ import_react19.default.createElement("meta", {
     name: "description",
     content: "Bun, Elysia & React"
-  }), /* @__PURE__ */ import_react10.default.createElement("meta", {
+  }), /* @__PURE__ */ import_react19.default.createElement("meta", {
     name: "viewport",
     content: "width=device-width, initial-scale=1"
-  }), /* @__PURE__ */ import_react10.default.createElement("script", {
+  }), /* @__PURE__ */ import_react19.default.createElement("script", {
     src: "/public/index.js",
     type: "module",
     defer: true
-  }), /* @__PURE__ */ import_react10.default.createElement("link", {
+  }), /* @__PURE__ */ import_react19.default.createElement("link", {
     rel: "stylesheet",
     type: "text/css",
     href: "/public/index.css"
-  }), /* @__PURE__ */ import_react10.default.createElement("script", {
+  }), /* @__PURE__ */ import_react19.default.createElement("script", {
     src: "https://unpkg.com/@tailwindcss/browser@4"
-  }), /* @__PURE__ */ import_react10.default.createElement("link", {
+  }), /* @__PURE__ */ import_react19.default.createElement("link", {
     rel: "icon",
     type: "image/x-icon",
     href: "/public/favicon.ico"
-  })), /* @__PURE__ */ import_react10.default.createElement("body", null, /* @__PURE__ */ import_react10.default.createElement(QueryClientProvider, {
+  })), /* @__PURE__ */ import_react19.default.createElement("body", null, /* @__PURE__ */ import_react19.default.createElement(QueryClientProvider, {
     client: queryClient
-  }, /* @__PURE__ */ import_react10.default.createElement(HydrationBoundary, {
+  }, /* @__PURE__ */ import_react19.default.createElement(HydrationBoundary, {
     state: dehydratedState
-  }, /* @__PURE__ */ import_react10.default.createElement(Nav_default, {
+  }, /* @__PURE__ */ import_react19.default.createElement(Nav, {
     user
-  }), /* @__PURE__ */ import_react10.default.createElement(Outlet, null), /* @__PURE__ */ import_react10.default.createElement(Routes, {
+  }), /* @__PURE__ */ import_react19.default.createElement(Outlet, null), /* @__PURE__ */ import_react19.default.createElement(Routes, {
     location: location2
-  }, /* @__PURE__ */ import_react10.default.createElement(Route, {
+  }, /* @__PURE__ */ import_react19.default.createElement(Route, {
     path: "/",
-    element: /* @__PURE__ */ import_react10.default.createElement(Home_default, null)
-  }), /* @__PURE__ */ import_react10.default.createElement(Route, {
+    element: /* @__PURE__ */ import_react19.default.createElement(HomePage, null)
+  }), /* @__PURE__ */ import_react19.default.createElement(Route, {
     path: `${todoRoute}`,
-    element: user.id ? /* @__PURE__ */ import_react10.default.createElement(ToDo_default, {
+    element: user.id ? /* @__PURE__ */ import_react19.default.createElement(ToDoPage, {
       user
-    }) : /* @__PURE__ */ import_react10.default.createElement(Forbidden_default, null)
-  }), /* @__PURE__ */ import_react10.default.createElement(Route, {
+    }) : /* @__PURE__ */ import_react19.default.createElement(ForbiddenPage, null)
+  }), /* @__PURE__ */ import_react19.default.createElement(Route, {
     path: `${teamRoute}`,
-    element: user.id ? /* @__PURE__ */ import_react10.default.createElement(Team_default, {
+    element: user.id ? /* @__PURE__ */ import_react19.default.createElement(TeamPage, {
       user
-    }) : /* @__PURE__ */ import_react10.default.createElement(Forbidden_default, null)
-  }), /* @__PURE__ */ import_react10.default.createElement(Route, {
+    }) : /* @__PURE__ */ import_react19.default.createElement(ForbiddenPage, null)
+  }), /* @__PURE__ */ import_react19.default.createElement(Route, {
     path: `${loginRoute}`,
-    element: /* @__PURE__ */ import_react10.default.createElement(Login_default, null)
-  }), /* @__PURE__ */ import_react10.default.createElement(Route, {
+    element: /* @__PURE__ */ import_react19.default.createElement(Login, null)
+  }), /* @__PURE__ */ import_react19.default.createElement(Route, {
     path: `${registerRoute}`,
-    element: /* @__PURE__ */ import_react10.default.createElement(Register_default, null)
+    element: /* @__PURE__ */ import_react19.default.createElement(Register, null)
+  }), /* @__PURE__ */ import_react19.default.createElement(Route, {
+    path: "*",
+    element: /* @__PURE__ */ import_react19.default.createElement(NotFoundPage, null)
   }))))));
 };
 var App_default = App;
@@ -21298,7 +21334,7 @@ var dehydratedState = window.__QUERY_STATE__;
 delete window.__QUERY_STATE__;
 var userDto = window.__USER_DATA__;
 delete window.__USER_DATA__;
-import_client.hydrateRoot(document, /* @__PURE__ */ import_react11.default.createElement(BrowserRouter, null, /* @__PURE__ */ import_react11.default.createElement(App_default, {
+import_client.hydrateRoot(document, /* @__PURE__ */ import_react20.default.createElement(BrowserRouter, null, /* @__PURE__ */ import_react20.default.createElement(App_default, {
   dehydratedState,
   user: userDto
 })));

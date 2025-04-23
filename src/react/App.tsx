@@ -7,17 +7,20 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 
-import ToDoPage from "./components/ToDo";
-import TeamPage from "./components/Team";
-import Nav from "./components/Nav";
+import {
+  HomePage,
+  Login,
+  Register,
+  ForbiddenPage,
+  ToDoPage,
+  TeamPage,
+  NotFoundPage,
+} from "./pages";
+import { Nav } from "./components";
 
 import "./App.css";
-import Login from "./components/Login";
-import HomePage from "./components/Home";
 import { loginRoute, registerRoute, teamRoute, todoRoute } from "../constants";
-import Register from "./components/Register";
-import { UserDTO } from "../types/User/UserDTO";
-import ForbiddenPage from "./components/Forbidden";
+import { UserDTO } from "../types";
 
 type AppProps = {
   dehydratedState: DehydratedState;
@@ -66,6 +69,7 @@ const App = ({ dehydratedState, user }: AppProps) => {
               />
               <Route path={`${loginRoute}`} element={<Login />} />
               <Route path={`${registerRoute}`} element={<Register />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </HydrationBoundary>
         </QueryClientProvider>

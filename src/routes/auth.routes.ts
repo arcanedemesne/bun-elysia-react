@@ -10,10 +10,8 @@ import {
   refreshRoute,
   registerRoute,
 } from "../constants";
-import { LoginInfo } from "../types/LoginInfo";
-import userRepository from "../respositories/userRepository";
-import { UserUpdate } from "../types/User/UserUpdate";
-import { UserInsert } from "../types/User/UserInsert";
+import { LoginInfo, UserUpdate, UserInsert, JwtContext } from "../types";
+import { userRepository } from "../respositories";
 
 const getExpTimestamp = (secondsFromNow: number) => {
   return Math.floor(Date.now() / 1000) + secondsFromNow;
