@@ -27,7 +27,7 @@ export const ToDoPage = ({ user }: ToDoPageProps) => {
   }, undefined);
 
   const [errorMessage, setErrorMessage] = useState("");
-  const [message, setMessage] = useState("");
+  const [title, setTitle] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
 
   usePersistentForm(formRef);
@@ -37,7 +37,7 @@ export const ToDoPage = ({ user }: ToDoPageProps) => {
     error,
     data: todos,
   } = useQuery({
-    queryKey: ["todoData", user.id],
+    queryKey: ["todoData"],
     queryFn: () => apiFetch(`/${apiPrefix}/${todoRoute}/${user.id}`),
   });
 
@@ -46,8 +46,8 @@ export const ToDoPage = ({ user }: ToDoPageProps) => {
       ("use server");
 
       const newTodo = {
-        userId: user.id,
-        message,
+        title,
+        createdBy: user.id,
       } as ToDoInsert;
 
       return await apiFetch(`/${apiPrefix}/${todoRoute}`, {
@@ -56,9 +56,9 @@ export const ToDoPage = ({ user }: ToDoPageProps) => {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["todoData", user.id] });
-      queryClient.refetchQueries({ queryKey: ["todoData", user.id] });
-      setMessage("");
+      queryClient.invalidateQueries({ queryKey: ["todoData"] });
+      queryClient.refetchQueries({ queryKey: ["todoData"] });
+      setTitle("");
     },
     onError: (error) => {
       setErrorMessage(error.message);
@@ -66,10 +66,10 @@ export const ToDoPage = ({ user }: ToDoPageProps) => {
   });
 
   const handleFormSubmit = async (formData: FormData) => {
-    const message = formData.get("todoMessage");
+    const title = formData.get("title");
 
     setErrorMessage("");
-    if (message!.length < 6) {
+    if (title!.length < 6) {
       setErrorMessage("Must be at least 6 characters long.");
       return;
     }
@@ -86,10 +86,10 @@ export const ToDoPage = ({ user }: ToDoPageProps) => {
           <div className="flex items-center">
             <input
               type="text"
-              name="todoMessage"
-              value={message}
+              name="title"
+              value={title}
               onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                setMessage(e.target.value);
+                setTitle(e.target.value);
               }}
               placeholder="Add a new todo..."
               className="flex-grow rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"

@@ -5,7 +5,7 @@ import { apiPrefix, todoRoute } from "../../../constants";
 import { ToDo } from "../../../types";
 import { apiFetch } from "../../api";
 import { CardBase } from "./CardBase";
-import { TrashIcon } from "..";
+import { DeleteButton } from "..";
 
 type ToDoCardProps = {
   todo: ToDo;
@@ -32,14 +32,16 @@ export const ToDoCard = ({ todo, children }: ToDoCardProps) => {
 
   return (
     <CardBase>
-      <div className="mb-2 flex items-center justify-between">
-        <p className="mb-1 text-sm text-gray-600">{todo.message}</p>
-        <button
-          onClick={() => handleDeleteToDo(todo.id)}
-          className="cursor-pointer text-red-500 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-        >
-          <TrashIcon />
-        </button>
+      <div className="mb-2">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-800">{todo.title}</h3>
+          <DeleteButton onDelete={() => handleDeleteToDo(todo.id)} />
+        </div>
+        <p className="mt-1 text-sm text-gray-600">{todo.description}</p>
+        <p className="mt-1 text-sm text-gray-600">
+          Created by:{" "}
+          <span className="font-medium">{todo.createdBy.username}</span>
+        </p>
       </div>
       {children}
     </CardBase>

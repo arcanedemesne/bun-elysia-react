@@ -3,17 +3,27 @@ import { z } from "zod";
 
 import { ToDo, ToDoInsert } from "../types";
 
+const userSchema = z.object({
+  id: z.string().uuid(),
+  username: z.string(),
+});
+
 const todoSchema = z.object({
   id: z.string().uuid(),
-  userId: z.string().uuid(),
-  message: z.string(),
+  title: z.string(),
+  description: z.string().optional().nullable(),
+  teamdId: z.string().optional().nullable(),
+  createdBy: userSchema,
+  createdOn: z.date(),
 });
 
 const todosSchema = z.array(todoSchema);
 
 const todoInsertSchema = z.object({
-  userId: z.string().uuid(),
-  message: z.string(),
+  title: z.string(),
+  description: z.string().optional().nullable(),
+  teamId: z.string().optional().nullable(),
+  createdBy: z.string(),
 });
 
 export const todoRepository = () => {
@@ -21,8 +31,11 @@ export const todoRepository = () => {
     async getToDos(): Promise<ToDo[]> {
       try {
         const todos = await sql`
-          SELECT id, "userId", message
-          FROM todos`;
+          SELECT t.id, t.title, t.description, t."teamId",
+          (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
+              FROM users u WHERE u.id = t."createdBy") AS "createdBy",
+          t."createdOn"
+          FROM todos t`;
 
         const validatedTodos = todosSchema.parse(todos);
         return validatedTodos as ToDo[];
@@ -34,8 +47,27 @@ export const todoRepository = () => {
     async getToDosByUserId(userId: string): Promise<ToDo[]> {
       try {
         const todos = await sql`
-          SELECT id, "userId", message
-          FROM todos WHERE "userId" = ${userId}`;
+          SELECT t.id, t.title, t.description, t."teamId", 
+          (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
+              FROM users u WHERE u.id = t."createdBy") AS "createdBy",
+          t."createdOn"
+          FROM todos t WHERE t."createdBy" = ${userId} AND t."teamId" IS NULL`;
+
+        const validatedTodos = todosSchema.parse(todos);
+        return validatedTodos as ToDo[];
+      } catch (error) {
+        console.error("Error getting todos:", error);
+        return [];
+      }
+    },
+    async getToDosByTeamId(teamId: string): Promise<ToDo[]> {
+      try {
+        const todos = await sql`
+          SELECT t.id, t.title, t.description, t."teamId", 
+          (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
+              FROM users u WHERE u.id = t."createdBy") AS "createdBy",
+          t."createdOn"
+          FROM todos t WHERE t."teamId" = ${teamId}`;
 
         const validatedTodos = todosSchema.parse(todos);
         return validatedTodos as ToDo[];
@@ -48,17 +80,20 @@ export const todoRepository = () => {
       try {
         const validatedTodoData = todoInsertSchema.parse(todoData);
 
-        const insertedTodos = await sql`
-          INSERT INTO todos ("userId", message)
-          VALUES (${validatedTodoData.userId}, ${validatedTodoData.message})
-          RETURNING id, "userId", message
-        `;
+        const insertedTodos =
+          await sql`INSERT INTO todos (title, description, "teamId", "createdBy")
+          VALUES (${validatedTodoData.title}, ${todoData.description ?? null}, ${todoData.teamId ?? null}, ${validatedTodoData.createdBy})
+          RETURNING id, title, description, "teamId",
+          (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
+            FROM users u WHERE u.id = "createdBy") AS "createdBy",
+          "createdOn"`;
 
         if (insertedTodos.length === 0) {
           return null; // Insertion failed
         }
 
-        return insertedTodos[0] as ToDo; // Return the inserted user
+        const validatedTodo = todoSchema.parse(insertedTodos[0]);
+        return validatedTodo as ToDo; // Return the inserted user
       } catch (error) {
         console.error("Error inserting todo:", error);
         return null;

@@ -14,11 +14,18 @@ type seedUser = {
   username: string;
 };
 
+type seedTeam = {
+  id: string;
+  name: string;
+  createBy: string;
+  createdOn: Date;
+};
+
 async function initializeDatabase() {
   try {
     if (!process.env.POSTGRES_DB || !process.env.POSTGRES_USER) {
       console.error(
-        "POSTGRES_DB or POSTGRES_USER environment variables are not set."
+        "POSTGRES_DB or POSTGRES_USER environment variables are not set.",
       );
       process.exit(1);
     }
@@ -49,7 +56,8 @@ async function initializeDatabase() {
           username VARCHAR(255) UNIQUE NOT NULL,
           password VARCHAR(255) NOT NULL,
           "isOnline" BOOLEAN NOT NULL DEFAULT FALSE,
-          "refreshToken" VARCHAR(255)
+          "refreshToken" VARCHAR(255),
+          "createdOn" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `;
 
@@ -58,7 +66,8 @@ async function initializeDatabase() {
         CREATE TABLE IF NOT EXISTS teams (
           id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
           name VARCHAR(255) UNIQUE NOT NULL,
-          "createdBy" UUID REFERENCES users (id) NOT NULL
+          "createdBy" UUID REFERENCES users (id) NOT NULL,
+          "createdOn" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `;
 
@@ -75,16 +84,19 @@ async function initializeDatabase() {
       await sql`
         CREATE TABLE IF NOT EXISTS todos (
           id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-          "userId" UUID REFERENCES users (id) NOT NULL,
+          title VARCHAR(255) NOT NULL,
+          description VARCHAR(255),
           "teamId" UUID REFERENCES teams (id),
-          message VARCHAR(255) NOT NULL
+          "createdBy" UUID REFERENCES users (id) NOT NULL,
+          "createdOn" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `;
 
       const seedUserName = "jenny";
+      const seedTeamName = "Seed Team #1";
       const hashedPassword = await Bun.password.hash("123456");
 
-      // Insert a test user
+      // Insert a seed user
       const users: seedUser[] = await sql.unsafe<seedUser[]>(`
           INSERT INTO users (username, password) VALUES
           ('${seedUserName}', '${hashedPassword}')
@@ -94,15 +106,43 @@ async function initializeDatabase() {
 
       if (users.length > 0) {
         const jennyId = users.find(
-          (user: seedUser) => user.id !== undefined && user.username === seedUserName
+          (user: seedUser) =>
+            user.id !== undefined && user.username === seedUserName,
         )?.id;
 
         if (jennyId) {
-          // insert a todo for the test user
+          // insert a todo for the seed user
           await sql`
-            INSERT INTO todos ("userId", message) VALUES
-            (${jennyId.toString()}, 'This is an example todo item');
-          `;
+              INSERT INTO todos (title, description, "createdBy") VALUES
+              ('This is an example todo item', 'This is an example description', ${jennyId})
+            `;
+
+          // Insert a seed team
+          const teams: seedTeam[] = await sql.unsafe<seedTeam[]>(`
+              INSERT INTO teams (name, "createdBy") VALUES
+              ('${seedTeamName}', '${jennyId}')
+              RETURNING id, name, "createdBy", "createdOn"
+          `);
+          console.log(teams);
+          if (teams.length > 0) {
+            const teamId = teams.find(
+              (team: seedTeam) =>
+                team.id !== undefined && team.name === seedTeamName,
+            )?.id;
+
+            if (teamId) {
+              // insert a connection between seed user and seed team
+              await sql.unsafe<seedTeam[]>(
+                `INSERT INTO users_teams ("userId", "teamId") VALUES ('${jennyId}', '${teamId}')`,
+              );
+
+              // insert a todo for the seed team user
+              await sql`
+                INSERT INTO todos (title, description, "teamId", "createdBy") VALUES
+                ('This is a team example todo item', 'This is a team example description', ${teamId}, ${jennyId})
+              `;
+            }
+          }
         }
       }
     });

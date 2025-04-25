@@ -5,7 +5,7 @@ import { apiPrefix, teamRoute } from "../../../constants";
 import { TeamDTO } from "../../../types";
 import { apiFetch } from "../../api";
 import { CardBase } from "./CardBase";
-import { TrashIcon } from "../";
+import { DeleteButton, TrashIcon } from "../";
 
 type TeamCardProps = {
   team: TeamDTO;
@@ -34,17 +34,13 @@ export const TeamCard = ({ team, children }: TeamCardProps) => {
     <CardBase>
       <div className="mb-2 flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-800">{team.name}</h3>
-        <button
-          onClick={() => handleDeleteTeam(team.id)}
-          className="cursor-pointer text-red-500 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-        >
-          <TrashIcon />
-        </button>
+        <DeleteButton onDelete={() => handleDeleteTeam(team.id)} />
       </div>
       <p className="mb-1 text-sm text-gray-600">
         Created by:{" "}
         <span className="font-medium">{team.createdBy.username}</span>
       </p>
+      <div className="text-sm text-gray-500">{team.todos} ToDo(s)</div>
       <div
         title={team.members.map((m) => m.username).join(", ")}
         className="text-sm text-gray-500"

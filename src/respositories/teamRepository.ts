@@ -3,18 +3,20 @@ import { z } from "zod";
 
 import { TeamUpdate, TeamInsert, TeamDTO, UserDTO } from "../types";
 
-const memberSchema = z.object({
+const userSchema = z.object({
   id: z.string().uuid(),
   username: z.string(),
 });
 
-const membersSchema = z.array(memberSchema);
+const usersSchema = z.array(userSchema);
 
 const teamSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
-  createdBy: memberSchema,
-  members: z.array(memberSchema).default([]),
+  createdBy: userSchema,
+  createdOn: z.date(),
+  todos: z.coerce.number(),
+  members: z.array(userSchema).default([]),
 });
 
 const teamsSchema = z.array(teamSchema);
@@ -26,7 +28,6 @@ const teamInsertSchema = z.object({
 
 const teamUpdateSchema = z.object({
   name: z.string().optional(),
-  createdBy: z.string(),
 });
 
 export const teamRepository = () => {
@@ -45,7 +46,7 @@ export const teamRepository = () => {
         return [];
       }
 
-      const validatedMembers = membersSchema.parse(members);
+      const validatedMembers = usersSchema.parse(members);
       return validatedMembers as UserDTO[];
     } catch (error) {
       console.error("Error getting team members:", error);
@@ -60,7 +61,9 @@ export const teamRepository = () => {
           SELECT DISTINCT
             t.id, t.name,
             (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
-              FROM users u WHERE u.id = t."createdBy") AS "createdBy"
+              FROM users u WHERE u.id = t."createdBy") AS "createdBy",
+            t."createdOn",
+            (SELECT COUNT(td.id) FROM todos td WHERE td."teamId" = t.id) AS "todos"
           FROM teams t
             INNER JOIN users_teams ut
             ON ut."teamId" = t.id`;
@@ -86,7 +89,9 @@ export const teamRepository = () => {
           SELECT DISTINCT
             t.id, t.name,
             (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
-              FROM users u WHERE u.id = t."createdBy") AS "createdBy"
+              FROM users u WHERE u.id = t."createdBy") AS "createdBy",
+            t."createdOn",
+            (SELECT COUNT(td.id) FROM todos td WHERE td."teamId" = t.id) AS "todos"
           FROM teams t
             INNER JOIN users_teams ut
             ON ut."teamId" = t.id
@@ -113,7 +118,9 @@ export const teamRepository = () => {
           SELECT DISTINCT
             t.id, t.name,
             (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
-              FROM users u WHERE u.id = t."createdBy") AS "createdBy"
+              FROM users u WHERE u.id = t."createdBy") AS "createdBy",
+            t."createdOn",
+            (SELECT COUNT(td.id) FROM todos td WHERE td."teamId" = t.id) AS "todos"
           FROM teams t
             INNER JOIN users_teams ut
             ON ut."teamId" = t.id
@@ -145,14 +152,20 @@ export const teamRepository = () => {
         const insertedTeams = await sql`
           INSERT INTO teams (name, "createdBy")
           VALUES (${validatedTeamData.name}, ${validatedTeamData.createdBy})
-          RETURNING id, name, "createdBy"
+          RETURNING id, name,
+          (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
+            FROM users u WHERE u.id = "createdBy") AS "createdBy",
+          "createdOn",
+          (SELECT COUNT(td.id) FROM todos td WHERE td."teamId" = id) AS "todos",
         `;
 
         if (insertedTeams.length === 0) {
           return null; // Insertion failed
         }
 
-        const team = insertedTeams[0] as TeamDTO;
+        const validatedTeam = teamSchema.parse(insertedTeams[0]);
+        const team = validatedTeam as TeamDTO;
+
         const insertedBridge = await sql`
           INSERT INTO users_teams ("userId", "teamId")
           VALUES (${validatedTeamData.createdBy}, ${team.id})
@@ -193,8 +206,12 @@ export const teamRepository = () => {
         // Build the SQL query
         const setClauseString = setClauses.join(", ");
         const query = `
-          UPDATE teams SET ${setClauseString} WHERE id = $${valueIndex}
-          RETURNING id, name, "createdBy"`;
+          UPDATE teams SET ${setClauseString} WHERE t.id = $${valueIndex}
+          RETURNING id, name,
+          (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
+            FROM users u WHERE u.id = "createdBy") AS "createdBy",
+          "createdOn,
+          (SELECT COUNT(td.id) FROM todos td WHERE td."teamId" = id) AS "todos"`;
         values.push(id); // Add the ID to the values array
 
         const updatedTeams = await sql.unsafe(query, values);

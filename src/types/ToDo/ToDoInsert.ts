@@ -1,4 +1,6 @@
 export type ToDoInsert = {
-  userId: string;
-  message: string;
+  title: string;
+  description?: string;
+  teamId?: string;
+  createdBy: string;
 }
