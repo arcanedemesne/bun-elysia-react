@@ -10,6 +10,7 @@ import {
   teamRoute,
 } from "../../../constants";
 import { UserDTO } from "../../../types";
+import { apiFetch } from "../../api";
 
 type NavProps = {
   user: UserDTO;
@@ -21,7 +22,7 @@ export const Nav = ({ user }: NavProps) => {
   const handleLogout = async () => {
     ("use server");
 
-    const response = await fetch(`${apiPrefix}/${authPrefix}/${logoutRoute}`, {
+    const response = await apiFetch(`${apiPrefix}/${authPrefix}/${logoutRoute}`, {
       method: "POST",
     });
 

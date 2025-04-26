@@ -1,6 +1,6 @@
 import React, { ReactNode } from "react";
 
-export const Layout = ({
+export const PageLayout = ({
   title,
   children,
 }: {

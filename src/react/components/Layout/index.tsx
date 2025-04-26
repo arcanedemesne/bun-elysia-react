@@ -1,0 +1,35 @@
+import React, { ReactNode } from "react";
+import { AuthLayout } from "./AuthLayout";
+import { PageLayout } from "./PageLayout";
+import { CustomErrorBoundary } from "../CustomErrorBoundary";
+
+export enum LayoutTypes {
+  AUTH = "AUTH",
+  PAGE = "PAGE",
+}
+
+type LayoutType = "AUTH" | "PAGE";
+type LayoutProps = {
+  type?: LayoutType;
+  title: string;
+  children: ReactNode;
+};
+
+export const Layout = ({ type, title, children }: LayoutProps) => {
+  let layout;
+  switch (type) {
+    case LayoutTypes.AUTH:
+      layout = <AuthLayout title={title}>{children}</AuthLayout>;
+      break;
+    case LayoutTypes.PAGE:
+    default:
+      layout = <PageLayout title={title}>{children}</PageLayout>;
+  }
+  return (
+    <CustomErrorBoundary
+      fallback={<h2>Oops! Something went wrong in this section.</h2>}
+    >
+      {layout}
+    </CustomErrorBoundary>
+  );
+};

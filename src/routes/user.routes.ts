@@ -17,7 +17,11 @@ export const userRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
       })
       .post(``, async ({ body }) => {
         const parsed = JSON.parse(body as string);
-        const user = await userRepository().insertUser(parsed as UserInsert);
+        let user = await userRepository().getUserByUsername((parsed as UserInsert).username);
+        if (user) {
+          error(409);
+        }
+        user = await userRepository().insertUser(parsed as UserInsert);
         if (!user) {
           error(409);
         }

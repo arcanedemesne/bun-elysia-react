@@ -56,7 +56,6 @@ const App = ({ dehydratedState, user }: AppProps) => {
           <HydrationBoundary state={dehydratedState}>
             <Nav user={user} />
             <Outlet />
-
             <Routes location={location}>
               <Route path="/" element={<HomePage />} />
               <Route

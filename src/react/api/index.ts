@@ -1,40 +1,59 @@
-import {
-  apiPrefix,
-  authPrefix,
-  loginRoute,
-  refreshRoute,
-} from "../../constants";
+import { apiPrefix, authPrefix, refreshRoute } from "../../constants";
 
-async function apiFetch(url: string, options: RequestInit = {}) {
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    public statusText: string,
+    public message: string,
+  ) {
+    super(message);
+  }
+}
+
+export const apiFetch = async (
+  url: string,
+  options: RequestInit = {},
+): Promise<any> => {
   let response = await fetch(url, options);
 
   if (response.status === 401) {
-    try {
-      await refreshToken();
-      response = await fetch(url, options); // Retry
-    } catch (refreshError) {
-      location.href = `${loginRoute}`;
-      throw refreshError;
-    }
+    await refreshToken();
+    response = await fetch(url, options); // Retry
   }
 
   if (!response.ok) {
-    throw new Error((await response.json()).error);
+    let errorData;
+    try {
+      errorData = await response.json();
+    } catch (error: unknown) {
+      throw new ApiError(
+        response.status,
+        response.statusText,
+        "could not parse error",
+      );
+    }
+    throw new ApiError(
+      response.status,
+      response.statusText,
+      errorData?.errorMessage,
+    );
   }
 
   if (options.method === "POST" || options.method === "DELETE") return response;
 
   return await response.json();
-}
+};
 
-async function refreshToken() {
+const refreshToken = async (): Promise<void> => {
   const response = await fetch(`${apiPrefix}/${authPrefix}/${refreshRoute}`, {
     method: "POST",
   });
 
   if (!response.ok) {
-    throw new Error("Failed to refresh token");
+    throw new ApiError(
+      response.status,
+      response.statusText,
+      "Failed to refresh token",
+    );
   }
-}
-
-export { apiFetch };
+};

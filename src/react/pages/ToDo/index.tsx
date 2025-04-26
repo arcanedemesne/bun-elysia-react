@@ -1,13 +1,20 @@
 "use client";
 
-import React, { ChangeEvent, useActionState, useRef, useState } from "react";
-import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
+import React from "react";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 
 import { apiPrefix, todoRoute } from "../../../constants";
 import { ToDo, ToDoInsert, UserDTO } from "../../../types";
-import { usePersistentForm, useAuthCheck } from "../../hooks";
+import { useAuthCheck } from "../../hooks";
 import { apiFetch } from "../../api";
-import { Layout, ErrorMessage, CardGrid, ToDoCard } from "../../components";
+import {
+  Layout,
+  ErrorMessage,
+  CardGrid,
+  ToDoCard,
+  ValidationError,
+  Form,
+} from "../../components";
 
 type ToDoPageProps = {
   user: UserDTO;
@@ -18,96 +25,62 @@ export const ToDoPage = ({ user }: ToDoPageProps) => {
 
   useAuthCheck();
 
-  const [output, formAction, isPending] = useActionState<
-    string | undefined,
-    FormData
-  >(async (prev, formData) => {
-    await handleFormSubmit(formData);
-    return `handleFormSubmit`;
-  }, undefined);
-
-  const [errorMessage, setErrorMessage] = useState("");
-  const [title, setTitle] = useState("");
-  const formRef = useRef<HTMLFormElement>(null);
-
-  usePersistentForm(formRef);
-
   const {
     isPending: isGetPending,
-    error,
+    error: fetchError,
     data: todos,
   } = useQuery({
     queryKey: ["todoData"],
     queryFn: () => apiFetch(`/${apiPrefix}/${todoRoute}/${user.id}`),
   });
 
-  const createToDoMutation = useMutation({
-    mutationFn: async () => {
-      ("use server");
-
-      const newTodo = {
-        title,
-        createdBy: user.id,
-      } as ToDoInsert;
-
-      return await apiFetch(`/${apiPrefix}/${todoRoute}`, {
-        method: "POST",
-        body: JSON.stringify(newTodo),
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["todoData"] });
-      queryClient.refetchQueries({ queryKey: ["todoData"] });
-      setTitle("");
-    },
-    onError: (error) => {
-      setErrorMessage(error.message);
-    },
-  });
-
-  const handleFormSubmit = async (formData: FormData) => {
+  const validate = (formData: FormData) => {
     const title = formData.get("title");
 
-    setErrorMessage("");
+    const errors: ValidationError[] = [];
     if (title!.length < 6) {
-      setErrorMessage("Must be at least 6 characters long.");
-      return;
+      errors.push({
+        name: "title",
+        message: "Must be at least 6 characters long.",
+      });
     }
 
-    createToDoMutation.mutate();
+    return errors;
+  };
+
+  const onSubmit = async (formData: FormData) => {
+    const title = formData.get("title");
+
+    const newTodo = {
+      title,
+      createdBy: user.id,
+    } as ToDoInsert;
+
+    return await apiFetch(`/${apiPrefix}/${todoRoute}`, {
+      method: "POST",
+      body: JSON.stringify(newTodo),
+    });
+  };
+
+  const onSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ["todoData"] });
+    queryClient.refetchQueries({ queryKey: ["todoData"] });
   };
 
   return (
     <Layout title="ToDo List">
-      <ErrorMessage>{errorMessage}</ErrorMessage>
+      <ErrorMessage>{fetchError?.message ?? ""}</ErrorMessage>
 
       <div className="mb-4">
-        <form action={formAction} ref={formRef}>
-          <div className="flex items-center">
-            <input
-              type="text"
-              name="title"
-              value={title}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                setTitle(e.target.value);
-              }}
-              placeholder="Add a new todo..."
-              className="flex-grow rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-            />
-            <button
-              type="submit"
-              disabled={isPending}
-              className="ml-2 cursor-pointer rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 font-bold text-white transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
-            >
-              Add
-            </button>
-          </div>
-        </form>
+        <Form
+          inputs={[
+            { type: "text", name: "title", placeholder: "Add a new todo..." },
+          ]}
+          validate={validate}
+          onSubmit={onSubmit}
+          onSuccess={onSuccess}
+        />
       </div>
-
-      {error && (
-        <ErrorMessage>{`An error has occurred: ${error.message}`}</ErrorMessage>
-      )}
 
       {isGetPending && "Loading..."}
 

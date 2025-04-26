@@ -126,10 +126,6 @@ export const teamRepository = () => {
             ON ut."teamId" = t.id
             WHERE ut."userId" = ${userId}`;
 
-        if (teams.length === 0) {
-          return null;
-        }
-
         const validatedTeams = teamsSchema.parse(teams);
         const response = validatedTeams as TeamDTO[];
 
@@ -156,7 +152,7 @@ export const teamRepository = () => {
           (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
             FROM users u WHERE u.id = "createdBy") AS "createdBy",
           "createdOn",
-          (SELECT COUNT(td.id) FROM todos td WHERE td."teamId" = id) AS "todos",
+          (SELECT COUNT(td.id) FROM todos td WHERE td."teamId" = id) AS "todos"
         `;
 
         if (insertedTeams.length === 0) {

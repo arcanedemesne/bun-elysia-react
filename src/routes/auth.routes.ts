@@ -96,6 +96,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           const user = await userRepository().getUserByUsername(
             loginInfo.username.toString(),
           );
+
           if (user) {
             set.status = 422;
             return {
