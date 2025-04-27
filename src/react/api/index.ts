@@ -1,14 +1,6 @@
+import { StatusCodes } from "http-status-codes";
 import { apiPrefix, authPrefix, refreshRoute } from "../../constants";
-
-export class ApiError extends Error {
-  constructor(
-    public status: number,
-    public statusText: string,
-    public message: string,
-  ) {
-    super(message);
-  }
-}
+import { ApiError } from "../../types";
 
 export const apiFetch = async (
   url: string,
@@ -16,7 +8,7 @@ export const apiFetch = async (
 ): Promise<any> => {
   let response = await fetch(url, options);
 
-  if (response.status === 401) {
+  if (response.status === StatusCodes.UNAUTHORIZED) {
     await refreshToken();
     response = await fetch(url, options); // Retry
   }
@@ -26,17 +18,13 @@ export const apiFetch = async (
     try {
       errorData = await response.json();
     } catch (error: unknown) {
-      throw new ApiError(
-        response.status,
-        response.statusText,
-        "could not parse error",
-      );
+      throw new ApiError({
+        status: response.status,
+        statusText: response.statusText,
+        message: "could not parse error",
+      });
     }
-    throw new ApiError(
-      response.status,
-      response.statusText,
-      errorData?.errorMessage,
-    );
+    throw new ApiError(errorData);
   }
 
   if (options.method === "POST" || options.method === "DELETE") return response;
@@ -50,10 +38,10 @@ const refreshToken = async (): Promise<void> => {
   });
 
   if (!response.ok) {
-    throw new ApiError(
-      response.status,
-      response.statusText,
-      "Failed to refresh token",
-    );
+    throw new ApiError({
+      status: response.status,
+      statusText: response.statusText,
+      message: "Failed to refresh token",
+    });
   }
 };

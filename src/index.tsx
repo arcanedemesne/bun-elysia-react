@@ -10,6 +10,8 @@ import { authRoutes } from "./routes/auth.routes";
 import { todoRoutes } from "./routes/todo.routes";
 import { userRoutes } from "./routes/user.routes";
 import { teamRoutes } from "./routes/team.routes";
+import { ResponseError } from "./types";
+import { StatusCodes } from "http-status-codes";
 
 await Bun.build({
   entrypoints: ["./src/react/index.tsx"],
@@ -42,12 +44,29 @@ const app = new Elysia()
 
   // USERS
   .use(userRoutes)
-  
+
   // TEAMS
   .use(teamRoutes)
 
   // AUTH
   .use(authRoutes)
+
+  .onError(({ code, error, set }) => {
+    console.log("inside onError in server");
+
+    if (error instanceof ResponseError) {
+      set.status = error.status;
+      return error;
+    }
+
+    // Handle other types of errors (e.g., internal server errors)
+    set.status = StatusCodes.INTERNAL_SERVER_ERROR;
+    console.error("Unhandled error:", error);
+    return {
+      code: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: "Internal Server Error",
+    };
+  })
 
   .listen(Number(process.env.HOST_PORT));
 

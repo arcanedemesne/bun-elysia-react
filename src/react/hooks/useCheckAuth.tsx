@@ -1,36 +1,35 @@
-import { useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { apiPrefix, authPrefix, checkRoute, loginRoute } from "../../constants";
+import { apiFetch } from "../api";
 
 export const useAuthCheck = () => {
-  const queryClient = useQueryClient();
+  const [authenticated, setAuthenticated] = useState<boolean | undefined>(
+    undefined,
+  );
 
-  const { isPending, data, refetch } = useQuery({
-    queryKey: ["loginCheck"],
-    queryFn: () =>
-      fetch(`/${apiPrefix}/${authPrefix}/${checkRoute}`).then((res) =>
-        res.json()
-      ),
-    refetchOnWindowFocus: false, // Prevents refetching on window focus
-    enabled: true, // make sure that the query is enabled.
-  });
+  const checkAuth = async () => {
+    try {
+      const { authorized } = await apiFetch(
+        `/${apiPrefix}/${authPrefix}/${checkRoute}`,
+      );
+      setAuthenticated(authorized);
+    } catch (error) {
+      setAuthenticated(false);
+    }
+  };
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      refetch();
-    }, 30 * 1000); // check every 30 seconds
-
-    const { authenticated } = data || { authenticated: undefined };
-
-    if (authenticated !== undefined && !authenticated && !isPending) {
+    if (authenticated === false) {
       location.href = `${loginRoute}`; // should navigate, but there's a race condition with user state in server
       //navigate(`${loginRoute}`);
     }
 
+    const interval = setInterval(async () => {
+      await checkAuth();
+    }, 30 * 1000); // check every 30 seconds
+
     return () => {
-      queryClient.invalidateQueries({ queryKey: ["loginCheck"] });
-      queryClient.refetchQueries({ queryKey: ["loginCheck"] });
       clearInterval(interval);
     };
-  }, [refetch, data, queryClient]);
+  }, [authenticated]);
 };

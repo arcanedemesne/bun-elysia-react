@@ -8,7 +8,7 @@ export enum LayoutTypes {
   PAGE = "PAGE",
 }
 
-type LayoutType = "AUTH" | "PAGE";
+type LayoutType = LayoutTypes.AUTH | LayoutTypes.PAGE;
 type LayoutProps = {
   type?: LayoutType;
   title: string;

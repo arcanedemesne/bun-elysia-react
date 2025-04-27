@@ -3,7 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 
 import { usePersistentForm } from "../../hooks";
 import { ErrorMessage } from "..";
-import { ApiError } from "../../api";
+import { ApiError } from "../../../types";
 
 export type ValidationError = {
   name: string;
@@ -79,7 +79,7 @@ export const Form = ({
       resetForm();
     },
     onError: (error: ApiError) => {
-      setApiError(error.message);
+      error.validation && setApiError(error.validation);
     },
   });
 
