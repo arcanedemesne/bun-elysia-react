@@ -16,7 +16,7 @@ export const todoRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
         const parsed = JSON.parse(body as string);
         const todo = await todoRepository().insertToDo(parsed as ToDoInsert);
         if (!todo) {
-          throw new ResponseError({
+          return ResponseError.throw({
             status: StatusCodes.CONFLICT,
             statusText: ReasonPhrases.CONFLICT,
             message: `ToDo with title ${(parsed as ToDoInsert).title} could not be created`,
@@ -27,7 +27,7 @@ export const todoRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
       .delete(`/:id`, async ({ params: { id } }) => {
         const success = await todoRepository().deleteToDo(id);
         if (!success) {
-          throw new ResponseError({
+          return ResponseError.throw({
             status: StatusCodes.NOT_FOUND,
             statusText: ReasonPhrases.NOT_FOUND,
             message: `ToDo with id "${id}" could not be deleted`,

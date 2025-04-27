@@ -2,6 +2,7 @@ import React, { ReactNode } from "react";
 import { AuthLayout } from "./AuthLayout";
 import { PageLayout } from "./PageLayout";
 import { CustomErrorBoundary } from "../CustomErrorBoundary";
+import { Alerts } from "..";
 
 export enum LayoutTypes {
   AUTH = "AUTH",
@@ -29,6 +30,7 @@ export const Layout = ({ type, title, children }: LayoutProps) => {
     <CustomErrorBoundary
       fallback={<h2>Oops! Something went wrong in this section.</h2>}
     >
+      <Alerts />
       {layout}
     </CustomErrorBoundary>
   );

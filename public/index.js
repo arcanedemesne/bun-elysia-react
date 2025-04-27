@@ -16218,7 +16218,7 @@ var require_jsx_runtime = __commonJS((exports, module) => {
 });
 
 // src/react/index.tsx
-var import_react24 = __toESM(require_react(), 1);
+var import_react26 = __toESM(require_react(), 1);
 
 // node_modules/react-router/dist/development/chunk-K6CSEXPM.mjs
 var React3 = __toESM(require_react(), 1);
@@ -18117,7 +18117,7 @@ var encoder = new TextEncoder;
 var import_client = __toESM(require_client(), 1);
 
 // src/react/App.tsx
-var import_react23 = __toESM(require_react(), 1);
+var import_react25 = __toESM(require_react(), 1);
 
 // node_modules/@tanstack/query-core/build/modern/subscribable.js
 var Subscribable = class {
@@ -20670,14 +20670,70 @@ var HomePage = () => {
   }, "Login to begin")));
 };
 // src/react/pages/Login/index.tsx
-var import_react18 = __toESM(require_react(), 1);
+var import_react20 = __toESM(require_react(), 1);
 
-// src/react/components/Buttons/DeleteButton.tsx
+// src/react/components/Alerts/Alerts.tsx
 var import_react4 = __toESM(require_react(), 1);
 
-// src/react/components/Icons/TrashIcon.tsx
+// src/react/components/Alerts/AlertBar/AlertBar.tsx
 var import_react3 = __toESM(require_react(), 1);
-var TrashIcon = () => /* @__PURE__ */ import_react3.default.createElement("svg", {
+var AlertBar = ({ id, message, onRemove }) => {
+  return /* @__PURE__ */ import_react3.default.createElement("div", {
+    className: "left-0 top-0 z-50 flex w-full items-center justify-between bg-red-700 p-4 text-white"
+  }, /* @__PURE__ */ import_react3.default.createElement("p", null, message), /* @__PURE__ */ import_react3.default.createElement("button", {
+    className: "text-white-600 hover:text-white-800 focus:outline-none cursor-pointer",
+    onClick: () => onRemove(id)
+  }, /* @__PURE__ */ import_react3.default.createElement("svg", {
+    className: "h-5 w-5 fill-current",
+    viewBox: "0 0 20 20"
+  }, /* @__PURE__ */ import_react3.default.createElement("path", {
+    fillRule: "evenodd",
+    d: "M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z",
+    clipRule: "evenodd"
+  }))));
+};
+// src/react/components/Alerts/Alerts.tsx
+var eventListenerName = "alert-event-listener";
+var emitAlert = (apiError) => {
+  let detail = {
+    id: crypto.randomUUID(),
+    message: `(${apiError.status}) ${apiError.statusText} - ${apiError.message}`
+  };
+  document.dispatchEvent(new CustomEvent(eventListenerName, {
+    detail,
+    bubbles: true,
+    cancelable: false
+  }));
+};
+var Alerts = () => {
+  const [alerts, setAlerts] = import_react4.useState([]);
+  const handleAdd = (event) => {
+    setAlerts((prev) => [...prev, { ...event.detail }]);
+  };
+  const handleRemove = (id) => {
+    setAlerts(alerts.filter((e) => e.id !== id));
+  };
+  import_react4.useEffect(() => {
+    document.addEventListener(eventListenerName, handleAdd);
+    return () => {
+      document.removeEventListener(eventListenerName, handleAdd);
+    };
+  }, []);
+  return /* @__PURE__ */ import_react4.default.createElement(import_react4.default.Fragment, null, alerts.map((alert2) => {
+    return /* @__PURE__ */ import_react4.default.createElement(AlertBar, {
+      key: alert2.id,
+      id: alert2.id,
+      message: alert2.message,
+      onRemove: handleRemove
+    });
+  }));
+};
+// src/react/components/Buttons/DeleteButton.tsx
+var import_react6 = __toESM(require_react(), 1);
+
+// src/react/components/Icons/TrashIcon.tsx
+var import_react5 = __toESM(require_react(), 1);
+var TrashIcon = () => /* @__PURE__ */ import_react5.default.createElement("svg", {
   xmlns: "http://www.w3.org/2000/svg",
   viewBox: "0 0 24 24",
   fill: "none",
@@ -20686,16 +20742,16 @@ var TrashIcon = () => /* @__PURE__ */ import_react3.default.createElement("svg",
   strokeLinecap: "round",
   strokeLinejoin: "round",
   className: "h-5 w-5"
-}, /* @__PURE__ */ import_react3.default.createElement("polyline", {
+}, /* @__PURE__ */ import_react5.default.createElement("polyline", {
   points: "3 6 5 6 21 6"
-}), /* @__PURE__ */ import_react3.default.createElement("path", {
+}), /* @__PURE__ */ import_react5.default.createElement("path", {
   d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-}), /* @__PURE__ */ import_react3.default.createElement("line", {
+}), /* @__PURE__ */ import_react5.default.createElement("line", {
   x1: "10",
   y1: "11",
   x2: "10",
   y2: "17"
-}), /* @__PURE__ */ import_react3.default.createElement("line", {
+}), /* @__PURE__ */ import_react5.default.createElement("line", {
   x1: "14",
   y1: "11",
   x2: "14",
@@ -20703,20 +20759,20 @@ var TrashIcon = () => /* @__PURE__ */ import_react3.default.createElement("svg",
 }));
 // src/react/components/Buttons/DeleteButton.tsx
 var DeleteButton = ({ onDelete }) => {
-  return /* @__PURE__ */ import_react4.default.createElement("button", {
+  return /* @__PURE__ */ import_react6.default.createElement("button", {
     onClick: onDelete,
     className: "cursor-pointer text-red-500 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-  }, /* @__PURE__ */ import_react4.default.createElement(TrashIcon, null));
+  }, /* @__PURE__ */ import_react6.default.createElement(TrashIcon, null));
 };
 // src/react/components/Card/CardGrid.tsx
-var import_react5 = __toESM(require_react(), 1);
+var import_react7 = __toESM(require_react(), 1);
 var CardGrid = ({ children }) => {
-  return /* @__PURE__ */ import_react5.default.createElement("div", {
+  return /* @__PURE__ */ import_react7.default.createElement("div", {
     className: "grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
   }, children);
 };
 // src/react/components/Card/TeamCard.tsx
-var import_react7 = __toESM(require_react(), 1);
+var import_react9 = __toESM(require_react(), 1);
 
 // node_modules/http-status-codes/build/es/legacy.js
 var ACCEPTED = 202;
@@ -21052,23 +21108,19 @@ class ApiError extends Error {
   status;
   statusText;
   validation;
-  constructor({
-    status,
-    statusText,
-    message,
-    validation
-  }) {
+  constructor({ status, statusText, message, validation }) {
     super(message);
     this.status = status;
     this.statusText = statusText;
     this.message = message ?? "";
     this.validation = validation;
+    message && emitAlert(this);
   }
 }
 // src/react/api/index.ts
 var apiFetch = async (url, options = {}) => {
   let response = await fetch(url, options);
-  if (response.status === StatusCodes.UNAUTHORIZED) {
+  if (response.status === StatusCodes.UNAUTHORIZED && response.url.endsWith(checkRoute)) {
     await refreshToken();
     response = await fetch(url, options);
   }
@@ -21103,9 +21155,9 @@ var refreshToken = async () => {
 };
 
 // src/react/components/Card/CardBase.tsx
-var import_react6 = __toESM(require_react(), 1);
+var import_react8 = __toESM(require_react(), 1);
 var CardBase = ({ children }) => {
-  return /* @__PURE__ */ import_react6.default.createElement("div", {
+  return /* @__PURE__ */ import_react8.default.createElement("div", {
     className: "rounded-md bg-white p-4 shadow-md"
   }, children);
 };
@@ -21125,27 +21177,27 @@ var TeamCard = ({ team, children }) => {
       alert("error");
     }
   };
-  return /* @__PURE__ */ import_react7.default.createElement(CardBase, null, /* @__PURE__ */ import_react7.default.createElement("div", {
+  return /* @__PURE__ */ import_react9.default.createElement(CardBase, null, /* @__PURE__ */ import_react9.default.createElement("div", {
     className: "mb-2 flex items-center justify-between"
-  }, /* @__PURE__ */ import_react7.default.createElement("h3", {
+  }, /* @__PURE__ */ import_react9.default.createElement("h3", {
     className: "text-lg font-semibold text-gray-800"
-  }, team.name), /* @__PURE__ */ import_react7.default.createElement(DeleteButton, {
+  }, team.name), /* @__PURE__ */ import_react9.default.createElement(DeleteButton, {
     onDelete: () => handleDeleteTeam(team.id)
-  })), /* @__PURE__ */ import_react7.default.createElement("p", {
+  })), /* @__PURE__ */ import_react9.default.createElement("p", {
     className: "mb-1 text-sm text-gray-600"
-  }, "Created by:", " ", /* @__PURE__ */ import_react7.default.createElement("span", {
+  }, "Created by:", " ", /* @__PURE__ */ import_react9.default.createElement("span", {
     className: "font-medium"
-  }, team.createdBy.username)), /* @__PURE__ */ import_react7.default.createElement("div", {
+  }, team.createdBy.username)), /* @__PURE__ */ import_react9.default.createElement("div", {
     className: "text-sm text-gray-500"
-  }, team.todos, " ToDo(s)"), /* @__PURE__ */ import_react7.default.createElement("div", {
+  }, team.todos, " ToDo(s)"), /* @__PURE__ */ import_react9.default.createElement("div", {
     title: team.members.map((m) => m.username).join(", "),
     className: "text-sm text-gray-500"
-  }, team.members.length, " Member(s):", team.members.length > 0 && /* @__PURE__ */ import_react7.default.createElement("span", {
+  }, team.members.length, " Member(s):", team.members.length > 0 && /* @__PURE__ */ import_react9.default.createElement("span", {
     className: "ml-1 text-xs text-gray-400"
   }, team.members.slice(0, 3).map((m) => m.username).join(", "), team.members.length > 3 && ", ...")), children);
 };
 // src/react/components/Card/ToDoCard.tsx
-var import_react8 = __toESM(require_react(), 1);
+var import_react10 = __toESM(require_react(), 1);
 var ToDoCard = ({ todo, children }) => {
   const queryClient = useQueryClient();
   const handleDeleteToDo = async (id) => {
@@ -21160,26 +21212,26 @@ var ToDoCard = ({ todo, children }) => {
       alert("error");
     }
   };
-  return /* @__PURE__ */ import_react8.default.createElement(CardBase, null, /* @__PURE__ */ import_react8.default.createElement("div", {
+  return /* @__PURE__ */ import_react10.default.createElement(CardBase, null, /* @__PURE__ */ import_react10.default.createElement("div", {
     className: "mb-2"
-  }, /* @__PURE__ */ import_react8.default.createElement("div", {
+  }, /* @__PURE__ */ import_react10.default.createElement("div", {
     className: "flex items-center justify-between"
-  }, /* @__PURE__ */ import_react8.default.createElement("h3", {
+  }, /* @__PURE__ */ import_react10.default.createElement("h3", {
     className: "text-lg font-semibold text-gray-800"
-  }, todo.title), /* @__PURE__ */ import_react8.default.createElement(DeleteButton, {
+  }, todo.title), /* @__PURE__ */ import_react10.default.createElement(DeleteButton, {
     onDelete: () => handleDeleteToDo(todo.id)
-  })), /* @__PURE__ */ import_react8.default.createElement("p", {
+  })), /* @__PURE__ */ import_react10.default.createElement("p", {
     className: "mt-1 text-sm text-gray-600"
-  }, todo.description), /* @__PURE__ */ import_react8.default.createElement("p", {
+  }, todo.description), /* @__PURE__ */ import_react10.default.createElement("p", {
     className: "mt-1 text-sm text-gray-600"
-  }, "Created by:", " ", /* @__PURE__ */ import_react8.default.createElement("span", {
+  }, "Created by:", " ", /* @__PURE__ */ import_react10.default.createElement("span", {
     className: "font-medium"
   }, todo.createdBy.username))), children);
 };
 // src/react/components/CustomErrorBoundary/CustomErrorBoundary.tsx
-var import_react9 = __toESM(require_react(), 1);
+var import_react11 = __toESM(require_react(), 1);
 
-class CustomErrorBoundary extends import_react9.default.Component {
+class CustomErrorBoundary extends import_react11.default.Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -21198,19 +21250,19 @@ class CustomErrorBoundary extends import_react9.default.Component {
   }
 }
 // src/react/components/ErrorMessage/ErrorMessage.tsx
-var import_react10 = __toESM(require_react(), 1);
+var import_react12 = __toESM(require_react(), 1);
 var ErrorMessage = ({ children }) => {
-  return /* @__PURE__ */ import_react10.default.createElement(import_react10.default.Fragment, null, children && /* @__PURE__ */ import_react10.default.createElement("div", {
+  return /* @__PURE__ */ import_react12.default.createElement(import_react12.default.Fragment, null, children && /* @__PURE__ */ import_react12.default.createElement("div", {
     className: "mt-2 flex items-center text-sm text-red-500"
-  }, /* @__PURE__ */ import_react10.default.createElement("span", null, children)));
+  }, /* @__PURE__ */ import_react12.default.createElement("span", null, children)));
 };
 // src/react/components/Form/Form.tsx
-var import_react13 = __toESM(require_react(), 1);
+var import_react15 = __toESM(require_react(), 1);
 
 // src/react/hooks/useCheckAuth.tsx
-var import_react11 = __toESM(require_react(), 1);
+var import_react13 = __toESM(require_react(), 1);
 var useAuthCheck = () => {
-  const [authenticated, setAuthenticated] = import_react11.useState(undefined);
+  const [authenticated, setAuthenticated] = import_react13.useState(undefined);
   const checkAuth = async () => {
     try {
       const { authorized } = await apiFetch(`/${apiPrefix}/${authPrefix}/${checkRoute}`);
@@ -21219,7 +21271,7 @@ var useAuthCheck = () => {
       setAuthenticated(false);
     }
   };
-  import_react11.useEffect(() => {
+  import_react13.useEffect(() => {
     if (authenticated === false) {
       location.href = `${loginRoute}`;
     }
@@ -21232,11 +21284,11 @@ var useAuthCheck = () => {
   }, [authenticated]);
 };
 // src/react/hooks/usePersistentForm.tsx
-var import_react12 = __toESM(require_react(), 1);
+var import_react14 = __toESM(require_react(), 1);
 var usePersistentForm = (ref) => {
   if (ref === null)
     return;
-  import_react12.useEffect(() => {
+  import_react14.useEffect(() => {
     if (!ref.current) {
       throw new Error("Form ref is not defined.");
     }
@@ -21259,7 +21311,7 @@ var Form2 = ({
   showCancelButton = false,
   secondaryButtons
 }) => {
-  const [output, formAction, isPending] = import_react13.useActionState(async (prev, formData) => {
+  const [output, formAction, isPending] = import_react15.useActionState(async (prev, formData) => {
     await handleFormSubmit(formData);
     return `handleFormSubmit`;
   }, undefined);
@@ -21270,10 +21322,10 @@ var Form2 = ({
     });
     return inputMap;
   };
-  const [inputValues, setInputValues] = import_react13.useState(getDefaultValues());
-  const [apiError, setApiError] = import_react13.useState("");
-  const [validationErrors, setValidationErrors] = import_react13.useState([]);
-  const formRef = import_react13.useRef(null);
+  const [inputValues, setInputValues] = import_react15.useState(getDefaultValues());
+  const [apiError, setApiError] = import_react15.useState("");
+  const [validationErrors, setValidationErrors] = import_react15.useState([]);
+  const formRef = import_react15.useRef(null);
   usePersistentForm(formRef);
   const resetForm = () => {
     setApiError("");
@@ -21304,18 +21356,18 @@ var Form2 = ({
     }
     createMutation.mutate(formData);
   };
-  return /* @__PURE__ */ import_react13.default.createElement("form", {
+  return /* @__PURE__ */ import_react15.default.createElement("form", {
     action: formAction,
     ref: formRef
-  }, /* @__PURE__ */ import_react13.default.createElement(ErrorMessage, null, apiError), inputs.map((input) => {
+  }, /* @__PURE__ */ import_react15.default.createElement(ErrorMessage, null, apiError), inputs.map((input) => {
     const error = validationErrors.find((e) => e.name === input.name);
-    return /* @__PURE__ */ import_react13.default.createElement("div", {
+    return /* @__PURE__ */ import_react15.default.createElement("div", {
       className: "mb-4",
       key: input.name
-    }, input.label && /* @__PURE__ */ import_react13.default.createElement("label", {
+    }, input.label && /* @__PURE__ */ import_react15.default.createElement("label", {
       htmlFor: input.name,
       className: "mb-2 block text-sm font-bold text-gray-700"
-    }, input.label), error?.message && /* @__PURE__ */ import_react13.default.createElement(ErrorMessage, null, error.message), /* @__PURE__ */ import_react13.default.createElement("input", {
+    }, input.label), error?.message && /* @__PURE__ */ import_react15.default.createElement(ErrorMessage, null, error.message), /* @__PURE__ */ import_react15.default.createElement("input", {
       type: input.type,
       id: input.name,
       name: input.name,
@@ -21326,47 +21378,47 @@ var Form2 = ({
       placeholder: input.placeholder,
       className: "w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
     }));
-  }), /* @__PURE__ */ import_react13.default.createElement("div", {
+  }), /* @__PURE__ */ import_react15.default.createElement("div", {
     className: "mt-6 flex items-center justify-between"
-  }, secondaryButtons, showCancelButton && /* @__PURE__ */ import_react13.default.createElement("button", {
+  }, secondaryButtons, showCancelButton && /* @__PURE__ */ import_react15.default.createElement("button", {
     type: "button",
     onClick: resetForm,
     className: "cursor-pointer rounded-full px-4 py-2 font-bold text-purple-500 transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
-  }, "Cancel"), /* @__PURE__ */ import_react13.default.createElement("button", {
+  }, "Cancel"), /* @__PURE__ */ import_react15.default.createElement("button", {
     type: "submit",
     disabled: isPending || createMutation.isPending,
     className: "ml-2 cursor-pointer rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 font-bold text-white transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
   }, "Add")));
 };
 // src/react/components/Layout/index.tsx
-var import_react16 = __toESM(require_react(), 1);
+var import_react18 = __toESM(require_react(), 1);
 
 // src/react/components/Layout/AuthLayout.tsx
-var import_react14 = __toESM(require_react(), 1);
+var import_react16 = __toESM(require_react(), 1);
 var AuthLayout = ({
   title,
   children
 }) => {
-  return /* @__PURE__ */ import_react14.default.createElement("div", {
+  return /* @__PURE__ */ import_react16.default.createElement("div", {
     className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react14.default.createElement("div", {
+  }, /* @__PURE__ */ import_react16.default.createElement("div", {
     className: "w-96 rounded bg-white p-8 shadow-md"
-  }, /* @__PURE__ */ import_react14.default.createElement("h1", {
+  }, /* @__PURE__ */ import_react16.default.createElement("h1", {
     className: "mb-6 text-center text-2xl font-semibold"
   }, title), children));
 };
 
 // src/react/components/Layout/PageLayout.tsx
-var import_react15 = __toESM(require_react(), 1);
+var import_react17 = __toESM(require_react(), 1);
 var PageLayout = ({
   title,
   children
 }) => {
-  return /* @__PURE__ */ import_react15.default.createElement("div", {
+  return /* @__PURE__ */ import_react17.default.createElement("div", {
     className: "flex justify-center bg-gray-100"
-  }, /* @__PURE__ */ import_react15.default.createElement("div", {
+  }, /* @__PURE__ */ import_react17.default.createElement("div", {
     className: "w-full rounded bg-white p-8 shadow-md"
-  }, /* @__PURE__ */ import_react15.default.createElement("h1", {
+  }, /* @__PURE__ */ import_react17.default.createElement("h1", {
     className: "mb-4 text-center text-2xl font-bold"
   }, title), children));
 };
@@ -21376,22 +21428,22 @@ var Layout = ({ type, title, children }) => {
   let layout;
   switch (type) {
     case "AUTH" /* AUTH */:
-      layout = /* @__PURE__ */ import_react16.default.createElement(AuthLayout, {
+      layout = /* @__PURE__ */ import_react18.default.createElement(AuthLayout, {
         title
       }, children);
       break;
     case "PAGE" /* PAGE */:
     default:
-      layout = /* @__PURE__ */ import_react16.default.createElement(PageLayout, {
+      layout = /* @__PURE__ */ import_react18.default.createElement(PageLayout, {
         title
       }, children);
   }
-  return /* @__PURE__ */ import_react16.default.createElement(CustomErrorBoundary, {
-    fallback: /* @__PURE__ */ import_react16.default.createElement("h2", null, "Oops! Something went wrong in this section.")
-  }, layout);
+  return /* @__PURE__ */ import_react18.default.createElement(CustomErrorBoundary, {
+    fallback: /* @__PURE__ */ import_react18.default.createElement("h2", null, "Oops! Something went wrong in this section.")
+  }, /* @__PURE__ */ import_react18.default.createElement(Alerts, null), layout);
 };
 // src/react/components/Nav/index.tsx
-var import_react17 = __toESM(require_react(), 1);
+var import_react19 = __toESM(require_react(), 1);
 var Nav = ({ user }) => {
   const navigate = useNavigate();
   const handleLogout = async () => {
@@ -21405,11 +21457,12 @@ var Nav = ({ user }) => {
       alert("error");
     }
   };
-  return /* @__PURE__ */ import_react17.default.createElement("nav", {
-    className: "flex items-center justify-between bg-gray-800 p-4"
-  }, /* @__PURE__ */ import_react17.default.createElement("div", {
+  return /* @__PURE__ */ import_react19.default.createElement("nav", {
+    className: "flex items-center justify-between bg-gray-800 p-4",
+    style: { height: 60 }
+  }, /* @__PURE__ */ import_react19.default.createElement("div", {
     className: "flex items-center"
-  }, /* @__PURE__ */ import_react17.default.createElement("img", {
+  }, /* @__PURE__ */ import_react19.default.createElement("img", {
     src: "/public/bun.png",
     alt: "Logo",
     height: 50,
@@ -21417,22 +21470,22 @@ var Nav = ({ user }) => {
     onClick: () => {
       navigate("/");
     }
-  }), /* @__PURE__ */ import_react17.default.createElement(Link, {
+  }), /* @__PURE__ */ import_react19.default.createElement(Link, {
     to: "/",
     className: "text-lg font-bold text-white"
-  }, "ToDos App")), /* @__PURE__ */ import_react17.default.createElement("div", null, !user.id && /* @__PURE__ */ import_react17.default.createElement(Link, {
+  }, "ToDos App")), /* @__PURE__ */ import_react19.default.createElement("div", null, !user.id && /* @__PURE__ */ import_react19.default.createElement(Link, {
     className: "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white",
     to: `/${loginRoute}`
-  }, "Login"), user.id && /* @__PURE__ */ import_react17.default.createElement(import_react17.default.Fragment, null, /* @__PURE__ */ import_react17.default.createElement(Link, {
+  }, "Login"), user.id && /* @__PURE__ */ import_react19.default.createElement(import_react19.default.Fragment, null, /* @__PURE__ */ import_react19.default.createElement(Link, {
     className: "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white",
     to: `/${todoRoute}`
-  }, "Todos"), /* @__PURE__ */ import_react17.default.createElement(Link, {
+  }, "Todos"), /* @__PURE__ */ import_react19.default.createElement(Link, {
     className: "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white",
     to: `/${teamRoute}`
-  }, "Teams"), /* @__PURE__ */ import_react17.default.createElement("span", {
+  }, "Teams"), /* @__PURE__ */ import_react19.default.createElement("span", {
     onClick: handleLogout,
     className: "cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
-  }, "Logout"), /* @__PURE__ */ import_react17.default.createElement("span", {
+  }, "Logout"), /* @__PURE__ */ import_react19.default.createElement("span", {
     className: "border-spacing-1 rounded-md border px-3 py-2 text-sm font-medium text-gray-300"
   }, user.username))));
 };
@@ -21472,10 +21525,10 @@ var Login = () => {
   const onSuccess = () => {
     location.href = `/${todoRoute}`;
   };
-  return /* @__PURE__ */ import_react18.default.createElement(Layout, {
+  return /* @__PURE__ */ import_react20.default.createElement(Layout, {
     type: "AUTH" /* AUTH */,
     title: "Login"
-  }, /* @__PURE__ */ import_react18.default.createElement(Form2, {
+  }, /* @__PURE__ */ import_react20.default.createElement(Form2, {
     inputs: [
       {
         type: "text",
@@ -21493,30 +21546,30 @@ var Login = () => {
     validate,
     onSubmit,
     onSuccess,
-    secondaryButtons: /* @__PURE__ */ import_react18.default.createElement(Link, {
+    secondaryButtons: /* @__PURE__ */ import_react20.default.createElement(Link, {
       to: `/${registerRoute}`,
       className: "inline-block align-baseline text-sm font-semibold text-purple-500 hover:text-purple-800"
     }, "Not a member yet? Register here!")
   }));
 };
 // src/react/pages/NotFound/index.tsx
-var import_react19 = __toESM(require_react(), 1);
+var import_react21 = __toESM(require_react(), 1);
 var NotFoundPage = () => {
-  return /* @__PURE__ */ import_react19.default.createElement("div", {
+  return /* @__PURE__ */ import_react21.default.createElement("div", {
     className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react19.default.createElement("div", {
+  }, /* @__PURE__ */ import_react21.default.createElement("div", {
     className: "text-center"
-  }, /* @__PURE__ */ import_react19.default.createElement("h1", {
+  }, /* @__PURE__ */ import_react21.default.createElement("h1", {
     className: "mb-4 text-4xl font-bold text-gray-800"
-  }, "404 Not Found"), /* @__PURE__ */ import_react19.default.createElement("p", {
+  }, "404 Not Found"), /* @__PURE__ */ import_react21.default.createElement("p", {
     className: "mb-8 text-lg text-gray-600"
-  }, "We couldn't find what you were looking for."), /* @__PURE__ */ import_react19.default.createElement("a", {
+  }, "We couldn't find what you were looking for."), /* @__PURE__ */ import_react21.default.createElement("a", {
     href: `/${loginRoute}`,
     className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
   }, "Login to begin")));
 };
 // src/react/pages/Register/index.tsx
-var import_react20 = __toESM(require_react(), 1);
+var import_react22 = __toESM(require_react(), 1);
 "use client";
 var Register = () => {
   const validate = (formData) => {
@@ -21559,10 +21612,10 @@ var Register = () => {
   const onSuccess = () => {
     location.href = `/${todoRoute}`;
   };
-  return /* @__PURE__ */ import_react20.default.createElement(Layout, {
+  return /* @__PURE__ */ import_react22.default.createElement(Layout, {
     type: "AUTH" /* AUTH */,
     title: "Register"
-  }, /* @__PURE__ */ import_react20.default.createElement(Form2, {
+  }, /* @__PURE__ */ import_react22.default.createElement(Form2, {
     inputs: [
       {
         type: "text",
@@ -21586,14 +21639,14 @@ var Register = () => {
     validate,
     onSubmit,
     onSuccess,
-    secondaryButtons: /* @__PURE__ */ import_react20.default.createElement("a", {
+    secondaryButtons: /* @__PURE__ */ import_react22.default.createElement("a", {
       href: `/${loginRoute}`,
       className: "inline-block align-baseline text-sm font-semibold text-purple-500 hover:text-purple-800"
     }, "Already a member?")
   }));
 };
 // src/react/pages/Team/index.tsx
-var import_react21 = __toESM(require_react(), 1);
+var import_react23 = __toESM(require_react(), 1);
 "use client";
 var TeamPage = ({ user }) => {
   const queryClient = useQueryClient();
@@ -21632,24 +21685,24 @@ var TeamPage = ({ user }) => {
     queryClient.invalidateQueries({ queryKey: ["teamData"] });
     queryClient.refetchQueries({ queryKey: ["teamData"] });
   };
-  return /* @__PURE__ */ import_react21.default.createElement(Layout, {
+  return /* @__PURE__ */ import_react23.default.createElement(Layout, {
     title: "Team List"
-  }, /* @__PURE__ */ import_react21.default.createElement(ErrorMessage, null, fetchError?.message ?? ""), /* @__PURE__ */ import_react21.default.createElement("div", {
+  }, /* @__PURE__ */ import_react23.default.createElement(ErrorMessage, null, fetchError?.message ?? ""), /* @__PURE__ */ import_react23.default.createElement("div", {
     className: "mb-4"
-  }, /* @__PURE__ */ import_react21.default.createElement(Form2, {
+  }, /* @__PURE__ */ import_react23.default.createElement(Form2, {
     inputs: [
       { type: "text", name: "name", placeholder: "Add a new team..." }
     ],
     validate,
     onSubmit,
     onSuccess
-  })), isGetPending && "Loading...", /* @__PURE__ */ import_react21.default.createElement(CardGrid, null, teams && teams.map((team) => /* @__PURE__ */ import_react21.default.createElement(TeamCard, {
+  })), isGetPending && "Loading...", /* @__PURE__ */ import_react23.default.createElement(CardGrid, null, teams && teams.map((team) => /* @__PURE__ */ import_react23.default.createElement(TeamCard, {
     key: team.id,
     team
   }))));
 };
 // src/react/pages/ToDo/index.tsx
-var import_react22 = __toESM(require_react(), 1);
+var import_react24 = __toESM(require_react(), 1);
 "use client";
 var ToDoPage = ({ user }) => {
   const queryClient = useQueryClient();
@@ -21688,18 +21741,18 @@ var ToDoPage = ({ user }) => {
     queryClient.invalidateQueries({ queryKey: ["todoData"] });
     queryClient.refetchQueries({ queryKey: ["todoData"] });
   };
-  return /* @__PURE__ */ import_react22.default.createElement(Layout, {
+  return /* @__PURE__ */ import_react24.default.createElement(Layout, {
     title: "ToDo List"
-  }, /* @__PURE__ */ import_react22.default.createElement(ErrorMessage, null, fetchError?.message ?? ""), /* @__PURE__ */ import_react22.default.createElement("div", {
+  }, /* @__PURE__ */ import_react24.default.createElement(ErrorMessage, null, fetchError?.message ?? ""), /* @__PURE__ */ import_react24.default.createElement("div", {
     className: "mb-4"
-  }, /* @__PURE__ */ import_react22.default.createElement(Form2, {
+  }, /* @__PURE__ */ import_react24.default.createElement(Form2, {
     inputs: [
       { type: "text", name: "title", placeholder: "Add a new todo..." }
     ],
     validate,
     onSubmit,
     onSuccess
-  })), isGetPending && "Loading...", /* @__PURE__ */ import_react22.default.createElement(CardGrid, null, todos && todos.map((todo) => /* @__PURE__ */ import_react22.default.createElement(ToDoCard, {
+  })), isGetPending && "Loading...", /* @__PURE__ */ import_react24.default.createElement(CardGrid, null, todos && todos.map((todo) => /* @__PURE__ */ import_react24.default.createElement(ToDoCard, {
     key: todo.id,
     todo
   }))));
@@ -21715,58 +21768,58 @@ var App = ({ dehydratedState, user }) => {
       }
     }
   });
-  return /* @__PURE__ */ import_react23.default.createElement("html", null, /* @__PURE__ */ import_react23.default.createElement("head", null, /* @__PURE__ */ import_react23.default.createElement("meta", {
+  return /* @__PURE__ */ import_react25.default.createElement("html", null, /* @__PURE__ */ import_react25.default.createElement("head", null, /* @__PURE__ */ import_react25.default.createElement("meta", {
     charSet: "utf-8"
-  }), /* @__PURE__ */ import_react23.default.createElement("title", null, "Bun, Elysia & React"), /* @__PURE__ */ import_react23.default.createElement("meta", {
+  }), /* @__PURE__ */ import_react25.default.createElement("title", null, "Bun, Elysia & React"), /* @__PURE__ */ import_react25.default.createElement("meta", {
     name: "description",
     content: "Bun, Elysia & React"
-  }), /* @__PURE__ */ import_react23.default.createElement("meta", {
+  }), /* @__PURE__ */ import_react25.default.createElement("meta", {
     name: "viewport",
     content: "width=device-width, initial-scale=1"
-  }), /* @__PURE__ */ import_react23.default.createElement("script", {
+  }), /* @__PURE__ */ import_react25.default.createElement("script", {
     src: "/public/index.js",
     type: "module",
     defer: true
-  }), /* @__PURE__ */ import_react23.default.createElement("link", {
+  }), /* @__PURE__ */ import_react25.default.createElement("link", {
     rel: "stylesheet",
     type: "text/css",
     href: "/public/index.css"
-  }), /* @__PURE__ */ import_react23.default.createElement("script", {
+  }), /* @__PURE__ */ import_react25.default.createElement("script", {
     src: "https://unpkg.com/@tailwindcss/browser@4"
-  }), /* @__PURE__ */ import_react23.default.createElement("link", {
+  }), /* @__PURE__ */ import_react25.default.createElement("link", {
     rel: "icon",
     type: "image/x-icon",
     href: "/public/favicon.ico"
-  })), /* @__PURE__ */ import_react23.default.createElement("body", null, /* @__PURE__ */ import_react23.default.createElement(QueryClientProvider, {
+  })), /* @__PURE__ */ import_react25.default.createElement("body", null, /* @__PURE__ */ import_react25.default.createElement(QueryClientProvider, {
     client: queryClient
-  }, /* @__PURE__ */ import_react23.default.createElement(HydrationBoundary, {
+  }, /* @__PURE__ */ import_react25.default.createElement(HydrationBoundary, {
     state: dehydratedState
-  }, /* @__PURE__ */ import_react23.default.createElement(Nav, {
+  }, /* @__PURE__ */ import_react25.default.createElement(Nav, {
     user
-  }), /* @__PURE__ */ import_react23.default.createElement(Outlet, null), /* @__PURE__ */ import_react23.default.createElement(Routes, {
+  }), /* @__PURE__ */ import_react25.default.createElement(Outlet, null), /* @__PURE__ */ import_react25.default.createElement(Routes, {
     location: location2
-  }, /* @__PURE__ */ import_react23.default.createElement(Route, {
+  }, /* @__PURE__ */ import_react25.default.createElement(Route, {
     path: "/",
-    element: /* @__PURE__ */ import_react23.default.createElement(HomePage, null)
-  }), /* @__PURE__ */ import_react23.default.createElement(Route, {
+    element: /* @__PURE__ */ import_react25.default.createElement(HomePage, null)
+  }), /* @__PURE__ */ import_react25.default.createElement(Route, {
     path: `${todoRoute}`,
-    element: user.id ? /* @__PURE__ */ import_react23.default.createElement(ToDoPage, {
+    element: user.id ? /* @__PURE__ */ import_react25.default.createElement(ToDoPage, {
       user
-    }) : /* @__PURE__ */ import_react23.default.createElement(ForbiddenPage, null)
-  }), /* @__PURE__ */ import_react23.default.createElement(Route, {
+    }) : /* @__PURE__ */ import_react25.default.createElement(ForbiddenPage, null)
+  }), /* @__PURE__ */ import_react25.default.createElement(Route, {
     path: `${teamRoute}`,
-    element: user.id ? /* @__PURE__ */ import_react23.default.createElement(TeamPage, {
+    element: user.id ? /* @__PURE__ */ import_react25.default.createElement(TeamPage, {
       user
-    }) : /* @__PURE__ */ import_react23.default.createElement(ForbiddenPage, null)
-  }), /* @__PURE__ */ import_react23.default.createElement(Route, {
+    }) : /* @__PURE__ */ import_react25.default.createElement(ForbiddenPage, null)
+  }), /* @__PURE__ */ import_react25.default.createElement(Route, {
     path: `${loginRoute}`,
-    element: /* @__PURE__ */ import_react23.default.createElement(Login, null)
-  }), /* @__PURE__ */ import_react23.default.createElement(Route, {
+    element: /* @__PURE__ */ import_react25.default.createElement(Login, null)
+  }), /* @__PURE__ */ import_react25.default.createElement(Route, {
     path: `${registerRoute}`,
-    element: /* @__PURE__ */ import_react23.default.createElement(Register, null)
-  }), /* @__PURE__ */ import_react23.default.createElement(Route, {
+    element: /* @__PURE__ */ import_react25.default.createElement(Register, null)
+  }), /* @__PURE__ */ import_react25.default.createElement(Route, {
     path: "*",
-    element: /* @__PURE__ */ import_react23.default.createElement(NotFoundPage, null)
+    element: /* @__PURE__ */ import_react25.default.createElement(NotFoundPage, null)
   }))))));
 };
 var App_default = App;
@@ -21776,7 +21829,7 @@ var dehydratedState = window.__QUERY_STATE__;
 delete window.__QUERY_STATE__;
 var userDto = window.__USER_DATA__;
 delete window.__USER_DATA__;
-import_client.hydrateRoot(document, /* @__PURE__ */ import_react24.default.createElement(BrowserRouter, null, /* @__PURE__ */ import_react24.default.createElement(App_default, {
+import_client.hydrateRoot(document, /* @__PURE__ */ import_react26.default.createElement(BrowserRouter, null, /* @__PURE__ */ import_react26.default.createElement(App_default, {
   dehydratedState,
   user: userDto
 })));

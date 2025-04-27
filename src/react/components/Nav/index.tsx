@@ -22,9 +22,12 @@ export const Nav = ({ user }: NavProps) => {
   const handleLogout = async () => {
     ("use server");
 
-    const response = await apiFetch(`${apiPrefix}/${authPrefix}/${logoutRoute}`, {
-      method: "POST",
-    });
+    const response = await apiFetch(
+      `${apiPrefix}/${authPrefix}/${logoutRoute}`,
+      {
+        method: "POST",
+      },
+    );
 
     if (response.status === 200) {
       location.href = `${loginRoute}`; // should navigate, but there's a race condition with user state in server
@@ -35,7 +38,10 @@ export const Nav = ({ user }: NavProps) => {
   };
 
   return (
-    <nav className="flex items-center justify-between bg-gray-800 p-4">
+    <nav
+      className="flex items-center justify-between bg-gray-800 p-4"
+      style={{ height: 60 }}
+    >
       <div className="flex items-center">
         <img
           src="/public/bun.png"

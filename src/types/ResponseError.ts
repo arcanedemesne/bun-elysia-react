@@ -5,15 +5,28 @@ type ResponseErrorProps = {
   validation?: string;
 };
 
-export class ResponseError {
+export class ResponseError extends Error {
   public status: number;
   public statusText: string;
-  public message?: string;
+  public message: string;
   public validation?: string;
-  constructor({ status, statusText, message, validation }: ResponseErrorProps) {
+  public name: string;
+
+  private constructor({ status, statusText, message, validation }: ResponseErrorProps) {
+    super(message);
+
     this.status = status;
     this.statusText = statusText;
     this.message = message ?? "";
     this.validation = validation;
+    this.name = "ResponseError";
   }
+
+  public static throw = (props: ResponseErrorProps) => {
+    throw new ResponseError(props).stringify();
+  };
+
+  private stringify = () => {
+    return JSON.stringify(this);
+  };
 }

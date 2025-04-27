@@ -1,5 +1,10 @@
 import { StatusCodes } from "http-status-codes";
-import { apiPrefix, authPrefix, refreshRoute } from "../../constants";
+import {
+  apiPrefix,
+  authPrefix,
+  checkRoute,
+  refreshRoute,
+} from "../../constants";
 import { ApiError } from "../../types";
 
 export const apiFetch = async (
@@ -8,7 +13,10 @@ export const apiFetch = async (
 ): Promise<any> => {
   let response = await fetch(url, options);
 
-  if (response.status === StatusCodes.UNAUTHORIZED) {
+  if (
+    response.status === StatusCodes.UNAUTHORIZED &&
+    response.url.endsWith(checkRoute)
+  ) {
     await refreshToken();
     response = await fetch(url, options); // Retry
   }

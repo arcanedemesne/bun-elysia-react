@@ -51,23 +51,6 @@ const app = new Elysia()
   // AUTH
   .use(authRoutes)
 
-  .onError(({ code, error, set }) => {
-    console.log("inside onError in server");
-
-    if (error instanceof ResponseError) {
-      set.status = error.status;
-      return error;
-    }
-
-    // Handle other types of errors (e.g., internal server errors)
-    set.status = StatusCodes.INTERNAL_SERVER_ERROR;
-    console.error("Unhandled error:", error);
-    return {
-      code: StatusCodes.INTERNAL_SERVER_ERROR,
-      message: "Internal Server Error",
-    };
-  })
-
   .listen(Number(process.env.HOST_PORT));
 
 console.log(

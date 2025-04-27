@@ -12,7 +12,7 @@ export const userRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
       .get(`/:id`, async ({ params: { id } }) => {
         const user = await userRepository().getUserById(id);
         if (!user) {
-          throw new ResponseError({
+          return ResponseError.throw({
             status: StatusCodes.NOT_FOUND,
             statusText: ReasonPhrases.NOT_FOUND,
             message: `User with id "${id}" could not be found`,
@@ -26,7 +26,7 @@ export const userRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           (parsed as UserInsert).username,
         );
         if (user) {
-          throw new ResponseError({
+          return ResponseError.throw({
             status: StatusCodes.CONFLICT,
             statusText: ReasonPhrases.CONFLICT,
             message: `User with username ${(parsed as UserInsert).username} already exists`,
@@ -34,7 +34,7 @@ export const userRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
         }
         user = await userRepository().insertUser(parsed as UserInsert);
         if (!user) {
-          throw new ResponseError({
+          return ResponseError.throw({
             status: StatusCodes.CONFLICT,
             statusText: ReasonPhrases.CONFLICT,
             message: `User with username ${(parsed as UserInsert).username} could not be created`,
@@ -45,7 +45,7 @@ export const userRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
       .delete(`/:id`, async ({ params: { id } }) => {
         const success = await userRepository().deleteUser(id);
         if (!success) {
-          throw new ResponseError({
+          return ResponseError.throw({
             status: StatusCodes.NOT_FOUND,
             statusText: ReasonPhrases.NOT_FOUND,
             message: `User with id "${id}" could not be deleted`,

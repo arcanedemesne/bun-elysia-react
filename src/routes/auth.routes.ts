@@ -39,7 +39,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           );
           if (!user) {
             set.status = StatusCodes.NOT_FOUND;
-            return new ResponseError({
+            return ResponseError.throw({
               status: StatusCodes.NOT_FOUND,
               statusText: ReasonPhrases.NOT_FOUND,
               validation: "User does not exist",
@@ -86,7 +86,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
             }
           }
           set.status = StatusCodes.UNAUTHORIZED;
-          return new ResponseError({
+          return ResponseError.throw({
             status: StatusCodes.UNAUTHORIZED,
             statusText: ReasonPhrases.UNAUTHORIZED,
             validation: "Invalid user credentials",
@@ -107,11 +107,11 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           if (user) {
             console.log("user already exists");
             set.status = StatusCodes.CONFLICT;
-            return {
+            return ResponseError.throw({
               status: StatusCodes.CONFLICT,
               statusText: ReasonPhrases.CONFLICT,
               validation: "Username already exists",
-            };
+            });
           }
 
           const newUser = {
@@ -125,10 +125,10 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           const insertedUser = await userRepository().insertUser(newUser);
           if (!insertedUser) {
             set.status = StatusCodes.UNPROCESSABLE_ENTITY;
-            return new ResponseError({
+            return ResponseError.throw({
               status: StatusCodes.UNPROCESSABLE_ENTITY,
               statusText: ReasonPhrases.UNPROCESSABLE_ENTITY,
-              validation: "Error creating user",
+              message: "Error creating user",
             });
           }
 
@@ -169,10 +169,10 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
             return { authorized: true };
           }
           set.status = StatusCodes.UNAUTHORIZED;
-          return new ResponseError({
+          return ResponseError.throw({
             status: StatusCodes.UNAUTHORIZED,
             statusText: ReasonPhrases.UNAUTHORIZED,
-            validation: "Failed to update user with token",
+            message: "Failed to update user with token",
           });
         },
       )
@@ -184,7 +184,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           if (!refreshToken.value) {
             // handle error for refresh token is not available
             set.status = StatusCodes.UNAUTHORIZED;
-            return new ResponseError({
+            return ResponseError.throw({
               status: StatusCodes.UNAUTHORIZED,
               statusText: ReasonPhrases.UNAUTHORIZED,
               message: "Refresh token is missing",
@@ -195,7 +195,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           if (!jwtPayload) {
             // handle error for refresh token is tempted or incorrect
             set.status = StatusCodes.FORBIDDEN;
-            return new ResponseError({
+            return ResponseError.throw({
               status: StatusCodes.FORBIDDEN,
               statusText: ReasonPhrases.FORBIDDEN,
               message: "Refresh token is invalid",
@@ -211,7 +211,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           if (!user) {
             // handle error for user not found from the provided refresh token
             set.status = StatusCodes.FORBIDDEN;
-            return new ResponseError({
+            return ResponseError.throw({
               status: StatusCodes.FORBIDDEN,
               statusText: ReasonPhrases.FORBIDDEN,
               message: "Refresh token is invalid",
@@ -251,7 +251,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
             return { authorized: true };
           }
           set.status = StatusCodes.UNAUTHORIZED;
-          return new ResponseError({
+          return ResponseError.throw({
             status: StatusCodes.UNAUTHORIZED,
             statusText: ReasonPhrases.UNAUTHORIZED,
             message: "Failed to update user with token",
@@ -262,49 +262,44 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
       // CHECK AUTH
       .get(`/${checkRoute}`, async ({ cookie: { accessToken }, jwt, set }) => {
         if (!accessToken) {
-          return new ResponseError({
+          return ResponseError.throw({
             status: StatusCodes.UNAUTHORIZED,
             statusText: ReasonPhrases.UNAUTHORIZED,
+            message: "Auth check failed",
           });
         }
 
-        try {
-          if (!accessToken.value) {
-            // handle error for access token is not available
-            throw new ResponseError({
-              status: StatusCodes.UNAUTHORIZED,
-              statusText: ReasonPhrases.UNAUTHORIZED,
-              message: "Access token is missing",
-            });
-          }
-          const jwtPayload = await jwt.verify(accessToken.value);
-          if (!jwtPayload) {
-            // handle error for access token is tempted or incorrect
-            throw new ResponseError({
-              status: StatusCodes.FORBIDDEN,
-              statusText: ReasonPhrases.FORBIDDEN,
-              message: "Access token is invalid",
-            });
-          }
-
-          const userId = jwtPayload.sub;
-          const user = await userRepository().getUserById(userId!);
-
-          if (!user || !user.isOnline) {
-            // handle error for user not found from the provided access token
-            throw new ResponseError({
-              status: StatusCodes.FORBIDDEN,
-              statusText: ReasonPhrases.FORBIDDEN,
-              message: "Access token is invalid",
-            });
-          }
-
-          return { authorized: true };
-        } catch (error) {
-          const apiError = error as ResponseError;
-          set.status = apiError.status;
-          return apiError;
+        if (!accessToken.value) {
+          // handle error for access token is not available
+          return ResponseError.throw({
+            status: StatusCodes.UNAUTHORIZED,
+            statusText: ReasonPhrases.UNAUTHORIZED,
+            message: "Access token is missing",
+          });
         }
+        const jwtPayload = await jwt.verify(accessToken.value);
+        if (!jwtPayload) {
+          // handle error for access token is tempted or incorrect
+          return ResponseError.throw({
+            status: StatusCodes.FORBIDDEN,
+            statusText: ReasonPhrases.FORBIDDEN,
+            message: "Access token is invalid",
+          });
+        }
+
+        const userId = jwtPayload.sub;
+        const user = await userRepository().getUserById(userId!);
+
+        if (!user || !user.isOnline) {
+          // handle error for user not found from the provided access token
+          return ResponseError.throw({
+            status: StatusCodes.FORBIDDEN,
+            statusText: ReasonPhrases.FORBIDDEN,
+            message: "Access token is invalid",
+          });
+        }
+
+        return { authorized: true };
       })
 
       // LOGOUT
