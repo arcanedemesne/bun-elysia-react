@@ -21759,6 +21759,8 @@ var Nav = () => {
       alert("error");
     }
   };
+  const activeNavLinkClassName = "rounded-md px-3 py-2 text-sm font-bold text-gray-100 hover:text-white bg-gray-600";
+  const navLinkClassName = "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-gray-100";
   return /* @__PURE__ */ import_react29.default.createElement("nav", {
     className: "flex items-center justify-between bg-gray-800 p-4",
     style: { height: 60 }
@@ -21772,17 +21774,17 @@ var Nav = () => {
     onClick: () => {
       navigate("/");
     }
-  }), /* @__PURE__ */ import_react29.default.createElement(Link, {
+  }), /* @__PURE__ */ import_react29.default.createElement(NavLink, {
     to: "/",
     className: "text-lg font-bold text-white"
-  }, "ToDos App")), /* @__PURE__ */ import_react29.default.createElement("div", null, !user?.id && /* @__PURE__ */ import_react29.default.createElement(Link, {
-    className: "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white",
+  }, "ToDos App")), /* @__PURE__ */ import_react29.default.createElement("div", null, !user?.id && /* @__PURE__ */ import_react29.default.createElement(NavLink, {
+    className: ({ isActive }) => isActive ? activeNavLinkClassName : navLinkClassName,
     to: `/${loginRoute}`
-  }, "Login"), user?.id && /* @__PURE__ */ import_react29.default.createElement(import_react29.default.Fragment, null, /* @__PURE__ */ import_react29.default.createElement(Link, {
-    className: "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white",
+  }, "Login"), user?.id && /* @__PURE__ */ import_react29.default.createElement(import_react29.default.Fragment, null, /* @__PURE__ */ import_react29.default.createElement(NavLink, {
+    className: ({ isActive }) => isActive ? activeNavLinkClassName : navLinkClassName,
     to: `/${todoRoute}`
-  }, "Todos"), /* @__PURE__ */ import_react29.default.createElement(Link, {
-    className: "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white",
+  }, "Todos"), /* @__PURE__ */ import_react29.default.createElement(NavLink, {
+    className: ({ isActive }) => isActive ? activeNavLinkClassName : navLinkClassName,
     to: `/${teamRoute}`
   }, "Teams"), /* @__PURE__ */ import_react29.default.createElement("span", {
     onClick: handleLogout,
