@@ -35,9 +35,9 @@ export const Nav = () => {
   };
 
   const activeNavLinkClassName =
-    "rounded-md px-3 py-2 text-sm font-bold text-gray-100 hover:text-white bg-gray-600";
+    "rounded-md px-3 py-2 text-sm font-bold text-gray-100 hover:text-white bg-gray-600 hover:bg-gray-700 cursor-pointer";
   const navLinkClassName =
-    "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-gray-100";
+    "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-gray-100 hover:bg-gray-700 cursor-pointer";
   return (
     <nav
       className="flex items-center justify-between bg-gray-800 p-4"
@@ -71,28 +71,25 @@ export const Nav = () => {
         {user?.id && (
           <>
             <NavLink
-            className={({ isActive }) =>
-              isActive ? activeNavLinkClassName : navLinkClassName
-            }
+              className={({ isActive }) =>
+                isActive ? activeNavLinkClassName : navLinkClassName
+              }
               to={`/${todoRoute}`}
             >
               Todos
             </NavLink>
             <NavLink
-            className={({ isActive }) =>
-              isActive ? activeNavLinkClassName : navLinkClassName
-            }
+              className={({ isActive }) =>
+                isActive ? activeNavLinkClassName : navLinkClassName
+              }
               to={`/${teamRoute}`}
             >
               Teams
             </NavLink>
-            <span
-              onClick={handleLogout}
-              className="cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
-            >
+            <span onClick={handleLogout} className={navLinkClassName}>
               Logout
             </span>
-            <span className="border-spacing-1 rounded-md border px-3 py-2 text-sm font-medium text-gray-300">
+            <span className="ml-2 border-spacing-1 rounded-md border px-3 py-2 text-sm font-medium text-gray-300">
               {user.username}
             </span>
           </>
