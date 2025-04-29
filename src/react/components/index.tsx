@@ -5,5 +5,7 @@ export * from "./CustomErrorBoundary";
 export * from "./ErrorMessage";
 export * from "./Form";
 export * from "./Icons";
+export * from "./Inputs";
 export * from "./Layout";
+export * from "./Modal";
 export * from "./Nav";

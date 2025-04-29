@@ -1,3 +1,3 @@
-export * from "./teamRepository";
-export * from "./todoRepository";
-export * from "./userRepository";
+export * from "./TeamRepository";
+export * from "./TodoRepository";
+export * from "./UserRepository";

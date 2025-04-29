@@ -1,75 +1,51 @@
 "use client";
 
-import React from "react";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import React, { MouseEvent, useState } from "react";
 
-import { apiPrefix, todoRoute } from "../../../constants";
-import { ToDo, ToDoInsert, UserDTO } from "../../../types";
-import { useAuthCheck } from "../../hooks";
-import { apiFetch } from "../../api";
+import { ToDo } from "../../../types";
+import { useAuthCheck, useToDos } from "../../hooks";
 import {
   Layout,
   ErrorMessage,
   CardGrid,
   ToDoCard,
-  ValidationError,
   Form,
+  Modal,
+  Button,
+  ButtonModes,
 } from "../../components";
 
-type ToDoPageProps = {
-  user: UserDTO;
-};
-
-export const ToDoPage = ({ user }: ToDoPageProps) => {
-  const queryClient = useQueryClient();
-
+export const ToDoPage = () => {
   useAuthCheck();
 
   const {
-    isPending: isGetPending,
-    error: fetchError,
-    data: todos,
-  } = useQuery({
-    queryKey: ["todoData"],
-    queryFn: () => apiFetch(`/${apiPrefix}/${todoRoute}/${user.id}`),
-  });
+    isPending,
+    error,
+    todos,
+    validate,
+    onCreate,
+    onEdit,
+    onDelete,
+    onSuccess,
+  } = useToDos();
+  const [isModelOpen, setIsModalOpen] = useState(false);
+  const [editId, setEditId] = useState<string | undefined>(undefined);
 
-  const validate = (formData: FormData) => {
-    const title = formData.get("title");
+  const todoForEdit = todos && todos.find((t) => t.id === editId);
 
-    const errors: ValidationError[] = [];
-    if (title!.length < 6) {
-      errors.push({
-        name: "title",
-        message: "Must be at least 6 characters long.",
-      });
-    }
-
-    return errors;
+  const handleEdit = (id: string) => {
+    setEditId(id);
+    setIsModalOpen(true);
   };
 
-  const onSubmit = async (formData: FormData) => {
-    const title = formData.get("title");
-
-    const newTodo = {
-      title,
-      createdBy: user.id,
-    } as ToDoInsert;
-
-    return await apiFetch(`/${apiPrefix}/${todoRoute}`, {
-      method: "POST",
-      body: JSON.stringify(newTodo),
-    });
-  };
-
-  const onSuccess = () => {
-    queryClient.invalidateQueries({ queryKey: ["todoData"] });
-    queryClient.refetchQueries({ queryKey: ["todoData"] });
+  const handleCloseModal = () => {
+    setEditId(undefined);
+    setIsModalOpen(false);
   };
 
   return (
     <Layout title="ToDo List">
-      <ErrorMessage>{fetchError?.message ?? ""}</ErrorMessage>
+      <ErrorMessage>{error?.message ?? ""}</ErrorMessage>
 
       <div className="mb-4">
         <Form
@@ -77,17 +53,73 @@ export const ToDoPage = ({ user }: ToDoPageProps) => {
             { type: "text", name: "title", placeholder: "Add a new todo..." },
           ]}
           validate={validate}
-          onSubmit={onSubmit}
+          onSubmit={onCreate}
           onSuccess={onSuccess}
+          showCancelButton={true}
         />
       </div>
 
-      {isGetPending && "Loading..."}
+      {isPending && "Loading..."}
 
       <CardGrid>
         {todos &&
-          todos.map((todo: ToDo) => <ToDoCard key={todo.id} todo={todo} />)}
+          todos.map((todo: ToDo) => (
+            <ToDoCard
+              key={todo.id}
+              onEdit={handleEdit}
+              onDelete={onDelete}
+              todo={todo}
+            />
+          ))}
       </CardGrid>
+
+      <Modal
+        title="Editing a ToDo Item"
+        isOpen={isModelOpen && !!todoForEdit}
+        onClose={handleCloseModal}
+      >
+        <Form
+          inputs={[
+            {
+              type: "hidden",
+              name: "id",
+              value: todoForEdit?.id,
+            },
+            {
+              type: "text",
+              name: "title",
+              placeholder: "Add a title...",
+              value: todoForEdit?.title,
+            },
+            {
+              type: "text",
+              name: "description",
+              placeholder: "Add a description...",
+              value: todoForEdit?.description,
+            },
+          ]}
+          validate={validate}
+          onSubmit={onEdit}
+          onSuccess={() => {
+            handleCloseModal();
+            onSuccess();
+          }}
+          onCancel={handleCloseModal}
+          showCancelButton={true}
+          secondaryButtons={
+            <Button
+              mode={ButtonModes.DELETE}
+              onClick={(event: MouseEvent<HTMLButtonElement>) => {
+                event.preventDefault();
+                const deleted = todoForEdit && onDelete(todoForEdit.id);
+                deleted && handleCloseModal();
+              }}
+            >
+              Delete
+            </Button>
+          }
+        />
+      </Modal>
     </Layout>
   );
 };

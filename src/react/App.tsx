@@ -21,6 +21,7 @@ import { Nav } from "./components";
 import "./App.css";
 import { loginRoute, registerRoute, teamRoute, todoRoute } from "../constants";
 import { UserDTO } from "../types";
+import { UserProvider } from "./providers/UserProvider";
 
 type AppProps = {
   dehydratedState: DehydratedState;
@@ -54,22 +55,24 @@ const App = ({ dehydratedState, user }: AppProps) => {
       <body>
         <QueryClientProvider client={queryClient}>
           <HydrationBoundary state={dehydratedState}>
-            <Nav user={user} />
-            <Outlet />
-            <Routes location={location}>
-              <Route path="/" element={<HomePage />} />
-              <Route
-                path={`${todoRoute}`}
-                element={user.id ? <ToDoPage user={user} /> : <ForbiddenPage />}
-              />
-              <Route
-                path={`${teamRoute}`}
-                element={user.id ? <TeamPage user={user} /> : <ForbiddenPage />}
-              />
-              <Route path={`${loginRoute}`} element={<Login />} />
-              <Route path={`${registerRoute}`} element={<Register />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
+            <UserProvider value={user}>
+              <Nav />
+              <Outlet />
+              <Routes location={location}>
+                <Route path="/" element={<HomePage />} />
+                <Route
+                  path={`${todoRoute}`}
+                  element={user.id ? <ToDoPage /> : <ForbiddenPage />}
+                />
+                <Route
+                  path={`${teamRoute}`}
+                  element={user.id ? <TeamPage /> : <ForbiddenPage />}
+                />
+                <Route path={`${loginRoute}`} element={<Login />} />
+                <Route path={`${registerRoute}`} element={<Register />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </UserProvider>
           </HydrationBoundary>
         </QueryClientProvider>
       </body>

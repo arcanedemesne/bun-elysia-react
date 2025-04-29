@@ -1,16 +1,8 @@
 import Elysia from "elysia";
 
-import {
-  apiPrefix,
-  authPrefix,
-  checkRoute,
-  loginRoute,
-  logoutRoute,
-  refreshRoute,
-  registerRoute,
-} from "./constants";
+import { apiPrefix, authPrefix } from "./constants";
 import { JwtContext } from "./types";
-import { userRepository } from "./respositories";
+import { UserRepository } from "./respositories";
 
 export const deriveUser = (app: Elysia<any, any, any, any, JwtContext>) => {
   return app.derive(async ({ jwt, cookie: { accessToken }, set, request }) => {
@@ -20,11 +12,7 @@ export const deriveUser = (app: Elysia<any, any, any, any, JwtContext>) => {
     // Exclude static asset paths
     if (
       pathname === "/" ||
-      pathname.startsWith(`/${apiPrefix}/${authPrefix}/${loginRoute}`) ||
-      pathname.startsWith(`/${apiPrefix}/${authPrefix}/${registerRoute}`) ||
-      pathname.startsWith(`/${apiPrefix}/${authPrefix}/${logoutRoute}`) ||
-      pathname.startsWith(`/${apiPrefix}/${authPrefix}/${checkRoute}`) ||
-      pathname.startsWith(`/${apiPrefix}/${authPrefix}/${refreshRoute}`) ||
+      pathname.startsWith(`/${apiPrefix}/${authPrefix}`) ||
       pathname.startsWith("/public/") ||
       pathname.endsWith(".css") ||
       pathname.endsWith(".js") ||
@@ -46,7 +34,7 @@ export const deriveUser = (app: Elysia<any, any, any, any, JwtContext>) => {
     }
 
     const userId = jwtPayload.sub;
-    const user = await userRepository().getUserById(userId!);
+    const user = await new UserRepository().getById(userId!);
 
     if (!user) {
       // handle error for user not found from the provided access token

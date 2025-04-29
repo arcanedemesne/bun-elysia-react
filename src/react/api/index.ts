@@ -5,7 +5,7 @@ import {
   checkRoute,
   refreshRoute,
 } from "../../constants";
-import { ApiError } from "../../types";
+import { ApiError, ResponseError } from "../../types";
 
 export const apiFetch = async (
   url: string,
@@ -24,7 +24,7 @@ export const apiFetch = async (
   if (!response.ok) {
     let errorData;
     try {
-      errorData = await response.json();
+      errorData = (await response.json()) as ResponseError;
     } catch (error: unknown) {
       throw new ApiError({
         status: response.status,
@@ -32,6 +32,7 @@ export const apiFetch = async (
         message: "could not parse error",
       });
     }
+    console.log(errorData);
     throw new ApiError(errorData);
   }
 

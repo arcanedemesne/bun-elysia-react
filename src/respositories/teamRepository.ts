@@ -1,7 +1,13 @@
 import sql from "../db";
 import { z } from "zod";
 
-import { TeamUpdate, TeamInsert, TeamDTO, UserDTO } from "../types";
+import {
+  IRepository,
+  TeamUpdate,
+  TeamInsert,
+  TeamDTO,
+  UserDTO,
+} from "../types";
 
 const userSchema = z.object({
   id: z.string().uuid(),
@@ -27,11 +33,14 @@ const teamInsertSchema = z.object({
 });
 
 const teamUpdateSchema = z.object({
+  id: z.string().uuid(),
   name: z.string().optional(),
 });
 
-export const teamRepository = () => {
-  const getMembers = async (teamId: string): Promise<UserDTO[]> => {
+export class TeamRepository
+  implements IRepository<TeamDTO, TeamInsert, TeamUpdate>
+{
+  private getMembers = async (teamId: string): Promise<UserDTO[]> => {
     try {
       const members = await sql`
         SELECT DISTINCT u.id, u.username
@@ -54,10 +63,9 @@ export const teamRepository = () => {
     }
   };
 
-  return {
-    async getTeams(): Promise<TeamDTO[]> {
-      try {
-        const teams = await sql`
+  async getAll(): Promise<TeamDTO[]> {
+    try {
+      const data = await sql`
           SELECT DISTINCT
             t.id, t.name,
             (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
@@ -68,24 +76,25 @@ export const teamRepository = () => {
             INNER JOIN users_teams ut
             ON ut."teamId" = t.id`;
 
-        const validatedTeams = teamsSchema.parse(teams);
-        const response = validatedTeams as TeamDTO[];
+      const validatedData = teamsSchema.parse(data);
+      const response = validatedData as TeamDTO[];
 
-        for (let i = 0; i < response.length; i++) {
-          const t = response[i];
-          const members = await getMembers(t.id);
-          t.members.push(...members);
-        }
-
-        return response;
-      } catch (error) {
-        console.error("Error getting teams:", error);
-        return [];
+      for (let i = 0; i < response.length; i++) {
+        const t = response[i];
+        const members = await this.getMembers(t.id);
+        t.members.push(...members);
       }
-    },
-    async getTeamById(id: string): Promise<TeamDTO | null> {
-      try {
-        const teams = await sql`
+
+      return response;
+    } catch (error) {
+      console.error("Error getting teams:", error);
+      return [];
+    }
+  }
+
+  async getById(id: string): Promise<TeamDTO | null> {
+    try {
+      const data = await sql`
           SELECT DISTINCT
             t.id, t.name,
             (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
@@ -97,24 +106,25 @@ export const teamRepository = () => {
             ON ut."teamId" = t.id
           WHERE t.id = ${id}`;
 
-        if (teams.length === 0) {
-          return null;
-        }
-
-        const validatedTeam = teamSchema.parse(teams[0]);
-        const response = validatedTeam as TeamDTO;
-
-        response.members = await getMembers(validatedTeam.id);
-
-        return response;
-      } catch (error) {
-        console.error("Error getting team by id:", error);
+      if (data.length === 0) {
         return null;
       }
-    },
-    async getTeamsByUserId(userId: string): Promise<TeamDTO[] | null> {
-      try {
-        const teams = await sql`
+
+      const validatedData = teamSchema.parse(data[0]);
+      const response = validatedData as TeamDTO;
+
+      response.members = await this.getMembers(response.id);
+
+      return response;
+    } catch (error) {
+      console.error("Error getting team by id:", error);
+      return null;
+    }
+  }
+
+  async getTeamsByUserId(userId: string): Promise<TeamDTO[] | null> {
+    try {
+      const data = await sql`
           SELECT DISTINCT
             t.id, t.name,
             (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
@@ -126,28 +136,29 @@ export const teamRepository = () => {
             ON ut."teamId" = t.id
             WHERE ut."userId" = ${userId}`;
 
-        const validatedTeams = teamsSchema.parse(teams);
-        const response = validatedTeams as TeamDTO[];
+      const validatedData = teamsSchema.parse(data);
+      const response = validatedData as TeamDTO[];
 
-        for (let i = 0; i < response.length; i++) {
-          const t = response[i];
-          const members = await getMembers(t.id);
-          t.members.push(...members);
-        }
-
-        return response;
-      } catch (error) {
-        console.error("Error getting team by user id:", error);
-        return null;
+      for (let i = 0; i < response.length; i++) {
+        const t = response[i];
+        const members = await this.getMembers(t.id);
+        t.members.push(...members);
       }
-    },
-    async insertTeam(teamData: TeamInsert): Promise<TeamDTO | null> {
-      try {
-        const validatedTeamData = teamInsertSchema.parse(teamData);
 
-        const insertedTeams = await sql`
+      return response;
+    } catch (error) {
+      console.error("Error getting team by user id:", error);
+      return null;
+    }
+  }
+
+  async insert(teamData: TeamInsert): Promise<TeamDTO | null> {
+    try {
+      const validatedData = teamInsertSchema.parse(teamData);
+
+      const data = await sql`
           INSERT INTO teams (name, "createdBy")
-          VALUES (${validatedTeamData.name}, ${validatedTeamData.createdBy})
+          VALUES (${validatedData.name}, ${validatedData.createdBy})
           RETURNING id, name,
           (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
             FROM users u WHERE u.id = "createdBy") AS "createdBy",
@@ -155,87 +166,85 @@ export const teamRepository = () => {
           (SELECT COUNT(td.id) FROM todos td WHERE td."teamId" = id) AS "todos"
         `;
 
-        if (insertedTeams.length === 0) {
-          return null; // Insertion failed
-        }
+      if (data.length === 0) {
+        return null; // Insertion failed
+      }
 
-        const validatedTeam = teamSchema.parse(insertedTeams[0]);
-        const team = validatedTeam as TeamDTO;
+      const validatedInsert = teamSchema.parse(data[0]);
+      const insertedData = validatedInsert as TeamDTO;
 
-        const insertedBridge = await sql`
+      const insertedBridge = await sql`
           INSERT INTO users_teams ("userId", "teamId")
-          VALUES (${validatedTeamData.createdBy}, ${team.id})
+          VALUES (${validatedData.createdBy}, ${insertedData.id})
           RETURNING "userId", "teamId"
         `;
 
-        if (insertedBridge.length === 0) {
-          return null; // Bridge Insertion failed
-        }
+      if (insertedBridge.length === 0) {
+        return null; // Bridge Insertion failed
+      }
 
-        return team; // Return the inserted team
-      } catch (error) {
-        console.error("Error inserting team:", error);
+      return insertedData;
+    } catch (error) {
+      console.error("Error inserting team:", error);
+      return null;
+    }
+  }
+
+  async update(updateData: TeamUpdate): Promise<TeamDTO | null> {
+    try {
+      const validatedUpdateData = teamUpdateSchema.parse(updateData);
+
+      // Build the SET clause dynamically
+      const setClauses: string[] = [];
+      const values: any[] = [];
+      let valueIndex = 1; // Start at 1 for parameterized queries
+
+      if (validatedUpdateData.name !== undefined) {
+        setClauses.push(`name = $${valueIndex++}`);
+        values.push(validatedUpdateData.name);
+      }
+
+      if (setClauses.length === 0) {
         return null;
       }
-    },
-    async updateTeam(
-      id: string,
-      updateData: TeamUpdate,
-    ): Promise<TeamDTO | null> {
-      try {
-        const validatedUpdateData = teamUpdateSchema.parse(updateData);
 
-        // Build the SET clause dynamically
-        const setClauses: string[] = [];
-        const values: any[] = [];
-        let valueIndex = 1; // Start at 1 for parameterized queries
-
-        if (validatedUpdateData.name !== undefined) {
-          setClauses.push(`name = $${valueIndex++}`);
-          values.push(validatedUpdateData.name);
-        }
-
-        if (setClauses.length === 0) {
-          return null;
-        }
-
-        // Build the SQL query
-        const setClauseString = setClauses.join(", ");
-        const query = `
-          UPDATE teams SET ${setClauseString} WHERE t.id = $${valueIndex}
+      // Build the SQL query
+      const setClauseString = setClauses.join(", ");
+      const query = `
+          UPDATE teams SET ${setClauseString} WHERE id = $${valueIndex}
           RETURNING id, name,
           (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
             FROM users u WHERE u.id = "createdBy") AS "createdBy",
-          "createdOn,
+          "createdOn",
           (SELECT COUNT(td.id) FROM todos td WHERE td."teamId" = id) AS "todos"`;
-        values.push(id); // Add the ID to the values array
+      values.push(updateData.id);
 
-        const updatedTeams = await sql.unsafe(query, values);
+      const data = await sql.unsafe(query, values);
 
-        if (updatedTeams.length === 0) {
-          return null; // Team not found
-        }
-
-        const validatedTeam = teamSchema.parse(updatedTeams[0]);
-        return validatedTeam as TeamDTO; // Return the updated team
-      } catch (error) {
-        console.error("Error updating team:", error);
-        return null;
+      if (data.length === 0) {
+        return null; // Team not found
       }
-    },
-    async deleteTeam(id: string): Promise<boolean> {
-      try {
-        let result = await sql`DELETE FROM users_teams WHERE "teamId" = ${id}`;
 
-        result = await sql`DELETE FROM teams WHERE id = ${id}`;
-        if (result.count > 0) {
-          return true; // Team deleted successfully
-        }
-        return false; // Team not found
-      } catch (error) {
-        console.error("Error deleting team:", error);
-        return false;
+      const updatedData = teamSchema.parse(data[0]);
+      return updatedData as TeamDTO; // Return the updated team
+    } catch (error) {
+      console.error("Error updating team:", error);
+      return null;
+    }
+  }
+
+  async delete(id: string): Promise<boolean> {
+    try {
+      let result = await sql`DELETE FROM users_teams WHERE "teamId" = ${id}`;
+
+      result = await sql`DELETE FROM teams WHERE id = ${id}`;
+      if (result.count > 0) {
+        return true; // Team deleted successfully
       }
-    },
-  };
-};
+      return false; // Team not found
+    } catch (error) {
+      console.error("Error deleting team:", error);
+      return false;
+    }
+  }
+}

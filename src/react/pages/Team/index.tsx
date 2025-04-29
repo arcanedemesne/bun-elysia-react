@@ -1,75 +1,51 @@
 "use client";
 
-import React from "react";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import React, { MouseEvent, useState } from "react";
 
-import { apiPrefix, teamRoute } from "../../../constants";
-import { TeamInsert, UserDTO, TeamDTO } from "../../../types";
-import { useAuthCheck } from "../../hooks";
-import { apiFetch } from "../../api";
+import { TeamDTO } from "../../../types";
+import { useAuthCheck, useTeams } from "../../hooks";
 import {
   CardGrid,
   TeamCard,
   Layout,
   ErrorMessage,
   Form,
-  ValidationError,
+  Modal,
+  Button,
+  ButtonModes,
 } from "../../components";
 
-type TeamPageProps = {
-  user: UserDTO;
-};
-
-export const TeamPage = ({ user }: TeamPageProps) => {
-  const queryClient = useQueryClient();
-
+export const TeamPage = () => {
   useAuthCheck();
 
   const {
-    isPending: isGetPending,
-    error: fetchError,
-    data: teams,
-  } = useQuery({
-    queryKey: ["teamData"],
-    queryFn: () => apiFetch(`/${apiPrefix}/${teamRoute}?userId=${user.id}`),
-  });
+    isPending,
+    error,
+    teams,
+    validate,
+    onCreate,
+    onEdit,
+    onDelete,
+    onSuccess,
+  } = useTeams();
+  const [isModelOpen, setIsModalOpen] = useState(false);
+  const [editId, setEditId] = useState<string | undefined>(undefined);
 
-  const validate = (formData: FormData) => {
-    const name = formData.get("name");
+  const teamForEdit = teams && teams.find((t) => t.id === editId);
 
-    const errors: ValidationError[] = [];
-    if (name!.length < 6) {
-      errors.push({
-        name: "name",
-        message: "Must be at least 6 characters long.",
-      });
-    }
-
-    return errors;
+  const handleEdit = (id: string) => {
+    setEditId(id);
+    setIsModalOpen(true);
   };
 
-  const onSubmit = async (formData: FormData) => {
-    const name = formData.get("name");
-
-    const newTeam = {
-      name,
-      createdBy: user.id,
-    } as TeamInsert;
-
-    return await apiFetch(`/${apiPrefix}/${teamRoute}`, {
-      method: "POST",
-      body: JSON.stringify(newTeam),
-    });
-  };
-
-  const onSuccess = () => {
-    queryClient.invalidateQueries({ queryKey: ["teamData"] });
-    queryClient.refetchQueries({ queryKey: ["teamData"] });
+  const handleCloseModal = () => {
+    setEditId(undefined);
+    setIsModalOpen(false);
   };
 
   return (
     <Layout title="Team List">
-      <ErrorMessage>{fetchError?.message ?? ""}</ErrorMessage>
+      <ErrorMessage>{error?.message ?? ""}</ErrorMessage>
 
       <div className="mb-4">
         <Form
@@ -77,17 +53,67 @@ export const TeamPage = ({ user }: TeamPageProps) => {
             { type: "text", name: "name", placeholder: "Add a new team..." },
           ]}
           validate={validate}
-          onSubmit={onSubmit}
+          onSubmit={onCreate}
           onSuccess={onSuccess}
+          showCancelButton={true}
         />
       </div>
 
-      {isGetPending && "Loading..."}
+      {isPending && "Loading..."}
 
       <CardGrid>
         {teams &&
-          teams.map((team: TeamDTO) => <TeamCard key={team.id} team={team} />)}
+          teams.map((team: TeamDTO) => (
+            <TeamCard
+              key={team.id}
+              team={team}
+              onEdit={handleEdit}
+              onDelete={onDelete}
+            />
+          ))}
       </CardGrid>
+
+      <Modal
+        title="Editing a Team"
+        isOpen={isModelOpen && !!teamForEdit}
+        onClose={handleCloseModal}
+      >
+        <Form
+          inputs={[
+            {
+              type: "hidden",
+              name: "id",
+              value: teamForEdit?.id,
+            },
+            {
+              type: "text",
+              name: "name",
+              placeholder: "Add a team name...",
+              value: teamForEdit?.name,
+            },
+          ]}
+          validate={validate}
+          onSubmit={onEdit}
+          onSuccess={() => {
+            handleCloseModal();
+            onSuccess();
+          }}
+          onCancel={handleCloseModal}
+          showCancelButton={true}
+          secondaryButtons={
+            <Button
+              mode={ButtonModes.DELETE}
+              onClick={(event: MouseEvent<HTMLButtonElement>) => {
+                event.preventDefault();
+                const deleted = teamForEdit && onDelete(teamForEdit.id);
+                deleted && handleCloseModal();
+              }}
+            >
+              Delete
+            </Button>
+          }
+        />
+      </Modal>
     </Layout>
   );
 };

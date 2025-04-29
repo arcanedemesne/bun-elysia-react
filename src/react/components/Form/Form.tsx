@@ -2,29 +2,24 @@ import React, { ReactNode, useActionState, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 
 import { usePersistentForm } from "../../hooks";
-import { ErrorMessage } from "..";
+import {
+  Button,
+  ButtonModes,
+  ErrorMessage,
+  HiddenInput,
+  InputProps,
+  TextInput,
+  ValidationError,
+  ValueType,
+} from "..";
 import { ApiError } from "../../../types";
 
-export type ValidationError = {
-  name: string;
-  message: string;
-};
-
-type ValueType = string | number | readonly string[] | undefined;
-
-export type FormInputProps = {
-  type: string;
-  name: string;
-  label?: string;
-  value?: ValueType;
-  placeholder?: string;
-};
-
 type FormProps = {
-  inputs: FormInputProps[];
+  inputs: InputProps[];
   validate: (formData: FormData) => ValidationError[];
   onSubmit: (formData: FormData) => Promise<any>;
   onSuccess?: (data?: any) => void;
+  onCancel?: () => void;
   showCancelButton?: boolean;
   secondaryButtons?: ReactNode;
 };
@@ -34,6 +29,7 @@ export const Form = ({
   validate,
   onSubmit,
   onSuccess,
+  onCancel,
   showCancelButton = false,
   secondaryButtons,
 }: FormProps) => {
@@ -63,6 +59,10 @@ export const Form = ({
 
   usePersistentForm(formRef);
 
+  const handleCancel = () => {
+    onCancel && onCancel();
+    resetForm();
+  };
   const resetForm = () => {
     setApiError("");
     setValidationErrors([]);
@@ -103,51 +103,60 @@ export const Form = ({
 
       {inputs.map((input) => {
         const error = validationErrors.find((e) => e.name === input.name);
+        let control;
+
+        switch (input.type) {
+          case "hidden":
+            control = <HiddenInput {...input} />;
+            break;
+          case "text":
+            control = (
+              <TextInput
+                {...input}
+                value={inputValues.get(input.name) ?? input.value}
+                error={error}
+                onChange={(event) => {
+                  setInputValues((prev) =>
+                    new Map(prev).set(input.name, event.target.value),
+                  );
+                }}
+              />
+            );
+            break;
+          default:
+            control = <>invlid input</>;
+            break;
+        }
+
         return (
-          <div className="mb-4" key={input.name}>
-            {input.label && (
-              <label
-                htmlFor={input.name}
-                className="mb-2 block text-sm font-bold text-gray-700"
-              >
-                {input.label}
-              </label>
-            )}
-            {error?.message && <ErrorMessage>{error.message}</ErrorMessage>}
-            <input
-              type={input.type}
-              id={input.name}
-              name={input.name}
-              value={inputValues.get(input.name) || ""}
-              onChange={(event) => {
-                setInputValues((prev) =>
-                  new Map(prev).set(input.name, event.target.value),
-                );
-              }}
-              placeholder={input.placeholder}
-              className="w-full rounded-md border px-4 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-            />
+          <div
+            className={input.type !== "hidden" ? "mb-4" : ""}
+            key={input.name}
+          >
+            {control}
           </div>
         );
       })}
       <div className="mt-6 flex items-center justify-between">
-        {secondaryButtons}
-        {showCancelButton && (
-          <button
-            type="button"
-            onClick={resetForm}
-            className="cursor-pointer rounded-full px-4 py-2 font-bold text-purple-500 transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
+        <div className="flex justify-start">{secondaryButtons}</div>
+        <div className="flex items-center space-x-4">
+          {showCancelButton && (
+            <Button
+              type="button"
+              onClick={handleCancel}
+              mode={ButtonModes.SECONDARY}
+            >
+              Cancel
+            </Button>
+          )}
+          <Button
+            type="submit"
+            disabled={isPending || createMutation.isPending}
+            mode={ButtonModes.PRIMARY}
           >
-            Cancel
-          </button>
-        )}
-        <button
-          type="submit"
-          disabled={isPending || createMutation.isPending}
-          className="ml-2 cursor-pointer rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 font-bold text-white transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
-        >
-          Add
-        </button>
+            Add
+          </Button>
+        </div>
       </div>
     </form>
   );

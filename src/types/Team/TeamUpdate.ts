@@ -1,4 +1,4 @@
 export type TeamUpdate = {
-  name?: string;
-  createdBy?: string;
+  id: string;
+  name: string;
 }

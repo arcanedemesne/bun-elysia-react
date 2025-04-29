@@ -1,31 +1,54 @@
 import Elysia from "elysia";
 
 import { apiPrefix, todoRoute } from "../constants";
-import { todoRepository } from "../respositories";
-import { JwtContext, ToDoInsert, ResponseError } from "../types";
+import { TodoRepository } from "../respositories";
+import { JwtContext, ToDoInsert, ResponseError, ToDoUpdate } from "../types";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 export const todoRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
+  const repo = new TodoRepository();
+
   return app.group(`/${apiPrefix}/${todoRoute}`, (group) =>
     group
-      .get(``, async () => await todoRepository().getToDos())
+      .get(``, async () => await repo.getAll())
       .get(`/:userId`, async ({ params: { userId } }) => {
-        return await todoRepository().getToDosByUserId(userId);
+        return await repo.getByUserId(userId);
       })
       .post(``, async ({ body }) => {
-        const parsed = JSON.parse(body as string);
-        const todo = await todoRepository().insertToDo(parsed as ToDoInsert);
-        if (!todo) {
+        const parsed = JSON.parse(body as string) as ToDoInsert;
+        const entity = await repo.insert(parsed);
+        if (!entity) {
           return ResponseError.throw({
             status: StatusCodes.CONFLICT,
             statusText: ReasonPhrases.CONFLICT,
-            message: `ToDo with title ${(parsed as ToDoInsert).title} could not be created`,
+            message: `ToDo with title ${parsed.title} could not be created`,
           });
         }
-        return todo;
+        return entity;
+      })
+      .put(`/:id`, async ({ params: { id }, body }) => {
+        const parsed = JSON.parse(body as string) as ToDoUpdate;
+
+        if (id !== parsed.id) {
+          return ResponseError.throw({
+            status: StatusCodes.CONFLICT,
+            statusText: ReasonPhrases.CONFLICT,
+            message: `ToDo with id ${parsed.id} did not match route id ${id}`,
+          });
+        }
+
+        const entity = await repo.update(parsed);
+        if (!entity) {
+          return ResponseError.throw({
+            status: StatusCodes.CONFLICT,
+            statusText: ReasonPhrases.CONFLICT,
+            message: `ToDo with id ${parsed.id} could not be updated`,
+          });
+        }
+        return entity;
       })
       .delete(`/:id`, async ({ params: { id } }) => {
-        const success = await todoRepository().deleteToDo(id);
+        const success = await repo.delete(id);
         if (!success) {
           return ResponseError.throw({
             status: StatusCodes.NOT_FOUND,

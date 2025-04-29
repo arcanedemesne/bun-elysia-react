@@ -15,8 +15,8 @@ export class ApiError extends Error {
     super(message);
 
     this.status = status;
-    this.statusText = statusText;
-    this.message = message ?? "";
+    this.statusText = statusText ?? "An Error Occured";
+    this.message = message ?? "Failed request, please try again later.";
     this.validation = validation;
 
     // only emit if a message exists, or else it is for validation

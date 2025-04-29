@@ -9,15 +9,12 @@ import {
   todoRoute,
   teamRoute,
 } from "../../../constants";
-import { UserDTO } from "../../../types";
 import { apiFetch } from "../../api";
+import { useUserContext } from "../../providers";
 
-type NavProps = {
-  user: UserDTO;
-};
-
-export const Nav = ({ user }: NavProps) => {
+export const Nav = () => {
   const navigate = useNavigate();
+  const { user } = useUserContext();
 
   const handleLogout = async () => {
     ("use server");
@@ -57,7 +54,7 @@ export const Nav = ({ user }: NavProps) => {
         </Link>
       </div>
       <div>
-        {!user.id && (
+        {!user?.id && (
           <Link
             className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
             to={`/${loginRoute}`}
@@ -65,7 +62,7 @@ export const Nav = ({ user }: NavProps) => {
             Login
           </Link>
         )}
-        {user.id && (
+        {user?.id && (
           <>
             <Link
               className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"

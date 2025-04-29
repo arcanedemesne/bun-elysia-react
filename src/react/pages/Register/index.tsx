@@ -10,7 +10,13 @@ import {
   todoRoute,
 } from "../../../constants";
 import { LoginInfo } from "../../../types";
-import { Layout, Form, ValidationError, LayoutTypes } from "../../components";
+import {
+  Layout,
+  Form,
+  ValidationError,
+  LayoutTypes,
+  LinkButton,
+} from "../../components";
 import { apiFetch } from "../../api";
 
 export const Register = () => {
@@ -88,12 +94,7 @@ export const Register = () => {
         onSubmit={onSubmit}
         onSuccess={onSuccess}
         secondaryButtons={
-          <a
-            href={`/${loginRoute}`}
-            className="inline-block align-baseline text-sm font-semibold text-purple-500 hover:text-purple-800"
-          >
-            Already a member?
-          </a>
+          <LinkButton to={`/${loginRoute}`}>Already a member?</LinkButton>
         }
       />
     </Layout>

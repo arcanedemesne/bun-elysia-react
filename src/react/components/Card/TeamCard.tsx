@@ -1,40 +1,35 @@
 import React, { ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { apiPrefix, teamRoute } from "../../../constants";
 import { TeamDTO } from "../../../types";
-import { apiFetch } from "../../api";
 import { CardBase } from "./CardBase";
-import { DeleteButton, TrashIcon } from "../";
+import { DeleteButton, EditButton, TrashIcon } from "../";
 
 type TeamCardProps = {
   team: TeamDTO;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
   children?: ReactNode;
 };
 
-export const TeamCard = ({ team, children }: TeamCardProps) => {
+export const TeamCard = ({
+  team,
+  onEdit,
+  onDelete,
+  children,
+}: TeamCardProps) => {
   const queryClient = useQueryClient();
-
-  const handleDeleteTeam = async (id: string) => {
-    ("use server");
-
-    const response = await apiFetch(`/${apiPrefix}/${teamRoute}/${id}`, {
-      method: "DELETE",
-    });
-
-    if (response.status === 200) {
-      queryClient.invalidateQueries({ queryKey: ["teamData"] });
-      queryClient.refetchQueries({ queryKey: ["teamData"] });
-    } else {
-      alert("error");
-    }
-  };
 
   return (
     <CardBase>
-      <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-800">{team.name}</h3>
-        <DeleteButton onDelete={() => handleDeleteTeam(team.id)} />
+      <div className="flex items-center justify-between">
+        <h3 className="flex justify-start text-lg font-semibold text-gray-800">
+          {team.name}
+        </h3>
+        <div className="flex justify-end space-x-2">
+          <EditButton onClick={() => onEdit(team.id)} />
+          <DeleteButton onClick={() => onDelete(team.id)} />
+        </div>
       </div>
       <p className="mb-1 text-sm text-gray-600">
         Created by:{" "}

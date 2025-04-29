@@ -2,13 +2,13 @@ import React from "react";
 import { TrashIcon } from "../Icons";
 
 type DeleteButtonProps = {
-  onDelete: () => void;
+  onClick: () => void;
 };
 
-export const DeleteButton = ({ onDelete }: DeleteButtonProps) => {
+export const DeleteButton = ({ onClick }: DeleteButtonProps) => {
   return (
     <button
-      onClick={onDelete}
+      onClick={onClick}
       className="cursor-pointer text-red-500 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
     >
       <TrashIcon />

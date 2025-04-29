@@ -1,44 +1,67 @@
-import Elysia, { error } from "elysia";
+import Elysia from "elysia";
 
 import { apiPrefix, teamRoute } from "../constants";
-import { teamRepository } from "../respositories";
-import { TeamInsert, JwtContext, ResponseError } from "../types";
+import { TeamRepository } from "../respositories";
+import { TeamInsert, JwtContext, ResponseError, TeamUpdate } from "../types";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 export const teamRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
+  const repo = new TeamRepository();
+
   return app.group(`/${apiPrefix}/${teamRoute}`, (group) =>
     group
       .get(``, async ({ query }) => {
         if (query.userId) {
-          return await teamRepository().getTeamsByUserId(query.userId);
+          return await repo.getTeamsByUserId(query.userId);
         }
-        return await teamRepository().getTeams();
+        return await repo.getAll();
       })
       .get(`/:id`, async ({ params: { id } }) => {
-        const team = await teamRepository().getTeamById(id);
-        if (!team) {
+        const entity = await repo.getById(id);
+        if (!entity) {
           return ResponseError.throw({
             status: StatusCodes.NOT_FOUND,
             statusText: ReasonPhrases.NOT_FOUND,
             message: `Team with id "${id}" could not be found`,
           });
         }
-        return team;
+        return entity;
       })
       .post(``, async ({ body }) => {
-        const parsed = JSON.parse(body as string);
-        const team = await teamRepository().insertTeam(parsed as TeamInsert);
-        if (!team) {
+        const parsed = JSON.parse(body as string) as TeamInsert;
+        const entity = await repo.insert(parsed);
+        if (!entity) {
           return ResponseError.throw({
             status: StatusCodes.CONFLICT,
             statusText: ReasonPhrases.CONFLICT,
-            message: `Team with name ${(parsed as TeamInsert).name} could not be created`,
+            message: `Team with name ${parsed.name} could not be created`,
           });
         }
-        return team;
+        return entity;
+      })
+      .put(`/:id`, async ({ params: { id }, body }) => {
+        const parsed = JSON.parse(body as string) as TeamUpdate;
+
+        if (id !== parsed.id) {
+          return ResponseError.throw({
+            status: StatusCodes.CONFLICT,
+            statusText: ReasonPhrases.CONFLICT,
+            message: `ToDo with id ${parsed.id} did not match route id ${id}`,
+          });
+        }
+
+        const entity = await repo.update(parsed);
+        if (!entity) {
+          return ResponseError.throw({
+            status: StatusCodes.CONFLICT,
+            statusText: ReasonPhrases.CONFLICT,
+            message: `ToDo with id ${parsed.id} could not be updated`,
+          });
+        }
+        return entity;
       })
       .delete(`/:id`, async ({ params: { id } }) => {
-        const success = await teamRepository().deleteTeam(id);
+        const success = await repo.delete(id);
         if (!success) {
           return ResponseError.throw({
             status: StatusCodes.NOT_FOUND,

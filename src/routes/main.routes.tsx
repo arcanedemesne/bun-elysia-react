@@ -9,7 +9,7 @@ import ScriptInjectionStream from "../scriptInjectionStream";
 
 import { apiPrefix, todoRoute } from "../constants";
 import { JwtContext, UserDTO } from "../types";
-import { userRepository } from "../respositories";
+import { UserRepository } from "../respositories";
 
 export const mainRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
   const apiHost = `${app.server?.hostname}:${app.server?.port}`;
@@ -53,7 +53,7 @@ export const mainRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
       const jwtPayload = await jwt.verify(accessToken.value);
       if (jwtPayload) {
         const userId = jwtPayload.sub;
-        const user = await userRepository().getUserById(userId!);
+        const user = await new UserRepository().getById(userId!);
         if (user?.isOnline) {
           userDTO = {
             id: user.id,
