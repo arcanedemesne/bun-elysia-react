@@ -104,7 +104,6 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           const user = await repo.getByUsername(loginInfo.username.toString());
 
           if (user) {
-            console.log("user already exists");
             set.status = StatusCodes.CONFLICT;
             return ResponseError.throw({
               status: StatusCodes.CONFLICT,

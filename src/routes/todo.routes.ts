@@ -10,9 +10,25 @@ export const todoRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
 
   return app.group(`/${apiPrefix}/${todoRoute}`, (group) =>
     group
-      .get(``, async () => await repo.getAll())
-      .get(`/:userId`, async ({ params: { userId } }) => {
-        return await repo.getByUserId(userId);
+      .get(``, async ({ query }) => {
+        if (query.userId) {
+          return await repo.getByUserId(query.userId);
+        }
+        if (query.teamId) {
+          return await repo.getByTeamId(query.teamId);
+        }
+        return await repo.getAll();
+      })
+      .get(`/:id`, async ({ params: { id } }) => {
+        const todo = await repo.getById(id);
+        if (!todo) {
+          return ResponseError.throw({
+            status: StatusCodes.NOT_FOUND,
+            statusText: ReasonPhrases.NOT_FOUND,
+            message: `ToDo with id "${id}" could not be found`,
+          });
+        }
+        return todo;
       })
       .post(``, async ({ body }) => {
         const parsed = JSON.parse(body as string) as ToDoInsert;

@@ -30,9 +30,16 @@ export const ToDoCard = ({
             <DeleteButton onClick={() => onDelete(todo.id)} />
           </div>
         </div>
-        <p className="mt-1 justify-start text-sm text-gray-600">
-          {todo.description}
-        </p>
+        {todo.description && (
+          <p className="mt-1 justify-start text-sm text-gray-600">
+            {todo.description}
+          </p>
+        )}
+        {!todo.description && (
+          <p className="mt-1 justify-start text-sm text-gray-300">
+            No description
+          </p>
+        )}
         <p className="mt-1 text-sm text-gray-600">
           Created by:{" "}
           <span className="font-medium">{todo.createdBy.username}</span>

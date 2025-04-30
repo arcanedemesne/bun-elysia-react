@@ -1,12 +1,12 @@
 import React from "react";
 import { CloseButton } from "..";
 
-interface ModalProps {
+export type ModalProps = {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
-  children: React.ReactNode;
-}
+  children?: React.ReactNode;
+};
 
 export const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
   if (!isOpen) {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { MouseEvent, useState } from "react";
+import React, { ChangeEventHandler, MouseEvent, useState } from "react";
 
 import { TeamDTO } from "../../../types";
 import { useAuthCheck, useTeams } from "../../hooks";
@@ -13,34 +13,55 @@ import {
   Modal,
   Button,
   ButtonModes,
+  TypeAheadSearchInput,
+  CloseButton,
+  Label,
+  DeleteModal,
 } from "../../components";
 
 export const TeamPage = () => {
   useAuthCheck();
 
-  const {
-    isPending,
-    error,
-    teams,
-    validate,
-    onCreate,
-    onEdit,
-    onDelete,
-    onSuccess,
-  } = useTeams();
-  const [isModelOpen, setIsModalOpen] = useState(false);
+  const [isEditModelOpen, setIsEditModalOpen] = useState(false);
   const [editId, setEditId] = useState<string | undefined>(undefined);
 
+  const [isDeleteModelOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | undefined>(undefined);
+
+  const [selectedMemberId, setSelectedMemberId] = useState<string | undefined>(
+    undefined,
+  );
+
+  const { getData, validate, onCreate, onEdit, onDelete, refetch } = useTeams();
+
+  const { isPending, error, data: teams } = getData();
+
   const teamForEdit = teams && teams.find((t) => t.id === editId);
+  const teamForDelete = teams && teams.find((t) => t.id === deleteId);
+
+  const searchOptions = [
+    { label: "Jenny", value: "some guid" },
+    { label: "Jenny New", value: "some new guid" },
+  ];
 
   const handleEdit = (id: string) => {
     setEditId(id);
-    setIsModalOpen(true);
+    setIsEditModalOpen(true);
   };
 
-  const handleCloseModal = () => {
+  const handleCloseEditModal = () => {
     setEditId(undefined);
-    setIsModalOpen(false);
+    setIsEditModalOpen(false);
+  };
+
+  const handleDelete = (id: string) => {
+    setDeleteId(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setDeleteId(undefined);
+    setIsDeleteModalOpen(false);
   };
 
   return (
@@ -54,7 +75,8 @@ export const TeamPage = () => {
           ]}
           validate={validate}
           onSubmit={onCreate}
-          onSuccess={onSuccess}
+          onSuccess={refetch}
+          submitButtonText="Add"
           showCancelButton={true}
         />
       </div>
@@ -68,15 +90,15 @@ export const TeamPage = () => {
               key={team.id}
               team={team}
               onEdit={handleEdit}
-              onDelete={onDelete}
+              onDelete={handleDelete}
             />
           ))}
       </CardGrid>
 
       <Modal
         title="Editing a Team"
-        isOpen={isModelOpen && !!teamForEdit}
-        onClose={handleCloseModal}
+        isOpen={isEditModelOpen && !!teamForEdit}
+        onClose={handleCloseEditModal}
       >
         <Form
           inputs={[
@@ -88,6 +110,7 @@ export const TeamPage = () => {
             {
               type: "text",
               name: "name",
+              label: "Team Name",
               placeholder: "Add a team name...",
               value: teamForEdit?.name,
             },
@@ -95,25 +118,80 @@ export const TeamPage = () => {
           validate={validate}
           onSubmit={onEdit}
           onSuccess={() => {
-            handleCloseModal();
-            onSuccess();
+            handleCloseEditModal();
+            refetch();
           }}
-          onCancel={handleCloseModal}
+          onCancel={handleCloseEditModal}
+          submitButtonText="Edit"
           showCancelButton={true}
           secondaryButtons={
             <Button
               mode={ButtonModes.DELETE}
               onClick={(event: MouseEvent<HTMLButtonElement>) => {
                 event.preventDefault();
-                const deleted = teamForEdit && onDelete(teamForEdit.id);
-                deleted && handleCloseModal();
+                handleDelete(teamForEdit!.id);
               }}
             >
               Delete
             </Button>
           }
         />
+        <div className="mb-0 mt-5 flex items-end justify-between">
+          <div className="flex:none mr-4 w-full">
+            <Label htmlFor={"members"}>Add Members</Label>
+            {!selectedMemberId && (
+              <TypeAheadSearchInput
+                name="members"
+                placeholder="Search for members..."
+                options={searchOptions}
+                onSelect={(value) => {
+                  setSelectedMemberId(value);
+                }}
+              />
+            )}
+            {selectedMemberId && (
+              <div className="flex w-full items-end justify-between rounded border border-gray-800 p-2">
+                {searchOptions.find((o) => o.value === selectedMemberId)?.label}{" "}
+                <CloseButton
+                  onClick={() => {
+                    setSelectedMemberId(undefined);
+                  }}
+                />
+              </div>
+            )}
+          </div>
+          <div className="max-h-10">
+            <Button
+              mode={ButtonModes.SECONDARY}
+              disabled={!!!selectedMemberId}
+              onClick={() =>
+                console.log(
+                  "adding " +
+                    searchOptions.find((o) => o.value === selectedMemberId)
+                      ?.label,
+                )
+              }
+            >
+              Add
+            </Button>
+          </div>
+        </div>
       </Modal>
+
+      <DeleteModal
+        title="Deleting a Team"
+        itemName={teamForDelete?.name}
+        isOpen={isDeleteModelOpen && !!teamForDelete}
+        onClose={handleCloseDeleteModal}
+        onCancel={() => {
+          handleCloseDeleteModal();
+        }}
+        onDelete={() => {
+          const deleted = teamForDelete && onDelete(teamForDelete.id);
+          deleted && handleCloseEditModal();
+          deleted && handleCloseDeleteModal();
+        }}
+      />
     </Layout>
   );
 };

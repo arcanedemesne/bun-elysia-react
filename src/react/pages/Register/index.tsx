@@ -93,6 +93,7 @@ export const Register = () => {
         validate={validate}
         onSubmit={onSubmit}
         onSuccess={onSuccess}
+        submitButtonText="Register"
         secondaryButtons={
           <LinkButton to={`/${loginRoute}`}>Already a member?</LinkButton>
         }

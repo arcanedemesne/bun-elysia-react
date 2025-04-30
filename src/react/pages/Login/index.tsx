@@ -69,9 +69,10 @@ export const Login = () => {
             name: "username",
             label: "Username",
             placeholder: "Enter username",
+            autoComplete: "username"
           },
           {
-            type: "text",
+            type: "password",
             name: "password",
             label: "Password",
             placeholder: "Enter password",
@@ -80,6 +81,7 @@ export const Login = () => {
         validate={validate}
         onSubmit={onSubmit}
         onSuccess={onSuccess}
+        submitButtonText="Login"
         secondaryButtons={
           <LinkButton to={`/${registerRoute}`}>
             Not a member yet? Register here!

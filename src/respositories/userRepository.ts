@@ -50,6 +50,21 @@ export class UserRepository
     }
   }
 
+  async search(search: string): Promise<User[]> {
+    try {
+      const data = await sql`
+          SELECT id, username, password, "isOnline", "refreshToken"          
+          FROM users
+          WHERE username ILIKE '%${search}%'`;
+
+      const validatedData = usersSchema.parse(data);
+      return validatedData as User[];
+    } catch (error) {
+      console.error("Error searching users:", error);
+      return [];
+    }
+  }
+
   async getById(id: string): Promise<User | null> {
     try {
       const data = await sql`

@@ -9,10 +9,13 @@ export const useTeams = () => {
   const { user } = useUserContext();
   const queryClient = useQueryClient();
 
-  const { isPending, error, data } = useQuery({
-    queryKey: ["teamData"],
-    queryFn: () => apiFetch(`/${apiPrefix}/${teamRoute}?userId=${user?.id}`),
-  });
+  const getData = () => {
+    const queryString = `userId=${user?.id}`;
+    return useQuery<TeamDTO[]>({
+      queryKey: ["teamData", queryString],
+      queryFn: () => apiFetch(`/${apiPrefix}/${teamRoute}?${queryString}`),
+    });
+  };
 
   const validate = (formData: FormData) => {
     const name = formData.get("name");
@@ -65,26 +68,24 @@ export const useTeams = () => {
     });
 
     if (response.status === 200) {
-      onSuccess();
+      refetch();
       return true;
     }
 
     return false;
   };
 
-  const onSuccess = () => {
+  const refetch = () => {
     queryClient.invalidateQueries({ queryKey: ["teamData"] });
     queryClient.refetchQueries({ queryKey: ["teamData"] });
   };
 
   return {
-    isPending,
-    error,
-    teams: data as TeamDTO[],
+    getData,
     validate,
     onCreate,
     onEdit,
     onDelete,
-    onSuccess,
+    refetch,
   };
 };

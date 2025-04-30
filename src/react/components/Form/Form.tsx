@@ -20,6 +20,8 @@ type FormProps = {
   onSubmit: (formData: FormData) => Promise<any>;
   onSuccess?: (data?: any) => void;
   onCancel?: () => void;
+  submitButtonText?: string;
+  cancelButtonText?: string;
   showCancelButton?: boolean;
   secondaryButtons?: ReactNode;
 };
@@ -30,6 +32,8 @@ export const Form = ({
   onSubmit,
   onSuccess,
   onCancel,
+  submitButtonText,
+  cancelButtonText,
   showCancelButton = false,
   secondaryButtons,
 }: FormProps) => {
@@ -109,6 +113,7 @@ export const Form = ({
           case "hidden":
             control = <HiddenInput {...input} />;
             break;
+          case "password":
           case "text":
             control = (
               <TextInput
@@ -138,7 +143,7 @@ export const Form = ({
         );
       })}
       <div className="mt-6 flex items-center justify-between">
-        <div className="flex justify-start">{secondaryButtons}</div>
+        <div className="flex w-full justify-start">{secondaryButtons}</div>
         <div className="flex items-center space-x-4">
           {showCancelButton && (
             <Button
@@ -146,7 +151,7 @@ export const Form = ({
               onClick={handleCancel}
               mode={ButtonModes.SECONDARY}
             >
-              Cancel
+            {cancelButtonText ? cancelButtonText : "Cancel"}
             </Button>
           )}
           <Button
@@ -154,7 +159,7 @@ export const Form = ({
             disabled={isPending || createMutation.isPending}
             mode={ButtonModes.PRIMARY}
           >
-            Add
+            {submitButtonText ? submitButtonText : "Submit"}
           </Button>
         </div>
       </div>

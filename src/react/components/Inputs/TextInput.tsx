@@ -1,8 +1,9 @@
 import React, { ChangeEventHandler } from "react";
-import { InputProps, ValidationError } from ".";
+import { InputProps, Label, ValidationError } from ".";
 import { ErrorMessage } from "..";
 
 interface TextInputProps extends InputProps {
+  autoComplete?: string;
   error?: ValidationError | undefined;
   onChange?: ChangeEventHandler<HTMLInputElement> | undefined;
 }
@@ -13,6 +14,7 @@ export const TextInput = ({
   placeholder,
   type,
   value,
+  autoComplete = "off",
   error,
   onChange,
 }: TextInputProps) => {
@@ -23,12 +25,12 @@ export const TextInput = ({
   return (
     <>
       {label && (
-        <label
+        <Label
           htmlFor={name}
-          className={`mb-2 block text-sm font-bold text-${error ? "red" : "gray"}-600`}
+          hasError={error?.message && error?.message.length > 0}
         >
           {label}
-        </label>
+        </Label>
       )}
       <input
         type={type}
@@ -38,6 +40,7 @@ export const TextInput = ({
         onChange={onChange}
         placeholder={placeholder}
         className={error ? errorClassName : normalClassName}
+        autoComplete={autoComplete}
       />
       {error && <ErrorMessage>{error.message}</ErrorMessage>}
     </>

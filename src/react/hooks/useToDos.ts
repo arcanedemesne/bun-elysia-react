@@ -1,7 +1,7 @@
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 
 import { apiPrefix, todoRoute } from "../../constants";
-import { ApiError, ToDo, ToDoInsert, ToDoUpdate } from "../../types";
+import { ToDo, ToDoInsert, ToDoUpdate } from "../../types";
 import { apiFetch } from "../api";
 import { ValidationError } from "../components";
 import { useUserContext } from "../providers";
@@ -10,10 +10,15 @@ export const useToDos = () => {
   const { user } = useUserContext();
   const queryClient = useQueryClient();
 
-  const { isPending, error, data } = useQuery({
-    queryKey: ["todoData"],
-    queryFn: () => apiFetch(`/${apiPrefix}/${todoRoute}/${user?.id}`),
-  });
+  const getData = (teamId?: string) => {
+    const queryString = teamId ? `teamId=${teamId}` : `userId=${user?.id}`;
+    return useQuery<ToDo[]>({
+      queryKey: ["todoData", queryString],
+      queryFn: async () =>
+        await apiFetch(`/${apiPrefix}/${todoRoute}?${queryString}`),
+      enabled: !!queryString,
+    });
+  };
 
   const validate = (formData: FormData) => {
     const title = formData.get("title");
@@ -30,10 +35,12 @@ export const useToDos = () => {
   };
 
   const onCreate = async (formData: FormData) => {
+    const teamId = formData.get("teamId");
     const title = formData.get("title");
 
     const newTodo = {
       title,
+      teamId: teamId && teamId?.length > 0 ? teamId : undefined,
       createdBy: user?.id,
     } as ToDoInsert;
 
@@ -68,23 +75,21 @@ export const useToDos = () => {
     });
 
     if (response.status === 200) {
-      onSuccess();
+      refetch();
     }
   };
 
-  const onSuccess = () => {
+  const refetch = () => {
     queryClient.invalidateQueries({ queryKey: ["todoData"] });
     queryClient.refetchQueries({ queryKey: ["todoData"] });
   };
 
   return {
-    isPending,
-    error,
-    todos: data as ToDo[],
+    getData,
     validate,
     onCreate,
     onEdit,
     onDelete,
-    onSuccess,
+    refetch,
   };
 };

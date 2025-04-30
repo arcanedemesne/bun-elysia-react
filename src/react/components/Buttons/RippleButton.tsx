@@ -3,12 +3,14 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export const RippleButton = ({
   type = "button",
+  capitalize = true,
   disabled = false,
   children,
   onClick,
   className,
 }: {
   type?: "submit" | "reset" | "button";
+  capitalize?: boolean;
   disabled?: boolean;
   children: React.ReactNode;
   onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
@@ -64,9 +66,11 @@ export const RippleButton = ({
         type={type}
         disabled={disabled}
         onClick={handleRipple}
-        className="relative z-10 h-full w-full cursor-pointer border-none bg-transparent px-4 py-2"
+        className={`relative z-10 h-full w-full ${!disabled && "cursor-pointer"} border-none bg-transparent px-4 py-2`}
       >
-        {children}
+        {typeof children === "string" && capitalize
+          ? children.toString().toUpperCase()
+          : children}
       </button>
       <AnimatePresence>
         {ripples.map((ripple) => (

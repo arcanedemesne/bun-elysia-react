@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { TeamDTO } from "../../../types";
 import { CardBase } from "./CardBase";
-import { DeleteButton, EditButton, TrashIcon } from "../";
+import { DeleteButton, EditButton, TrashIcon } from "..";
 
 type TeamCardProps = {
   team: TeamDTO;

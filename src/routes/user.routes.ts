@@ -10,7 +10,12 @@ export const userRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
 
   return app.group(`/${apiPrefix}/${userRoute}`, (group) =>
     group
-      .get(``, async () => await repo.getAll())
+      .get(``, async ({ query }) => {
+        if (query.search) {
+          return await repo.search(query.search);
+        }
+        return await repo.getAll();
+      })
       .get(`/:id`, async ({ params: { id } }) => {
         const user = await repo.getById(id);
         if (!user) {

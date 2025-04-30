@@ -32,7 +32,7 @@ export const apiFetch = async (
         message: "could not parse error",
       });
     }
-    console.log(errorData);
+    console.error(errorData);
     throw new ApiError(errorData);
   }
 

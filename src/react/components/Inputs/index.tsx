@@ -9,9 +9,13 @@ export type InputProps = {
   label?: string;
   name: string;
   placeholder?: string;
-  type: "text" | "hidden";
+  type: "hidden" | "text" | "password" | "select";
   value?: ValueType;
+  autoComplete?: string;
 };
 
+export * from "./DropDownInput";
 export * from "./HiddenInput";
+export * from "./Label";
 export * from "./TextInput";
+export * from "./TypeAheadInput";
