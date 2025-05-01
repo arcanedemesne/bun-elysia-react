@@ -1,5 +1,6 @@
 import React from "react";
-import { loginRoute } from "../../../constants";
+
+import { loginRoute } from "@/lib/constants";
 
 export const HomePage = () => {
   return (

@@ -1,6 +1,6 @@
 import React, { ReactNode } from "react";
 
-import { ToDo } from "../../../types";
+import { ToDo } from "../../../models";
 import { CardBase, DeleteButton, EditButton } from "../../components";
 
 type ToDoCardProps = {

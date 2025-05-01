@@ -1,7 +1,8 @@
 import Elysia from "elysia";
 
-import { apiPrefix, authPrefix } from "./constants";
-import { JwtContext } from "./types";
+import { apiPrefix, authPrefix } from "@/lib/constants";
+import { JwtContext } from "@/lib/types";
+
 import { UserRepository } from "./respositories";
 
 export const deriveUser = (app: Elysia<any, any, any, any, JwtContext>) => {

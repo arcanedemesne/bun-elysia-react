@@ -1,5 +1,6 @@
 import React from "react";
-import { TrashIcon } from "../Icons";
+
+import { TrashIcon } from "@/components";
 
 type DeleteButtonProps = {
   onClick: () => void;

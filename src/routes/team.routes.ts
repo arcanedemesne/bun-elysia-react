@@ -1,9 +1,11 @@
 import Elysia from "elysia";
-
-import { apiPrefix, teamRoute } from "../constants";
-import { TeamRepository } from "../respositories";
-import { TeamInsert, TeamUpdate, JwtContext, ResponseError } from "../types";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
+
+import { apiPrefix, teamRoute } from "@/lib/constants";
+import { TeamInsert, TeamUpdate } from "@/lib/models";
+import { JwtContext, ResponseError } from "@/lib/types";
+
+import { TeamRepository } from "../respositories";
 
 export const teamRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
   const repo = new TeamRepository();

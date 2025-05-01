@@ -1,15 +1,8 @@
 import sql from "../db";
 import { z } from "zod";
 
-import {
-  User,
-  UserUpdate,
-  UserInsert,
-  IRepository,
-  UserDTO,
-  ResponseError,
-} from "../types";
-import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { IRepository } from "./IRepository";
+import { User, UserUpdate, UserInsert, UserDTO } from "../models";
 import { throwDbError } from "./utilities";
 
 const userSchema = z.object({

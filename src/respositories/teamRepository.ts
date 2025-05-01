@@ -1,14 +1,14 @@
 import sql from "../db";
 import { z } from "zod";
 
+import { IRepository } from "./IRepository";
 import {
-  IRepository,
   TeamUpdate,
   TeamInsert,
   TeamDTO,
   UserDTO,
   TeamMemberDTO,
-} from "../types";
+} from "../models";
 import { throwDbError } from "./utilities";
 
 const userSchema = z.object({

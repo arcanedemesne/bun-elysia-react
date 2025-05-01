@@ -1,9 +1,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiPrefix, teamMemberRoute, teamRoute } from "../../constants";
-import { apiFetch } from "../api";
-import { useUserContext } from "../providers";
-import { ValidationError } from "../components";
-import { TeamDTO, TeamInsert, TeamMemberDTO, TeamUpdate } from "../../types";
+
+import { apiPrefix, teamMemberRoute, teamRoute } from "@/lib/constants";
+import { TeamDTO, TeamInsert, TeamMemberDTO, TeamUpdate } from "@/lib/models";
+
+import { apiFetch } from "@/api";
+import { useUserContext } from "@/providers";
+import { ValidationError } from "@/components";
 
 export const useTeams = () => {
   const { user } = useUserContext();

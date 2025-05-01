@@ -8,6 +8,7 @@ export const RippleButton = ({
   children,
   onClick,
   className,
+  rippleColor,
 }: {
   type?: "submit" | "reset" | "button";
   capitalize?: boolean;
@@ -15,6 +16,7 @@ export const RippleButton = ({
   children: React.ReactNode;
   onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   className?: string;
+  rippleColor?: string;
 }) => {
   const [ripples, setRipples] = useState<
     { id: number; x: number; y: number }[]
@@ -57,6 +59,8 @@ export const RippleButton = ({
     }
   }, []);
 
+  let defaultRippleColor = "rgba(255, 255, 255, 1)";
+
   return (
     <div
       className={`relative overflow-hidden rounded-md ${className}`}
@@ -85,7 +89,7 @@ export const RippleButton = ({
               top: ripple.y,
               left: ripple.x,
               transform: "translate(-50%, -50%)",
-              backgroundColor: "rgba(255, 255, 255, 1)", // Ripple color
+              backgroundColor: rippleColor ?? defaultRippleColor, // Ripple color
               borderRadius: "50%",
               width: "10px", // Initial size
               height: "10px",

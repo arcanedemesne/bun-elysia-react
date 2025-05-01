@@ -1,11 +1,12 @@
 import { StatusCodes } from "http-status-codes";
+
 import {
   apiPrefix,
   authPrefix,
   checkRoute,
   refreshRoute,
-} from "../../constants";
-import { ApiError, ResponseError } from "../../types";
+} from "@/lib/constants";
+import { ApiError, ResponseError } from "@/lib/types";
 
 export const apiFetch = async <T>(
   url: string,

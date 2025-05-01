@@ -8,9 +8,9 @@ import {
   logoutRoute,
   todoRoute,
   teamRoute,
-} from "../../../constants";
-import { apiFetch } from "../../api";
-import { useUserContext } from "../../providers";
+} from "@/lib/constants";
+import { apiFetch } from "@/api";
+import { useUserContext } from "@/providers";
 
 export const Nav = () => {
   const navigate = useNavigate();

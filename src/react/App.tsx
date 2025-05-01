@@ -8,6 +8,16 @@ import {
 } from "@tanstack/react-query";
 
 import {
+  loginRoute,
+  registerRoute,
+  teamRoute,
+  todoRoute,
+} from "@/lib/constants";
+import { UserDTO } from "@/lib/models";
+import { UserProvider } from "@/providers";
+import { Nav } from "@/components";
+
+import {
   HomePage,
   Login,
   Register,
@@ -16,12 +26,8 @@ import {
   TeamPage,
   NotFoundPage,
 } from "./pages";
-import { Nav } from "./components";
 
 import "./App.css";
-import { loginRoute, registerRoute, teamRoute, todoRoute } from "../constants";
-import { UserDTO } from "../types";
-import { UserProvider } from "./providers/UserProvider";
 
 type AppProps = {
   dehydratedState: DehydratedState;

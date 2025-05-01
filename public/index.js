@@ -20629,10 +20629,7 @@ function useMutation(options, queryClient) {
   return { ...result, mutate, mutateAsync: result.mutate };
 }
 
-// src/react/pages/Forbidden/index.tsx
-var import_react = __toESM(require_react(), 1);
-
-// src/constants.ts
+// src/lib/constants.ts
 var apiPrefix = "api";
 var authPrefix = "auth";
 var todoRoute = "todos";
@@ -20647,49 +20644,35 @@ var refreshRoute = "refresh";
 var ACCESS_TOKEN_EXP = 60 * 60;
 var REFRESH_TOKEN_EXP = 7 * 86400;
 
-// src/react/pages/Forbidden/index.tsx
-var ForbiddenPage = () => {
-  return /* @__PURE__ */ import_react.default.createElement("div", {
-    className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react.default.createElement("div", {
-    className: "text-center"
-  }, /* @__PURE__ */ import_react.default.createElement("h1", {
-    className: "mb-4 text-4xl font-bold text-gray-800"
-  }, "403 Forbidden"), /* @__PURE__ */ import_react.default.createElement("p", {
-    className: "mb-8 text-lg text-gray-600"
-  }, "You must be logged in to access this page!"), /* @__PURE__ */ import_react.default.createElement("a", {
-    href: `/${loginRoute}`,
-    className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
-  }, "Login to begin")));
+// src/react/providers/UserProvider.tsx
+var import_react = __toESM(require_react(), 1);
+var UserContext = import_react.createContext(undefined);
+var UserProvider = ({ value, children }) => {
+  const [user, setUser] = import_react.useState(value);
+  const contextValue = {
+    user,
+    setUser
+  };
+  return /* @__PURE__ */ import_react.default.createElement(UserContext.Provider, {
+    value: contextValue
+  }, children);
 };
-// src/react/pages/Home/index.tsx
-var import_react2 = __toESM(require_react(), 1);
-var HomePage = () => {
-  return /* @__PURE__ */ import_react2.default.createElement("div", {
-    className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react2.default.createElement("div", {
-    className: "text-center"
-  }, /* @__PURE__ */ import_react2.default.createElement("h1", {
-    className: "mb-4 text-4xl font-bold text-gray-800"
-  }, "Welcome!"), /* @__PURE__ */ import_react2.default.createElement("p", {
-    className: "mb-8 text-lg text-gray-600"
-  }, "A ToDo app built with Bun, Elysia, and React Server Components"), /* @__PURE__ */ import_react2.default.createElement("a", {
-    href: `/${loginRoute}`,
-    className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
-  }, "Login to begin")));
+var useUserContext = () => {
+  const context = import_react.useContext(UserContext);
+  if (!context) {
+    throw new Error("useUserContext must be used within a UserProvider");
+  }
+  return context;
 };
-// src/react/pages/Login/index.tsx
-var import_react59 = __toESM(require_react(), 1);
-
 // src/react/components/Alerts/Alerts.tsx
-var import_react4 = __toESM(require_react(), 1);
+var import_react3 = __toESM(require_react(), 1);
 
 // src/react/components/Alerts/AlertBar/AlertBar.tsx
-var import_react3 = __toESM(require_react(), 1);
+var import_react2 = __toESM(require_react(), 1);
 var AlertBar = ({ id, message, onRemove }) => {
-  return /* @__PURE__ */ import_react3.default.createElement("div", {
+  return /* @__PURE__ */ import_react2.default.createElement("div", {
     className: "left-0 top-0 z-50 flex w-full items-center justify-between bg-red-800 p-4 text-white"
-  }, /* @__PURE__ */ import_react3.default.createElement("p", null, message), /* @__PURE__ */ import_react3.default.createElement(CloseButton, {
+  }, /* @__PURE__ */ import_react2.default.createElement("p", null, message), /* @__PURE__ */ import_react2.default.createElement(CloseButton, {
     color: "white",
     onClick: () => onRemove(id)
   }));
@@ -20708,21 +20691,21 @@ var emitAlert = (apiError) => {
   }));
 };
 var Alerts = () => {
-  const [alerts, setAlerts] = import_react4.useState([]);
+  const [alerts, setAlerts] = import_react3.useState([]);
   const handleAdd = (event) => {
     setAlerts((prev) => [...prev, { ...event.detail }]);
   };
   const handleRemove = (id) => {
     setAlerts(alerts.filter((e) => e.id !== id));
   };
-  import_react4.useEffect(() => {
+  import_react3.useEffect(() => {
     document.addEventListener(eventListenerName, handleAdd);
     return () => {
       document.removeEventListener(eventListenerName, handleAdd);
     };
   }, []);
-  return /* @__PURE__ */ import_react4.default.createElement(import_react4.default.Fragment, null, alerts.map((alert2) => {
-    return /* @__PURE__ */ import_react4.default.createElement(AlertBar, {
+  return /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, alerts.map((alert2) => {
+    return /* @__PURE__ */ import_react3.default.createElement(AlertBar, {
       key: alert2.id,
       id: alert2.id,
       message: alert2.message,
@@ -20731,24 +20714,24 @@ var Alerts = () => {
   }));
 };
 // src/react/components/Buttons/Button.tsx
-var import_react29 = __toESM(require_react(), 1);
+var import_react28 = __toESM(require_react(), 1);
 
 // src/react/components/Buttons/RippleButton.tsx
-var import_react28 = __toESM(require_react(), 1);
+var import_react27 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/components/AnimatePresence/index.mjs
 var import_jsx_runtime5 = __toESM(require_jsx_runtime(), 1);
-var import_react14 = __toESM(require_react(), 1);
+var import_react13 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/context/LayoutGroupContext.mjs
-var import_react5 = __toESM(require_react(), 1);
+var import_react4 = __toESM(require_react(), 1);
 "use client";
-var LayoutGroupContext = import_react5.createContext({});
+var LayoutGroupContext = import_react4.createContext({});
 
 // node_modules/framer-motion/dist/es/utils/use-constant.mjs
-var import_react6 = __toESM(require_react(), 1);
+var import_react5 = __toESM(require_react(), 1);
 function useConstant(init) {
-  const ref = import_react6.useRef(null);
+  const ref = import_react5.useRef(null);
   if (ref.current === null) {
     ref.current = init();
   }
@@ -20756,33 +20739,33 @@ function useConstant(init) {
 }
 
 // node_modules/framer-motion/dist/es/utils/use-isomorphic-effect.mjs
-var import_react7 = __toESM(require_react(), 1);
+var import_react6 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/utils/is-browser.mjs
 var isBrowser2 = typeof window !== "undefined";
 
 // node_modules/framer-motion/dist/es/utils/use-isomorphic-effect.mjs
-var useIsomorphicLayoutEffect2 = isBrowser2 ? import_react7.useLayoutEffect : import_react7.useEffect;
+var useIsomorphicLayoutEffect2 = isBrowser2 ? import_react6.useLayoutEffect : import_react6.useEffect;
 
 // node_modules/framer-motion/dist/es/components/AnimatePresence/PresenceChild.mjs
 var import_jsx_runtime4 = __toESM(require_jsx_runtime(), 1);
-var React27 = __toESM(require_react(), 1);
-var import_react11 = __toESM(require_react(), 1);
-
-// node_modules/framer-motion/dist/es/context/PresenceContext.mjs
-var import_react8 = __toESM(require_react(), 1);
-"use client";
-var PresenceContext = /* @__PURE__ */ import_react8.createContext(null);
-
-// node_modules/framer-motion/dist/es/components/AnimatePresence/PopChild.mjs
-var import_jsx_runtime3 = __toESM(require_jsx_runtime(), 1);
 var React26 = __toESM(require_react(), 1);
 var import_react10 = __toESM(require_react(), 1);
 
-// node_modules/framer-motion/dist/es/context/MotionConfigContext.mjs
-var import_react9 = __toESM(require_react(), 1);
+// node_modules/framer-motion/dist/es/context/PresenceContext.mjs
+var import_react7 = __toESM(require_react(), 1);
 "use client";
-var MotionConfigContext = import_react9.createContext({
+var PresenceContext = /* @__PURE__ */ import_react7.createContext(null);
+
+// node_modules/framer-motion/dist/es/components/AnimatePresence/PopChild.mjs
+var import_jsx_runtime3 = __toESM(require_jsx_runtime(), 1);
+var React25 = __toESM(require_react(), 1);
+var import_react9 = __toESM(require_react(), 1);
+
+// node_modules/framer-motion/dist/es/context/MotionConfigContext.mjs
+var import_react8 = __toESM(require_react(), 1);
+"use client";
+var MotionConfigContext = import_react8.createContext({
   transformPagePoint: (p) => p,
   isStatic: false,
   reducedMotion: "never"
@@ -20791,7 +20774,7 @@ var MotionConfigContext = import_react9.createContext({
 // node_modules/framer-motion/dist/es/components/AnimatePresence/PopChild.mjs
 "use client";
 
-class PopChildMeasure extends React26.Component {
+class PopChildMeasure extends React25.Component {
   getSnapshotBeforeUpdate(prevProps) {
     const element = this.props.childRef.current;
     if (element && prevProps.isPresent && !this.props.isPresent) {
@@ -20813,17 +20796,17 @@ class PopChildMeasure extends React26.Component {
   }
 }
 function PopChild({ children, isPresent, anchorX }) {
-  const id = import_react10.useId();
-  const ref = import_react10.useRef(null);
-  const size = import_react10.useRef({
+  const id = import_react9.useId();
+  const ref = import_react9.useRef(null);
+  const size = import_react9.useRef({
     width: 0,
     height: 0,
     top: 0,
     left: 0,
     right: 0
   });
-  const { nonce } = import_react10.useContext(MotionConfigContext);
-  import_react10.useInsertionEffect(() => {
+  const { nonce } = import_react9.useContext(MotionConfigContext);
+  import_react9.useInsertionEffect(() => {
     const { width, height, top, left, right } = size.current;
     if (isPresent || !ref.current || !width || !height)
       return;
@@ -20848,16 +20831,16 @@ function PopChild({ children, isPresent, anchorX }) {
       document.head.removeChild(style);
     };
   }, [isPresent]);
-  return import_jsx_runtime3.jsx(PopChildMeasure, { isPresent, childRef: ref, sizeRef: size, children: React26.cloneElement(children, { ref }) });
+  return import_jsx_runtime3.jsx(PopChildMeasure, { isPresent, childRef: ref, sizeRef: size, children: React25.cloneElement(children, { ref }) });
 }
 
 // node_modules/framer-motion/dist/es/components/AnimatePresence/PresenceChild.mjs
 "use client";
 var PresenceChild = ({ children, initial, isPresent, onExitComplete, custom, presenceAffectsLayout, mode, anchorX }) => {
   const presenceChildren = useConstant(newChildrenMap);
-  const id = import_react11.useId();
+  const id = import_react10.useId();
   let isReusedContext = true;
-  let context = import_react11.useMemo(() => {
+  let context = import_react10.useMemo(() => {
     isReusedContext = false;
     return {
       id,
@@ -20881,10 +20864,10 @@ var PresenceChild = ({ children, initial, isPresent, onExitComplete, custom, pre
   if (presenceAffectsLayout && isReusedContext) {
     context = { ...context };
   }
-  import_react11.useMemo(() => {
+  import_react10.useMemo(() => {
     presenceChildren.forEach((_, key) => presenceChildren.set(key, false));
   }, [isPresent]);
-  React27.useEffect(() => {
+  React26.useEffect(() => {
     !isPresent && !presenceChildren.size && onExitComplete && onExitComplete();
   }, [isPresent]);
   if (mode === "popLayout") {
@@ -20897,29 +20880,29 @@ function newChildrenMap() {
 }
 
 // node_modules/framer-motion/dist/es/components/AnimatePresence/use-presence.mjs
-var import_react12 = __toESM(require_react(), 1);
+var import_react11 = __toESM(require_react(), 1);
 function usePresence(subscribe = true) {
-  const context = import_react12.useContext(PresenceContext);
+  const context = import_react11.useContext(PresenceContext);
   if (context === null)
     return [true, null];
   const { isPresent, onExitComplete, register } = context;
-  const id = import_react12.useId();
-  import_react12.useEffect(() => {
+  const id = import_react11.useId();
+  import_react11.useEffect(() => {
     if (subscribe) {
       return register(id);
     }
   }, [subscribe]);
-  const safeToRemove = import_react12.useCallback(() => subscribe && onExitComplete && onExitComplete(id), [id, onExitComplete, subscribe]);
+  const safeToRemove = import_react11.useCallback(() => subscribe && onExitComplete && onExitComplete(id), [id, onExitComplete, subscribe]);
   return !isPresent && onExitComplete ? [false, safeToRemove] : [true];
 }
 
 // node_modules/framer-motion/dist/es/components/AnimatePresence/utils.mjs
-var import_react13 = __toESM(require_react(), 1);
+var import_react12 = __toESM(require_react(), 1);
 var getChildKey = (child) => child.key || "";
 function onlyElements(children) {
   const filtered = [];
-  import_react13.Children.forEach(children, (child) => {
-    if (import_react13.isValidElement(child))
+  import_react12.Children.forEach(children, (child) => {
+    if (import_react12.isValidElement(child))
       filtered.push(child);
   });
   return filtered;
@@ -20929,13 +20912,13 @@ function onlyElements(children) {
 "use client";
 var AnimatePresence = ({ children, custom, initial = true, onExitComplete, presenceAffectsLayout = true, mode = "sync", propagate = false, anchorX = "left" }) => {
   const [isParentPresent, safeToRemove] = usePresence(propagate);
-  const presentChildren = import_react14.useMemo(() => onlyElements(children), [children]);
+  const presentChildren = import_react13.useMemo(() => onlyElements(children), [children]);
   const presentKeys = propagate && !isParentPresent ? [] : presentChildren.map(getChildKey);
-  const isInitialRender = import_react14.useRef(true);
-  const pendingPresentChildren = import_react14.useRef(presentChildren);
+  const isInitialRender = import_react13.useRef(true);
+  const pendingPresentChildren = import_react13.useRef(presentChildren);
   const exitComplete = useConstant(() => new Map);
-  const [diffedChildren, setDiffedChildren] = import_react14.useState(presentChildren);
-  const [renderedChildren, setRenderedChildren] = import_react14.useState(presentChildren);
+  const [diffedChildren, setDiffedChildren] = import_react13.useState(presentChildren);
+  const [renderedChildren, setRenderedChildren] = import_react13.useState(presentChildren);
   useIsomorphicLayoutEffect2(() => {
     isInitialRender.current = false;
     pendingPresentChildren.current = presentChildren;
@@ -20971,7 +20954,7 @@ var AnimatePresence = ({ children, custom, initial = true, onExitComplete, prese
   if (mode === "wait" && renderedChildren.length > 1) {
     console.warn(`You're attempting to animate multiple children within AnimatePresence, but its mode is set to "wait". This will lead to odd visual behaviour.`);
   }
-  const { forceRender } = import_react14.useContext(LayoutGroupContext);
+  const { forceRender } = import_react13.useContext(LayoutGroupContext);
   return import_jsx_runtime5.jsx(import_jsx_runtime5.Fragment, { children: renderedChildren.map((child) => {
     const key = getChildKey(child);
     const isPresent = propagate && !isParentPresent ? false : presentChildren === renderedChildren || presentKeys.includes(key);
@@ -23812,9 +23795,9 @@ var getValueAsType = (value, type) => {
   return type && typeof value === "number" ? type.transform(value) : value;
 };
 // node_modules/framer-motion/dist/es/context/LazyContext.mjs
-var import_react15 = __toESM(require_react(), 1);
+var import_react14 = __toESM(require_react(), 1);
 "use client";
-var LazyContext = import_react15.createContext({ strict: false });
+var LazyContext = import_react14.createContext({ strict: false });
 
 // node_modules/framer-motion/dist/es/motion/features/definitions.mjs
 var featureProps = {
@@ -23940,15 +23923,15 @@ function createDOMMotionComponentProxy(componentFactory) {
 
 // node_modules/framer-motion/dist/es/motion/index.mjs
 var import_jsx_runtime6 = __toESM(require_jsx_runtime(), 1);
-var import_react21 = __toESM(require_react(), 1);
+var import_react20 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/context/MotionContext/index.mjs
-var import_react16 = __toESM(require_react(), 1);
+var import_react15 = __toESM(require_react(), 1);
 "use client";
-var MotionContext = /* @__PURE__ */ import_react16.createContext({});
+var MotionContext = /* @__PURE__ */ import_react15.createContext({});
 
 // node_modules/framer-motion/dist/es/context/MotionContext/create.mjs
-var import_react17 = __toESM(require_react(), 1);
+var import_react16 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/animation/utils/is-animation-controls.mjs
 function isAnimationControls(v) {
@@ -23994,8 +23977,8 @@ function getCurrentTreeVariants(props, context) {
 
 // node_modules/framer-motion/dist/es/context/MotionContext/create.mjs
 function useCreateMotionContext(props) {
-  const { initial, animate } = getCurrentTreeVariants(props, import_react17.useContext(MotionContext));
-  return import_react17.useMemo(() => ({ initial, animate }), [variantLabelsAsDependency(initial), variantLabelsAsDependency(animate)]);
+  const { initial, animate } = getCurrentTreeVariants(props, import_react16.useContext(MotionContext));
+  return import_react16.useMemo(() => ({ initial, animate }), [variantLabelsAsDependency(initial), variantLabelsAsDependency(animate)]);
 }
 function variantLabelsAsDependency(prop) {
   return Array.isArray(prop) ? prop.join(" ") : prop;
@@ -24005,7 +23988,7 @@ function variantLabelsAsDependency(prop) {
 var motionComponentSymbol = Symbol.for("motionComponentSymbol");
 
 // node_modules/framer-motion/dist/es/motion/utils/use-motion-ref.mjs
-var import_react18 = __toESM(require_react(), 1);
+var import_react17 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/utils/is-ref-object.mjs
 function isRefObject(ref) {
@@ -24014,7 +23997,7 @@ function isRefObject(ref) {
 
 // node_modules/framer-motion/dist/es/motion/utils/use-motion-ref.mjs
 function useMotionRef(visualState, visualElement, externalRef) {
-  return import_react18.useCallback((instance) => {
+  return import_react17.useCallback((instance) => {
     if (instance) {
       visualState.onMount && visualState.onMount(instance);
     }
@@ -24036,7 +24019,7 @@ function useMotionRef(visualState, visualElement, externalRef) {
 }
 
 // node_modules/framer-motion/dist/es/motion/utils/use-visual-element.mjs
-var import_react20 = __toESM(require_react(), 1);
+var import_react19 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/render/dom/utils/camel-to-dash.mjs
 var camelToDash = (str) => str.replace(/([a-z])([A-Z])/gu, "$1-$2").toLowerCase();
@@ -24046,17 +24029,17 @@ var optimizedAppearDataId = "framerAppearId";
 var optimizedAppearDataAttribute = "data-" + camelToDash(optimizedAppearDataId);
 
 // node_modules/framer-motion/dist/es/context/SwitchLayoutGroupContext.mjs
-var import_react19 = __toESM(require_react(), 1);
+var import_react18 = __toESM(require_react(), 1);
 "use client";
-var SwitchLayoutGroupContext = import_react19.createContext({});
+var SwitchLayoutGroupContext = import_react18.createContext({});
 
 // node_modules/framer-motion/dist/es/motion/utils/use-visual-element.mjs
 function useVisualElement(Component5, visualState, props, createVisualElement, ProjectionNodeConstructor) {
-  const { visualElement: parent } = import_react20.useContext(MotionContext);
-  const lazyContext = import_react20.useContext(LazyContext);
-  const presenceContext = import_react20.useContext(PresenceContext);
-  const reducedMotionConfig = import_react20.useContext(MotionConfigContext).reducedMotion;
-  const visualElementRef = import_react20.useRef(null);
+  const { visualElement: parent } = import_react19.useContext(MotionContext);
+  const lazyContext = import_react19.useContext(LazyContext);
+  const presenceContext = import_react19.useContext(PresenceContext);
+  const reducedMotionConfig = import_react19.useContext(MotionConfigContext).reducedMotion;
+  const visualElementRef = import_react19.useRef(null);
   createVisualElement = createVisualElement || lazyContext.renderer;
   if (!visualElementRef.current && createVisualElement) {
     visualElementRef.current = createVisualElement(Component5, {
@@ -24069,18 +24052,18 @@ function useVisualElement(Component5, visualState, props, createVisualElement, P
     });
   }
   const visualElement = visualElementRef.current;
-  const initialLayoutGroupConfig = import_react20.useContext(SwitchLayoutGroupContext);
+  const initialLayoutGroupConfig = import_react19.useContext(SwitchLayoutGroupContext);
   if (visualElement && !visualElement.projection && ProjectionNodeConstructor && (visualElement.type === "html" || visualElement.type === "svg")) {
     createProjectionNode(visualElementRef.current, props, ProjectionNodeConstructor, initialLayoutGroupConfig);
   }
-  const isMounted = import_react20.useRef(false);
-  import_react20.useInsertionEffect(() => {
+  const isMounted = import_react19.useRef(false);
+  import_react19.useInsertionEffect(() => {
     if (visualElement && isMounted.current) {
       visualElement.update(props, presenceContext);
     }
   });
   const optimisedAppearId = props[optimizedAppearDataAttribute];
-  const wantsHandoff = import_react20.useRef(Boolean(optimisedAppearId) && !window.MotionHandoffIsComplete?.(optimisedAppearId) && window.MotionHasOptimisedAnimation?.(optimisedAppearId));
+  const wantsHandoff = import_react19.useRef(Boolean(optimisedAppearId) && !window.MotionHandoffIsComplete?.(optimisedAppearId) && window.MotionHasOptimisedAnimation?.(optimisedAppearId));
   useIsomorphicLayoutEffect2(() => {
     if (!visualElement)
       return;
@@ -24092,7 +24075,7 @@ function useVisualElement(Component5, visualState, props, createVisualElement, P
       visualElement.animationState.animateChanges();
     }
   });
-  import_react20.useEffect(() => {
+  import_react19.useEffect(() => {
     if (!visualElement)
       return;
     if (!wantsHandoff.current && visualElement.animationState) {
@@ -24135,7 +24118,7 @@ function createRendererMotionComponent({ preloadedFeatures, createVisualElement,
   function MotionComponent(props, externalRef) {
     let MeasureLayout;
     const configAndProps = {
-      ...import_react21.useContext(MotionConfigContext),
+      ...import_react20.useContext(MotionConfigContext),
       ...props,
       layoutId: useLayoutId(props)
     };
@@ -24151,16 +24134,16 @@ function createRendererMotionComponent({ preloadedFeatures, createVisualElement,
     return import_jsx_runtime6.jsxs(MotionContext.Provider, { value: context, children: [MeasureLayout && context.visualElement ? import_jsx_runtime6.jsx(MeasureLayout, { visualElement: context.visualElement, ...configAndProps }) : null, useRender(Component5, props, useMotionRef(visualState, context.visualElement, externalRef), visualState, isStatic, context.visualElement)] });
   }
   MotionComponent.displayName = `motion.${typeof Component5 === "string" ? Component5 : `create(${Component5.displayName ?? Component5.name ?? ""})`}`;
-  const ForwardRefMotionComponent = import_react21.forwardRef(MotionComponent);
+  const ForwardRefMotionComponent = import_react20.forwardRef(MotionComponent);
   ForwardRefMotionComponent[motionComponentSymbol] = Component5;
   return ForwardRefMotionComponent;
 }
 function useLayoutId({ layoutId }) {
-  const layoutGroupId = import_react21.useContext(LayoutGroupContext).id;
+  const layoutGroupId = import_react20.useContext(LayoutGroupContext).id;
   return layoutGroupId && layoutId !== undefined ? layoutGroupId + "-" + layoutId : layoutId;
 }
 function useStrictMode(configAndProps, preloadedFeatures) {
-  const isStrict = import_react21.useContext(LazyContext).strict;
+  const isStrict = import_react20.useContext(LazyContext).strict;
   if (preloadedFeatures && isStrict) {
     const strictMessage = "You have rendered a `motion` component within a `LazyMotion` component. This will break tree shaking. Import and render a `m` component instead.";
     configAndProps.ignoreStrict ? warning2(false, strictMessage) : invariant3(false, strictMessage);
@@ -24178,10 +24161,10 @@ function getProjectionFunctionality(props) {
 }
 
 // node_modules/framer-motion/dist/es/render/dom/use-render.mjs
-var import_react24 = __toESM(require_react(), 1);
+var import_react23 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/render/html/use-props.mjs
-var import_react22 = __toESM(require_react(), 1);
+var import_react21 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/projection/styles/scale-correction.mjs
 var scaleCorrectors = {};
@@ -24298,7 +24281,7 @@ function copyRawValuesOnly(target, source, props) {
   }
 }
 function useInitialMotionValues({ transformTemplate }, visualState) {
-  return import_react22.useMemo(() => {
+  return import_react21.useMemo(() => {
     const state = createHtmlRenderState();
     buildHTMLStyles(state, visualState, transformTemplate);
     return Object.assign({}, state.vars, state.style);
@@ -24366,7 +24349,7 @@ function isSVGComponent(Component5) {
 }
 
 // node_modules/framer-motion/dist/es/render/svg/use-props.mjs
-var import_react23 = __toESM(require_react(), 1);
+var import_react22 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/render/svg/utils/path.mjs
 var dashKeys = {
@@ -24440,7 +24423,7 @@ var isSVGTag = (tag) => typeof tag === "string" && tag.toLowerCase() === "svg";
 
 // node_modules/framer-motion/dist/es/render/svg/use-props.mjs
 function useSVGProps(props, visualState, _isStatic, Component5) {
-  const visualProps = import_react23.useMemo(() => {
+  const visualProps = import_react22.useMemo(() => {
     const state = createSvgRenderState();
     buildSVGAttrs(state, visualState, isSVGTag(Component5), props.transformTemplate);
     return {
@@ -24462,10 +24445,10 @@ function createUseRender(forwardMotionProps = false) {
     const useVisualProps = isSVGComponent(Component5) ? useSVGProps : useHTMLProps;
     const visualProps = useVisualProps(props, latestValues, isStatic, Component5);
     const filteredProps = filterProps(props, typeof Component5 === "string", forwardMotionProps);
-    const elementProps = Component5 !== import_react24.Fragment ? { ...filteredProps, ...visualProps, ref } : {};
+    const elementProps = Component5 !== import_react23.Fragment ? { ...filteredProps, ...visualProps, ref } : {};
     const { children } = props;
-    const renderedChildren = import_react24.useMemo(() => isMotionValue(children) ? children.get() : children, [children]);
-    return import_react24.createElement(Component5, {
+    const renderedChildren = import_react23.useMemo(() => isMotionValue(children) ? children.get() : children, [children]);
+    return import_react23.createElement(Component5, {
       ...elementProps,
       children: renderedChildren
     });
@@ -24474,7 +24457,7 @@ function createUseRender(forwardMotionProps = false) {
 }
 
 // node_modules/framer-motion/dist/es/motion/utils/use-visual-state.mjs
-var import_react25 = __toESM(require_react(), 1);
+var import_react24 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/render/utils/resolve-variants.mjs
 function getValueState(visualElement) {
@@ -24514,8 +24497,8 @@ function makeState({ scrapeMotionValuesFromProps, createRenderState }, props, co
   return state;
 }
 var makeUseVisualState = (config) => (props, isStatic) => {
-  const context = import_react25.useContext(MotionContext);
-  const presenceContext = import_react25.useContext(PresenceContext);
+  const context = import_react24.useContext(MotionContext);
+  const presenceContext = import_react24.useContext(PresenceContext);
   const make = () => makeState(config, props, context, presenceContext);
   return isStatic ? make() : useConstant(make);
 };
@@ -26014,7 +25997,7 @@ class PanGesture extends Feature {
 
 // node_modules/framer-motion/dist/es/motion/features/layout/MeasureLayout.mjs
 var import_jsx_runtime7 = __toESM(require_jsx_runtime(), 1);
-var import_react26 = __toESM(require_react(), 1);
+var import_react25 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/projection/node/state.mjs
 var globalProjectionState = {
@@ -26070,7 +26053,7 @@ var correctBoxShadow = {
 // node_modules/framer-motion/dist/es/motion/features/layout/MeasureLayout.mjs
 "use client";
 
-class MeasureLayoutWithContext extends import_react26.Component {
+class MeasureLayoutWithContext extends import_react25.Component {
   componentDidMount() {
     const { visualElement, layoutGroup, switchLayoutGroup, layoutId } = this.props;
     const { projection } = visualElement;
@@ -26149,8 +26132,8 @@ class MeasureLayoutWithContext extends import_react26.Component {
 }
 function MeasureLayout(props) {
   const [isPresent, safeToRemove] = usePresence();
-  const layoutGroup = import_react26.useContext(LayoutGroupContext);
-  return import_jsx_runtime7.jsx(MeasureLayoutWithContext, { ...props, layoutGroup, switchLayoutGroup: import_react26.useContext(SwitchLayoutGroupContext), isPresent, safeToRemove });
+  const layoutGroup = import_react25.useContext(LayoutGroupContext);
+  return import_jsx_runtime7.jsx(MeasureLayoutWithContext, { ...props, layoutGroup, switchLayoutGroup: import_react25.useContext(SwitchLayoutGroupContext), isPresent, safeToRemove });
 }
 var defaultScaleCorrectors = {
   borderRadius: {
@@ -27757,7 +27740,7 @@ var layout = {
 };
 
 // node_modules/framer-motion/dist/es/render/dom/create-visual-element.mjs
-var import_react27 = __toESM(require_react(), 1);
+var import_react26 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/utils/reduced-motion/state.mjs
 var prefersReducedMotion = { current: null };
@@ -28261,7 +28244,7 @@ class SVGVisualElement extends DOMVisualElement {
 // node_modules/framer-motion/dist/es/render/dom/create-visual-element.mjs
 var createDomVisualElement = (Component6, options) => {
   return isSVGComponent(Component6) ? new SVGVisualElement(options) : new HTMLVisualElement(options, {
-    allowProjection: Component6 !== import_react27.Fragment
+    allowProjection: Component6 !== import_react26.Fragment
   });
 };
 
@@ -28285,12 +28268,13 @@ var RippleButton = ({
   disabled = false,
   children,
   onClick,
-  className
+  className,
+  rippleColor
 }) => {
-  const [ripples, setRipples] = import_react28.useState([]);
-  const nextRippleId = import_react28.useRef(0);
-  const containerRef = import_react28.useRef(null);
-  const handleRipple = import_react28.useCallback((event) => {
+  const [ripples, setRipples] = import_react27.useState([]);
+  const nextRippleId = import_react27.useRef(0);
+  const containerRef = import_react27.useRef(null);
+  const handleRipple = import_react27.useCallback((event) => {
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect)
       return;
@@ -28306,7 +28290,7 @@ var RippleButton = ({
   const removeRipple = (id3) => {
     setRipples((prevRipples) => prevRipples.filter((ripple) => ripple.id !== id3));
   };
-  import_react28.useEffect(() => {
+  import_react27.useEffect(() => {
     if (containerRef.current) {
       const button = containerRef.current.querySelector("button");
       if (button) {
@@ -28315,15 +28299,16 @@ var RippleButton = ({
       }
     }
   }, []);
-  return /* @__PURE__ */ import_react28.default.createElement("div", {
+  let defaultRippleColor = "rgba(255, 255, 255, 1)";
+  return /* @__PURE__ */ import_react27.default.createElement("div", {
     className: `relative overflow-hidden rounded-md ${className}`,
     ref: containerRef
-  }, /* @__PURE__ */ import_react28.default.createElement("button", {
+  }, /* @__PURE__ */ import_react27.default.createElement("button", {
     type,
     disabled,
     onClick: handleRipple,
     className: `relative z-10 h-full w-full ${!disabled && "cursor-pointer"} border-none bg-transparent px-4 py-2`
-  }, typeof children === "string" && capitalize ? children.toString().toUpperCase() : children), /* @__PURE__ */ import_react28.default.createElement(AnimatePresence, null, ripples.map((ripple) => /* @__PURE__ */ import_react28.default.createElement(motion.span, {
+  }, typeof children === "string" && capitalize ? children.toString().toUpperCase() : children), /* @__PURE__ */ import_react27.default.createElement(AnimatePresence, null, ripples.map((ripple) => /* @__PURE__ */ import_react27.default.createElement(motion.span, {
     key: ripple.id,
     initial: { scale: 0, opacity: 0.5 },
     animate: { scale: 4, opacity: 0 },
@@ -28334,7 +28319,7 @@ var RippleButton = ({
       top: ripple.y,
       left: ripple.x,
       transform: "translate(-50%, -50%)",
-      backgroundColor: "rgba(255, 255, 255, 1)",
+      backgroundColor: rippleColor ?? defaultRippleColor,
       borderRadius: "50%",
       width: "10px",
       height: "10px",
@@ -28353,43 +28338,57 @@ var Button = ({
   children
 }) => {
   let className;
+  let rippleColor;
   const transitionClassNames = "transition-transform duration-300 ease-in-out";
   const hoverClassNames = !disabled && "hover:shadow-xl cursor-pointer";
   const fontWeightClassNames = "font-bold";
   const roundedClassNames = "rounded";
   switch (mode) {
     case "primary" /* PRIMARY */:
-      className = `${disabled ? "bg-gray-200" : "bg-gray-600"}  ${!disabled && "hover:bg-gray-800"} ${disabled ? "text-gray-400" : "text-white"} ${transitionClassNames} ${hoverClassNames} ${fontWeightClassNames} ${roundedClassNames}`;
+      className = `${disabled ? "bg-gray-200" : "bg-gray-600"} ${!disabled && "hover:bg-gray-800"} ${disabled ? "text-gray-400" : "text-white"} ${transitionClassNames} ${hoverClassNames} ${fontWeightClassNames} ${roundedClassNames}`;
+      rippleColor = "rgba(255, 255, 255, 1)";
       break;
     case "secondary" /* SECONDARY */:
       className = `${disabled ? "bg-white" : "bg-gray-200"} ${!disabled && "hover:bg-gray-300"}  ${disabled ? "text-gray-200" : "text-gray-800"} ${transitionClassNames} ${hoverClassNames} ${fontWeightClassNames} ${roundedClassNames}`;
+      rippleColor = "rgba(30, 41, 59, 1)";
       break;
     case "delete" /* DELETE */:
       className = `${disabled ? "bg-red-200" : "bg-red-600"} ${!disabled && "hover:bg-red-800"} text-white ${transitionClassNames} ${hoverClassNames} ${fontWeightClassNames} ${roundedClassNames}`;
+      rippleColor = "rgba(255, 255, 255, 1)";
       break;
     default:
       className = `${disabled ? "bg-gray-200" : "bg-white"} ${!disabled && "hover:bg-gray-200"}  ${disabled ? "text-gray-400" : "text-gray-800"} ${transitionClassNames} ${hoverClassNames} ${fontWeightClassNames} ${roundedClassNames}`;
+      rippleColor = "rgba(30, 41, 59, 1)";
       break;
   }
-  return /* @__PURE__ */ import_react29.default.createElement(RippleButton, {
+  return /* @__PURE__ */ import_react28.default.createElement(RippleButton, {
     type,
     capitalize,
     disabled,
     className,
+    rippleColor,
     onClick
   }, children);
 };
 // src/react/components/Buttons/CloseButton.tsx
-var import_react30 = __toESM(require_react(), 1);
+var import_react29 = __toESM(require_react(), 1);
 var CloseButton = ({
   color: color2 = "gray",
   className,
   onClick
-}) => /* @__PURE__ */ import_react30.default.createElement("button", {
+}) => /* @__PURE__ */ import_react29.default.createElement("button", {
   className: `${className} right-2 top-2 text-${color2}-500 hover:text-${color2}-700 cursor-pointer focus:outline-none`,
   onClick
-}, /* @__PURE__ */ import_react30.default.createElement(CloseIcon, null));
+}, /* @__PURE__ */ import_react29.default.createElement(CloseIcon, null));
 // src/react/components/Buttons/DeleteButton.tsx
+var import_react30 = __toESM(require_react(), 1);
+var DeleteButton = ({ onClick }) => {
+  return /* @__PURE__ */ import_react30.default.createElement("button", {
+    onClick,
+    className: "cursor-pointer text-red-500 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+  }, /* @__PURE__ */ import_react30.default.createElement(TrashIcon, null));
+};
+// src/react/components/Buttons/EditButton.tsx
 var import_react34 = __toESM(require_react(), 1);
 
 // src/react/components/Icons/CloseIcon.tsx
@@ -28444,45 +28443,37 @@ var TrashIcon = () => /* @__PURE__ */ import_react33.default.createElement("svg"
   x2: "14",
   y2: "17"
 }));
-// src/react/components/Buttons/DeleteButton.tsx
-var DeleteButton = ({ onClick }) => {
+// src/react/components/Buttons/EditButton.tsx
+var EditButton = ({ onClick }) => {
   return /* @__PURE__ */ import_react34.default.createElement("button", {
     onClick,
-    className: "cursor-pointer text-red-500 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-  }, /* @__PURE__ */ import_react34.default.createElement(TrashIcon, null));
-};
-// src/react/components/Buttons/EditButton.tsx
-var import_react35 = __toESM(require_react(), 1);
-var EditButton = ({ onClick }) => {
-  return /* @__PURE__ */ import_react35.default.createElement("button", {
-    onClick,
     className: "cursor-pointer text-gray-500 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500"
-  }, /* @__PURE__ */ import_react35.default.createElement(EditIcon, null));
+  }, /* @__PURE__ */ import_react34.default.createElement(EditIcon, null));
 };
 // src/react/components/Buttons/LinkButton.tsx
-var import_react36 = __toESM(require_react(), 1);
-var LinkButton = ({ to, children }) => /* @__PURE__ */ import_react36.default.createElement(Link, {
+var import_react35 = __toESM(require_react(), 1);
+var LinkButton = ({ to, children }) => /* @__PURE__ */ import_react35.default.createElement(Link, {
   to,
   className: "inline-block align-baseline text-sm font-semibold text-gray-500 hover:text-gray-800"
 }, children);
 // src/react/components/Cards/CardBase.tsx
-var import_react37 = __toESM(require_react(), 1);
+var import_react36 = __toESM(require_react(), 1);
 var CardBase = ({ children }) => {
-  return /* @__PURE__ */ import_react37.default.createElement("div", {
-    className: "rounded-md bg-white px-4 py-3 shadow-md"
+  return /* @__PURE__ */ import_react36.default.createElement("div", {
+    className: "rounded-md bg-white px-4 py-3 shadow-md hover:border hover:border-gray-400"
   }, children);
 };
 // src/react/components/Cards/CardGrid.tsx
-var import_react38 = __toESM(require_react(), 1);
+var import_react37 = __toESM(require_react(), 1);
 var CardGrid = ({ children }) => {
-  return /* @__PURE__ */ import_react38.default.createElement("div", {
+  return /* @__PURE__ */ import_react37.default.createElement("div", {
     className: "grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
   }, children);
 };
 // src/react/components/CustomErrorBoundary/CustomErrorBoundary.tsx
-var import_react39 = __toESM(require_react(), 1);
+var import_react38 = __toESM(require_react(), 1);
 
-class CustomErrorBoundary extends import_react39.default.Component {
+class CustomErrorBoundary extends import_react38.default.Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -28501,17 +28492,17 @@ class CustomErrorBoundary extends import_react39.default.Component {
   }
 }
 // src/react/components/ErrorMessage/ErrorMessage.tsx
-var import_react40 = __toESM(require_react(), 1);
+var import_react39 = __toESM(require_react(), 1);
 var ErrorMessage = ({ children }) => {
-  return /* @__PURE__ */ import_react40.default.createElement(import_react40.default.Fragment, null, children && /* @__PURE__ */ import_react40.default.createElement("div", {
+  return /* @__PURE__ */ import_react39.default.createElement(import_react39.default.Fragment, null, children && /* @__PURE__ */ import_react39.default.createElement("div", {
     className: "mt-2 flex items-center text-sm text-red-600"
-  }, /* @__PURE__ */ import_react40.default.createElement("span", null, children)));
+  }, /* @__PURE__ */ import_react39.default.createElement("span", null, children)));
 };
 // src/react/components/Form/Form.tsx
-var import_react45 = __toESM(require_react(), 1);
+var import_react43 = __toESM(require_react(), 1);
 
 // src/react/hooks/useCheckAuth.ts
-var import_react41 = __toESM(require_react(), 1);
+var import_react40 = __toESM(require_react(), 1);
 
 // node_modules/http-status-codes/build/es/legacy.js
 var ACCEPTED = 202;
@@ -28842,7 +28833,7 @@ var es_default = __assign(__assign({}, legacy_default), {
   getStatusText
 });
 
-// src/types/ApiError.ts
+// src/lib/types/ApiError.ts
 class ApiError extends Error {
   status;
   statusText;
@@ -28896,7 +28887,7 @@ var refreshToken = async () => {
 
 // src/react/hooks/useCheckAuth.ts
 var useAuthCheck = () => {
-  const [authenticated, setAuthenticated] = import_react41.useState(undefined);
+  const [authenticated, setAuthenticated] = import_react40.useState(undefined);
   const checkAuth = async () => {
     try {
       const { authorized } = await apiFetch(`/${apiPrefix}/${authPrefix}/${checkRoute}`);
@@ -28905,7 +28896,7 @@ var useAuthCheck = () => {
       setAuthenticated(false);
     }
   };
-  import_react41.useEffect(() => {
+  import_react40.useEffect(() => {
     if (authenticated === false) {
       location.href = `${loginRoute}`;
     }
@@ -28918,10 +28909,10 @@ var useAuthCheck = () => {
   }, [authenticated]);
 };
 // src/react/hooks/useDebounce.ts
-var import_react42 = __toESM(require_react(), 1);
+var import_react41 = __toESM(require_react(), 1);
 var useDebounce = (value, delay2) => {
-  const [debouncedValue, setDebouncedValue] = import_react42.useState(value);
-  import_react42.useEffect(() => {
+  const [debouncedValue, setDebouncedValue] = import_react41.useState(value);
+  import_react41.useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedValue(value);
     }, delay2);
@@ -28932,11 +28923,11 @@ var useDebounce = (value, delay2) => {
   return debouncedValue;
 };
 // src/react/hooks/usePersistentForm.ts
-var import_react43 = __toESM(require_react(), 1);
+var import_react42 = __toESM(require_react(), 1);
 var usePersistentForm = (ref) => {
   if (ref === null)
     return;
-  import_react43.useEffect(() => {
+  import_react42.useEffect(() => {
     if (!ref.current) {
       throw new Error("Form ref is not defined.");
     }
@@ -28949,26 +28940,6 @@ var usePersistentForm = (ref) => {
       form.removeEventListener("reset", handleReset);
     };
   }, []);
-};
-// src/react/providers/UserProvider.tsx
-var import_react44 = __toESM(require_react(), 1);
-var UserContext = import_react44.createContext(undefined);
-var UserProvider = ({ value, children }) => {
-  const [user, setUser] = import_react44.useState(value);
-  const contextValue = {
-    user,
-    setUser
-  };
-  return /* @__PURE__ */ import_react44.default.createElement(UserContext.Provider, {
-    value: contextValue
-  }, children);
-};
-var useUserContext = () => {
-  const context = import_react44.useContext(UserContext);
-  if (!context) {
-    throw new Error("useUserContext must be used within a UserProvider");
-  }
-  return context;
 };
 // src/react/hooks/useTeams.ts
 var useTeams = () => {
@@ -29171,7 +29142,7 @@ var Form2 = ({
   showCancelButton = false,
   secondaryButtons
 }) => {
-  const [output, formAction, isPending] = import_react45.useActionState(async (prev, formData) => {
+  const [output, formAction, isPending] = import_react43.useActionState(async (prev, formData) => {
     await handleFormSubmit(formData);
     return `handleFormSubmit`;
   }, undefined);
@@ -29182,10 +29153,10 @@ var Form2 = ({
     });
     return inputMap;
   };
-  const [inputValues, setInputValues] = import_react45.useState(getDefaultValues());
-  const [apiError, setApiError] = import_react45.useState("");
-  const [validationErrors, setValidationErrors] = import_react45.useState([]);
-  const formRef = import_react45.useRef(null);
+  const [inputValues, setInputValues] = import_react43.useState(getDefaultValues());
+  const [apiError, setApiError] = import_react43.useState("");
+  const [validationErrors, setValidationErrors] = import_react43.useState([]);
+  const formRef = import_react43.useRef(null);
   usePersistentForm(formRef);
   const handleCancel = () => {
     onCancel && onCancel();
@@ -29220,21 +29191,21 @@ var Form2 = ({
     }
     createMutation.mutate(formData);
   };
-  return /* @__PURE__ */ import_react45.default.createElement("form", {
+  return /* @__PURE__ */ import_react43.default.createElement("form", {
     action: formAction,
     ref: formRef
-  }, /* @__PURE__ */ import_react45.default.createElement(ErrorMessage, null, apiError), inputs.map((input) => {
+  }, /* @__PURE__ */ import_react43.default.createElement(ErrorMessage, null, apiError), inputs.map((input) => {
     const error = validationErrors.find((e) => e.name === input.name);
     let control;
     switch (input.type) {
       case "hidden":
-        control = /* @__PURE__ */ import_react45.default.createElement(HiddenInput, {
+        control = /* @__PURE__ */ import_react43.default.createElement(HiddenInput, {
           ...input
         });
         break;
       case "password":
       case "text":
-        control = /* @__PURE__ */ import_react45.default.createElement(TextInput, {
+        control = /* @__PURE__ */ import_react43.default.createElement(TextInput, {
           ...input,
           value: inputValues.get(input.name) ?? input.value,
           error,
@@ -29244,31 +29215,31 @@ var Form2 = ({
         });
         break;
       default:
-        control = /* @__PURE__ */ import_react45.default.createElement(import_react45.default.Fragment, null, "invlid input");
+        control = /* @__PURE__ */ import_react43.default.createElement(import_react43.default.Fragment, null, "invlid input");
         break;
     }
-    return /* @__PURE__ */ import_react45.default.createElement("div", {
+    return /* @__PURE__ */ import_react43.default.createElement("div", {
       className: input.type !== "hidden" ? "mb-4" : "",
       key: input.name
     }, control);
-  }), /* @__PURE__ */ import_react45.default.createElement("div", {
+  }), /* @__PURE__ */ import_react43.default.createElement("div", {
     className: "mt-6 flex items-center justify-between"
-  }, /* @__PURE__ */ import_react45.default.createElement("div", {
+  }, /* @__PURE__ */ import_react43.default.createElement("div", {
     className: "flex w-full justify-start"
-  }, secondaryButtons), /* @__PURE__ */ import_react45.default.createElement("div", {
+  }, secondaryButtons), /* @__PURE__ */ import_react43.default.createElement("div", {
     className: "flex items-center space-x-4"
-  }, showCancelButton && /* @__PURE__ */ import_react45.default.createElement(Button, {
+  }, showCancelButton && /* @__PURE__ */ import_react43.default.createElement(Button, {
     type: "button",
     onClick: handleCancel,
     mode: "secondary" /* SECONDARY */
-  }, cancelButtonText ? cancelButtonText : "Cancel"), /* @__PURE__ */ import_react45.default.createElement(Button, {
+  }, cancelButtonText ? cancelButtonText : "Cancel"), /* @__PURE__ */ import_react43.default.createElement(Button, {
     type: "submit",
     disabled: isPending || createMutation.isPending,
     mode: "primary" /* PRIMARY */
   }, submitButtonText ? submitButtonText : "Submit"))));
 };
 // src/react/components/Inputs/DropDownInput.tsx
-var import_react46 = __toESM(require_react(), 1);
+var import_react44 = __toESM(require_react(), 1);
 var DropDownInput = ({
   label,
   name,
@@ -29278,11 +29249,11 @@ var DropDownInput = ({
   onChange,
   placeholder
 }) => {
-  const [isOpen, setIsOpen] = import_react46.useState(false);
-  const selectRef = import_react46.useRef(null);
-  const [highlightedIndex, setHighlightedIndex] = import_react46.useState(null);
+  const [isOpen, setIsOpen] = import_react44.useState(false);
+  const selectRef = import_react44.useRef(null);
+  const [highlightedIndex, setHighlightedIndex] = import_react44.useState(null);
   const controlledValue = value ?? "";
-  import_react46.useEffect(() => {
+  import_react44.useEffect(() => {
     const handleClickOutside = (event) => {
       if (selectRef.current && !selectRef.current.contains(event.target)) {
         setIsOpen(false);
@@ -29296,7 +29267,7 @@ var DropDownInput = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
-  const handleOptionClick = import_react46.useCallback((optionValue) => {
+  const handleOptionClick = import_react44.useCallback((optionValue) => {
     onChange?.(optionValue);
     setIsOpen(false);
     setHighlightedIndex(null);
@@ -29329,15 +29300,15 @@ var DropDownInput = ({
       setHighlightedIndex(null);
     }
   };
-  return /* @__PURE__ */ import_react46.default.createElement("div", {
+  return /* @__PURE__ */ import_react44.default.createElement("div", {
     ref: selectRef,
     className: "relative w-full"
-  }, label && /* @__PURE__ */ import_react46.default.createElement(Label, {
+  }, label && /* @__PURE__ */ import_react44.default.createElement(Label, {
     htmlFor: name,
     hasError: error?.message && error?.message.length > 0
-  }, label), /* @__PURE__ */ import_react46.default.createElement("div", {
+  }, label), /* @__PURE__ */ import_react44.default.createElement("div", {
     className: "relative w-full"
-  }, /* @__PURE__ */ import_react46.default.createElement("button", {
+  }, /* @__PURE__ */ import_react44.default.createElement("button", {
     type: "button",
     className: `flex w-full items-center justify-between rounded-md border px-4 py-2 shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-gray-800 ${error ? "border-red-500 focus:ring-red-500" : "border-gray-300 hover:border-gray-500"}`,
     onClick: () => setIsOpen(!isOpen),
@@ -29345,42 +29316,42 @@ var DropDownInput = ({
     "aria-haspopup": "listbox",
     "aria-expanded": isOpen,
     id: `dropdown-button-${name}`
-  }, /* @__PURE__ */ import_react46.default.createElement("span", {
+  }, /* @__PURE__ */ import_react44.default.createElement("span", {
     className: "truncate"
-  }, options.find((opt) => opt.value === controlledValue)?.label || placeholder || "Select an option"), isOpen ? /* @__PURE__ */ import_react46.default.createElement("svg", {
+  }, options.find((opt) => opt.value === controlledValue)?.label || placeholder || "Select an option"), isOpen ? /* @__PURE__ */ import_react44.default.createElement("svg", {
     xmlns: "http://www.w3.org/2000/svg",
     viewBox: "0 0 20 20",
     fill: "currentColor",
     className: "h-5 w-5 text-gray-400"
-  }, /* @__PURE__ */ import_react46.default.createElement("path", {
+  }, /* @__PURE__ */ import_react44.default.createElement("path", {
     fillRule: "evenodd",
     d: "M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z",
     clipRule: "evenodd"
-  })) : /* @__PURE__ */ import_react46.default.createElement("svg", {
+  })) : /* @__PURE__ */ import_react44.default.createElement("svg", {
     xmlns: "http://www.w3.org/2000/svg",
     viewBox: "0 0 20 20",
     fill: "currentColor",
     className: "h-5 w-5 text-gray-400"
-  }, /* @__PURE__ */ import_react46.default.createElement("path", {
+  }, /* @__PURE__ */ import_react44.default.createElement("path", {
     fillRule: "evenodd",
     d: "M14.77 7.79a.75.75 0 01-1.06-.02L10 3.832 6.35 7.77a.75.75 0 01-1.08-1.04l4.25-4.5a.75.75 0 011.08 0l4.25 4.5a.75.75 0 01.02 1.06z",
     clipRule: "evenodd"
-  }))), isOpen && /* @__PURE__ */ import_react46.default.createElement("ul", {
+  }))), isOpen && /* @__PURE__ */ import_react44.default.createElement("ul", {
     className: "absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white shadow-lg",
     role: "listbox",
     "aria-labelledby": `dropdown-button-${name}`
-  }, options.map((option, index) => /* @__PURE__ */ import_react46.default.createElement("li", {
+  }, options.map((option, index) => /* @__PURE__ */ import_react44.default.createElement("li", {
     key: option.value,
     className: `cursor-pointer px-4 py-2 hover:bg-gray-100 ${index === highlightedIndex && "bg-blue-100"}`,
     onClick: () => handleOptionClick(option.value),
     role: "option",
     "aria-selected": controlledValue === option.value
-  }, option.label)))), error && /* @__PURE__ */ import_react46.default.createElement(ErrorMessage, null, error.message));
+  }, option.label)))), error && /* @__PURE__ */ import_react44.default.createElement(ErrorMessage, null, error.message));
 };
 // src/react/components/Inputs/HiddenInput.tsx
-var import_react47 = __toESM(require_react(), 1);
+var import_react45 = __toESM(require_react(), 1);
 var HiddenInput = ({ name, type, value }) => {
-  return /* @__PURE__ */ import_react47.default.createElement("input", {
+  return /* @__PURE__ */ import_react45.default.createElement("input", {
     type,
     id: name,
     name,
@@ -29388,13 +29359,13 @@ var HiddenInput = ({ name, type, value }) => {
   });
 };
 // src/react/components/Inputs/Label.tsx
-var import_react48 = __toESM(require_react(), 1);
-var Label = ({ htmlFor, hasError, children }) => /* @__PURE__ */ import_react48.default.createElement("label", {
+var import_react46 = __toESM(require_react(), 1);
+var Label = ({ htmlFor, hasError, children }) => /* @__PURE__ */ import_react46.default.createElement("label", {
   htmlFor,
   className: `mb-2 block text-sm font-bold text-${hasError ? "red" : "gray"}-600`
 }, children);
 // src/react/components/Inputs/TextInput.tsx
-var import_react49 = __toESM(require_react(), 1);
+var import_react47 = __toESM(require_react(), 1);
 var TextInput = ({
   label,
   name,
@@ -29404,23 +29375,24 @@ var TextInput = ({
   className,
   autoComplete = "off",
   error,
+  ref,
   onChange,
   onClear
 }) => {
   const normalClassName = "w-full rounded-md border px-4 py-2 shadow-sm border-gray-300 hover:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-800";
   const errorClassName = "w-full rounded-md border px-4 py-2 shadow-sm border-red-500 focus:outline-none focus:ring-1 focus:ring-red-800";
   const finalClassName = `${className ? className + " " : ""}${error ? errorClassName : normalClassName}${value ? " pr-8" : ""}`;
-  const inputRef = import_react49.useRef(null);
+  const inputRef = import_react47.useRef(null);
   const handleClear = () => {
     if (inputRef.current) {
       inputRef.current.focus();
     }
     onClear && onClear();
   };
-  return /* @__PURE__ */ import_react49.default.createElement(import_react49.default.Fragment, null, label && /* @__PURE__ */ import_react49.default.createElement(Label, {
+  return /* @__PURE__ */ import_react47.default.createElement(import_react47.default.Fragment, null, label && /* @__PURE__ */ import_react47.default.createElement(Label, {
     htmlFor: name,
     hasError: error?.message && error?.message.length > 0
-  }, label), /* @__PURE__ */ import_react49.default.createElement("input", {
+  }, label), /* @__PURE__ */ import_react47.default.createElement("input", {
     type,
     id: name,
     name,
@@ -29428,15 +29400,16 @@ var TextInput = ({
     onChange,
     placeholder,
     className: finalClassName,
-    autoComplete
-  }), value && onClear && /* @__PURE__ */ import_react49.default.createElement(CloseButton, {
+    autoComplete,
+    ref
+  }), value && onClear && /* @__PURE__ */ import_react47.default.createElement(CloseButton, {
     className: "right absolute top-0",
     onClick: handleClear
-  }), error && /* @__PURE__ */ import_react49.default.createElement(ErrorMessage, null, error.message));
+  }), error && /* @__PURE__ */ import_react47.default.createElement(ErrorMessage, null, error.message));
 };
 // src/react/components/Inputs/TypeAheadInput.tsx
-var import_react50 = __toESM(require_react(), 1);
-var import_react51 = __toESM(require_react(), 1);
+var import_react48 = __toESM(require_react(), 1);
+var import_react49 = __toESM(require_react(), 1);
 var TypeAheadSearchInput = ({
   label,
   name,
@@ -29446,11 +29419,11 @@ var TypeAheadSearchInput = ({
   onSelect,
   error
 }) => {
-  const [searchTerm, setSearchTerm] = import_react50.useState("");
-  const [filteredOptions, setFilteredOptions] = import_react50.useState(options);
-  const [showOptions, setShowOptions] = import_react50.useState(false);
+  const [searchTerm, setSearchTerm] = import_react48.useState("");
+  const [filteredOptions, setFilteredOptions] = import_react48.useState(options);
+  const [showOptions, setShowOptions] = import_react48.useState(false);
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  import_react50.useEffect(() => {
+  import_react48.useEffect(() => {
     if (debouncedSearchTerm) {
       onChange && onChange(debouncedSearchTerm);
       const filtered = options.filter((option) => option.label.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
@@ -29472,8 +29445,8 @@ var TypeAheadSearchInput = ({
     onSelect(value);
     setShowOptions(false);
   };
-  const containerRef = import_react50.useRef(null);
-  import_react50.useEffect(() => {
+  const containerRef = import_react48.useRef(null);
+  import_react48.useEffect(() => {
     const handleClickOutside = (event) => {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
         setShowOptions(false);
@@ -29486,10 +29459,10 @@ var TypeAheadSearchInput = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showOptions]);
-  return /* @__PURE__ */ import_react51.default.createElement("div", {
+  return /* @__PURE__ */ import_react49.default.createElement("div", {
     className: "relative",
     ref: containerRef
-  }, /* @__PURE__ */ import_react51.default.createElement(TextInput, {
+  }, /* @__PURE__ */ import_react49.default.createElement(TextInput, {
     type: "text",
     label,
     name,
@@ -29500,45 +29473,45 @@ var TypeAheadSearchInput = ({
       setSearchTerm("");
     },
     error
-  }), showOptions && /* @__PURE__ */ import_react51.default.createElement("div", {
+  }), showOptions && /* @__PURE__ */ import_react49.default.createElement("div", {
     className: "absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white shadow-lg"
-  }, filteredOptions.length > 0 ? filteredOptions.map((option) => /* @__PURE__ */ import_react51.default.createElement("div", {
+  }, filteredOptions.length > 0 ? filteredOptions.map((option) => /* @__PURE__ */ import_react49.default.createElement("div", {
     key: option.value,
     className: "cursor-pointer px-4 py-2 hover:bg-gray-100",
     onClick: () => handleOptionSelect(option.value)
-  }, option.label)) : /* @__PURE__ */ import_react51.default.createElement("div", {
+  }, option.label)) : /* @__PURE__ */ import_react49.default.createElement("div", {
     className: "px-4 py-2 text-gray-500"
-  }, "No options found")), error && /* @__PURE__ */ import_react51.default.createElement(ErrorMessage, null, error.message));
+  }, "No options found")), error && /* @__PURE__ */ import_react49.default.createElement(ErrorMessage, null, error.message));
 };
 // src/react/components/Layout/index.tsx
-var import_react54 = __toESM(require_react(), 1);
+var import_react52 = __toESM(require_react(), 1);
 
 // src/react/components/Layout/AuthLayout.tsx
-var import_react52 = __toESM(require_react(), 1);
+var import_react50 = __toESM(require_react(), 1);
 var AuthLayout = ({
   title,
   children
 }) => {
-  return /* @__PURE__ */ import_react52.default.createElement("div", {
+  return /* @__PURE__ */ import_react50.default.createElement("div", {
     className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react52.default.createElement("div", {
+  }, /* @__PURE__ */ import_react50.default.createElement("div", {
     className: "w-96 rounded bg-white p-8 shadow-md"
-  }, /* @__PURE__ */ import_react52.default.createElement("h1", {
+  }, /* @__PURE__ */ import_react50.default.createElement("h1", {
     className: "mb-6 text-center text-2xl font-semibold"
   }, title), children));
 };
 
 // src/react/components/Layout/PageLayout.tsx
-var import_react53 = __toESM(require_react(), 1);
+var import_react51 = __toESM(require_react(), 1);
 var PageLayout = ({
   title,
   children
 }) => {
-  return /* @__PURE__ */ import_react53.default.createElement("div", {
+  return /* @__PURE__ */ import_react51.default.createElement("div", {
     className: "flex justify-center bg-gray-100"
-  }, /* @__PURE__ */ import_react53.default.createElement("div", {
+  }, /* @__PURE__ */ import_react51.default.createElement("div", {
     className: "w-full rounded bg-white p-8 shadow-md"
-  }, /* @__PURE__ */ import_react53.default.createElement("h1", {
+  }, /* @__PURE__ */ import_react51.default.createElement("h1", {
     className: "mb-4 text-center text-2xl font-bold"
   }, title), children));
 };
@@ -29548,22 +29521,22 @@ var Layout = ({ type, title, children }) => {
   let layout2;
   switch (type) {
     case "AUTH" /* AUTH */:
-      layout2 = /* @__PURE__ */ import_react54.default.createElement(AuthLayout, {
+      layout2 = /* @__PURE__ */ import_react52.default.createElement(AuthLayout, {
         title
       }, children);
       break;
     case "PAGE" /* PAGE */:
     default:
-      layout2 = /* @__PURE__ */ import_react54.default.createElement(PageLayout, {
+      layout2 = /* @__PURE__ */ import_react52.default.createElement(PageLayout, {
         title
       }, children);
   }
-  return /* @__PURE__ */ import_react54.default.createElement(CustomErrorBoundary, {
-    fallback: /* @__PURE__ */ import_react54.default.createElement("h2", null, "Oops! Something went wrong in this section.")
-  }, /* @__PURE__ */ import_react54.default.createElement(Alerts, null), layout2);
+  return /* @__PURE__ */ import_react52.default.createElement(CustomErrorBoundary, {
+    fallback: /* @__PURE__ */ import_react52.default.createElement("h2", null, "Oops! Something went wrong in this section.")
+  }, /* @__PURE__ */ import_react52.default.createElement(Alerts, null), layout2);
 };
 // src/react/components/Modals/DeleteModal.tsx
-var import_react55 = __toESM(require_react(), 1);
+var import_react53 = __toESM(require_react(), 1);
 var DeleteModal = ({
   isOpen,
   onCancel,
@@ -29572,36 +29545,36 @@ var DeleteModal = ({
   itemName,
   children
 }) => {
-  return /* @__PURE__ */ import_react55.default.createElement(Modal, {
+  return /* @__PURE__ */ import_react53.default.createElement(Modal, {
     title,
     isOpen,
     allowClose: false
-  }, /* @__PURE__ */ import_react55.default.createElement("div", {
+  }, /* @__PURE__ */ import_react53.default.createElement("div", {
     className: "p2 mb-4"
-  }, /* @__PURE__ */ import_react55.default.createElement("div", {
+  }, /* @__PURE__ */ import_react53.default.createElement("div", {
     className: "text-gray-800"
-  }, /* @__PURE__ */ import_react55.default.createElement("p", {
+  }, /* @__PURE__ */ import_react53.default.createElement("p", {
     className: "mb-4"
-  }, "This will delete an item"), itemName && /* @__PURE__ */ import_react55.default.createElement("div", {
+  }, "This will delete an item"), itemName && /* @__PURE__ */ import_react53.default.createElement("div", {
     className: "mb-2 rounded-md border border-red-800 bg-gray-100 p-2 text-lg font-bold text-red-800"
-  }, itemName), /* @__PURE__ */ import_react55.default.createElement("p", {
+  }, itemName), /* @__PURE__ */ import_react53.default.createElement("p", {
     className: "mb-4"
-  }, "This cannot be undone, do you wish to continue?")), children), /* @__PURE__ */ import_react55.default.createElement("div", {
+  }, "This cannot be undone, do you wish to continue?")), children), /* @__PURE__ */ import_react53.default.createElement("div", {
     className: "mt-6 flex items-center justify-between"
-  }, /* @__PURE__ */ import_react55.default.createElement("div", {
+  }, /* @__PURE__ */ import_react53.default.createElement("div", {
     className: "flex w-full justify-start"
-  }), /* @__PURE__ */ import_react55.default.createElement("div", {
+  }), /* @__PURE__ */ import_react53.default.createElement("div", {
     className: "flex items-center space-x-4"
-  }, /* @__PURE__ */ import_react55.default.createElement(Button, {
+  }, /* @__PURE__ */ import_react53.default.createElement(Button, {
     mode: "secondary" /* SECONDARY */,
     onClick: onCancel
-  }, "Cancel"), /* @__PURE__ */ import_react55.default.createElement(Button, {
+  }, "Cancel"), /* @__PURE__ */ import_react53.default.createElement(Button, {
     mode: "delete" /* DELETE */,
     onClick: onDelete
   }, "Delete"))));
 };
 // src/react/components/Modals/Modal.tsx
-var import_react56 = __toESM(require_react(), 1);
+var import_react54 = __toESM(require_react(), 1);
 var Modal = ({
   isOpen,
   allowClose = true,
@@ -29609,11 +29582,11 @@ var Modal = ({
   title,
   children
 }) => {
-  const modalRef = import_react56.useRef(null);
+  const modalRef = import_react54.useRef(null);
   const handleClose = () => {
     allowClose && onClose && onClose();
   };
-  import_react56.useEffect(() => {
+  import_react54.useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
         handleClose();
@@ -29632,27 +29605,27 @@ var Modal = ({
   if (!isOpen) {
     return null;
   }
-  return /* @__PURE__ */ import_react56.default.createElement("div", {
+  return /* @__PURE__ */ import_react54.default.createElement("div", {
     className: "fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-black/50",
     onClick: handleClose
-  }, /* @__PURE__ */ import_react56.default.createElement("div", {
+  }, /* @__PURE__ */ import_react54.default.createElement("div", {
     className: "relative w-full max-w-2xl rounded-lg bg-white shadow-xl",
     ref: modalRef,
     tabIndex: -1,
     onClick: (e) => e.stopPropagation()
-  }, title && /* @__PURE__ */ import_react56.default.createElement("div", {
+  }, title && /* @__PURE__ */ import_react54.default.createElement("div", {
     className: "border-b px-5 py-3"
-  }, /* @__PURE__ */ import_react56.default.createElement("h2", {
+  }, /* @__PURE__ */ import_react54.default.createElement("h2", {
     className: "text-xl font-semibold text-gray-800"
-  }, title)), /* @__PURE__ */ import_react56.default.createElement("div", {
+  }, title)), /* @__PURE__ */ import_react54.default.createElement("div", {
     className: "p-5"
-  }, children), allowClose && /* @__PURE__ */ import_react56.default.createElement(CloseButton, {
+  }, children), allowClose && /* @__PURE__ */ import_react54.default.createElement(CloseButton, {
     className: "absolute pr-2 pt-2",
     onClick: handleClose
   })));
 };
 // src/react/components/Nav/index.tsx
-var import_react57 = __toESM(require_react(), 1);
+var import_react55 = __toESM(require_react(), 1);
 var Nav = () => {
   const navigate = useNavigate();
   const { user } = useUserContext();
@@ -29669,12 +29642,12 @@ var Nav = () => {
   };
   const activeNavLinkClassName = "rounded-md px-3 py-2 text-sm font-bold text-gray-100 hover:text-white bg-gray-600 hover:bg-gray-700 cursor-pointer";
   const navLinkClassName = "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-gray-100 hover:bg-gray-700 cursor-pointer";
-  return /* @__PURE__ */ import_react57.default.createElement("nav", {
+  return /* @__PURE__ */ import_react55.default.createElement("nav", {
     className: "flex items-center justify-between bg-gray-800 p-4",
     style: { height: 60 }
-  }, /* @__PURE__ */ import_react57.default.createElement("div", {
+  }, /* @__PURE__ */ import_react55.default.createElement("div", {
     className: "flex items-center"
-  }, /* @__PURE__ */ import_react57.default.createElement("img", {
+  }, /* @__PURE__ */ import_react55.default.createElement("img", {
     src: "/public/bun.png",
     alt: "Logo",
     height: 50,
@@ -29682,34 +29655,67 @@ var Nav = () => {
     onClick: () => {
       navigate("/");
     }
-  }), /* @__PURE__ */ import_react57.default.createElement(NavLink, {
+  }), /* @__PURE__ */ import_react55.default.createElement(NavLink, {
     to: "/",
     className: "text-lg font-bold text-white"
-  }, "ToDos App")), /* @__PURE__ */ import_react57.default.createElement("div", null, !user?.id && /* @__PURE__ */ import_react57.default.createElement(NavLink, {
+  }, "ToDos App")), /* @__PURE__ */ import_react55.default.createElement("div", null, !user?.id && /* @__PURE__ */ import_react55.default.createElement(NavLink, {
     className: ({ isActive }) => isActive ? activeNavLinkClassName : navLinkClassName,
     to: `/${loginRoute}`
-  }, "Login"), user?.id && /* @__PURE__ */ import_react57.default.createElement(import_react57.default.Fragment, null, /* @__PURE__ */ import_react57.default.createElement(NavLink, {
+  }, "Login"), user?.id && /* @__PURE__ */ import_react55.default.createElement(import_react55.default.Fragment, null, /* @__PURE__ */ import_react55.default.createElement(NavLink, {
     className: ({ isActive }) => isActive ? activeNavLinkClassName : navLinkClassName,
     to: `/${todoRoute}`
-  }, "Todos"), /* @__PURE__ */ import_react57.default.createElement(NavLink, {
+  }, "Todos"), /* @__PURE__ */ import_react55.default.createElement(NavLink, {
     className: ({ isActive }) => isActive ? activeNavLinkClassName : navLinkClassName,
     to: `/${teamRoute}`
-  }, "Teams"), /* @__PURE__ */ import_react57.default.createElement("span", {
+  }, "Teams"), /* @__PURE__ */ import_react55.default.createElement("span", {
     onClick: handleLogout,
     className: navLinkClassName
-  }, "Logout"), /* @__PURE__ */ import_react57.default.createElement("span", {
+  }, "Logout"), /* @__PURE__ */ import_react55.default.createElement("span", {
     className: "ml-2 border-spacing-1 rounded-md border px-3 py-2 text-sm font-medium text-gray-300"
   }, user.username))));
 };
 // src/react/components/Pill/Pill.tsx
-var import_react58 = __toESM(require_react(), 1);
-var Pill = ({ value, onRemove }) => /* @__PURE__ */ import_react58.default.createElement("div", {
+var import_react56 = __toESM(require_react(), 1);
+var Pill = ({ value, onRemove }) => /* @__PURE__ */ import_react56.default.createElement("div", {
   className: "mr-2 inline-flex items-center rounded-lg bg-gray-200 py-1 pl-3 pr-1 text-sm text-gray-800"
-}, /* @__PURE__ */ import_react58.default.createElement("span", null, value), /* @__PURE__ */ import_react58.default.createElement(CloseButton, {
+}, /* @__PURE__ */ import_react56.default.createElement("span", null, value), /* @__PURE__ */ import_react56.default.createElement(CloseButton, {
   className: "right-0 scale-75",
   onClick: onRemove
 }));
+// src/react/pages/Forbidden/index.tsx
+var import_react57 = __toESM(require_react(), 1);
+var ForbiddenPage = () => {
+  return /* @__PURE__ */ import_react57.default.createElement("div", {
+    className: "flex h-screen items-center justify-center"
+  }, /* @__PURE__ */ import_react57.default.createElement("div", {
+    className: "text-center"
+  }, /* @__PURE__ */ import_react57.default.createElement("h1", {
+    className: "mb-4 text-4xl font-bold text-gray-800"
+  }, "403 Forbidden"), /* @__PURE__ */ import_react57.default.createElement("p", {
+    className: "mb-8 text-lg text-gray-600"
+  }, "You must be logged in to access this page!"), /* @__PURE__ */ import_react57.default.createElement("a", {
+    href: `/${loginRoute}`,
+    className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
+  }, "Login to begin")));
+};
+// src/react/pages/Home/index.tsx
+var import_react58 = __toESM(require_react(), 1);
+var HomePage = () => {
+  return /* @__PURE__ */ import_react58.default.createElement("div", {
+    className: "flex h-screen items-center justify-center"
+  }, /* @__PURE__ */ import_react58.default.createElement("div", {
+    className: "text-center"
+  }, /* @__PURE__ */ import_react58.default.createElement("h1", {
+    className: "mb-4 text-4xl font-bold text-gray-800"
+  }, "Welcome!"), /* @__PURE__ */ import_react58.default.createElement("p", {
+    className: "mb-8 text-lg text-gray-600"
+  }, "A ToDo app built with Bun, Elysia, and React Server Components"), /* @__PURE__ */ import_react58.default.createElement("a", {
+    href: `/${loginRoute}`,
+    className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
+  }, "Login to begin")));
+};
 // src/react/pages/Login/index.tsx
+var import_react59 = __toESM(require_react(), 1);
 "use client";
 var Login = () => {
   const validate = (formData) => {

@@ -1,8 +1,11 @@
-import { Elysia, error } from "elysia";
+import { Elysia } from "elysia";
 import { swagger } from "@elysiajs/swagger";
 import { staticPlugin } from "@elysiajs/static";
 import jwt from "@elysiajs/jwt";
 import { cookie } from "@elysiajs/cookie";
+import { StatusCodes } from "http-status-codes";
+
+import { ResponseError } from "@/lib/types";
 
 import { deriveUser } from "./deriveUser";
 import {
@@ -13,8 +16,6 @@ import {
   teamRoutes,
   teamMemberRoutes,
 } from "./routes";
-import { ResponseError } from "./types";
-import { StatusCodes } from "http-status-codes";
 
 await Bun.build({
   entrypoints: ["./src/react/index.tsx"],

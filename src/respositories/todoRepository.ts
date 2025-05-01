@@ -1,14 +1,8 @@
 import sql from "../db";
 import { z } from "zod";
 
-import {
-  IRepository,
-  ResponseError,
-  ToDo,
-  ToDoInsert,
-  ToDoUpdate,
-} from "../types";
-import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { IRepository } from "./IRepository";
+import { ToDo, ToDoInsert, ToDoUpdate } from "../models";
 import { throwDbError } from "./utilities";
 
 const userSchema = z.object({

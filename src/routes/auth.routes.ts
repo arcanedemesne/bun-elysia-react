@@ -11,14 +11,10 @@ import {
   logoutRoute,
   refreshRoute,
   registerRoute,
-} from "../constants";
-import {
-  LoginInfo,
-  UserUpdate,
-  UserInsert,
-  JwtContext,
-  ResponseError,
-} from "../types";
+} from "@/lib/constants";
+import { UserUpdate, UserInsert } from "@/lib/models";
+import { LoginInfo, JwtContext, ResponseError } from "@/lib/types";
+
 import { UserRepository } from "../respositories";
 
 const getExpTimestamp = (secondsFromNow: number) => {

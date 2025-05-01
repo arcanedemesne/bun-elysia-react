@@ -1,7 +1,9 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiPrefix, userRoute } from "../../constants";
-import { apiFetch } from "../api";
-import { UserDTO } from "../../types";
+
+import { apiPrefix, userRoute } from "@/lib/constants";
+import { UserDTO } from "@/lib/models";
+
+import { apiFetch } from "@/api";
 
 export const useUsers = () => {
   const queryClient = useQueryClient();

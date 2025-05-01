@@ -1,6 +1,6 @@
 import React, { ReactNode } from "react";
 
-import { TeamDTO } from "../../../types";
+import { TeamDTO } from "../../../models";
 import { CardBase, DeleteButton, EditButton } from "../../components";
 
 type TeamCardProps = {

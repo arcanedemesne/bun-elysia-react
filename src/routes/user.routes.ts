@@ -1,9 +1,11 @@
 import Elysia from "elysia";
-
-import { apiPrefix, userRoute } from "../constants";
-import { UserRepository } from "../respositories";
-import { UserInsert, JwtContext, ResponseError, UserUpdate } from "../types";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
+
+import { apiPrefix, userRoute } from "@/lib/constants";
+import { UserInsert, UserUpdate } from "@/lib/models";
+import { JwtContext, ResponseError } from "@/lib/types";
+
+import { UserRepository } from "../respositories";
 
 export const userRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
   const repo = new UserRepository();

@@ -1,4 +1,4 @@
-import { emitAlert } from "../react/components";
+import { emitAlert } from "@/components";
 
 type ApiErrorProps = {
   status: number;

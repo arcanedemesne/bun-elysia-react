@@ -5,6 +5,7 @@ import { CloseButton, ErrorMessage } from "..";
 interface TextInputProps extends InputProps {
   autoComplete?: string;
   error?: ValidationError | undefined;
+  ref?: React.Ref<HTMLInputElement> | undefined;
   onChange?: ChangeEventHandler<HTMLInputElement> | undefined;
   onClear?: () => void;
 }
@@ -18,6 +19,7 @@ export const TextInput = ({
   className,
   autoComplete = "off",
   error,
+  ref,
   onChange,
   onClear,
 }: TextInputProps) => {
@@ -53,6 +55,7 @@ export const TextInput = ({
         placeholder={placeholder}
         className={finalClassName}
         autoComplete={autoComplete}
+        ref={ref}
       />
       {value && onClear && (
         <CloseButton className="right absolute top-0" onClick={handleClear} />

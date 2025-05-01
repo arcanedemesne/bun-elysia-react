@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ApiError } from "../../../types";
+import { ApiError } from "@/src/types";
 import { AlertBar } from "./AlertBar";
 
 type Alert = {

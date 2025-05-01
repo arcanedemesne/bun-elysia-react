@@ -1,9 +1,11 @@
 import Elysia from "elysia";
-
-import { apiPrefix, todoRoute } from "../constants";
-import { TodoRepository } from "../respositories";
-import { JwtContext, ToDoInsert, ResponseError, ToDoUpdate } from "../types";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
+
+import { apiPrefix, todoRoute } from "@/lib/constants";
+import { ToDoInsert, ToDoUpdate } from "@/lib/models";
+import { JwtContext, ResponseError } from "@/lib/types";
+
+import { TodoRepository } from "../respositories";
 
 export const todoRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
   const repo = new TodoRepository();

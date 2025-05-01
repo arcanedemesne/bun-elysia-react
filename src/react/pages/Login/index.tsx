@@ -8,16 +8,17 @@ import {
   loginRoute,
   registerRoute,
   todoRoute,
-} from "../../../constants";
-import { LoginInfo } from "../../../types";
+} from "@/lib/constants";
+import { LoginInfo } from "@/lib/types";
+
+import { apiFetch } from "@/api";
 import {
   Layout,
   Form,
   ValidationError,
   LayoutTypes,
   LinkButton,
-} from "../../components";
-import { apiFetch } from "../../api";
+} from "@/components";
 
 export const Login = () => {
   const validate = (formData: FormData) => {

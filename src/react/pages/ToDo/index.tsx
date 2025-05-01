@@ -2,7 +2,7 @@
 
 import React, { MouseEvent, useState } from "react";
 
-import { ToDo } from "../../../types";
+import { ToDo } from "../../../models";
 import { useAuthCheck, useTeams, useToDos } from "../../hooks";
 import {
   Layout,

@@ -2,7 +2,7 @@
 
 import React, { MouseEvent, useEffect, useState } from "react";
 
-import { TeamDTO } from "../../../types";
+import { TeamDTO } from "../../../models";
 import { useAuthCheck, useTeams, useUsers } from "../../hooks";
 import {
   CardGrid,

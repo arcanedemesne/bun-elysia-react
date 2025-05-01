@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { apiPrefix, authPrefix, checkRoute, loginRoute } from "../../constants";
-import { apiFetch } from "../api";
+
+import { apiPrefix, authPrefix, checkRoute, loginRoute } from "@/lib/constants";
+
+import { apiFetch } from "@/api";
 
 export const useAuthCheck = () => {
   const [authenticated, setAuthenticated] = useState<boolean | undefined>(
