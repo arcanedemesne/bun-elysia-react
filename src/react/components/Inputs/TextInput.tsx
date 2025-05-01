@@ -1,11 +1,12 @@
-import React, { ChangeEventHandler } from "react";
+import React, { ChangeEventHandler, useRef } from "react";
 import { InputProps, Label, ValidationError } from ".";
-import { ErrorMessage } from "..";
+import { CloseButton, ErrorMessage } from "..";
 
 interface TextInputProps extends InputProps {
   autoComplete?: string;
   error?: ValidationError | undefined;
   onChange?: ChangeEventHandler<HTMLInputElement> | undefined;
+  onClear?: () => void;
 }
 
 export const TextInput = ({
@@ -14,14 +15,25 @@ export const TextInput = ({
   placeholder,
   type,
   value,
+  className,
   autoComplete = "off",
   error,
   onChange,
+  onClear,
 }: TextInputProps) => {
   const normalClassName =
     "w-full rounded-md border px-4 py-2 shadow-sm border-gray-300 hover:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-800";
   const errorClassName =
     "w-full rounded-md border px-4 py-2 shadow-sm border-red-500 focus:outline-none focus:ring-1 focus:ring-red-800";
+  const finalClassName = `${className ? className + " " : ""}${error ? errorClassName : normalClassName}${value ? " pr-8" : ""}`;
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleClear = () => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+    onClear && onClear();
+  };
   return (
     <>
       {label && (
@@ -39,9 +51,12 @@ export const TextInput = ({
         value={value ?? ""}
         onChange={onChange}
         placeholder={placeholder}
-        className={error ? errorClassName : normalClassName}
+        className={finalClassName}
         autoComplete={autoComplete}
       />
+      {value && onClear && (
+        <CloseButton className="right absolute top-0" onClick={handleClear} />
+      )}
       {error && <ErrorMessage>{error.message}</ErrorMessage>}
     </>
   );

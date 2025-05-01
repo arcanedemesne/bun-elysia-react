@@ -1,9 +1,9 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiPrefix, teamRoute } from "../../constants";
+import { apiPrefix, teamMemberRoute, teamRoute } from "../../constants";
 import { apiFetch } from "../api";
 import { useUserContext } from "../providers";
 import { ValidationError } from "../components";
-import { TeamDTO, TeamInsert, TeamUpdate } from "../../types";
+import { TeamDTO, TeamInsert, TeamMemberDTO, TeamUpdate } from "../../types";
 
 export const useTeams = () => {
   const { user } = useUserContext();
@@ -80,6 +80,38 @@ export const useTeams = () => {
     queryClient.refetchQueries({ queryKey: ["teamData"] });
   };
 
+  const onAddMember = async (teamMember: TeamMemberDTO) => {
+    ("use server");
+
+    const response = await apiFetch(
+      `/${apiPrefix}/${teamRoute}/${teamMemberRoute}`,
+      {
+        method: "POST",
+        body: JSON.stringify(teamMember),
+      },
+    );
+
+    if (response.status === 200) {
+      refetch();
+    }
+  };
+
+  const onRemoveMember = async (teamMember: TeamMemberDTO) => {
+    ("use server");
+
+    const response = await apiFetch(
+      `/${apiPrefix}/${teamRoute}/${teamMemberRoute}`,
+      {
+        method: "DELETE",
+        body: JSON.stringify(teamMember),
+      },
+    );
+
+    if (response.status === 200) {
+      refetch();
+    }
+  };
+
   return {
     getData,
     validate,
@@ -87,5 +119,7 @@ export const useTeams = () => {
     onEdit,
     onDelete,
     refetch,
+    onAddMember,
+    onRemoveMember,
   };
 };

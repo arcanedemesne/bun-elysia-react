@@ -5,11 +5,14 @@ import jwt from "@elysiajs/jwt";
 import { cookie } from "@elysiajs/cookie";
 
 import { deriveUser } from "./deriveUser";
-import { mainRoutes } from "./routes/main.routes";
-import { authRoutes } from "./routes/auth.routes";
-import { todoRoutes } from "./routes/todo.routes";
-import { userRoutes } from "./routes/user.routes";
-import { teamRoutes } from "./routes/team.routes";
+import {
+  mainRoutes,
+  authRoutes,
+  todoRoutes,
+  userRoutes,
+  teamRoutes,
+  teamMemberRoutes,
+} from "./routes";
 import { ResponseError } from "./types";
 import { StatusCodes } from "http-status-codes";
 
@@ -47,6 +50,9 @@ const app = new Elysia()
 
   // TEAMS
   .use(teamRoutes)
+
+  // TEAM MEMBERS
+  .use(teamMemberRoutes)
 
   // AUTH
   .use(authRoutes)

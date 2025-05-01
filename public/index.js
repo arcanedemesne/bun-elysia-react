@@ -16225,7 +16225,7 @@ var require_jsx_runtime = __commonJS((exports, module) => {
 });
 
 // src/react/index.tsx
-var import_react66 = __toESM(require_react(), 1);
+var import_react67 = __toESM(require_react(), 1);
 
 // node_modules/react-router/dist/development/chunk-K6CSEXPM.mjs
 var React3 = __toESM(require_react(), 1);
@@ -18124,7 +18124,7 @@ var encoder = new TextEncoder;
 var import_client = __toESM(require_client(), 1);
 
 // src/react/App.tsx
-var import_react65 = __toESM(require_react(), 1);
+var import_react66 = __toESM(require_react(), 1);
 
 // node_modules/@tanstack/query-core/build/modern/subscribable.js
 var Subscribable = class {
@@ -20636,7 +20636,9 @@ var import_react = __toESM(require_react(), 1);
 var apiPrefix = "api";
 var authPrefix = "auth";
 var todoRoute = "todos";
+var userRoute = "users";
 var teamRoute = "teams";
+var teamMemberRoute = "team-members";
 var loginRoute = "login";
 var registerRoute = "register";
 var logoutRoute = "logout";
@@ -20677,7 +20679,7 @@ var HomePage = () => {
   }, "Login to begin")));
 };
 // src/react/pages/Login/index.tsx
-var import_react60 = __toESM(require_react(), 1);
+var import_react59 = __toESM(require_react(), 1);
 
 // src/react/components/Alerts/Alerts.tsx
 var import_react4 = __toESM(require_react(), 1);
@@ -28379,7 +28381,11 @@ var Button = ({
 };
 // src/react/components/Buttons/CloseButton.tsx
 var import_react30 = __toESM(require_react(), 1);
-var CloseButton = ({ color: color2 = "gray", className, onClick }) => /* @__PURE__ */ import_react30.default.createElement("button", {
+var CloseButton = ({
+  color: color2 = "gray",
+  className,
+  onClick
+}) => /* @__PURE__ */ import_react30.default.createElement("button", {
   className: `${className} right-2 top-2 text-${color2}-500 hover:text-${color2}-700 cursor-pointer focus:outline-none`,
   onClick
 }, /* @__PURE__ */ import_react30.default.createElement(CloseIcon, null));
@@ -28459,89 +28465,24 @@ var LinkButton = ({ to, children }) => /* @__PURE__ */ import_react36.default.cr
   to,
   className: "inline-block align-baseline text-sm font-semibold text-gray-500 hover:text-gray-800"
 }, children);
-// src/react/components/Cards/CardGrid.tsx
+// src/react/components/Cards/CardBase.tsx
 var import_react37 = __toESM(require_react(), 1);
-var CardGrid = ({ children }) => {
+var CardBase = ({ children }) => {
   return /* @__PURE__ */ import_react37.default.createElement("div", {
+    className: "rounded-md bg-white px-4 py-3 shadow-md"
+  }, children);
+};
+// src/react/components/Cards/CardGrid.tsx
+var import_react38 = __toESM(require_react(), 1);
+var CardGrid = ({ children }) => {
+  return /* @__PURE__ */ import_react38.default.createElement("div", {
     className: "grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
   }, children);
 };
-// src/react/components/Cards/TeamCard.tsx
+// src/react/components/CustomErrorBoundary/CustomErrorBoundary.tsx
 var import_react39 = __toESM(require_react(), 1);
 
-// src/react/components/Cards/CardBase.tsx
-var import_react38 = __toESM(require_react(), 1);
-var CardBase = ({ children }) => {
-  return /* @__PURE__ */ import_react38.default.createElement("div", {
-    className: "rounded-md bg-white p-4 shadow-md"
-  }, children);
-};
-
-// src/react/components/Cards/TeamCard.tsx
-var TeamCard = ({
-  team,
-  onEdit,
-  onDelete,
-  children
-}) => {
-  const queryClient = useQueryClient();
-  return /* @__PURE__ */ import_react39.default.createElement(CardBase, null, /* @__PURE__ */ import_react39.default.createElement("div", {
-    className: "flex items-center justify-between"
-  }, /* @__PURE__ */ import_react39.default.createElement("h3", {
-    className: "flex justify-start text-lg font-semibold text-gray-800"
-  }, team.name), /* @__PURE__ */ import_react39.default.createElement("div", {
-    className: "flex justify-end space-x-2"
-  }, /* @__PURE__ */ import_react39.default.createElement(EditButton, {
-    onClick: () => onEdit(team.id)
-  }), /* @__PURE__ */ import_react39.default.createElement(DeleteButton, {
-    onClick: () => onDelete(team.id)
-  }))), /* @__PURE__ */ import_react39.default.createElement("p", {
-    className: "mb-1 text-sm text-gray-600"
-  }, "Created by:", " ", /* @__PURE__ */ import_react39.default.createElement("span", {
-    className: "font-medium"
-  }, team.createdBy.username)), /* @__PURE__ */ import_react39.default.createElement("div", {
-    className: "text-sm text-gray-500"
-  }, team.todos, " ToDo(s)"), /* @__PURE__ */ import_react39.default.createElement("div", {
-    title: team.members.map((m) => m.username).join(", "),
-    className: "text-sm text-gray-500"
-  }, team.members.length, " Member(s):", team.members.length > 0 && /* @__PURE__ */ import_react39.default.createElement("span", {
-    className: "ml-1 text-xs text-gray-400"
-  }, team.members.slice(0, 3).map((m) => m.username).join(", "), team.members.length > 3 && ", ...")), children);
-};
-// src/react/components/Cards/ToDoCard.tsx
-var import_react40 = __toESM(require_react(), 1);
-var ToDoCard = ({
-  todo,
-  onDelete,
-  onEdit,
-  children
-}) => {
-  return /* @__PURE__ */ import_react40.default.createElement(CardBase, null, /* @__PURE__ */ import_react40.default.createElement("div", {
-    className: "mb-2"
-  }, /* @__PURE__ */ import_react40.default.createElement("div", {
-    className: "flex items-center justify-between"
-  }, /* @__PURE__ */ import_react40.default.createElement("h3", {
-    className: "flex justify-start text-lg font-semibold text-gray-800"
-  }, todo.title), /* @__PURE__ */ import_react40.default.createElement("div", {
-    className: "flex justify-end space-x-2"
-  }, /* @__PURE__ */ import_react40.default.createElement(EditButton, {
-    onClick: () => onEdit(todo.id)
-  }), /* @__PURE__ */ import_react40.default.createElement(DeleteButton, {
-    onClick: () => onDelete(todo.id)
-  }))), todo.description && /* @__PURE__ */ import_react40.default.createElement("p", {
-    className: "mt-1 justify-start text-sm text-gray-600"
-  }, todo.description), !todo.description && /* @__PURE__ */ import_react40.default.createElement("p", {
-    className: "mt-1 justify-start text-sm text-gray-300"
-  }, "No description"), /* @__PURE__ */ import_react40.default.createElement("p", {
-    className: "mt-1 text-sm text-gray-600"
-  }, "Created by:", " ", /* @__PURE__ */ import_react40.default.createElement("span", {
-    className: "font-medium"
-  }, todo.createdBy.username))), children);
-};
-// src/react/components/CustomErrorBoundary/CustomErrorBoundary.tsx
-var import_react41 = __toESM(require_react(), 1);
-
-class CustomErrorBoundary extends import_react41.default.Component {
+class CustomErrorBoundary extends import_react39.default.Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -28560,17 +28501,17 @@ class CustomErrorBoundary extends import_react41.default.Component {
   }
 }
 // src/react/components/ErrorMessage/ErrorMessage.tsx
-var import_react42 = __toESM(require_react(), 1);
+var import_react40 = __toESM(require_react(), 1);
 var ErrorMessage = ({ children }) => {
-  return /* @__PURE__ */ import_react42.default.createElement(import_react42.default.Fragment, null, children && /* @__PURE__ */ import_react42.default.createElement("div", {
+  return /* @__PURE__ */ import_react40.default.createElement(import_react40.default.Fragment, null, children && /* @__PURE__ */ import_react40.default.createElement("div", {
     className: "mt-2 flex items-center text-sm text-red-600"
-  }, /* @__PURE__ */ import_react42.default.createElement("span", null, children)));
+  }, /* @__PURE__ */ import_react40.default.createElement("span", null, children)));
 };
 // src/react/components/Form/Form.tsx
-var import_react47 = __toESM(require_react(), 1);
+var import_react45 = __toESM(require_react(), 1);
 
 // src/react/hooks/useCheckAuth.ts
-var import_react43 = __toESM(require_react(), 1);
+var import_react41 = __toESM(require_react(), 1);
 
 // node_modules/http-status-codes/build/es/legacy.js
 var ACCEPTED = 202;
@@ -28955,7 +28896,7 @@ var refreshToken = async () => {
 
 // src/react/hooks/useCheckAuth.ts
 var useAuthCheck = () => {
-  const [authenticated, setAuthenticated] = import_react43.useState(undefined);
+  const [authenticated, setAuthenticated] = import_react41.useState(undefined);
   const checkAuth = async () => {
     try {
       const { authorized } = await apiFetch(`/${apiPrefix}/${authPrefix}/${checkRoute}`);
@@ -28964,7 +28905,7 @@ var useAuthCheck = () => {
       setAuthenticated(false);
     }
   };
-  import_react43.useEffect(() => {
+  import_react41.useEffect(() => {
     if (authenticated === false) {
       location.href = `${loginRoute}`;
     }
@@ -28977,10 +28918,10 @@ var useAuthCheck = () => {
   }, [authenticated]);
 };
 // src/react/hooks/useDebounce.ts
-var import_react44 = __toESM(require_react(), 1);
+var import_react42 = __toESM(require_react(), 1);
 var useDebounce = (value, delay2) => {
-  const [debouncedValue, setDebouncedValue] = import_react44.useState(value);
-  import_react44.useEffect(() => {
+  const [debouncedValue, setDebouncedValue] = import_react42.useState(value);
+  import_react42.useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedValue(value);
     }, delay2);
@@ -28991,11 +28932,11 @@ var useDebounce = (value, delay2) => {
   return debouncedValue;
 };
 // src/react/hooks/usePersistentForm.ts
-var import_react45 = __toESM(require_react(), 1);
+var import_react43 = __toESM(require_react(), 1);
 var usePersistentForm = (ref) => {
   if (ref === null)
     return;
-  import_react45.useEffect(() => {
+  import_react43.useEffect(() => {
     if (!ref.current) {
       throw new Error("Form ref is not defined.");
     }
@@ -29010,20 +28951,20 @@ var usePersistentForm = (ref) => {
   }, []);
 };
 // src/react/providers/UserProvider.tsx
-var import_react46 = __toESM(require_react(), 1);
-var UserContext = import_react46.createContext(undefined);
+var import_react44 = __toESM(require_react(), 1);
+var UserContext = import_react44.createContext(undefined);
 var UserProvider = ({ value, children }) => {
-  const [user, setUser] = import_react46.useState(value);
+  const [user, setUser] = import_react44.useState(value);
   const contextValue = {
     user,
     setUser
   };
-  return /* @__PURE__ */ import_react46.default.createElement(UserContext.Provider, {
+  return /* @__PURE__ */ import_react44.default.createElement(UserContext.Provider, {
     value: contextValue
   }, children);
 };
 var useUserContext = () => {
-  const context = import_react46.useContext(UserContext);
+  const context = import_react44.useContext(UserContext);
   if (!context) {
     throw new Error("useUserContext must be used within a UserProvider");
   }
@@ -29089,13 +29030,35 @@ var useTeams = () => {
     queryClient.invalidateQueries({ queryKey: ["teamData"] });
     queryClient.refetchQueries({ queryKey: ["teamData"] });
   };
+  const onAddMember = async (teamMember) => {
+    "use server";
+    const response = await apiFetch(`/${apiPrefix}/${teamRoute}/${teamMemberRoute}`, {
+      method: "POST",
+      body: JSON.stringify(teamMember)
+    });
+    if (response.status === 200) {
+      refetch();
+    }
+  };
+  const onRemoveMember = async (teamMember) => {
+    "use server";
+    const response = await apiFetch(`/${apiPrefix}/${teamRoute}/${teamMemberRoute}`, {
+      method: "DELETE",
+      body: JSON.stringify(teamMember)
+    });
+    if (response.status === 200) {
+      refetch();
+    }
+  };
   return {
     getData,
     validate,
     onCreate,
     onEdit,
     onDelete,
-    refetch
+    refetch,
+    onAddMember,
+    onRemoveMember
   };
 };
 // src/react/hooks/useToDos.ts
@@ -29170,6 +29133,32 @@ var useToDos = () => {
     refetch
   };
 };
+// src/react/hooks/useUsers.ts
+var useUsers = () => {
+  const queryClient = useQueryClient();
+  const search = async (search2) => {
+    if (search2 && search2?.length >= 3) {
+      const queryString = search2 ? `search=${search2}` : "";
+      return await apiFetch(`/${apiPrefix}/${userRoute}?${queryString}`);
+    }
+    return [];
+  };
+  const getUsers = () => {
+    return useQuery({
+      queryKey: ["userData"],
+      queryFn: () => apiFetch(`/${apiPrefix}/${userRoute}`)
+    });
+  };
+  const refetch = () => {
+    queryClient.invalidateQueries({ queryKey: ["userData"] });
+    queryClient.refetchQueries({ queryKey: ["userData"] });
+  };
+  return {
+    search,
+    getUsers,
+    refetch
+  };
+};
 // src/react/components/Form/Form.tsx
 var Form2 = ({
   inputs,
@@ -29182,7 +29171,7 @@ var Form2 = ({
   showCancelButton = false,
   secondaryButtons
 }) => {
-  const [output, formAction, isPending] = import_react47.useActionState(async (prev, formData) => {
+  const [output, formAction, isPending] = import_react45.useActionState(async (prev, formData) => {
     await handleFormSubmit(formData);
     return `handleFormSubmit`;
   }, undefined);
@@ -29193,10 +29182,10 @@ var Form2 = ({
     });
     return inputMap;
   };
-  const [inputValues, setInputValues] = import_react47.useState(getDefaultValues());
-  const [apiError, setApiError] = import_react47.useState("");
-  const [validationErrors, setValidationErrors] = import_react47.useState([]);
-  const formRef = import_react47.useRef(null);
+  const [inputValues, setInputValues] = import_react45.useState(getDefaultValues());
+  const [apiError, setApiError] = import_react45.useState("");
+  const [validationErrors, setValidationErrors] = import_react45.useState([]);
+  const formRef = import_react45.useRef(null);
   usePersistentForm(formRef);
   const handleCancel = () => {
     onCancel && onCancel();
@@ -29231,21 +29220,21 @@ var Form2 = ({
     }
     createMutation.mutate(formData);
   };
-  return /* @__PURE__ */ import_react47.default.createElement("form", {
+  return /* @__PURE__ */ import_react45.default.createElement("form", {
     action: formAction,
     ref: formRef
-  }, /* @__PURE__ */ import_react47.default.createElement(ErrorMessage, null, apiError), inputs.map((input) => {
+  }, /* @__PURE__ */ import_react45.default.createElement(ErrorMessage, null, apiError), inputs.map((input) => {
     const error = validationErrors.find((e) => e.name === input.name);
     let control;
     switch (input.type) {
       case "hidden":
-        control = /* @__PURE__ */ import_react47.default.createElement(HiddenInput, {
+        control = /* @__PURE__ */ import_react45.default.createElement(HiddenInput, {
           ...input
         });
         break;
       case "password":
       case "text":
-        control = /* @__PURE__ */ import_react47.default.createElement(TextInput, {
+        control = /* @__PURE__ */ import_react45.default.createElement(TextInput, {
           ...input,
           value: inputValues.get(input.name) ?? input.value,
           error,
@@ -29255,31 +29244,31 @@ var Form2 = ({
         });
         break;
       default:
-        control = /* @__PURE__ */ import_react47.default.createElement(import_react47.default.Fragment, null, "invlid input");
+        control = /* @__PURE__ */ import_react45.default.createElement(import_react45.default.Fragment, null, "invlid input");
         break;
     }
-    return /* @__PURE__ */ import_react47.default.createElement("div", {
+    return /* @__PURE__ */ import_react45.default.createElement("div", {
       className: input.type !== "hidden" ? "mb-4" : "",
       key: input.name
     }, control);
-  }), /* @__PURE__ */ import_react47.default.createElement("div", {
+  }), /* @__PURE__ */ import_react45.default.createElement("div", {
     className: "mt-6 flex items-center justify-between"
-  }, /* @__PURE__ */ import_react47.default.createElement("div", {
+  }, /* @__PURE__ */ import_react45.default.createElement("div", {
     className: "flex w-full justify-start"
-  }, secondaryButtons), /* @__PURE__ */ import_react47.default.createElement("div", {
+  }, secondaryButtons), /* @__PURE__ */ import_react45.default.createElement("div", {
     className: "flex items-center space-x-4"
-  }, showCancelButton && /* @__PURE__ */ import_react47.default.createElement(Button, {
+  }, showCancelButton && /* @__PURE__ */ import_react45.default.createElement(Button, {
     type: "button",
     onClick: handleCancel,
     mode: "secondary" /* SECONDARY */
-  }, cancelButtonText ? cancelButtonText : "Cancel"), /* @__PURE__ */ import_react47.default.createElement(Button, {
+  }, cancelButtonText ? cancelButtonText : "Cancel"), /* @__PURE__ */ import_react45.default.createElement(Button, {
     type: "submit",
     disabled: isPending || createMutation.isPending,
     mode: "primary" /* PRIMARY */
   }, submitButtonText ? submitButtonText : "Submit"))));
 };
 // src/react/components/Inputs/DropDownInput.tsx
-var import_react48 = __toESM(require_react(), 1);
+var import_react46 = __toESM(require_react(), 1);
 var DropDownInput = ({
   label,
   name,
@@ -29289,11 +29278,11 @@ var DropDownInput = ({
   onChange,
   placeholder
 }) => {
-  const [isOpen, setIsOpen] = import_react48.useState(false);
-  const selectRef = import_react48.useRef(null);
-  const [highlightedIndex, setHighlightedIndex] = import_react48.useState(null);
+  const [isOpen, setIsOpen] = import_react46.useState(false);
+  const selectRef = import_react46.useRef(null);
+  const [highlightedIndex, setHighlightedIndex] = import_react46.useState(null);
   const controlledValue = value ?? "";
-  import_react48.useEffect(() => {
+  import_react46.useEffect(() => {
     const handleClickOutside = (event) => {
       if (selectRef.current && !selectRef.current.contains(event.target)) {
         setIsOpen(false);
@@ -29307,7 +29296,7 @@ var DropDownInput = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
-  const handleOptionClick = import_react48.useCallback((optionValue) => {
+  const handleOptionClick = import_react46.useCallback((optionValue) => {
     onChange?.(optionValue);
     setIsOpen(false);
     setHighlightedIndex(null);
@@ -29340,15 +29329,15 @@ var DropDownInput = ({
       setHighlightedIndex(null);
     }
   };
-  return /* @__PURE__ */ import_react48.default.createElement("div", {
+  return /* @__PURE__ */ import_react46.default.createElement("div", {
     ref: selectRef,
     className: "relative w-full"
-  }, label && /* @__PURE__ */ import_react48.default.createElement(Label, {
+  }, label && /* @__PURE__ */ import_react46.default.createElement(Label, {
     htmlFor: name,
     hasError: error?.message && error?.message.length > 0
-  }, label), /* @__PURE__ */ import_react48.default.createElement("div", {
+  }, label), /* @__PURE__ */ import_react46.default.createElement("div", {
     className: "relative w-full"
-  }, /* @__PURE__ */ import_react48.default.createElement("button", {
+  }, /* @__PURE__ */ import_react46.default.createElement("button", {
     type: "button",
     className: `flex w-full items-center justify-between rounded-md border px-4 py-2 shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-gray-800 ${error ? "border-red-500 focus:ring-red-500" : "border-gray-300 hover:border-gray-500"}`,
     onClick: () => setIsOpen(!isOpen),
@@ -29356,42 +29345,42 @@ var DropDownInput = ({
     "aria-haspopup": "listbox",
     "aria-expanded": isOpen,
     id: `dropdown-button-${name}`
-  }, /* @__PURE__ */ import_react48.default.createElement("span", {
+  }, /* @__PURE__ */ import_react46.default.createElement("span", {
     className: "truncate"
-  }, options.find((opt) => opt.value === controlledValue)?.label || placeholder || "Select an option"), isOpen ? /* @__PURE__ */ import_react48.default.createElement("svg", {
+  }, options.find((opt) => opt.value === controlledValue)?.label || placeholder || "Select an option"), isOpen ? /* @__PURE__ */ import_react46.default.createElement("svg", {
     xmlns: "http://www.w3.org/2000/svg",
     viewBox: "0 0 20 20",
     fill: "currentColor",
     className: "h-5 w-5 text-gray-400"
-  }, /* @__PURE__ */ import_react48.default.createElement("path", {
+  }, /* @__PURE__ */ import_react46.default.createElement("path", {
     fillRule: "evenodd",
     d: "M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z",
     clipRule: "evenodd"
-  })) : /* @__PURE__ */ import_react48.default.createElement("svg", {
+  })) : /* @__PURE__ */ import_react46.default.createElement("svg", {
     xmlns: "http://www.w3.org/2000/svg",
     viewBox: "0 0 20 20",
     fill: "currentColor",
     className: "h-5 w-5 text-gray-400"
-  }, /* @__PURE__ */ import_react48.default.createElement("path", {
+  }, /* @__PURE__ */ import_react46.default.createElement("path", {
     fillRule: "evenodd",
     d: "M14.77 7.79a.75.75 0 01-1.06-.02L10 3.832 6.35 7.77a.75.75 0 01-1.08-1.04l4.25-4.5a.75.75 0 011.08 0l4.25 4.5a.75.75 0 01.02 1.06z",
     clipRule: "evenodd"
-  }))), isOpen && /* @__PURE__ */ import_react48.default.createElement("ul", {
+  }))), isOpen && /* @__PURE__ */ import_react46.default.createElement("ul", {
     className: "absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white shadow-lg",
     role: "listbox",
     "aria-labelledby": `dropdown-button-${name}`
-  }, options.map((option, index) => /* @__PURE__ */ import_react48.default.createElement("li", {
+  }, options.map((option, index) => /* @__PURE__ */ import_react46.default.createElement("li", {
     key: option.value,
     className: `cursor-pointer px-4 py-2 hover:bg-gray-100 ${index === highlightedIndex && "bg-blue-100"}`,
     onClick: () => handleOptionClick(option.value),
     role: "option",
     "aria-selected": controlledValue === option.value
-  }, option.label)))), error && /* @__PURE__ */ import_react48.default.createElement(ErrorMessage, null, error.message));
+  }, option.label)))), error && /* @__PURE__ */ import_react46.default.createElement(ErrorMessage, null, error.message));
 };
 // src/react/components/Inputs/HiddenInput.tsx
-var import_react49 = __toESM(require_react(), 1);
+var import_react47 = __toESM(require_react(), 1);
 var HiddenInput = ({ name, type, value }) => {
-  return /* @__PURE__ */ import_react49.default.createElement("input", {
+  return /* @__PURE__ */ import_react47.default.createElement("input", {
     type,
     id: name,
     name,
@@ -29399,57 +29388,71 @@ var HiddenInput = ({ name, type, value }) => {
   });
 };
 // src/react/components/Inputs/Label.tsx
-var import_react50 = __toESM(require_react(), 1);
-var Label = ({ htmlFor, hasError, children }) => /* @__PURE__ */ import_react50.default.createElement("label", {
+var import_react48 = __toESM(require_react(), 1);
+var Label = ({ htmlFor, hasError, children }) => /* @__PURE__ */ import_react48.default.createElement("label", {
   htmlFor,
   className: `mb-2 block text-sm font-bold text-${hasError ? "red" : "gray"}-600`
 }, children);
 // src/react/components/Inputs/TextInput.tsx
-var import_react51 = __toESM(require_react(), 1);
+var import_react49 = __toESM(require_react(), 1);
 var TextInput = ({
   label,
   name,
   placeholder,
   type,
   value,
+  className,
   autoComplete = "off",
   error,
-  onChange
+  onChange,
+  onClear
 }) => {
   const normalClassName = "w-full rounded-md border px-4 py-2 shadow-sm border-gray-300 hover:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-800";
   const errorClassName = "w-full rounded-md border px-4 py-2 shadow-sm border-red-500 focus:outline-none focus:ring-1 focus:ring-red-800";
-  return /* @__PURE__ */ import_react51.default.createElement(import_react51.default.Fragment, null, label && /* @__PURE__ */ import_react51.default.createElement(Label, {
+  const finalClassName = `${className ? className + " " : ""}${error ? errorClassName : normalClassName}${value ? " pr-8" : ""}`;
+  const inputRef = import_react49.useRef(null);
+  const handleClear = () => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+    onClear && onClear();
+  };
+  return /* @__PURE__ */ import_react49.default.createElement(import_react49.default.Fragment, null, label && /* @__PURE__ */ import_react49.default.createElement(Label, {
     htmlFor: name,
     hasError: error?.message && error?.message.length > 0
-  }, label), /* @__PURE__ */ import_react51.default.createElement("input", {
+  }, label), /* @__PURE__ */ import_react49.default.createElement("input", {
     type,
     id: name,
     name,
     value: value ?? "",
     onChange,
     placeholder,
-    className: error ? errorClassName : normalClassName,
+    className: finalClassName,
     autoComplete
-  }), error && /* @__PURE__ */ import_react51.default.createElement(ErrorMessage, null, error.message));
+  }), value && onClear && /* @__PURE__ */ import_react49.default.createElement(CloseButton, {
+    className: "right absolute top-0",
+    onClick: handleClear
+  }), error && /* @__PURE__ */ import_react49.default.createElement(ErrorMessage, null, error.message));
 };
 // src/react/components/Inputs/TypeAheadInput.tsx
-var import_react52 = __toESM(require_react(), 1);
-var import_react53 = __toESM(require_react(), 1);
+var import_react50 = __toESM(require_react(), 1);
+var import_react51 = __toESM(require_react(), 1);
 var TypeAheadSearchInput = ({
   label,
   name,
   placeholder,
   options,
+  onChange,
   onSelect,
   error
 }) => {
-  const [searchTerm, setSearchTerm] = import_react52.useState("");
-  const [filteredOptions, setFilteredOptions] = import_react52.useState(options);
-  const [showOptions, setShowOptions] = import_react52.useState(false);
+  const [searchTerm, setSearchTerm] = import_react50.useState("");
+  const [filteredOptions, setFilteredOptions] = import_react50.useState(options);
+  const [showOptions, setShowOptions] = import_react50.useState(false);
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  import_react52.useEffect(() => {
+  import_react50.useEffect(() => {
     if (debouncedSearchTerm) {
-      console.log(options);
+      onChange && onChange(debouncedSearchTerm);
       const filtered = options.filter((option) => option.label.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
       setFilteredOptions(filtered);
       setShowOptions(filtered.length > 0);
@@ -29469,8 +29472,8 @@ var TypeAheadSearchInput = ({
     onSelect(value);
     setShowOptions(false);
   };
-  const containerRef = import_react52.useRef(null);
-  import_react52.useEffect(() => {
+  const containerRef = import_react50.useRef(null);
+  import_react50.useEffect(() => {
     const handleClickOutside = (event) => {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
         setShowOptions(false);
@@ -29483,56 +29486,59 @@ var TypeAheadSearchInput = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showOptions]);
-  return /* @__PURE__ */ import_react53.default.createElement("div", {
+  return /* @__PURE__ */ import_react51.default.createElement("div", {
     className: "relative",
     ref: containerRef
-  }, /* @__PURE__ */ import_react53.default.createElement(TextInput, {
+  }, /* @__PURE__ */ import_react51.default.createElement(TextInput, {
     type: "text",
     label,
     name,
     placeholder,
     value: searchTerm,
     onChange: handleInputChange,
+    onClear: () => {
+      setSearchTerm("");
+    },
     error
-  }), showOptions && /* @__PURE__ */ import_react53.default.createElement("div", {
+  }), showOptions && /* @__PURE__ */ import_react51.default.createElement("div", {
     className: "absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white shadow-lg"
-  }, filteredOptions.length > 0 ? filteredOptions.map((option) => /* @__PURE__ */ import_react53.default.createElement("div", {
+  }, filteredOptions.length > 0 ? filteredOptions.map((option) => /* @__PURE__ */ import_react51.default.createElement("div", {
     key: option.value,
     className: "cursor-pointer px-4 py-2 hover:bg-gray-100",
     onClick: () => handleOptionSelect(option.value)
-  }, option.label)) : /* @__PURE__ */ import_react53.default.createElement("div", {
+  }, option.label)) : /* @__PURE__ */ import_react51.default.createElement("div", {
     className: "px-4 py-2 text-gray-500"
-  }, "No options found")), error && /* @__PURE__ */ import_react53.default.createElement(ErrorMessage, null, error.message));
+  }, "No options found")), error && /* @__PURE__ */ import_react51.default.createElement(ErrorMessage, null, error.message));
 };
 // src/react/components/Layout/index.tsx
-var import_react56 = __toESM(require_react(), 1);
+var import_react54 = __toESM(require_react(), 1);
 
 // src/react/components/Layout/AuthLayout.tsx
-var import_react54 = __toESM(require_react(), 1);
+var import_react52 = __toESM(require_react(), 1);
 var AuthLayout = ({
   title,
   children
 }) => {
-  return /* @__PURE__ */ import_react54.default.createElement("div", {
+  return /* @__PURE__ */ import_react52.default.createElement("div", {
     className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react54.default.createElement("div", {
+  }, /* @__PURE__ */ import_react52.default.createElement("div", {
     className: "w-96 rounded bg-white p-8 shadow-md"
-  }, /* @__PURE__ */ import_react54.default.createElement("h1", {
+  }, /* @__PURE__ */ import_react52.default.createElement("h1", {
     className: "mb-6 text-center text-2xl font-semibold"
   }, title), children));
 };
 
 // src/react/components/Layout/PageLayout.tsx
-var import_react55 = __toESM(require_react(), 1);
+var import_react53 = __toESM(require_react(), 1);
 var PageLayout = ({
   title,
   children
 }) => {
-  return /* @__PURE__ */ import_react55.default.createElement("div", {
+  return /* @__PURE__ */ import_react53.default.createElement("div", {
     className: "flex justify-center bg-gray-100"
-  }, /* @__PURE__ */ import_react55.default.createElement("div", {
+  }, /* @__PURE__ */ import_react53.default.createElement("div", {
     className: "w-full rounded bg-white p-8 shadow-md"
-  }, /* @__PURE__ */ import_react55.default.createElement("h1", {
+  }, /* @__PURE__ */ import_react53.default.createElement("h1", {
     className: "mb-4 text-center text-2xl font-bold"
   }, title), children));
 };
@@ -29542,82 +29548,111 @@ var Layout = ({ type, title, children }) => {
   let layout2;
   switch (type) {
     case "AUTH" /* AUTH */:
-      layout2 = /* @__PURE__ */ import_react56.default.createElement(AuthLayout, {
+      layout2 = /* @__PURE__ */ import_react54.default.createElement(AuthLayout, {
         title
       }, children);
       break;
     case "PAGE" /* PAGE */:
     default:
-      layout2 = /* @__PURE__ */ import_react56.default.createElement(PageLayout, {
+      layout2 = /* @__PURE__ */ import_react54.default.createElement(PageLayout, {
         title
       }, children);
   }
-  return /* @__PURE__ */ import_react56.default.createElement(CustomErrorBoundary, {
-    fallback: /* @__PURE__ */ import_react56.default.createElement("h2", null, "Oops! Something went wrong in this section.")
-  }, /* @__PURE__ */ import_react56.default.createElement(Alerts, null), layout2);
+  return /* @__PURE__ */ import_react54.default.createElement(CustomErrorBoundary, {
+    fallback: /* @__PURE__ */ import_react54.default.createElement("h2", null, "Oops! Something went wrong in this section.")
+  }, /* @__PURE__ */ import_react54.default.createElement(Alerts, null), layout2);
 };
 // src/react/components/Modals/DeleteModal.tsx
-var import_react57 = __toESM(require_react(), 1);
+var import_react55 = __toESM(require_react(), 1);
 var DeleteModal = ({
   isOpen,
-  onClose,
   onCancel,
   onDelete,
   title,
   itemName,
   children
 }) => {
-  return /* @__PURE__ */ import_react57.default.createElement(Modal, {
+  return /* @__PURE__ */ import_react55.default.createElement(Modal, {
     title,
     isOpen,
-    onClose
-  }, /* @__PURE__ */ import_react57.default.createElement("div", {
+    allowClose: false
+  }, /* @__PURE__ */ import_react55.default.createElement("div", {
     className: "p2 mb-4"
-  }, /* @__PURE__ */ import_react57.default.createElement("div", {
+  }, /* @__PURE__ */ import_react55.default.createElement("div", {
     className: "text-gray-800"
-  }, /* @__PURE__ */ import_react57.default.createElement("p", {
+  }, /* @__PURE__ */ import_react55.default.createElement("p", {
     className: "mb-4"
-  }, "This will delete an item"), itemName && /* @__PURE__ */ import_react57.default.createElement("div", {
+  }, "This will delete an item"), itemName && /* @__PURE__ */ import_react55.default.createElement("div", {
     className: "mb-2 rounded-md border border-red-800 bg-gray-100 p-2 text-lg font-bold text-red-800"
-  }, itemName), /* @__PURE__ */ import_react57.default.createElement("p", {
+  }, itemName), /* @__PURE__ */ import_react55.default.createElement("p", {
     className: "mb-4"
-  }, "This cannot be undone, do you wish to continue?")), children), /* @__PURE__ */ import_react57.default.createElement("div", {
+  }, "This cannot be undone, do you wish to continue?")), children), /* @__PURE__ */ import_react55.default.createElement("div", {
     className: "mt-6 flex items-center justify-between"
-  }, /* @__PURE__ */ import_react57.default.createElement("div", {
+  }, /* @__PURE__ */ import_react55.default.createElement("div", {
     className: "flex w-full justify-start"
-  }), /* @__PURE__ */ import_react57.default.createElement("div", {
+  }), /* @__PURE__ */ import_react55.default.createElement("div", {
     className: "flex items-center space-x-4"
-  }, /* @__PURE__ */ import_react57.default.createElement(Button, {
+  }, /* @__PURE__ */ import_react55.default.createElement(Button, {
     mode: "secondary" /* SECONDARY */,
     onClick: onCancel
-  }, "Cancel"), /* @__PURE__ */ import_react57.default.createElement(Button, {
+  }, "Cancel"), /* @__PURE__ */ import_react55.default.createElement(Button, {
     mode: "delete" /* DELETE */,
     onClick: onDelete
   }, "Delete"))));
 };
 // src/react/components/Modals/Modal.tsx
-var import_react58 = __toESM(require_react(), 1);
-var Modal = ({ isOpen, onClose, title, children }) => {
+var import_react56 = __toESM(require_react(), 1);
+var Modal = ({
+  isOpen,
+  allowClose = true,
+  onClose,
+  title,
+  children
+}) => {
+  const modalRef = import_react56.useRef(null);
+  const handleClose = () => {
+    allowClose && onClose && onClose();
+  };
+  import_react56.useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        handleClose();
+      }
+    };
+    if (isOpen) {
+      modalRef.current?.addEventListener("keydown", handleKeyDown);
+      if (modalRef.current) {
+        modalRef.current.focus();
+      }
+    }
+    return () => {
+      modalRef.current?.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, allowClose, onClose]);
   if (!isOpen) {
     return null;
   }
-  return /* @__PURE__ */ import_react58.default.createElement("div", {
-    className: "fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-black/50"
-  }, /* @__PURE__ */ import_react58.default.createElement("div", {
-    className: "relative w-full max-w-2xl rounded-lg bg-white shadow-xl"
-  }, title && /* @__PURE__ */ import_react58.default.createElement("div", {
+  return /* @__PURE__ */ import_react56.default.createElement("div", {
+    className: "fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-black/50",
+    onClick: handleClose
+  }, /* @__PURE__ */ import_react56.default.createElement("div", {
+    className: "relative w-full max-w-2xl rounded-lg bg-white shadow-xl",
+    ref: modalRef,
+    tabIndex: -1,
+    onClick: (e) => e.stopPropagation()
+  }, title && /* @__PURE__ */ import_react56.default.createElement("div", {
     className: "border-b px-5 py-3"
-  }, /* @__PURE__ */ import_react58.default.createElement("h2", {
+  }, /* @__PURE__ */ import_react56.default.createElement("h2", {
     className: "text-xl font-semibold text-gray-800"
-  }, title)), /* @__PURE__ */ import_react58.default.createElement("div", {
+  }, title)), /* @__PURE__ */ import_react56.default.createElement("div", {
     className: "p-5"
-  }, children), /* @__PURE__ */ import_react58.default.createElement(CloseButton, {
-    className: "absolute",
-    onClick: onClose
+  }, children), allowClose && /* @__PURE__ */ import_react56.default.createElement(CloseButton, {
+    className: "absolute pr-2 pt-2",
+    onClick: handleClose
   })));
 };
 // src/react/components/Nav/index.tsx
-var import_react59 = __toESM(require_react(), 1);
+var import_react57 = __toESM(require_react(), 1);
 var Nav = () => {
   const navigate = useNavigate();
   const { user } = useUserContext();
@@ -29634,12 +29669,12 @@ var Nav = () => {
   };
   const activeNavLinkClassName = "rounded-md px-3 py-2 text-sm font-bold text-gray-100 hover:text-white bg-gray-600 hover:bg-gray-700 cursor-pointer";
   const navLinkClassName = "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-gray-100 hover:bg-gray-700 cursor-pointer";
-  return /* @__PURE__ */ import_react59.default.createElement("nav", {
+  return /* @__PURE__ */ import_react57.default.createElement("nav", {
     className: "flex items-center justify-between bg-gray-800 p-4",
     style: { height: 60 }
-  }, /* @__PURE__ */ import_react59.default.createElement("div", {
+  }, /* @__PURE__ */ import_react57.default.createElement("div", {
     className: "flex items-center"
-  }, /* @__PURE__ */ import_react59.default.createElement("img", {
+  }, /* @__PURE__ */ import_react57.default.createElement("img", {
     src: "/public/bun.png",
     alt: "Logo",
     height: 50,
@@ -29647,25 +29682,33 @@ var Nav = () => {
     onClick: () => {
       navigate("/");
     }
-  }), /* @__PURE__ */ import_react59.default.createElement(NavLink, {
+  }), /* @__PURE__ */ import_react57.default.createElement(NavLink, {
     to: "/",
     className: "text-lg font-bold text-white"
-  }, "ToDos App")), /* @__PURE__ */ import_react59.default.createElement("div", null, !user?.id && /* @__PURE__ */ import_react59.default.createElement(NavLink, {
+  }, "ToDos App")), /* @__PURE__ */ import_react57.default.createElement("div", null, !user?.id && /* @__PURE__ */ import_react57.default.createElement(NavLink, {
     className: ({ isActive }) => isActive ? activeNavLinkClassName : navLinkClassName,
     to: `/${loginRoute}`
-  }, "Login"), user?.id && /* @__PURE__ */ import_react59.default.createElement(import_react59.default.Fragment, null, /* @__PURE__ */ import_react59.default.createElement(NavLink, {
+  }, "Login"), user?.id && /* @__PURE__ */ import_react57.default.createElement(import_react57.default.Fragment, null, /* @__PURE__ */ import_react57.default.createElement(NavLink, {
     className: ({ isActive }) => isActive ? activeNavLinkClassName : navLinkClassName,
     to: `/${todoRoute}`
-  }, "Todos"), /* @__PURE__ */ import_react59.default.createElement(NavLink, {
+  }, "Todos"), /* @__PURE__ */ import_react57.default.createElement(NavLink, {
     className: ({ isActive }) => isActive ? activeNavLinkClassName : navLinkClassName,
     to: `/${teamRoute}`
-  }, "Teams"), /* @__PURE__ */ import_react59.default.createElement("span", {
+  }, "Teams"), /* @__PURE__ */ import_react57.default.createElement("span", {
     onClick: handleLogout,
     className: navLinkClassName
-  }, "Logout"), /* @__PURE__ */ import_react59.default.createElement("span", {
+  }, "Logout"), /* @__PURE__ */ import_react57.default.createElement("span", {
     className: "ml-2 border-spacing-1 rounded-md border px-3 py-2 text-sm font-medium text-gray-300"
   }, user.username))));
 };
+// src/react/components/Pill/Pill.tsx
+var import_react58 = __toESM(require_react(), 1);
+var Pill = ({ value, onRemove }) => /* @__PURE__ */ import_react58.default.createElement("div", {
+  className: "mr-2 inline-flex items-center rounded-lg bg-gray-200 py-1 pl-3 pr-1 text-sm text-gray-800"
+}, /* @__PURE__ */ import_react58.default.createElement("span", null, value), /* @__PURE__ */ import_react58.default.createElement(CloseButton, {
+  className: "right-0 scale-75",
+  onClick: onRemove
+}));
 // src/react/pages/Login/index.tsx
 "use client";
 var Login = () => {
@@ -29702,10 +29745,10 @@ var Login = () => {
   const onSuccess = () => {
     location.href = `/${todoRoute}`;
   };
-  return /* @__PURE__ */ import_react60.default.createElement(Layout, {
+  return /* @__PURE__ */ import_react59.default.createElement(Layout, {
     type: "AUTH" /* AUTH */,
     title: "Login"
-  }, /* @__PURE__ */ import_react60.default.createElement(Form2, {
+  }, /* @__PURE__ */ import_react59.default.createElement(Form2, {
     inputs: [
       {
         type: "text",
@@ -29725,29 +29768,29 @@ var Login = () => {
     onSubmit,
     onSuccess,
     submitButtonText: "Login",
-    secondaryButtons: /* @__PURE__ */ import_react60.default.createElement(LinkButton, {
+    secondaryButtons: /* @__PURE__ */ import_react59.default.createElement(LinkButton, {
       to: `/${registerRoute}`
     }, "Not a member yet? Register here!")
   }));
 };
 // src/react/pages/NotFound/index.tsx
-var import_react61 = __toESM(require_react(), 1);
+var import_react60 = __toESM(require_react(), 1);
 var NotFoundPage = () => {
-  return /* @__PURE__ */ import_react61.default.createElement("div", {
+  return /* @__PURE__ */ import_react60.default.createElement("div", {
     className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react61.default.createElement("div", {
+  }, /* @__PURE__ */ import_react60.default.createElement("div", {
     className: "text-center"
-  }, /* @__PURE__ */ import_react61.default.createElement("h1", {
+  }, /* @__PURE__ */ import_react60.default.createElement("h1", {
     className: "mb-4 text-4xl font-bold text-gray-800"
-  }, "404 Not Found"), /* @__PURE__ */ import_react61.default.createElement("p", {
+  }, "404 Not Found"), /* @__PURE__ */ import_react60.default.createElement("p", {
     className: "mb-8 text-lg text-gray-600"
-  }, "We couldn't find what you were looking for."), /* @__PURE__ */ import_react61.default.createElement("a", {
+  }, "We couldn't find what you were looking for."), /* @__PURE__ */ import_react60.default.createElement("a", {
     href: `/${loginRoute}`,
     className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
   }, "Login to begin")));
 };
 // src/react/pages/Register/index.tsx
-var import_react62 = __toESM(require_react(), 1);
+var import_react61 = __toESM(require_react(), 1);
 "use client";
 var Register = () => {
   const validate = (formData) => {
@@ -29790,10 +29833,10 @@ var Register = () => {
   const onSuccess = () => {
     location.href = `/${todoRoute}`;
   };
-  return /* @__PURE__ */ import_react62.default.createElement(Layout, {
+  return /* @__PURE__ */ import_react61.default.createElement(Layout, {
     type: "AUTH" /* AUTH */,
     title: "Register"
-  }, /* @__PURE__ */ import_react62.default.createElement(Form2, {
+  }, /* @__PURE__ */ import_react61.default.createElement(Form2, {
     inputs: [
       {
         type: "text",
@@ -29818,13 +29861,47 @@ var Register = () => {
     onSubmit,
     onSuccess,
     submitButtonText: "Register",
-    secondaryButtons: /* @__PURE__ */ import_react62.default.createElement(LinkButton, {
+    secondaryButtons: /* @__PURE__ */ import_react61.default.createElement(LinkButton, {
       to: `/${loginRoute}`
     }, "Already a member?")
   }));
 };
 // src/react/pages/Team/index.tsx
 var import_react63 = __toESM(require_react(), 1);
+
+// src/react/pages/Team/TeamCard.tsx
+var import_react62 = __toESM(require_react(), 1);
+var TeamCard = ({
+  team,
+  onEdit,
+  onDelete,
+  children
+}) => {
+  return /* @__PURE__ */ import_react62.default.createElement(CardBase, null, /* @__PURE__ */ import_react62.default.createElement("div", {
+    className: "flex items-center justify-between"
+  }, /* @__PURE__ */ import_react62.default.createElement("h3", {
+    className: "flex justify-start text-lg font-semibold text-gray-800"
+  }, team.name), /* @__PURE__ */ import_react62.default.createElement("div", {
+    className: "flex justify-end space-x-2"
+  }, /* @__PURE__ */ import_react62.default.createElement(EditButton, {
+    onClick: () => onEdit(team.id)
+  }), /* @__PURE__ */ import_react62.default.createElement(DeleteButton, {
+    onClick: () => onDelete(team.id)
+  }))), /* @__PURE__ */ import_react62.default.createElement("div", {
+    className: "text-sm text-gray-500"
+  }, team.todos, " todo", team.todos > 1 ? "s" : ""), /* @__PURE__ */ import_react62.default.createElement("div", {
+    title: team.members.map((m) => m.username).join(", "),
+    className: "text-sm text-gray-500"
+  }, team.members.length, " member", team.members.length > 1 ? "s" : "", ":", team.members.length > 0 && /* @__PURE__ */ import_react62.default.createElement("span", {
+    className: "ml-1 text-xs text-gray-400"
+  }, team.members.slice(0, 3).map((m) => m.username).join(", "), team.members.length > 3 && " & more")), children, /* @__PURE__ */ import_react62.default.createElement("p", {
+    className: "mt-1 text-sm text-gray-600"
+  }, "Created by:", " ", /* @__PURE__ */ import_react62.default.createElement("span", {
+    className: "font-medium"
+  }, team.createdBy.username)));
+};
+
+// src/react/pages/Team/index.tsx
 "use client";
 var TeamPage = () => {
   useAuthCheck();
@@ -29832,15 +29909,34 @@ var TeamPage = () => {
   const [editId, setEditId] = import_react63.useState(undefined);
   const [isDeleteModelOpen, setIsDeleteModalOpen] = import_react63.useState(false);
   const [deleteId, setDeleteId] = import_react63.useState(undefined);
+  const [searchQuery, setSearchQuery] = import_react63.useState(undefined);
+  const [searchOptions, setSearchOptions] = import_react63.useState([]);
   const [selectedMemberId, setSelectedMemberId] = import_react63.useState(undefined);
-  const { getData, validate, onCreate, onEdit, onDelete, refetch } = useTeams();
-  const { isPending, error, data: teams } = getData();
+  const {
+    getData: getTeams,
+    validate,
+    onCreate,
+    onEdit,
+    onDelete,
+    refetch,
+    onAddMember,
+    onRemoveMember
+  } = useTeams();
+  const { isPending, error, data: teams } = getTeams();
+  const { search } = useUsers();
+  import_react63.useEffect(() => {
+    const fetchData = async () => {
+      const foundMembers = await search(searchQuery);
+      const searchOptions2 = foundMembers && foundMembers.length > 0 ? foundMembers.filter((fm) => !teamForEdit?.members.map((m) => m.id).includes(fm.id)).map((m) => ({
+        label: m.username,
+        value: m.id
+      })) : [];
+      setSearchOptions(searchOptions2);
+    };
+    fetchData();
+  }, [searchQuery]);
   const teamForEdit = teams && teams.find((t) => t.id === editId);
   const teamForDelete = teams && teams.find((t) => t.id === deleteId);
-  const searchOptions = [
-    { label: "Jenny", value: "some guid" },
-    { label: "Jenny New", value: "some new guid" }
-  ];
   const handleEdit = (id3) => {
     setEditId(id3);
     setIsEditModalOpen(true);
@@ -29920,11 +30016,12 @@ var TeamPage = () => {
     name: "members",
     placeholder: "Search for members...",
     options: searchOptions,
+    onChange: setSearchQuery,
     onSelect: (value) => {
       setSelectedMemberId(value);
     }
   }), selectedMemberId && /* @__PURE__ */ import_react63.default.createElement("div", {
-    className: "flex w-full items-end justify-between rounded border border-gray-800 p-2"
+    className: "flex w-full items-end justify-between rounded border border-gray-800 p-2 pl-4"
   }, searchOptions.find((o) => o.value === selectedMemberId)?.label, " ", /* @__PURE__ */ import_react63.default.createElement(CloseButton, {
     onClick: () => {
       setSelectedMemberId(undefined);
@@ -29934,12 +30031,32 @@ var TeamPage = () => {
   }, /* @__PURE__ */ import_react63.default.createElement(Button, {
     mode: "secondary" /* SECONDARY */,
     disabled: !!!selectedMemberId,
-    onClick: () => console.log("adding " + searchOptions.find((o) => o.value === selectedMemberId)?.label)
-  }, "Add")))), /* @__PURE__ */ import_react63.default.createElement(DeleteModal, {
+    onClick: async () => {
+      await onAddMember({
+        userId: selectedMemberId,
+        teamId: teamForEdit.id
+      });
+      setSelectedMemberId(undefined);
+      setSearchQuery(undefined);
+    }
+  }, "Add"))), teamForEdit && teamForEdit.members && /* @__PURE__ */ import_react63.default.createElement("div", {
+    className: "relative mt-4 flex items-center"
+  }, teamForEdit.members.filter((m) => m.id !== teamForEdit?.createdBy.id).map((m) => /* @__PURE__ */ import_react63.default.createElement(Pill, {
+    value: m.username,
+    onRemove: async () => {
+      await onRemoveMember({
+        userId: m.id,
+        teamId: teamForEdit.id
+      });
+    }
+  }))), /* @__PURE__ */ import_react63.default.createElement("p", {
+    className: "mt-4 text-sm text-gray-600"
+  }, "Created by:", " ", /* @__PURE__ */ import_react63.default.createElement("span", {
+    className: "font-medium"
+  }, teamForEdit?.createdBy.username))), /* @__PURE__ */ import_react63.default.createElement(DeleteModal, {
     title: "Deleting a Team",
     itemName: teamForDelete?.name,
     isOpen: isDeleteModelOpen && !!teamForDelete,
-    onClose: handleCloseDeleteModal,
     onCancel: () => {
       handleCloseDeleteModal();
     },
@@ -29951,15 +30068,46 @@ var TeamPage = () => {
   }));
 };
 // src/react/pages/ToDo/index.tsx
+var import_react65 = __toESM(require_react(), 1);
+
+// src/react/pages/ToDo/ToDoCard.tsx
 var import_react64 = __toESM(require_react(), 1);
+var ToDoCard = ({
+  todo,
+  onDelete,
+  onEdit,
+  children
+}) => {
+  return /* @__PURE__ */ import_react64.default.createElement(CardBase, null, /* @__PURE__ */ import_react64.default.createElement(import_react64.default.Fragment, null, /* @__PURE__ */ import_react64.default.createElement("div", {
+    className: "flex items-center justify-between"
+  }, /* @__PURE__ */ import_react64.default.createElement("h3", {
+    className: "flex justify-start text-lg font-semibold text-gray-800"
+  }, todo.title), /* @__PURE__ */ import_react64.default.createElement("div", {
+    className: "flex justify-end space-x-2"
+  }, /* @__PURE__ */ import_react64.default.createElement(EditButton, {
+    onClick: () => onEdit(todo.id)
+  }), /* @__PURE__ */ import_react64.default.createElement(DeleteButton, {
+    onClick: () => onDelete(todo.id)
+  }))), todo.description && /* @__PURE__ */ import_react64.default.createElement("p", {
+    className: "mt-1 justify-start text-sm text-gray-600"
+  }, todo.description), !todo.description && /* @__PURE__ */ import_react64.default.createElement("p", {
+    className: "mt-1 justify-start text-sm text-gray-300"
+  }, "No description"), /* @__PURE__ */ import_react64.default.createElement("p", {
+    className: "mt-1 text-sm text-gray-600"
+  }, "Created by:", " ", /* @__PURE__ */ import_react64.default.createElement("span", {
+    className: "font-medium"
+  }, todo.createdBy.username))), children);
+};
+
+// src/react/pages/ToDo/index.tsx
 "use client";
 var ToDoPage = () => {
   useAuthCheck();
-  const [isEditModelOpen, setIsEditModalOpen] = import_react64.useState(false);
-  const [editId, setEditId] = import_react64.useState(undefined);
-  const [isDeleteModelOpen, setIsDeleteModalOpen] = import_react64.useState(false);
-  const [deleteId, setDeleteId] = import_react64.useState(undefined);
-  const [selectedTeamId, setSelectedTeamId] = import_react64.useState("");
+  const [isEditModelOpen, setIsEditModalOpen] = import_react65.useState(false);
+  const [editId, setEditId] = import_react65.useState(undefined);
+  const [isDeleteModelOpen, setIsDeleteModalOpen] = import_react65.useState(false);
+  const [deleteId, setDeleteId] = import_react65.useState(undefined);
+  const [selectedTeamId, setSelectedTeamId] = import_react65.useState("");
   const {
     getData: getTodos,
     validate,
@@ -29968,8 +30116,8 @@ var ToDoPage = () => {
     onDelete,
     refetch: refetchTodos
   } = useToDos();
-  const { getData: getTeams, refetch: refetchTeams } = useTeams();
   const { isPending, error, data: todos } = getTodos(selectedTeamId);
+  const { getData: getTeams, refetch: refetchTeams } = useTeams();
   const { data: teams } = getTeams();
   const handleEdit = (id3) => {
     setEditId(id3);
@@ -29994,14 +30142,14 @@ var ToDoPage = () => {
   const todoForEdit = todos && todos.find((t) => t.id === editId);
   const todoForDelete = todos && todos.find((t) => t.id === deleteId);
   const teamOptions = teams ? teams.map((t) => ({
-    label: `${t.name} [${t.todos} todo(s)]`,
+    label: `${t.name} (${t.todos})`,
     value: t.id
   })) : [];
-  return /* @__PURE__ */ import_react64.default.createElement(Layout, {
-    title: "ToDo List"
-  }, /* @__PURE__ */ import_react64.default.createElement(ErrorMessage, null, error?.message ?? ""), /* @__PURE__ */ import_react64.default.createElement("div", {
+  return /* @__PURE__ */ import_react65.default.createElement(Layout, {
+    title: "Todo List"
+  }, /* @__PURE__ */ import_react65.default.createElement(ErrorMessage, null, error?.message ?? ""), /* @__PURE__ */ import_react65.default.createElement("div", {
     className: "mb-4"
-  }, /* @__PURE__ */ import_react64.default.createElement(Form2, {
+  }, /* @__PURE__ */ import_react65.default.createElement(Form2, {
     inputs: [
       { type: "hidden", name: "teamId", value: selectedTeamId },
       { type: "text", name: "title", placeholder: "Add a new todo..." }
@@ -30011,14 +30159,14 @@ var ToDoPage = () => {
     onSuccess: handleSuccess,
     submitButtonText: "Add",
     showCancelButton: true,
-    secondaryButtons: /* @__PURE__ */ import_react64.default.createElement("div", {
+    secondaryButtons: /* @__PURE__ */ import_react65.default.createElement("div", {
       className: "w-3/11"
-    }, /* @__PURE__ */ import_react64.default.createElement(DropDownInput, {
+    }, /* @__PURE__ */ import_react65.default.createElement(DropDownInput, {
       type: "select",
       name: "team",
       value: selectedTeamId,
       options: [
-        { label: `My Personal ToDos`, value: "" },
+        { label: `My Personal Todos`, value: "" },
         ...teamOptions
       ],
       onChange: (value) => {
@@ -30026,16 +30174,16 @@ var ToDoPage = () => {
         setSelectedTeamId(value);
       }
     }))
-  })), isPending && "Loading...", /* @__PURE__ */ import_react64.default.createElement(CardGrid, null, todos && todos.map((todo) => /* @__PURE__ */ import_react64.default.createElement(ToDoCard, {
+  })), isPending && "Loading...", /* @__PURE__ */ import_react65.default.createElement(CardGrid, null, todos && todos.map((todo) => /* @__PURE__ */ import_react65.default.createElement(ToDoCard, {
     key: todo.id,
     onEdit: handleEdit,
     onDelete: handleDelete,
     todo
-  }))), /* @__PURE__ */ import_react64.default.createElement(Modal, {
+  }))), /* @__PURE__ */ import_react65.default.createElement(Modal, {
     title: "Editing a ToDo Item",
     isOpen: isEditModelOpen && !!todoForEdit,
     onClose: handleCloseEditModal
-  }, /* @__PURE__ */ import_react64.default.createElement(Form2, {
+  }, /* @__PURE__ */ import_react65.default.createElement(Form2, {
     inputs: [
       {
         type: "hidden",
@@ -30066,18 +30214,17 @@ var ToDoPage = () => {
     onCancel: handleCloseEditModal,
     submitButtonText: "Edit",
     showCancelButton: true,
-    secondaryButtons: /* @__PURE__ */ import_react64.default.createElement(Button, {
+    secondaryButtons: /* @__PURE__ */ import_react65.default.createElement(Button, {
       mode: "delete" /* DELETE */,
       onClick: (event) => {
         event.preventDefault();
         handleDelete(todoForEdit.id);
       }
     }, "Delete")
-  })), /* @__PURE__ */ import_react64.default.createElement(DeleteModal, {
+  })), /* @__PURE__ */ import_react65.default.createElement(DeleteModal, {
     title: "Deleting a ToDo Item",
     itemName: todoForDelete?.title,
     isOpen: isDeleteModelOpen && !!todoForDelete,
-    onClose: handleCloseDeleteModal,
     onCancel: () => {
       handleCloseDeleteModal();
     },
@@ -30099,54 +30246,54 @@ var App = ({ dehydratedState, user }) => {
       }
     }
   });
-  return /* @__PURE__ */ import_react65.default.createElement("html", null, /* @__PURE__ */ import_react65.default.createElement("head", null, /* @__PURE__ */ import_react65.default.createElement("meta", {
+  return /* @__PURE__ */ import_react66.default.createElement("html", null, /* @__PURE__ */ import_react66.default.createElement("head", null, /* @__PURE__ */ import_react66.default.createElement("meta", {
     charSet: "utf-8"
-  }), /* @__PURE__ */ import_react65.default.createElement("title", null, "Bun, Elysia & React"), /* @__PURE__ */ import_react65.default.createElement("meta", {
+  }), /* @__PURE__ */ import_react66.default.createElement("title", null, "Bun, Elysia & React"), /* @__PURE__ */ import_react66.default.createElement("meta", {
     name: "description",
     content: "Bun, Elysia & React"
-  }), /* @__PURE__ */ import_react65.default.createElement("meta", {
+  }), /* @__PURE__ */ import_react66.default.createElement("meta", {
     name: "viewport",
     content: "width=device-width, initial-scale=1"
-  }), /* @__PURE__ */ import_react65.default.createElement("script", {
+  }), /* @__PURE__ */ import_react66.default.createElement("script", {
     src: "/public/index.js",
     type: "module",
     defer: true
-  }), /* @__PURE__ */ import_react65.default.createElement("link", {
+  }), /* @__PURE__ */ import_react66.default.createElement("link", {
     rel: "stylesheet",
     type: "text/css",
     href: "/public/index.css"
-  }), /* @__PURE__ */ import_react65.default.createElement("script", {
+  }), /* @__PURE__ */ import_react66.default.createElement("script", {
     src: "https://unpkg.com/@tailwindcss/browser@4"
-  }), /* @__PURE__ */ import_react65.default.createElement("link", {
+  }), /* @__PURE__ */ import_react66.default.createElement("link", {
     rel: "icon",
     type: "image/x-icon",
     href: "/public/favicon.ico"
-  })), /* @__PURE__ */ import_react65.default.createElement("body", null, /* @__PURE__ */ import_react65.default.createElement(QueryClientProvider, {
+  })), /* @__PURE__ */ import_react66.default.createElement("body", null, /* @__PURE__ */ import_react66.default.createElement(QueryClientProvider, {
     client: queryClient
-  }, /* @__PURE__ */ import_react65.default.createElement(HydrationBoundary, {
+  }, /* @__PURE__ */ import_react66.default.createElement(HydrationBoundary, {
     state: dehydratedState
-  }, /* @__PURE__ */ import_react65.default.createElement(UserProvider, {
+  }, /* @__PURE__ */ import_react66.default.createElement(UserProvider, {
     value: user
-  }, /* @__PURE__ */ import_react65.default.createElement(Nav, null), /* @__PURE__ */ import_react65.default.createElement(Outlet, null), /* @__PURE__ */ import_react65.default.createElement(Routes, {
+  }, /* @__PURE__ */ import_react66.default.createElement(Nav, null), /* @__PURE__ */ import_react66.default.createElement(Outlet, null), /* @__PURE__ */ import_react66.default.createElement(Routes, {
     location: location2
-  }, /* @__PURE__ */ import_react65.default.createElement(Route, {
+  }, /* @__PURE__ */ import_react66.default.createElement(Route, {
     path: "/",
-    element: /* @__PURE__ */ import_react65.default.createElement(HomePage, null)
-  }), /* @__PURE__ */ import_react65.default.createElement(Route, {
+    element: /* @__PURE__ */ import_react66.default.createElement(HomePage, null)
+  }), /* @__PURE__ */ import_react66.default.createElement(Route, {
     path: `${todoRoute}`,
-    element: user.id ? /* @__PURE__ */ import_react65.default.createElement(ToDoPage, null) : /* @__PURE__ */ import_react65.default.createElement(ForbiddenPage, null)
-  }), /* @__PURE__ */ import_react65.default.createElement(Route, {
+    element: user.id ? /* @__PURE__ */ import_react66.default.createElement(ToDoPage, null) : /* @__PURE__ */ import_react66.default.createElement(ForbiddenPage, null)
+  }), /* @__PURE__ */ import_react66.default.createElement(Route, {
     path: `${teamRoute}`,
-    element: user.id ? /* @__PURE__ */ import_react65.default.createElement(TeamPage, null) : /* @__PURE__ */ import_react65.default.createElement(ForbiddenPage, null)
-  }), /* @__PURE__ */ import_react65.default.createElement(Route, {
+    element: user.id ? /* @__PURE__ */ import_react66.default.createElement(TeamPage, null) : /* @__PURE__ */ import_react66.default.createElement(ForbiddenPage, null)
+  }), /* @__PURE__ */ import_react66.default.createElement(Route, {
     path: `${loginRoute}`,
-    element: /* @__PURE__ */ import_react65.default.createElement(Login, null)
-  }), /* @__PURE__ */ import_react65.default.createElement(Route, {
+    element: /* @__PURE__ */ import_react66.default.createElement(Login, null)
+  }), /* @__PURE__ */ import_react66.default.createElement(Route, {
     path: `${registerRoute}`,
-    element: /* @__PURE__ */ import_react65.default.createElement(Register, null)
-  }), /* @__PURE__ */ import_react65.default.createElement(Route, {
+    element: /* @__PURE__ */ import_react66.default.createElement(Register, null)
+  }), /* @__PURE__ */ import_react66.default.createElement(Route, {
     path: "*",
-    element: /* @__PURE__ */ import_react65.default.createElement(NotFoundPage, null)
+    element: /* @__PURE__ */ import_react66.default.createElement(NotFoundPage, null)
   })))))));
 };
 var App_default = App;
@@ -30156,7 +30303,7 @@ var dehydratedState = window.__QUERY_STATE__;
 delete window.__QUERY_STATE__;
 var userDto = window.__USER_DATA__;
 delete window.__USER_DATA__;
-import_client.hydrateRoot(document, /* @__PURE__ */ import_react66.default.createElement(BrowserRouter, null, /* @__PURE__ */ import_react66.default.createElement(App_default, {
+import_client.hydrateRoot(document, /* @__PURE__ */ import_react67.default.createElement(BrowserRouter, null, /* @__PURE__ */ import_react67.default.createElement(App_default, {
   dehydratedState,
   user: userDto
 })));

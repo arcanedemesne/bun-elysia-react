@@ -7,7 +7,9 @@ import {
   TeamInsert,
   TeamDTO,
   UserDTO,
+  TeamMemberDTO,
 } from "../types";
+import { throwDbError } from "./utilities";
 
 const userSchema = z.object({
   id: z.string().uuid(),
@@ -37,6 +39,11 @@ const teamUpdateSchema = z.object({
   name: z.string().optional(),
 });
 
+const teamMemberSchema = z.object({
+  userId: z.string().uuid(),
+  teamId: z.string().uuid(),
+});
+
 export class TeamRepository
   implements IRepository<TeamDTO, TeamInsert, TeamUpdate>
 {
@@ -58,8 +65,7 @@ export class TeamRepository
       const validatedMembers = usersSchema.parse(members);
       return validatedMembers as UserDTO[];
     } catch (error) {
-      console.error("Error getting team members:", error);
-      return [];
+      return throwDbError("Error getting team members", error);
     }
   };
 
@@ -87,8 +93,7 @@ export class TeamRepository
 
       return response;
     } catch (error) {
-      console.error("Error getting teams:", error);
-      return [];
+      return throwDbError("Error getting teams", error);
     }
   }
 
@@ -117,8 +122,7 @@ export class TeamRepository
 
       return response;
     } catch (error) {
-      console.error("Error getting team by id:", error);
-      return null;
+      return throwDbError("Error getting team by id", error);
     }
   }
 
@@ -147,8 +151,7 @@ export class TeamRepository
 
       return response;
     } catch (error) {
-      console.error("Error getting team by user id:", error);
-      return null;
+      return throwDbError("Error getting team by user id", error);
     }
   }
 
@@ -185,8 +188,7 @@ export class TeamRepository
 
       return insertedData;
     } catch (error) {
-      console.error("Error inserting team:", error);
-      return null;
+      return throwDbError("Error inserting team", error);
     }
   }
 
@@ -228,8 +230,7 @@ export class TeamRepository
       const updatedData = teamSchema.parse(data[0]);
       return updatedData as TeamDTO; // Return the updated team
     } catch (error) {
-      console.error("Error updating team:", error);
-      return null;
+      return throwDbError("Error updating team", error);
     }
   }
 
@@ -243,8 +244,44 @@ export class TeamRepository
       }
       return false; // Team not found
     } catch (error) {
-      console.error("Error deleting team:", error);
-      return false;
+      return throwDbError("Error deleting team", error);
+    }
+  }
+
+  async addMember(teamData: TeamMemberDTO): Promise<TeamMemberDTO | null> {
+    try {
+      const validatedData = teamMemberSchema.parse(teamData);
+
+      const data = await sql`
+          INSERT INTO users_teams ("userId", "teamId")
+          VALUES (${validatedData.userId}, ${validatedData.teamId})
+          RETURNING "userId", "teamId"
+        `;
+
+      if (data.length === 0) {
+        return null; // Insertion failed
+      }
+
+      const validatedInsert = teamMemberSchema.parse(data[0]);
+      const insertedData = validatedInsert as TeamMemberDTO;
+
+      return insertedData;
+    } catch (error) {
+      return throwDbError("Error inserting team", error);
+    }
+  }
+
+  async removeMember(teamData: TeamMemberDTO): Promise<boolean> {
+    try {
+      const validatedData = teamMemberSchema.parse(teamData);
+
+      let result = await sql`
+        DELETE FROM users_teams
+        WHERE "userId" = ${validatedData.userId} AND "teamId" = ${validatedData.teamId}`;
+
+      return result.count > 0;
+    } catch (error) {
+      return throwDbError("Error deleting team", error);
     }
   }
 }

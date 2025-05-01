@@ -4,25 +4,27 @@ import { useDebounce } from "../../hooks";
 import React from "react";
 import { ErrorMessage } from "..";
 
-interface TypeAheadSearchOption {
+export type TypeAheadSearchOption = {
   label: string;
   value: string;
-}
+};
 
-interface TypeAheadSearchInputProps {
+type TypeAheadSearchInputProps = {
   label?: string;
   name: string;
   placeholder?: string;
   options: TypeAheadSearchOption[];
+  onChange?: (value: string) => void;
   onSelect: (value: string) => void;
   error?: ValidationError;
-}
+};
 
 export const TypeAheadSearchInput = ({
   label,
   name,
   placeholder,
   options,
+  onChange,
   onSelect,
   error,
 }: TypeAheadSearchInputProps) => {
@@ -35,7 +37,7 @@ export const TypeAheadSearchInput = ({
   // Update filtered options based on debounced search term
   useEffect(() => {
     if (debouncedSearchTerm) {
-      console.log(options);
+      onChange && onChange(debouncedSearchTerm);
       const filtered = options.filter((option) =>
         option.label.toLowerCase().includes(debouncedSearchTerm.toLowerCase()),
       );
@@ -88,6 +90,9 @@ export const TypeAheadSearchInput = ({
         placeholder={placeholder}
         value={searchTerm}
         onChange={handleInputChange}
+        onClear={() => {
+          setSearchTerm("");
+        }}
         error={error}
       />
       {showOptions && (

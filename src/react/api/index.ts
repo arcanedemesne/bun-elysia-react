@@ -7,10 +7,10 @@ import {
 } from "../../constants";
 import { ApiError, ResponseError } from "../../types";
 
-export const apiFetch = async (
+export const apiFetch = async <T>(
   url: string,
   options: RequestInit = {},
-): Promise<any> => {
+): Promise<T | any> => {
   let response = await fetch(url, options);
 
   if (

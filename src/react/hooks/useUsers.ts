@@ -6,11 +6,20 @@ import { UserDTO } from "../../types";
 export const useUsers = () => {
   const queryClient = useQueryClient();
 
-  const getData = (search?: string) => {
-    const queryString = search ? `search=${search}` : "";
+  const search = async (search?: string): Promise<UserDTO[]> => {
+    if (search && search?.length >= 3) {
+      const queryString = search ? `search=${search}` : "";
+      return await apiFetch<UserDTO[]>(
+        `/${apiPrefix}/${userRoute}?${queryString}`,
+      );
+    }
+    return [];
+  };
+
+  const getUsers = () => {
     return useQuery<UserDTO[]>({
       queryKey: ["userData"],
-      queryFn: () => apiFetch(`/${apiPrefix}/${userRoute}?${queryString}`),
+      queryFn: () => apiFetch(`/${apiPrefix}/${userRoute}`),
     });
   };
 
@@ -20,7 +29,8 @@ export const useUsers = () => {
   };
 
   return {
-    getData,
+    search,
+    getUsers,
     refetch,
   };
 };

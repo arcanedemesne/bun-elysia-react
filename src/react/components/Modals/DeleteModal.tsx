@@ -10,7 +10,6 @@ interface DeleteModalProps extends ModalProps {
 
 export const DeleteModal = ({
   isOpen,
-  onClose,
   onCancel,
   onDelete,
   title,
@@ -18,7 +17,7 @@ export const DeleteModal = ({
   children,
 }: DeleteModalProps) => {
   return (
-    <Modal title={title} isOpen={isOpen} onClose={onClose}>
+    <Modal title={title} isOpen={isOpen} allowClose={false}>
       <div className="p2 mb-4">
         <div className="text-gray-800">
           <p className="mb-4">This will delete an item</p>

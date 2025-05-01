@@ -69,7 +69,7 @@ export const Login = () => {
             name: "username",
             label: "Username",
             placeholder: "Enter username",
-            autoComplete: "username"
+            autoComplete: "username",
           },
           {
             type: "password",

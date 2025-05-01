@@ -1,9 +1,7 @@
 import React, { ReactNode } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 
 import { TeamDTO } from "../../../types";
-import { CardBase } from "./CardBase";
-import { DeleteButton, EditButton, TrashIcon } from "..";
+import { CardBase, DeleteButton, EditButton } from "../../components";
 
 type TeamCardProps = {
   team: TeamDTO;
@@ -18,8 +16,6 @@ export const TeamCard = ({
   onDelete,
   children,
 }: TeamCardProps) => {
-  const queryClient = useQueryClient();
-
   return (
     <CardBase>
       <div className="flex items-center justify-between">
@@ -31,27 +27,29 @@ export const TeamCard = ({
           <DeleteButton onClick={() => onDelete(team.id)} />
         </div>
       </div>
-      <p className="mb-1 text-sm text-gray-600">
-        Created by:{" "}
-        <span className="font-medium">{team.createdBy.username}</span>
-      </p>
-      <div className="text-sm text-gray-500">{team.todos} ToDo(s)</div>
+      <div className="text-sm text-gray-500">
+        {team.todos} todo{team.todos > 1 ? "s" : ""}
+      </div>
       <div
         title={team.members.map((m) => m.username).join(", ")}
         className="text-sm text-gray-500"
       >
-        {team.members.length} Member(s):
+        {team.members.length} member{team.members.length > 1 ? "s" : ""}:
         {team.members.length > 0 && (
           <span className="ml-1 text-xs text-gray-400">
             {team.members
               .slice(0, 3)
               .map((m) => m.username)
               .join(", ")}
-            {team.members.length > 3 && ", ..."}
+            {team.members.length > 3 && " & more"}
           </span>
         )}
       </div>
       {children}
+      <p className="mt-1 text-sm text-gray-600">
+        Created by:{" "}
+        <span className="font-medium">{team.createdBy.username}</span>
+      </p>
     </CardBase>
   );
 };

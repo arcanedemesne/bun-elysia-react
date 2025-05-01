@@ -1,12 +1,11 @@
 "use client";
 
-import React, { ChangeEventHandler, MouseEvent, useState } from "react";
+import React, { MouseEvent, useEffect, useState } from "react";
 
 import { TeamDTO } from "../../../types";
-import { useAuthCheck, useTeams } from "../../hooks";
+import { useAuthCheck, useTeams, useUsers } from "../../hooks";
 import {
   CardGrid,
-  TeamCard,
   Layout,
   ErrorMessage,
   Form,
@@ -17,7 +16,10 @@ import {
   CloseButton,
   Label,
   DeleteModal,
+  TypeAheadSearchOption,
+  Pill,
 } from "../../components";
+import { TeamCard } from "./TeamCard";
 
 export const TeamPage = () => {
   useAuthCheck();
@@ -28,21 +30,52 @@ export const TeamPage = () => {
   const [isDeleteModelOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | undefined>(undefined);
 
+  const [searchQuery, setSearchQuery] = useState<string | undefined>(undefined);
+  const [searchOptions, setSearchOptions] = useState<TypeAheadSearchOption[]>(
+    [],
+  );
   const [selectedMemberId, setSelectedMemberId] = useState<string | undefined>(
     undefined,
   );
 
-  const { getData, validate, onCreate, onEdit, onDelete, refetch } = useTeams();
+  const {
+    getData: getTeams,
+    validate,
+    onCreate,
+    onEdit,
+    onDelete,
+    refetch,
+    onAddMember,
+    onRemoveMember,
+  } = useTeams();
 
-  const { isPending, error, data: teams } = getData();
+  const { isPending, error, data: teams } = getTeams();
+
+  const { search } = useUsers();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const foundMembers = await search(searchQuery);
+
+      const searchOptions =
+        foundMembers && foundMembers.length > 0
+          ? foundMembers
+              .filter(
+                (fm) => !teamForEdit?.members.map((m) => m.id).includes(fm.id),
+              )
+              .map((m) => ({
+                label: m.username,
+                value: m.id,
+              }))
+          : [];
+
+      setSearchOptions(searchOptions);
+    };
+    fetchData();
+  }, [searchQuery]);
 
   const teamForEdit = teams && teams.find((t) => t.id === editId);
   const teamForDelete = teams && teams.find((t) => t.id === deleteId);
-
-  const searchOptions = [
-    { label: "Jenny", value: "some guid" },
-    { label: "Jenny New", value: "some new guid" },
-  ];
 
   const handleEdit = (id: string) => {
     setEditId(id);
@@ -144,13 +177,14 @@ export const TeamPage = () => {
                 name="members"
                 placeholder="Search for members..."
                 options={searchOptions}
+                onChange={setSearchQuery}
                 onSelect={(value) => {
                   setSelectedMemberId(value);
                 }}
               />
             )}
             {selectedMemberId && (
-              <div className="flex w-full items-end justify-between rounded border border-gray-800 p-2">
+              <div className="flex w-full items-end justify-between rounded border border-gray-800 p-2 pl-4">
                 {searchOptions.find((o) => o.value === selectedMemberId)?.label}{" "}
                 <CloseButton
                   onClick={() => {
@@ -164,25 +198,46 @@ export const TeamPage = () => {
             <Button
               mode={ButtonModes.SECONDARY}
               disabled={!!!selectedMemberId}
-              onClick={() =>
-                console.log(
-                  "adding " +
-                    searchOptions.find((o) => o.value === selectedMemberId)
-                      ?.label,
-                )
-              }
+              onClick={async () => {
+                await onAddMember({
+                  userId: selectedMemberId!,
+                  teamId: teamForEdit!.id,
+                });
+                setSelectedMemberId(undefined);
+                setSearchQuery(undefined);
+              }}
             >
               Add
             </Button>
           </div>
         </div>
+        {teamForEdit && teamForEdit.members && (
+          <div className="relative mt-4 flex items-center">
+            {teamForEdit.members
+              .filter((m) => m.id !== teamForEdit?.createdBy.id)
+              .map((m) => (
+                <Pill
+                  value={m.username}
+                  onRemove={async () => {
+                    await onRemoveMember({
+                      userId: m.id,
+                      teamId: teamForEdit.id,
+                    });
+                  }}
+                />
+              ))}
+          </div>
+        )}
+        <p className="mt-4 text-sm text-gray-600">
+          Created by:{" "}
+          <span className="font-medium">{teamForEdit?.createdBy.username}</span>
+        </p>
       </Modal>
 
       <DeleteModal
         title="Deleting a Team"
         itemName={teamForDelete?.name}
         isOpen={isDeleteModelOpen && !!teamForDelete}
-        onClose={handleCloseDeleteModal}
         onCancel={() => {
           handleCloseDeleteModal();
         }}

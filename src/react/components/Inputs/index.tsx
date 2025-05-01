@@ -11,6 +11,7 @@ export type InputProps = {
   placeholder?: string;
   type: "hidden" | "text" | "password" | "select";
   value?: ValueType;
+  className?: string;
   autoComplete?: string;
 };
 

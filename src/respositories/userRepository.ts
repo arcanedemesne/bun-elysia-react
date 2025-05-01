@@ -6,7 +6,11 @@ import {
   UserUpdate,
   UserInsert,
   IRepository,
+  UserDTO,
+  ResponseError,
 } from "../types";
+import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { throwDbError } from "./utilities";
 
 const userSchema = z.object({
   id: z.string().uuid(),
@@ -17,6 +21,13 @@ const userSchema = z.object({
 });
 
 const usersSchema = z.array(userSchema);
+
+const userDtoSchema = z.object({
+  id: z.string().uuid(),
+  username: z.string(),
+});
+
+const usersDtoSchema = z.array(userDtoSchema);
 
 const userInsertSchema = z.object({
   username: z.string(),
@@ -45,23 +56,21 @@ export class UserRepository
       const validatedData = usersSchema.parse(data);
       return validatedData as User[];
     } catch (error) {
-      console.error("Error getting users:", error);
-      return [];
+      return throwDbError("Error getting users", error);
     }
   }
 
-  async search(search: string): Promise<User[]> {
+  async search(searchTerm: string): Promise<UserDTO[]> {
     try {
       const data = await sql`
-          SELECT id, username, password, "isOnline", "refreshToken"          
+          SELECT id, username         
           FROM users
-          WHERE username ILIKE '%${search}%'`;
+          WHERE username ILIKE ${"%" + searchTerm + "%"}`;
 
-      const validatedData = usersSchema.parse(data);
-      return validatedData as User[];
+      const validatedData = usersDtoSchema.parse(data);
+      return validatedData as UserDTO[];
     } catch (error) {
-      console.error("Error searching users:", error);
-      return [];
+      return throwDbError("Error searching users", error);
     }
   }
 
@@ -78,8 +87,7 @@ export class UserRepository
       const validatedData = userSchema.parse(data[0]);
       return validatedData as User;
     } catch (error) {
-      console.error("Error getting user by id:", error);
-      return null;
+      return throwDbError("Error getting user by id", error);
     }
   }
 
@@ -96,8 +104,7 @@ export class UserRepository
       const validatedData = userSchema.parse(data[0]);
       return validatedData as User;
     } catch (error) {
-      console.error("Error getting user by username:", error);
-      return null;
+      return throwDbError("Error getting user by username", error);
     }
   }
 
@@ -118,8 +125,7 @@ export class UserRepository
       const insertedData = userSchema.parse(data[0]);
       return insertedData as User;
     } catch (error) {
-      console.error("Error inserting user:", error);
-      return null;
+      return throwDbError("Error inserting user", error);
     }
   }
 
@@ -169,8 +175,7 @@ export class UserRepository
       const updatedData = userSchema.parse(data[0]);
       return updatedData as User;
     } catch (error) {
-      console.error("Error updating user:", error);
-      return null;
+      return throwDbError("Error updating user", error);
     }
   }
 
@@ -184,8 +189,7 @@ export class UserRepository
       }
       return false; // User not found
     } catch (error) {
-      console.error("Error deleting team:", error);
-      return false;
+      return throwDbError("Error deleting team", error);
     }
   }
 }

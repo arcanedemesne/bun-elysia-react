@@ -8,7 +8,6 @@ import {
   Layout,
   ErrorMessage,
   CardGrid,
-  ToDoCard,
   Form,
   Modal,
   Button,
@@ -16,6 +15,7 @@ import {
   DropDownInput,
   DeleteModal,
 } from "../../components";
+import { ToDoCard } from "./ToDoCard";
 
 export const ToDoPage = () => {
   useAuthCheck();
@@ -37,9 +37,9 @@ export const ToDoPage = () => {
     refetch: refetchTodos,
   } = useToDos();
 
-  const { getData: getTeams, refetch: refetchTeams } = useTeams();
-
   const { isPending, error, data: todos } = getTodos(selectedTeamId);
+
+  const { getData: getTeams, refetch: refetchTeams } = useTeams();
   const { data: teams } = getTeams();
 
   const handleEdit = (id: string) => {
@@ -72,13 +72,13 @@ export const ToDoPage = () => {
 
   const teamOptions = teams
     ? teams.map((t) => ({
-        label: `${t.name} [${t.todos} todo(s)]`,
+        label: `${t.name} (${t.todos})`,
         value: t.id,
       }))
     : [];
 
   return (
-    <Layout title="ToDo List">
+    <Layout title="Todo List">
       <ErrorMessage>{error?.message ?? ""}</ErrorMessage>
 
       <div className="mb-4">
@@ -99,7 +99,7 @@ export const ToDoPage = () => {
                 name="team"
                 value={selectedTeamId}
                 options={[
-                  { label: `My Personal ToDos`, value: "" },
+                  { label: `My Personal Todos`, value: "" },
                   ...teamOptions,
                 ]}
                 onChange={(value) => {
@@ -180,7 +180,6 @@ export const ToDoPage = () => {
         title="Deleting a ToDo Item"
         itemName={todoForDelete?.title}
         isOpen={isDeleteModelOpen && !!todoForDelete}
-        onClose={handleCloseDeleteModal}
         onCancel={() => {
           handleCloseDeleteModal();
         }}

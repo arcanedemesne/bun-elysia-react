@@ -9,3 +9,4 @@ export * from "./Inputs";
 export * from "./Layout";
 export * from "./Modals";
 export * from "./Nav";
+export * from "./Pill";

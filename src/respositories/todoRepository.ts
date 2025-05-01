@@ -1,7 +1,15 @@
 import sql from "../db";
 import { z } from "zod";
 
-import { IRepository, ToDo, ToDoInsert, ToDoUpdate } from "../types";
+import {
+  IRepository,
+  ResponseError,
+  ToDo,
+  ToDoInsert,
+  ToDoUpdate,
+} from "../types";
+import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { throwDbError } from "./utilities";
 
 const userSchema = z.object({
   id: z.string().uuid(),
@@ -47,8 +55,7 @@ export class TodoRepository
       const validatedData = todosSchema.parse(data);
       return validatedData as ToDo[];
     } catch (error) {
-      console.error("Error getting todos:", error);
-      return [];
+      return throwDbError("Error getting todos", error);
     }
   }
 
@@ -68,8 +75,7 @@ export class TodoRepository
       const validatedData = todoSchema.parse(data[0]);
       return validatedData as ToDo;
     } catch (error) {
-      console.error("Error getting todos:", error);
-      return null;
+      return throwDbError("Error getting todos", error);
     }
   }
 
@@ -85,8 +91,7 @@ export class TodoRepository
       const validatedData = todosSchema.parse(data);
       return validatedData as ToDo[];
     } catch (error) {
-      console.error("Error getting todos:", error);
-      return [];
+      return throwDbError("Error getting todos", error);
     }
   }
 
@@ -102,8 +107,7 @@ export class TodoRepository
       const validatedData = todosSchema.parse(data);
       return validatedData as ToDo[];
     } catch (error) {
-      console.error("Error getting todos:", error);
-      return [];
+      return throwDbError("Error getting todos", error);
     }
   }
 
@@ -126,8 +130,7 @@ export class TodoRepository
       const insertedData = todoSchema.parse(data[0]);
       return insertedData as ToDo;
     } catch (error) {
-      console.error("Error inserting todo:", error);
-      return null;
+      return throwDbError("Error inserting todo", error);
     }
   }
 
@@ -174,8 +177,7 @@ export class TodoRepository
       const updatedData = todoSchema.parse(data[0]);
       return updatedData as ToDo;
     } catch (error) {
-      console.error("Error inserting todo:", error);
-      return null;
+      return throwDbError("Error inserting todo", error);
     }
   }
 
@@ -190,8 +192,7 @@ export class TodoRepository
         return false;
       }
     } catch (error) {
-      console.error("Error deleting todo:", error);
-      return false;
+      return throwDbError("Error deleting todo", error);
     }
   }
 }

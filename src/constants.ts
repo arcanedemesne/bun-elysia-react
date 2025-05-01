@@ -4,6 +4,7 @@ export const authPrefix = "auth";
 export const todoRoute = "todos";
 export const userRoute = "users";
 export const teamRoute = "teams";
+export const teamMemberRoute = "team-members";
 export const loginRoute = "login";
 export const registerRoute = "register";
 export const logoutRoute = "logout";

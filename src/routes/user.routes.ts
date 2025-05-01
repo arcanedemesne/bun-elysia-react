@@ -2,7 +2,7 @@ import Elysia from "elysia";
 
 import { apiPrefix, userRoute } from "../constants";
 import { UserRepository } from "../respositories";
-import { UserInsert, JwtContext, ResponseError } from "../types";
+import { UserInsert, JwtContext, ResponseError, UserUpdate } from "../types";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 export const userRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
@@ -26,6 +26,27 @@ export const userRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           });
         }
         return user;
+      })
+      .put(`/:id`, async ({ params: { id }, body }) => {
+        const parsed = JSON.parse(body as string) as UserUpdate;
+
+        if (id !== parsed.id) {
+          return ResponseError.throw({
+            status: StatusCodes.CONFLICT,
+            statusText: ReasonPhrases.CONFLICT,
+            message: `User with id ${parsed.id} did not match route id ${id}`,
+          });
+        }
+
+        const entity = await repo.update(parsed);
+        if (!entity) {
+          return ResponseError.throw({
+            status: StatusCodes.CONFLICT,
+            statusText: ReasonPhrases.CONFLICT,
+            message: `User with id ${parsed.id} could not be updated`,
+          });
+        }
+        return entity;
       })
       .post(``, async ({ body }) => {
         const parsed = JSON.parse(body as string) as UserInsert;

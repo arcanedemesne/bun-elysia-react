@@ -1,9 +1,7 @@
 import React, { ReactNode } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 
 import { ToDo } from "../../../types";
-import { CardBase } from "./CardBase";
-import { DeleteButton, EditButton } from "..";
+import { CardBase, DeleteButton, EditButton } from "../../components";
 
 type ToDoCardProps = {
   todo: ToDo;
@@ -20,7 +18,7 @@ export const ToDoCard = ({
 }: ToDoCardProps) => {
   return (
     <CardBase>
-      <div className="mb-2">
+      <>
         <div className="flex items-center justify-between">
           <h3 className="flex justify-start text-lg font-semibold text-gray-800">
             {todo.title}
@@ -44,7 +42,7 @@ export const ToDoCard = ({
           Created by:{" "}
           <span className="font-medium">{todo.createdBy.username}</span>
         </p>
-      </div>
+      </>
       {children}
     </CardBase>
   );

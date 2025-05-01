@@ -3,6 +3,7 @@ export * from "./IRepository";
 export * from "./JwtContext";
 export * from "./LoginInfo";
 export * from "./Team";
+export * from "./TeamMember";
 export * from "./ToDo";
 export * from "./User";
 export * from "./ResponseError";

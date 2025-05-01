@@ -1,7 +1,7 @@
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 
 import { apiPrefix, todoRoute } from "../../constants";
-import { ToDo, ToDoInsert, ToDoUpdate } from "../../types";
+import { TeamMemberDTO, ToDo, ToDoInsert, ToDoUpdate } from "../../types";
 import { apiFetch } from "../api";
 import { ValidationError } from "../components";
 import { useUserContext } from "../providers";
