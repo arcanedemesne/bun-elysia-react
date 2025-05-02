@@ -1,8 +1,9 @@
 import sql from "../db";
 import { z } from "zod";
 
+import { User, UserUpdate, UserInsert, UserDTO } from "@/lib/models";
+
 import { IRepository } from "./IRepository";
-import { User, UserUpdate, UserInsert, UserDTO } from "../models";
 import { throwDbError } from "./utilities";
 
 const userSchema = z.object({

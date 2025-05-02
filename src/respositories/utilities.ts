@@ -1,4 +1,5 @@
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
+
 import { ResponseError } from "@/lib/types";
 
 export const throwDbError = (messagePrefix: string, error?: unknown) => {

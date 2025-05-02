@@ -1,8 +1,9 @@
 import sql from "../db";
 import { z } from "zod";
 
+import { ToDo, ToDoInsert, ToDoUpdate } from "@/lib/models";
+
 import { IRepository } from "./IRepository";
-import { ToDo, ToDoInsert, ToDoUpdate } from "../models";
 import { throwDbError } from "./utilities";
 
 const userSchema = z.object({

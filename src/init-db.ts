@@ -1,4 +1,3 @@
-// src/init-db.ts
 import postgres from "postgres";
 
 const sql = postgres({
