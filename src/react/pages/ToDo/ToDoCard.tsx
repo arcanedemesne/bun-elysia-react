@@ -1,21 +1,22 @@
 import React, { ReactNode } from "react";
 
-import { ToDo } from "../../../models";
-import { CardBase, DeleteButton, EditButton } from "../../components";
+import { TodoDTO } from "@/lib/models";
 
-type ToDoCardProps = {
-  todo: ToDo;
+import { CardBase, DeleteButton, EditButton } from "@/components";
+
+type TodoCardProps = {
+  todo: TodoDTO;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   children?: ReactNode;
 };
 
-export const ToDoCard = ({
+export const TodoCard = ({
   todo,
   onDelete,
   onEdit,
   children,
-}: ToDoCardProps) => {
+}: TodoCardProps) => {
   return (
     <CardBase>
       <>

@@ -1,5 +1,6 @@
 import React from "react";
-import { EditIcon } from "../Icons";
+
+import { EditIcon } from "@/components";
 
 type EditButtonProps = {
   onClick: () => void;

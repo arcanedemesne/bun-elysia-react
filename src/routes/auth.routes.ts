@@ -1,5 +1,5 @@
 import { Elysia } from "elysia";
-import { StatusCodes, ReasonPhrases } from "http-status-codes";
+import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 import {
   ACCESS_TOKEN_EXP,
@@ -12,8 +12,8 @@ import {
   refreshRoute,
   registerRoute,
 } from "@/lib/constants";
-import { UserUpdate, UserInsert } from "@/lib/models";
-import { LoginInfo, JwtContext, ResponseError } from "@/lib/types";
+import { UserInsert, UserUpdate } from "@/lib/models";
+import { JwtContext, LoginInfo, ResponseError } from "@/lib/types";
 
 import { UserRepository } from "../respositories";
 
@@ -253,7 +253,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
       )
 
       // CHECK AUTH
-      .get(`/${checkRoute}`, async ({ cookie: { accessToken }, jwt, set }) => {
+      .get(`/${checkRoute}`, async ({ cookie: { accessToken }, jwt }) => {
         if (!accessToken) {
           return ResponseError.throw({
             status: StatusCodes.UNAUTHORIZED,

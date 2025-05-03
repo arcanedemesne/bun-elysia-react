@@ -1,6 +1,12 @@
 import React, { ChangeEventHandler, useRef } from "react";
-import { InputProps, Label, ValidationError } from ".";
-import { CloseButton, ErrorMessage } from "..";
+
+import {
+  CloseButton,
+  ErrorMessage,
+  InputProps,
+  Label,
+  ValidationError,
+} from "@/components";
 
 interface TextInputProps extends InputProps {
   autoComplete?: string;

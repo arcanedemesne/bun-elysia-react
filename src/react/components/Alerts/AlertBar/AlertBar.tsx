@@ -1,4 +1,5 @@
 import React from "react";
+
 import { CloseButton } from "@/components";
 
 type AlertBarProps = {

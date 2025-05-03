@@ -1,19 +1,19 @@
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiPrefix, todoRoute } from "@/lib/constants";
-import { ToDo, ToDoInsert, ToDoUpdate } from "@/lib/models";
+import { TodoDTO, TodoInsert, TodoUpdate } from "@/lib/models";
 
 import { apiFetch } from "@/api";
 import { ValidationError } from "@/components";
 import { useUserContext } from "@/providers";
 
-export const useToDos = () => {
+export const useTodos = () => {
   const { user } = useUserContext();
   const queryClient = useQueryClient();
 
-  const getData = (teamId?: string) => {
+  const GetData = (teamId?: string) => {
     const queryString = teamId ? `teamId=${teamId}` : `userId=${user?.id}`;
-    return useQuery<ToDo[]>({
+    return useQuery<TodoDTO[]>({
       queryKey: ["todoData", queryString],
       queryFn: async () =>
         await apiFetch(`/${apiPrefix}/${todoRoute}?${queryString}`),
@@ -25,7 +25,7 @@ export const useToDos = () => {
     const title = formData.get("title");
 
     const errors: ValidationError[] = [];
-    if (title!.length < 6) {
+    if (title!.toString().length < 6) {
       errors.push({
         name: "title",
         message: "Must be at least 6 characters long.",
@@ -36,14 +36,14 @@ export const useToDos = () => {
   };
 
   const onCreate = async (formData: FormData) => {
-    const teamId = formData.get("teamId");
-    const title = formData.get("title");
+    const teamId = formData.get("teamId")?.toString();
+    const title = formData.get("title")?.toString();
 
     const newTodo = {
       title,
       teamId: teamId && teamId?.length > 0 ? teamId : undefined,
       createdBy: user?.id,
-    } as ToDoInsert;
+    } as TodoInsert;
 
     return await apiFetch(`/${apiPrefix}/${todoRoute}`, {
       method: "POST",
@@ -60,7 +60,7 @@ export const useToDos = () => {
       id,
       title,
       description,
-    } as ToDoUpdate;
+    } as TodoUpdate;
 
     return await apiFetch(`/${apiPrefix}/${todoRoute}/${id}`, {
       method: "PUT",
@@ -86,7 +86,7 @@ export const useToDos = () => {
   };
 
   return {
-    getData,
+    getData: GetData,
     validate,
     onCreate,
     onEdit,

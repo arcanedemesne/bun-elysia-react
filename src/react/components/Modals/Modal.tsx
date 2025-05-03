@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from "react";
-import { CloseButton } from "..";
+import React, { useCallback, useEffect, useRef } from "react";
+
+import { CloseButton } from "@/components";
 
 export type ModalProps = {
   isOpen: boolean;
@@ -18,9 +19,9 @@ export const Modal = ({
 }: ModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     allowClose && onClose && onClose();
-  };
+  }, [allowClose, onClose]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -29,17 +30,25 @@ export const Modal = ({
       }
     };
 
+    const currentRef = modalRef.current;
     if (isOpen) {
-      modalRef.current?.addEventListener("keydown", handleKeyDown);
-      if (modalRef.current) {
-        modalRef.current.focus();
+      currentRef?.addEventListener("keydown", handleKeyDown);
+
+      // --- Focus Management ---
+      const focusableElement = currentRef?.querySelector(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      ) as HTMLElement;
+
+      if (focusableElement) {
+        focusableElement.focus();
       }
+      // --- End Focus Management ---
     }
 
     return () => {
-      modalRef.current?.removeEventListener("keydown", handleKeyDown);
+      currentRef?.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen, allowClose, onClose]);
+  }, [isOpen, allowClose, onClose, handleClose]);
 
   if (!isOpen) {
     return null;

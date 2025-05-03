@@ -18,7 +18,7 @@ export const useUsers = () => {
     return [];
   };
 
-  const getUsers = () => {
+  const GetData = () => {
     return useQuery<UserDTO[]>({
       queryKey: ["userData"],
       queryFn: () => apiFetch(`/${apiPrefix}/${userRoute}`),
@@ -32,7 +32,7 @@ export const useUsers = () => {
 
   return {
     search,
-    getUsers,
+    getData: GetData,
     refetch,
   };
 };

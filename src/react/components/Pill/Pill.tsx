@@ -1,5 +1,6 @@
 import React from "react";
-import { CloseButton } from "..";
+
+import { CloseButton } from "@/components";
 
 type PillProps = {
   value: string;

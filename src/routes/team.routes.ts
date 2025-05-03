@@ -48,7 +48,7 @@ export const teamRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           return ResponseError.throw({
             status: StatusCodes.CONFLICT,
             statusText: ReasonPhrases.CONFLICT,
-            message: `ToDo with id ${parsed.id} did not match route id ${id}`,
+            message: `Todo with id ${parsed.id} did not match route id ${id}`,
           });
         }
 
@@ -57,7 +57,7 @@ export const teamRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           return ResponseError.throw({
             status: StatusCodes.CONFLICT,
             statusText: ReasonPhrases.CONFLICT,
-            message: `ToDo with id ${parsed.id} could not be updated`,
+            message: `Todo with id ${parsed.id} could not be updated`,
           });
         }
         return entity;

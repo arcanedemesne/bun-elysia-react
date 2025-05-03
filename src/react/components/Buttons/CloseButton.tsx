@@ -1,5 +1,6 @@
 import React from "react";
-import { CloseIcon } from "..";
+
+import { CloseIcon } from "@/components";
 
 type CloseButtonProps = {
   color?: string;

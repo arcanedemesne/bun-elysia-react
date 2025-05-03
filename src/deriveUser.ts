@@ -1,7 +1,8 @@
 import Elysia from "elysia";
+import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 import { apiPrefix, authPrefix } from "@/lib/constants";
-import { JwtContext } from "@/lib/types";
+import { JwtContext, ResponseError } from "@/lib/types";
 
 import { UserRepository } from "./respositories";
 
@@ -24,14 +25,22 @@ export const deriveUser = (app: Elysia<any, any, any, any, JwtContext>) => {
 
     if (!accessToken.value) {
       // handle error for access token is not available
-      set.status = 401;
-      throw new Error("Access token is missing");
+      set.status = StatusCodes.UNAUTHORIZED;
+      return ResponseError.throw({
+        status: StatusCodes.UNAUTHORIZED,
+        statusText: ReasonPhrases.UNAUTHORIZED,
+        message: "Access token is missing",
+      });
     }
     const jwtPayload = await jwt.verify(accessToken.value);
     if (!jwtPayload) {
       // handle error for access token is tempted or incorrect
-      set.status = 403;
-      throw new Error("Access token is invalid");
+      set.status = StatusCodes.FORBIDDEN;
+      return ResponseError.throw({
+        status: StatusCodes.FORBIDDEN,
+        statusText: ReasonPhrases.FORBIDDEN,
+        message: "Access token is invalid",
+      });
     }
 
     const userId = jwtPayload.sub;
@@ -39,8 +48,12 @@ export const deriveUser = (app: Elysia<any, any, any, any, JwtContext>) => {
 
     if (!user) {
       // handle error for user not found from the provided access token
-      set.status = 403;
-      throw new Error("Access token is invalid");
+      set.status = StatusCodes.FORBIDDEN;
+      return ResponseError.throw({
+        status: StatusCodes.FORBIDDEN,
+        statusText: ReasonPhrases.FORBIDDEN,
+        message: "Access token is invalid",
+      });
     }
 
     return {

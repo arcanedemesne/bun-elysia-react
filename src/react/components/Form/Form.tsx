@@ -1,7 +1,8 @@
-import React, { ReactNode, useActionState, useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
+import React, { ReactNode, useActionState, useRef, useState } from "react";
 
-import { usePersistentForm } from "../../hooks";
+import { ApiError } from "@/lib/types";
+
 import {
   Button,
   ButtonModes,
@@ -11,8 +12,8 @@ import {
   TextInput,
   ValidationError,
   ValueType,
-} from "..";
-import { ApiError } from "../../../types";
+} from "@/components";
+import { usePersistentForm } from "@/hooks";
 
 type FormProps = {
   inputs: InputProps[];
@@ -37,13 +38,13 @@ export const Form = ({
   showCancelButton = false,
   secondaryButtons,
 }: FormProps) => {
-  const [output, formAction, isPending] = useActionState<
-    string | undefined,
-    FormData
-  >(async (prev, formData) => {
-    await handleFormSubmit(formData);
-    return `handleFormSubmit`;
-  }, undefined);
+  const [_, formAction] = useActionState<string | undefined, FormData>(
+    async (_, formData) => {
+      await handleFormSubmit(formData);
+      return `handleFormSubmit`;
+    },
+    undefined,
+  );
 
   const getDefaultValues = () => {
     const inputMap = new Map<string, ValueType>();
@@ -62,11 +63,12 @@ export const Form = ({
   const formRef = useRef<HTMLFormElement>(null);
 
   usePersistentForm(formRef);
-  
+
   const handleCancel = () => {
     onCancel && onCancel();
     resetForm();
   };
+
   const resetForm = () => {
     setApiError("");
     setValidationErrors([]);
@@ -151,12 +153,12 @@ export const Form = ({
               onClick={handleCancel}
               mode={ButtonModes.SECONDARY}
             >
-            {cancelButtonText ? cancelButtonText : "Cancel"}
+              {cancelButtonText ? cancelButtonText : "Cancel"}
             </Button>
           )}
           <Button
             type="submit"
-            disabled={isPending || createMutation.isPending}
+            disabled={createMutation.isPending}
             mode={ButtonModes.PRIMARY}
           >
             {submitButtonText ? submitButtonText : "Submit"}

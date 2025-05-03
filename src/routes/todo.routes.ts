@@ -2,7 +2,7 @@ import Elysia from "elysia";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 import { apiPrefix, todoRoute } from "@/lib/constants";
-import { ToDoInsert, ToDoUpdate } from "@/lib/models";
+import { TodoInsert, TodoUpdate } from "@/lib/models";
 import { JwtContext, ResponseError } from "@/lib/types";
 
 import { TodoRepository } from "../respositories";
@@ -27,31 +27,31 @@ export const todoRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           return ResponseError.throw({
             status: StatusCodes.NOT_FOUND,
             statusText: ReasonPhrases.NOT_FOUND,
-            message: `ToDo with id "${id}" could not be found`,
+            message: `Todo with id "${id}" could not be found`,
           });
         }
         return todo;
       })
       .post(``, async ({ body }) => {
-        const parsed = JSON.parse(body as string) as ToDoInsert;
+        const parsed = JSON.parse(body as string) as TodoInsert;
         const entity = await repo.insert(parsed);
         if (!entity) {
           return ResponseError.throw({
             status: StatusCodes.CONFLICT,
             statusText: ReasonPhrases.CONFLICT,
-            message: `ToDo with title ${parsed.title} could not be created`,
+            message: `Todo with title ${parsed.title} could not be created`,
           });
         }
         return entity;
       })
       .put(`/:id`, async ({ params: { id }, body }) => {
-        const parsed = JSON.parse(body as string) as ToDoUpdate;
+        const parsed = JSON.parse(body as string) as TodoUpdate;
 
         if (id !== parsed.id) {
           return ResponseError.throw({
             status: StatusCodes.CONFLICT,
             statusText: ReasonPhrases.CONFLICT,
-            message: `ToDo with id ${parsed.id} did not match route id ${id}`,
+            message: `Todo with id ${parsed.id} did not match route id ${id}`,
           });
         }
 
@@ -60,7 +60,7 @@ export const todoRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           return ResponseError.throw({
             status: StatusCodes.CONFLICT,
             statusText: ReasonPhrases.CONFLICT,
-            message: `ToDo with id ${parsed.id} could not be updated`,
+            message: `Todo with id ${parsed.id} could not be updated`,
           });
         }
         return entity;
@@ -71,7 +71,7 @@ export const todoRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           return ResponseError.throw({
             status: StatusCodes.NOT_FOUND,
             statusText: ReasonPhrases.NOT_FOUND,
-            message: `ToDo with id "${id}" could not be deleted`,
+            message: `Todo with id "${id}" could not be deleted`,
           });
         }
       }),

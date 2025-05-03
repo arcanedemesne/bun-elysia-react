@@ -2,6 +2,6 @@ export type User = {
   id: string;
   username: string;
   password: string;
-  isOnline: boolean,
-  refreshToken: string | null,
-}
+  isOnline: boolean;
+  refreshToken: string | null;
+};

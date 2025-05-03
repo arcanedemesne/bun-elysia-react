@@ -1,17 +1,17 @@
-import Elysia from "elysia";
+import App from "../react/App";
+import { QueryClient, dehydrate } from "@tanstack/react-query";
 import React from "react";
-import { StaticRouter } from "react-router";
 import { renderToReadableStream } from "react-dom/server";
-import { dehydrate, QueryClient } from "@tanstack/react-query";
+import { StaticRouter } from "react-router";
+
+import Elysia from "elysia";
 
 import { apiPrefix, todoRoute } from "@/lib/constants";
 import { UserDTO } from "@/lib/models";
 import { JwtContext } from "@/lib/types";
 
-import App from "../react/App";
-import ScriptInjectionStream from "../scriptInjectionStream";
-
 import { UserRepository } from "../respositories";
+import ScriptInjectionStream from "../scriptInjectionStream";
 
 export const mainRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
   const apiHost = `${app.server?.hostname}:${app.server?.port}`;

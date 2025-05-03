@@ -1,4 +1,7 @@
-export default class ScriptInjectionStream extends TransformStream<Uint8Array, Uint8Array> {
+export default class ScriptInjectionStream extends TransformStream<
+  Uint8Array,
+  Uint8Array
+> {
   scriptInjected: boolean = false;
   dehydratedString: string | null = null;
   userDtoString: string | null = null;
@@ -12,7 +15,10 @@ export default class ScriptInjectionStream extends TransformStream<Uint8Array, U
     this.userDtoString = userDtoString;
   }
 
-  transformChunk(chunk: Uint8Array, controller: TransformStreamDefaultController<Uint8Array>) {
+  transformChunk(
+    chunk: Uint8Array,
+    controller: TransformStreamDefaultController<Uint8Array>,
+  ) {
     controller.enqueue(chunk);
     if (!this.scriptInjected && this.dehydratedString !== null) {
       const script = `<script>window.__QUERY_STATE__ = ${this.dehydratedString};window.__USER_DATA__ = ${this.userDtoString}</script>`;

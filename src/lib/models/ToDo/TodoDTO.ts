@@ -1,6 +1,6 @@
-import { UserDTO } from "../User";
+import { UserDTO } from "@/lib/models";
 
-export type ToDo = {
+export type TodoDTO = {
   id: string;
   title: string;
   description: string;

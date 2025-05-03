@@ -1,6 +1,6 @@
 import React, { MouseEvent } from "react";
-import { Modal, ModalProps } from ".";
-import { Button, ButtonModes } from "..";
+
+import { Button, ButtonModes, Modal, ModalProps } from "@/components";
 
 interface DeleteModalProps extends ModalProps {
   itemName?: string;

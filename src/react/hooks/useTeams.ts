@@ -4,14 +4,14 @@ import { apiPrefix, teamMemberRoute, teamRoute } from "@/lib/constants";
 import { TeamDTO, TeamInsert, TeamMemberDTO, TeamUpdate } from "@/lib/models";
 
 import { apiFetch } from "@/api";
-import { useUserContext } from "@/providers";
 import { ValidationError } from "@/components";
+import { useUserContext } from "@/providers";
 
 export const useTeams = () => {
   const { user } = useUserContext();
   const queryClient = useQueryClient();
 
-  const getData = () => {
+  const GetData = () => {
     const queryString = `userId=${user?.id}`;
     return useQuery<TeamDTO[]>({
       queryKey: ["teamData", queryString],
@@ -23,7 +23,7 @@ export const useTeams = () => {
     const name = formData.get("name");
 
     const errors: ValidationError[] = [];
-    if (name!.length < 6) {
+    if (name!.toString().length < 6) {
       errors.push({
         name: "name",
         message: "Must be at least 6 characters long.",
@@ -115,7 +115,7 @@ export const useTeams = () => {
   };
 
   return {
-    getData,
+    getData: GetData,
     validate,
     onCreate,
     onEdit,

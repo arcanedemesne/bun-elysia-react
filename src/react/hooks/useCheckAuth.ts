@@ -15,7 +15,7 @@ export const useAuthCheck = () => {
         `/${apiPrefix}/${authPrefix}/${checkRoute}`,
       );
       setAuthenticated(authorized);
-    } catch (error) {
+    } catch {
       setAuthenticated(false);
     }
   };

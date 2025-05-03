@@ -1,5 +1,4 @@
 import React, { ReactNode } from "react";
-import { CustomErrorBoundary } from "..";
 
 export const AuthLayout = ({
   title,

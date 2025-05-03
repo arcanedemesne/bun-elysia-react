@@ -1,11 +1,11 @@
-import React from "react";
-import { Routes, Route, useLocation, Outlet } from "react-router-dom";
 import {
   DehydratedState,
   HydrationBoundary,
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
+import React from "react";
+import { Outlet, Route, Routes, useLocation } from "react-router-dom";
 
 import {
   loginRoute,
@@ -14,20 +14,19 @@ import {
   todoRoute,
 } from "@/lib/constants";
 import { UserDTO } from "@/lib/models";
-import { UserProvider } from "@/providers";
-import { Nav } from "@/components";
-
-import {
-  HomePage,
-  Login,
-  Register,
-  ForbiddenPage,
-  ToDoPage,
-  TeamPage,
-  NotFoundPage,
-} from "./pages";
 
 import "./App.css";
+import {
+  ForbiddenPage,
+  HomePage,
+  LoginPage,
+  NotFoundPage,
+  RegisterPage,
+  TeamPage,
+  TodoPage,
+} from "./pages";
+import { Nav } from "@/components";
+import { UserProvider } from "@/providers";
 
 type AppProps = {
   dehydratedState: DehydratedState;
@@ -68,14 +67,14 @@ const App = ({ dehydratedState, user }: AppProps) => {
                 <Route path="/" element={<HomePage />} />
                 <Route
                   path={`${todoRoute}`}
-                  element={user.id ? <ToDoPage /> : <ForbiddenPage />}
+                  element={user.id ? <TodoPage /> : <ForbiddenPage />}
                 />
                 <Route
                   path={`${teamRoute}`}
                   element={user.id ? <TeamPage /> : <ForbiddenPage />}
                 />
-                <Route path={`${loginRoute}`} element={<Login />} />
-                <Route path={`${registerRoute}`} element={<Register />} />
+                <Route path={`${loginRoute}`} element={<LoginPage />} />
+                <Route path={`${registerRoute}`} element={<RegisterPage />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </UserProvider>

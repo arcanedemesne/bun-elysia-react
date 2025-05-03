@@ -1,8 +1,8 @@
-import sql from "../db";
 import { z } from "zod";
 
-import { ToDo, ToDoInsert, ToDoUpdate } from "@/lib/models";
+import { TodoDTO, TodoInsert, TodoUpdate } from "@/lib/models";
 
+import sql from "../db";
 import { IRepository } from "./IRepository";
 import { throwDbError } from "./utilities";
 
@@ -36,9 +36,9 @@ const todoUpdateSchema = z.object({
 });
 
 export class TodoRepository
-  implements IRepository<ToDo, ToDoInsert, ToDoUpdate>
+  implements IRepository<TodoDTO, TodoInsert, TodoUpdate>
 {
-  async getAll(): Promise<ToDo[]> {
+  async getAll(): Promise<TodoDTO[]> {
     try {
       const data = await sql`
           SELECT t.id, t.title, t.description, t."teamId",
@@ -48,13 +48,13 @@ export class TodoRepository
           FROM todos t`;
 
       const validatedData = todosSchema.parse(data);
-      return validatedData as ToDo[];
+      return validatedData as TodoDTO[];
     } catch (error) {
       return throwDbError("Error getting todos", error);
     }
   }
 
-  async getById(id: string): Promise<ToDo | null> {
+  async getById(id: string): Promise<TodoDTO | null> {
     try {
       const data = await sql`
           SELECT t.id, t.title, t.description, t."teamId", 
@@ -68,13 +68,13 @@ export class TodoRepository
       }
 
       const validatedData = todoSchema.parse(data[0]);
-      return validatedData as ToDo;
+      return validatedData as TodoDTO;
     } catch (error) {
       return throwDbError("Error getting todos", error);
     }
   }
 
-  async getByUserId(userId: string): Promise<ToDo[]> {
+  async getByUserId(userId: string): Promise<TodoDTO[]> {
     try {
       const data = await sql`
           SELECT t.id, t.title, t.description, t."teamId", 
@@ -84,13 +84,13 @@ export class TodoRepository
           FROM todos t WHERE t."createdBy" = ${userId} AND t."teamId" IS NULL`;
 
       const validatedData = todosSchema.parse(data);
-      return validatedData as ToDo[];
+      return validatedData as TodoDTO[];
     } catch (error) {
       return throwDbError("Error getting todos", error);
     }
   }
 
-  async getByTeamId(teamId: string): Promise<ToDo[]> {
+  async getByTeamId(teamId: string): Promise<TodoDTO[]> {
     try {
       const data = await sql`
           SELECT t.id, t.title, t.description, t."teamId", 
@@ -100,13 +100,13 @@ export class TodoRepository
           FROM todos t WHERE t."teamId" = ${teamId}`;
 
       const validatedData = todosSchema.parse(data);
-      return validatedData as ToDo[];
+      return validatedData as TodoDTO[];
     } catch (error) {
       return throwDbError("Error getting todos", error);
     }
   }
 
-  async insert(todoData: ToDoInsert): Promise<ToDo | null> {
+  async insert(todoData: TodoInsert): Promise<TodoDTO | null> {
     try {
       const validatedInsertData = todoInsertSchema.parse(todoData);
 
@@ -123,13 +123,13 @@ export class TodoRepository
       }
 
       const insertedData = todoSchema.parse(data[0]);
-      return insertedData as ToDo;
+      return insertedData as TodoDTO;
     } catch (error) {
       return throwDbError("Error inserting todo", error);
     }
   }
 
-  async update(updateData: ToDoUpdate): Promise<ToDo | null> {
+  async update(updateData: TodoUpdate): Promise<TodoDTO | null> {
     try {
       const validatedUpdateData = todoUpdateSchema.parse(updateData);
 
@@ -170,7 +170,7 @@ export class TodoRepository
       }
 
       const updatedData = todoSchema.parse(data[0]);
-      return updatedData as ToDo;
+      return updatedData as TodoDTO;
     } catch (error) {
       return throwDbError("Error inserting todo", error);
     }

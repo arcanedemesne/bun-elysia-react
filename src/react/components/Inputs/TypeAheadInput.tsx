@@ -1,8 +1,7 @@
-import { ChangeEventHandler, useEffect, useRef, useState } from "react";
-import { TextInput, ValidationError } from ".";
-import { useDebounce } from "../../hooks";
-import React from "react";
-import { ErrorMessage } from "..";
+import React, { ChangeEventHandler, useEffect, useRef, useState } from "react";
+
+import { ErrorMessage, TextInput, ValidationError } from "@/components";
+import { useDebounce } from "@/hooks";
 
 export type TypeAheadSearchOption = {
   label: string;
@@ -47,7 +46,7 @@ export const TypeAheadSearchInput = ({
       setFilteredOptions(options); // Show all options when search term is empty
       setShowOptions(false);
     }
-  }, [debouncedSearchTerm, options]);
+  }, [debouncedSearchTerm, options, onChange]);
 
   const handleInputChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     setSearchTerm(e.target.value);

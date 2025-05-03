@@ -1,5 +1,6 @@
 import React from "react";
-import { InputProps } from ".";
+
+import { InputProps } from "@/components";
 
 interface HiddenInputProps extends InputProps {}
 

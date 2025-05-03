@@ -1,8 +1,8 @@
-import sql from "../db";
 import { z } from "zod";
 
-import { User, UserUpdate, UserInsert, UserDTO } from "@/lib/models";
+import { User, UserDTO, UserInsert, UserUpdate } from "@/lib/models";
 
+import sql from "../db";
 import { IRepository } from "./IRepository";
 import { throwDbError } from "./utilities";
 

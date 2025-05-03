@@ -1,8 +1,9 @@
 import React, { ReactNode } from "react";
+
+import { CustomErrorBoundary } from "../CustomErrorBoundary";
 import { AuthLayout } from "./AuthLayout";
 import { PageLayout } from "./PageLayout";
-import { CustomErrorBoundary } from "../CustomErrorBoundary";
-import { Alerts } from "..";
+import { Alerts } from "@/components";
 
 export enum LayoutTypes {
   AUTH = "AUTH",

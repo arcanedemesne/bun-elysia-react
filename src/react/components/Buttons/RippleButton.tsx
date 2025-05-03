@@ -1,5 +1,6 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+
+import { AnimatePresence, motion } from "framer-motion";
 
 export const RippleButton = ({
   type = "button",

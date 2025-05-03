@@ -1,7 +1,8 @@
 import React, { ReactNode } from "react";
 
-import { TeamDTO } from "../../../models";
-import { CardBase, DeleteButton, EditButton } from "../../components";
+import { TeamDTO } from "@/lib/models";
+
+import { CardBase, DeleteButton, EditButton } from "@/components";
 
 type TeamCardProps = {
   team: TeamDTO;

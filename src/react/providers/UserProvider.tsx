@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
-import { UserDTO } from "../../types";
+
+import { UserDTO } from "@/lib/models";
 
 const UserContext = createContext<
   | {

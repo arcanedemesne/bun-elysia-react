@@ -1,21 +1,21 @@
 import { Elysia } from "elysia";
-import { swagger } from "@elysiajs/swagger";
-import { staticPlugin } from "@elysiajs/static";
-import jwt from "@elysiajs/jwt";
-import { cookie } from "@elysiajs/cookie";
 import { StatusCodes } from "http-status-codes";
 
 import { ResponseError } from "@/lib/types";
 
 import { deriveUser } from "./deriveUser";
 import {
-  mainRoutes,
   authRoutes,
+  mainRoutes,
+  teamMemberRoutes,
+  teamRoutes,
   todoRoutes,
   userRoutes,
-  teamRoutes,
-  teamMemberRoutes,
 } from "./routes";
+import { cookie } from "@elysiajs/cookie";
+import jwt from "@elysiajs/jwt";
+import { staticPlugin } from "@elysiajs/static";
+import { swagger } from "@elysiajs/swagger";
 
 await Bun.build({
   entrypoints: ["./src/react/index.tsx"],
@@ -58,7 +58,7 @@ const app = new Elysia()
   // AUTH
   .use(authRoutes)
 
-  .onError(({ code, error, set }) => {
+  .onError(({ error, set }) => {
     if (error instanceof ResponseError) {
       set.status = error.status;
       return {
@@ -82,6 +82,7 @@ const app = new Elysia()
 
   .listen(Number(process.env.HOST_PORT));
 
+// eslint-disable-next-line no-console
 console.log(
   `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`,
 );

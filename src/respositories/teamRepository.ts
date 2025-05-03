@@ -1,14 +1,14 @@
-import sql from "../db";
 import { z } from "zod";
 
 import {
-  TeamUpdate,
-  TeamInsert,
   TeamDTO,
-  UserDTO,
+  TeamInsert,
   TeamMemberDTO,
+  TeamUpdate,
+  UserDTO,
 } from "@/lib/models";
 
+import sql from "../db";
 import { IRepository } from "./IRepository";
 import { throwDbError } from "./utilities";
 
@@ -237,9 +237,10 @@ export class TeamRepository
 
   async delete(id: string): Promise<boolean> {
     try {
-      let result = await sql`DELETE FROM users_teams WHERE "teamId" = ${id}`;
+      await sql`DELETE FROM todos WHERE "teamId" = ${id}`;
+      await sql`DELETE FROM users_teams WHERE "teamId" = ${id}`;
 
-      result = await sql`DELETE FROM teams WHERE id = ${id}`;
+      const result = await sql`DELETE FROM teams WHERE id = ${id}`;
       if (result.count > 0) {
         return true; // Team deleted successfully
       }

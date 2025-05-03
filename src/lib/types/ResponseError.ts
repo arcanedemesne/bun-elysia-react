@@ -12,7 +12,12 @@ export class ResponseError extends Error {
   public validation?: string;
   public name: string;
 
-  private constructor({ status, statusText, message, validation }: ResponseErrorProps) {
+  private constructor({
+    status,
+    statusText,
+    message,
+    validation,
+  }: ResponseErrorProps) {
     super(message);
 
     this.status = status;

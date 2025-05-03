@@ -26,7 +26,7 @@ export const apiFetch = async <T>(
     let errorData;
     try {
       errorData = (await response.json()) as ResponseError;
-    } catch (error: unknown) {
+    } catch {
       throw new ApiError({
         status: response.status,
         statusText: response.statusText,

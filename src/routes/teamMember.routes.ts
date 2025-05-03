@@ -1,7 +1,7 @@
 import Elysia from "elysia";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
-import { apiPrefix, teamRoute, teamMemberRoute } from "@/lib/constants";
+import { apiPrefix, teamMemberRoute, teamRoute } from "@/lib/constants";
 import { TeamMemberDTO } from "@/lib/models";
 import { JwtContext, ResponseError } from "@/lib/types";
 

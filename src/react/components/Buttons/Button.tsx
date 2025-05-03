@@ -1,4 +1,5 @@
-import React, { ReactNode, MouseEvent } from "react";
+import React, { MouseEvent, ReactNode } from "react";
+
 import { RippleButton } from "./RippleButton";
 
 export enum ButtonModes {

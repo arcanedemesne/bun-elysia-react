@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { ApiError } from "@/src/types";
+
+import { ApiError } from "@/lib/types";
+
 import { AlertBar } from "./AlertBar";
 
 type Alert = {
