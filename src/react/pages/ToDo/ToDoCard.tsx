@@ -41,8 +41,14 @@ export const TodoCard = ({
         )}
         <p className="mt-1 text-sm text-gray-600">
           Created by:{" "}
-          <span className="font-medium">{todo.createdBy.username}</span>
+          <span className="font-medium">{todo.createdBy?.username}</span>
         </p>
+        {todo.updatedBy && (
+          <p className="mt-1 text-sm text-gray-600">
+            Last updated by:{" "}
+            <span className="font-medium">{todo.updatedBy.username}</span>
+          </p>
+        )}
       </>
       {children}
     </CardBase>

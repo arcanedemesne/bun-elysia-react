@@ -2,17 +2,15 @@ import {
   BaseEntityActive,
   BaseEntityId,
   BaseEntityTimeStamps,
-  UserDTO,
-} from "@/lib/models";
+  BaseEntityUserInfo,
+} from "@/lib/models/BaseEntity";
 
-export interface TodoDTO
+export interface Todo
   extends BaseEntityId,
+    BaseEntityUserInfo,
     BaseEntityTimeStamps,
     BaseEntityActive {
   title: string;
   description?: string;
   teamId?: string;
-  createdBy?: UserDTO;
-  updatedBy?: UserDTO;
-  deletedBy?: UserDTO;
 }

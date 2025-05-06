@@ -2,24 +2,24 @@ import Elysia from "elysia";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 import { apiPrefix, teamRoute } from "@/lib/constants";
-import { TeamInsert, TeamUpdate } from "@/lib/models";
+import { TeamInsertDTO, TeamUpdateDTO } from "@/lib/models";
 import { JwtContext, ResponseError } from "@/lib/types";
 
-import { TeamRepository } from "../respositories";
+import { TeamService } from "../services";
 
 export const teamRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
-  const repo = new TeamRepository();
-
   return app.group(`/${apiPrefix}/${teamRoute}`, (group) =>
     group
-      .get(``, async ({ query }) => {
+      .get(``, async ({ user, query }) => {
+        const service = new TeamService(user);
         if (query.userId) {
-          return await repo.getTeamsByUserId(query.userId);
+          return await service.getByUserId(query.userId);
         }
-        return await repo.getAll();
+        return await service.getAll();
       })
-      .get(`/:id`, async ({ params: { id } }) => {
-        const entity = await repo.getById(id);
+      .get(`/:id`, async ({ user, params: { id } }) => {
+        const service = new TeamService(user);
+        const entity = await service.getById(id);
         if (!entity) {
           return ResponseError.throw({
             status: StatusCodes.NOT_FOUND,
@@ -29,9 +29,10 @@ export const teamRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
         }
         return entity;
       })
-      .post(``, async ({ body }) => {
-        const parsed = JSON.parse(body as string) as TeamInsert;
-        const entity = await repo.insert(parsed);
+      .post(``, async ({ user, body }) => {
+        const parsed = JSON.parse(body as string) as TeamInsertDTO;
+        const service = new TeamService(user);
+        const entity = await service.insert(parsed);
         if (!entity) {
           return ResponseError.throw({
             status: StatusCodes.CONFLICT,
@@ -41,8 +42,9 @@ export const teamRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
         }
         return entity;
       })
-      .put(`/:id`, async ({ params: { id }, body }) => {
-        const parsed = JSON.parse(body as string) as TeamUpdate;
+      .put(`/:id`, async ({ user, params: { id }, body }) => {
+        const parsed = JSON.parse(body as string) as TeamUpdateDTO;
+        const service = new TeamService(user);
 
         if (id !== parsed.id) {
           return ResponseError.throw({
@@ -52,7 +54,7 @@ export const teamRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           });
         }
 
-        const entity = await repo.update(parsed);
+        const entity = await service.update(parsed);
         if (!entity) {
           return ResponseError.throw({
             status: StatusCodes.CONFLICT,
@@ -62,8 +64,9 @@ export const teamRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
         }
         return entity;
       })
-      .delete(`/:id`, async ({ params: { id } }) => {
-        const success = await repo.delete(id);
+      .delete(`/:id`, async ({ user, params: { id } }) => {
+        const service = new TeamService(user);
+        const success = await service.delete(id);
         if (!success) {
           return ResponseError.throw({
             status: StatusCodes.NOT_FOUND,

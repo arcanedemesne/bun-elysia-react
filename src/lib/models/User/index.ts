@@ -1,4 +1,4 @@
 export * from "./User";
 export * from "./UserDTO";
-export * from "./UserInsert";
-export * from "./UserUpdate";
+export * from "./UserInsertDTO";
+export * from "./UserUpdateDTO";

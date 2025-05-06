@@ -1,4 +1,4 @@
-export interface IRepository<Entity, DTO, InsertDTO, UpdateDTO> {
+export interface IBaseService<Entity, DTO, InsertDTO, UpdateDTO> {
   getAll: () => Promise<Array<Entity | DTO>>;
   getById: (id: string) => Promise<Entity | DTO | null>;
   insert: (entity: InsertDTO) => Promise<Entity | null>;

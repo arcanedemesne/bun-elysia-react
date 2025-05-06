@@ -29,7 +29,7 @@ export const TeamCard = ({
         </div>
       </div>
       <div className="text-sm text-gray-500">
-        {team.todos} todo{team.todos > 1 ? "s" : ""}
+        {team.todosCount} todo{team.todosCount > 1 ? "s" : ""}
       </div>
       <div
         title={team.members.map((m) => m.username).join(", ")}
@@ -49,8 +49,14 @@ export const TeamCard = ({
       {children}
       <p className="mt-1 text-sm text-gray-600">
         Created by:{" "}
-        <span className="font-medium">{team.createdBy.username}</span>
+        <span className="font-medium">{team.createdBy?.username}</span>
       </p>
+      {team.updatedBy && (
+        <p className="mt-1 text-sm text-gray-600">
+          Last updated by:{" "}
+          <span className="font-medium">{team.updatedBy?.username}</span>
+        </p>
+      )}
     </CardBase>
   );
 };

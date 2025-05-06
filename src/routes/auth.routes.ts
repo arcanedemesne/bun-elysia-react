@@ -12,7 +12,7 @@ import {
   refreshRoute,
   registerRoute,
 } from "@/lib/constants";
-import { UserInsert, UserUpdate } from "@/lib/models";
+import { UserInsertDTO, UserUpdateDTO } from "@/lib/models";
 import { JwtContext, LoginInfo, ResponseError } from "@/lib/types";
 
 import { UserRepository } from "../respositories";
@@ -75,7 +75,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
               id: user.id,
               isOnline: true,
               refreshToken: refreshJWTToken,
-            } as UserUpdate);
+            } as UserUpdateDTO);
 
             if (updatedUser?.isOnline) {
               set.status = StatusCodes.OK;
@@ -114,7 +114,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
 
             isOnline: false,
             refreshToken: null,
-          } as UserInsert;
+          } as UserInsertDTO;
 
           const insertedUser = await repo.insert(newUser);
           if (!insertedUser) {
@@ -154,7 +154,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
             id: insertedUser.id,
             isOnline: true,
             refreshToken: refreshJWTToken,
-          } as UserUpdate);
+          } as UserUpdateDTO);
 
           if (updatedUser?.isOnline) {
             set.status = StatusCodes.OK;
@@ -237,7 +237,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
             id: userId,
             isOnline: true,
             refreshToken: refreshJWTToken,
-          } as UserUpdate);
+          } as UserUpdateDTO);
 
           if (updatedUser?.isOnline) {
             set.status = StatusCodes.OK;
@@ -308,7 +308,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
                 id: user.id,
                 isOnline: false,
                 refreshToken: null,
-              } as UserUpdate);
+              } as UserUpdateDTO);
             }
           }
           accessToken.remove();

@@ -4,6 +4,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.tsx",
+    "db:generate": "drizzle-kit generate",
+    "db:init": "bun ./src/data/init.ts",
+    "db:migrate": "drizzle-kit migrate",
+    "db:publish": "bun db:generate && bun db:init && bun db:migrate",
+    "db:seed": "bun ./src/data/seed.ts",
+    "db:nuke": "bun ./src/data/nuke-from-space.ts",
+    "db:studio": "drizzle-kit studio",
     "lint": "eslint ./src --ext .ts,.tsx",
     "lint:fix": "eslint ./src --ext .ts,.tsx --fix",
     "prettier": "prettier --write \"./src/**/*.{ts,tsx,json,md}\""
@@ -14,6 +21,7 @@
     "@elysiajs/static": "^1.2.0",
     "@elysiajs/swagger": "^1.2.2",
     "@tanstack/react-query": "^5.75.0",
+    "drizzle-orm": "^0.43.1",
     "elysia": "latest",
     "framer-motion": "^12.9.4",
     "http-status-codes": "^2.3.0",
@@ -27,11 +35,13 @@
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
+    "@types/pg": "^8.11.14",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.3",
     "@typescript-eslint/eslint-plugin": "^8.31.1",
     "@typescript-eslint/parser": "^8.31.1",
     "bun-types": "latest",
+    "drizzle-kit": "^0.31.1",
     "eslint": "^9.25.1",
     "eslint-config-prettier": "^10.1.2",
     "eslint-plugin-jsx-a11y": "^6.10.2",
@@ -40,6 +50,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^16.0.0",
+    "pg": "^8.15.6",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11"
   },

@@ -29721,7 +29721,7 @@ var TeamCard = ({
     onClick: () => onDelete(team.id)
   }))), /* @__PURE__ */ import_react61.default.createElement("div", {
     className: "text-sm text-gray-500"
-  }, team.todos, " todo", team.todos > 1 ? "s" : ""), /* @__PURE__ */ import_react61.default.createElement("div", {
+  }, team.todosCount, " todo", team.todosCount > 1 ? "s" : ""), /* @__PURE__ */ import_react61.default.createElement("div", {
     title: team.members.map((m) => m.username).join(", "),
     className: "text-sm text-gray-500"
   }, team.members.length, " member", team.members.length > 1 ? "s" : "", ":", team.members.length > 0 && /* @__PURE__ */ import_react61.default.createElement("span", {
@@ -29730,7 +29730,11 @@ var TeamCard = ({
     className: "mt-1 text-sm text-gray-600"
   }, "Created by:", " ", /* @__PURE__ */ import_react61.default.createElement("span", {
     className: "font-medium"
-  }, team.createdBy.username)));
+  }, team.createdBy?.username)), team.updatedBy && /* @__PURE__ */ import_react61.default.createElement("p", {
+    className: "mt-1 text-sm text-gray-600"
+  }, "Last updated by:", " ", /* @__PURE__ */ import_react61.default.createElement("span", {
+    className: "font-medium"
+  }, team.updatedBy?.username)));
 };
 
 // src/react/pages/Team/TeamPage.tsx
@@ -29873,7 +29877,7 @@ var TeamPage = () => {
     }
   }, "Add"))), teamForEdit && teamForEdit.members && /* @__PURE__ */ import_react62.default.createElement("div", {
     className: "relative mt-4 flex items-center"
-  }, teamForEdit.members.filter((m) => m.id !== teamForEdit?.createdBy.id).map((m) => /* @__PURE__ */ import_react62.default.createElement(Pill, {
+  }, teamForEdit.members.filter((m) => m.id !== teamForEdit?.createdBy?.id).map((m) => /* @__PURE__ */ import_react62.default.createElement(Pill, {
     key: m.id,
     value: m.username,
     onRemove: async () => {
@@ -29886,7 +29890,11 @@ var TeamPage = () => {
     className: "mt-4 text-sm text-gray-600"
   }, "Created by:", " ", /* @__PURE__ */ import_react62.default.createElement("span", {
     className: "font-medium"
-  }, teamForEdit?.createdBy.username))), /* @__PURE__ */ import_react62.default.createElement(DeleteModal, {
+  }, teamForEdit?.createdBy?.username)), teamForEdit?.updatedBy && /* @__PURE__ */ import_react62.default.createElement("p", {
+    className: "mt-2 text-sm text-gray-600"
+  }, "Last updated by:", " ", /* @__PURE__ */ import_react62.default.createElement("span", {
+    className: "font-medium"
+  }, teamForEdit?.updatedBy?.username))), /* @__PURE__ */ import_react62.default.createElement(DeleteModal, {
     title: "Deleting a Team",
     itemName: teamForDelete?.name,
     isOpen: isDeleteModelOpen && !!teamForDelete,
@@ -29931,7 +29939,11 @@ var TodoCard = ({
     className: "mt-1 text-sm text-gray-600"
   }, "Created by:", " ", /* @__PURE__ */ import_react63.default.createElement("span", {
     className: "font-medium"
-  }, todo.createdBy.username))), children);
+  }, todo.createdBy?.username)), todo.updatedBy && /* @__PURE__ */ import_react63.default.createElement("p", {
+    className: "mt-1 text-sm text-gray-600"
+  }, "Last updated by:", " ", /* @__PURE__ */ import_react63.default.createElement("span", {
+    className: "font-medium"
+  }, todo.updatedBy.username))), children);
 };
 
 // src/react/pages/Todo/TodoPage.tsx
@@ -29977,7 +29989,7 @@ var TodoPage = () => {
   const todoForEdit = todos && todos.find((t) => t.id === editId);
   const todoForDelete = todos && todos.find((t) => t.id === deleteId);
   const teamOptions = teams ? teams.map((t) => ({
-    label: `${t.name} (${t.todos})`,
+    label: `${t.name} (${t.todosCount} todo${t.todosCount > 0 ? "s" : ""})`,
     value: t.id
   })) : [];
   return /* @__PURE__ */ import_react64.default.createElement(Layout, {

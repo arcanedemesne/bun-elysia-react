@@ -1,3 +1,5 @@
+export * from "./Team";
 export * from "./TeamDTO";
-export * from "./TeamInsert";
-export * from "./TeamUpdate";
+export * from "./TeamMemberDTO";
+export * from "./TeamInsertDTO";
+export * from "./TeamUpdateDTO";

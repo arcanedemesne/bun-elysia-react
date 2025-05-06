@@ -214,7 +214,7 @@ export const TeamPage = () => {
         {teamForEdit && teamForEdit.members && (
           <div className="relative mt-4 flex items-center">
             {teamForEdit.members
-              .filter((m) => m.id !== teamForEdit?.createdBy.id)
+              .filter((m) => m.id !== teamForEdit?.createdBy?.id)
               .map((m) => (
                 <Pill
                   key={m.id}
@@ -231,8 +231,18 @@ export const TeamPage = () => {
         )}
         <p className="mt-4 text-sm text-gray-600">
           Created by:{" "}
-          <span className="font-medium">{teamForEdit?.createdBy.username}</span>
+          <span className="font-medium">
+            {teamForEdit?.createdBy?.username}
+          </span>
         </p>
+        {teamForEdit?.updatedBy && (
+          <p className="mt-2 text-sm text-gray-600">
+            Last updated by:{" "}
+            <span className="font-medium">
+              {teamForEdit?.updatedBy?.username}
+            </span>
+          </p>
+        )}
       </Modal>
 
       <DeleteModal

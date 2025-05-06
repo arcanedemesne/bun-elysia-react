@@ -1,95 +1,70 @@
-import { z } from "zod";
+import { and, eq, sql } from "drizzle-orm";
 
 import {
+  Team,
   TeamDTO,
-  TeamInsert,
+  TeamInsertDTO,
   TeamMemberDTO,
-  TeamUpdate,
+  TeamUpdateDTO,
+  User,
   UserDTO,
 } from "@/lib/models";
 
-import sql from "../db";
+import { db } from "../data/db";
 import { IRepository } from "./IRepository";
 import { throwDbError } from "./utilities";
+import { alias } from "drizzle-orm/pg-core";
+import { teams, todos, users, usersToTeams } from "src/data/schema";
 
-const userSchema = z.object({
-  id: z.string().uuid(),
-  username: z.string(),
-});
-
-const usersSchema = z.array(userSchema);
-
-const teamSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string(),
-  createdBy: userSchema,
-  createdOn: z.date(),
-  todos: z.coerce.number(),
-  members: z.array(userSchema).default([]),
-});
-
-const teamsSchema = z.array(teamSchema);
-
-const teamInsertSchema = z.object({
-  name: z.string(),
-  createdBy: z.string(),
-});
-
-const teamUpdateSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string().optional(),
-});
-
-const teamMemberSchema = z.object({
-  userId: z.string().uuid(),
-  teamId: z.string().uuid(),
-});
+const createdBy = alias(users, "createdBy");
+const updatedBy = alias(users, "updatedBy");
+const deletedBy = alias(users, "deletedBy");
 
 export class TeamRepository
-  implements IRepository<TeamDTO, TeamInsert, TeamUpdate>
+  implements IRepository<Team, TeamDTO, TeamInsertDTO, TeamUpdateDTO>
 {
-  private getMembers = async (teamId: string): Promise<UserDTO[]> => {
-    try {
-      const members = await sql`
-        SELECT DISTINCT u.id, u.username
-          FROM teams t
-            INNER JOIN users_teams ut
-            ON ut."teamId" = t.id
-            INNER JOIN users u
-            ON u.id = ut."userId"
-          WHERE t.id = ${teamId}`;
+  constructor(public user: User) {}
 
-      if (members.length === 0) {
-        return [];
-      }
-
-      const validatedMembers = usersSchema.parse(members);
-      return validatedMembers as UserDTO[];
-    } catch (error) {
-      return throwDbError("Error getting team members", error);
-    }
+  selectDTO = {
+    id: teams.id,
+    name: teams.name,
+    createdAt: teams.createdAt,
+    updatedAt: teams.updatedAt,
+    deletedAt: teams.deletedAt,
+    createdBy: {
+      id: createdBy.id,
+      username: createdBy.username,
+    },
+    updatedBy: {
+      id: updatedBy.id,
+      username: updatedBy.username,
+    },
+    deletedBy: {
+      id: deletedBy.id,
+      username: deletedBy.username,
+    },
+    todosCount:
+      sql`(SELECT COUNT(*) FROM ${todos} WHERE ${todos.teamId} = ${teams.id} AND active IS true)`.as(
+        "todos_count",
+      ),
   };
 
   async getAll(): Promise<TeamDTO[]> {
     try {
-      const data = await sql`
-          SELECT DISTINCT
-            t.id, t.name,
-            (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
-              FROM users u WHERE u.id = t."createdBy") AS "createdBy",
-            t."createdOn",
-            (SELECT COUNT(td.id) FROM todos td WHERE td."teamId" = t.id) AS "todos"
-          FROM teams t
-            INNER JOIN users_teams ut
-            ON ut."teamId" = t.id`;
+      const data = await db
+        .select(this.selectDTO)
+        .from(teams)
+        .innerJoin(createdBy, eq(teams.createdBy, createdBy.id))
+        .fullJoin(updatedBy, eq(teams.updatedBy, updatedBy.id))
+        .fullJoin(deletedBy, eq(teams.deletedBy, deletedBy.id))
+        .where(eq(teams.active, true));
 
-      const validatedData = teamsSchema.parse(data);
-      const response = validatedData as TeamDTO[];
+      const response = data as TeamDTO[];
 
-      for (let i = 0; i < response.length; i++) {
-        const t = response[i];
-        const members = await this.getMembers(t.id);
-        t.members.push(...members);
+      for (let team of response) {
+        if (!team.members) team.members = [];
+        const members = await this.getMembers(team.id);
+        team.members.push(...members);
       }
 
       return response;
@@ -100,26 +75,22 @@ export class TeamRepository
 
   async getById(id: string): Promise<TeamDTO | null> {
     try {
-      const data = await sql`
-          SELECT DISTINCT
-            t.id, t.name,
-            (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
-              FROM users u WHERE u.id = t."createdBy") AS "createdBy",
-            t."createdOn",
-            (SELECT COUNT(td.id) FROM todos td WHERE td."teamId" = t.id) AS "todos"
-          FROM teams t
-            INNER JOIN users_teams ut
-            ON ut."teamId" = t.id
-          WHERE t.id = ${id}`;
+      const data = await db
+        .select(this.selectDTO)
+        .from(teams)
+        .innerJoin(createdBy, eq(teams.createdBy, createdBy.id))
+        .fullJoin(updatedBy, eq(teams.updatedBy, updatedBy.id))
+        .fullJoin(deletedBy, eq(teams.deletedBy, deletedBy.id))
+        .where(and(eq(teams.id, id), eq(teams.active, true)));
 
       if (data.length === 0) {
         return null;
       }
 
-      const validatedData = teamSchema.parse(data[0]);
-      const response = validatedData as TeamDTO;
+      const response = data[0] as TeamDTO;
 
-      response.members = await this.getMembers(response.id);
+      const members = await this.getMembers(response.id);
+      response.members.push(...members);
 
       return response;
     } catch (error) {
@@ -127,27 +98,22 @@ export class TeamRepository
     }
   }
 
-  async getTeamsByUserId(userId: string): Promise<TeamDTO[] | null> {
+  async getByUserId(userId: string): Promise<TeamDTO[]> {
     try {
-      const data = await sql`
-          SELECT DISTINCT
-            t.id, t.name,
-            (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
-              FROM users u WHERE u.id = t."createdBy") AS "createdBy",
-            t."createdOn",
-            (SELECT COUNT(td.id) FROM todos td WHERE td."teamId" = t.id) AS "todos"
-          FROM teams t
-            INNER JOIN users_teams ut
-            ON ut."teamId" = t.id
-            WHERE ut."userId" = ${userId}`;
+      const data = await db
+        .select(this.selectDTO)
+        .from(teams)
+        .innerJoin(createdBy, eq(teams.createdBy, createdBy.id))
+        .fullJoin(updatedBy, eq(teams.updatedBy, updatedBy.id))
+        .fullJoin(deletedBy, eq(teams.deletedBy, deletedBy.id))
+        .innerJoin(usersToTeams, eq(teams.id, usersToTeams.teamId))
+        .where(and(eq(usersToTeams.userId, userId), eq(teams.active, true)));
 
-      const validatedData = teamsSchema.parse(data);
-      const response = validatedData as TeamDTO[];
-
-      for (let i = 0; i < response.length; i++) {
-        const t = response[i];
-        const members = await this.getMembers(t.id);
-        t.members.push(...members);
+      const response = data as TeamDTO[];
+      for (let team of response) {
+        if (!team.members) team.members = [];
+        const members = await this.getMembers(team.id);
+        team.members.push(...members);
       }
 
       return response;
@@ -156,80 +122,44 @@ export class TeamRepository
     }
   }
 
-  async insert(teamData: TeamInsert): Promise<TeamDTO | null> {
+  async insert(insertData: TeamInsertDTO): Promise<Team | null> {
     try {
-      const validatedData = teamInsertSchema.parse(teamData);
-
-      const data = await sql`
-          INSERT INTO teams (name, "createdBy")
-          VALUES (${validatedData.name}, ${validatedData.createdBy})
-          RETURNING id, name,
-          (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
-            FROM users u WHERE u.id = "createdBy") AS "createdBy",
-          "createdOn",
-          (SELECT COUNT(td.id) FROM todos td WHERE td."teamId" = id) AS "todos"
-        `;
+      const data = await db
+        .insert(teams)
+        .values({ ...insertData, createdBy: this.user.id })
+        .returning();
 
       if (data.length === 0) {
-        return null; // Insertion failed
+        return null;
       }
 
-      const validatedInsert = teamSchema.parse(data[0]);
-      const insertedData = validatedInsert as TeamDTO;
+      const response = data[0] as Team;
 
-      const insertedBridge = await sql`
-          INSERT INTO users_teams ("userId", "teamId")
-          VALUES (${validatedData.createdBy}, ${insertedData.id})
-          RETURNING "userId", "teamId"
-        `;
+      await db
+        .insert(usersToTeams)
+        .values({ userId: this.user.id, teamId: response.id })
+        .returning();
 
-      if (insertedBridge.length === 0) {
-        return null; // Bridge Insertion failed
-      }
-
-      return insertedData;
+      return response;
     } catch (error) {
       return throwDbError("Error inserting team", error);
     }
   }
 
-  async update(updateData: TeamUpdate): Promise<TeamDTO | null> {
+  async update(updateData: TeamUpdateDTO): Promise<Team | null> {
     try {
-      const validatedUpdateData = teamUpdateSchema.parse(updateData);
-
-      // Build the SET clause dynamically
-      const setClauses: string[] = [];
-      const values: any[] = [];
-      let valueIndex = 1; // Start at 1 for parameterized queries
-
-      if (validatedUpdateData.name !== undefined) {
-        setClauses.push(`name = $${valueIndex++}`);
-        values.push(validatedUpdateData.name);
-      }
-
-      if (setClauses.length === 0) {
-        return null;
-      }
-
-      // Build the SQL query
-      const setClauseString = setClauses.join(", ");
-      const query = `
-          UPDATE teams SET ${setClauseString} WHERE id = $${valueIndex}
-          RETURNING id, name,
-          (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
-            FROM users u WHERE u.id = "createdBy") AS "createdBy",
-          "createdOn",
-          (SELECT COUNT(td.id) FROM todos td WHERE td."teamId" = id) AS "todos"`;
-      values.push(updateData.id);
-
-      const data = await sql.unsafe(query, values);
+      const { id, ...rest } = { ...updateData, updatedBy: this.user.id };
+      const data = await db
+        .update(teams)
+        .set(rest)
+        .where(eq(teams.id, id))
+        .returning();
 
       if (data.length === 0) {
-        return null; // Team not found
+        return null; // Update failed
       }
 
-      const updatedData = teamSchema.parse(data[0]);
-      return updatedData as TeamDTO; // Return the updated team
+      return data[0] as Team;
     } catch (error) {
       return throwDbError("Error updating team", error);
     }
@@ -237,51 +167,81 @@ export class TeamRepository
 
   async delete(id: string): Promise<boolean> {
     try {
-      await sql`DELETE FROM todos WHERE "teamId" = ${id}`;
-      await sql`DELETE FROM users_teams WHERE "teamId" = ${id}`;
-
-      const result = await sql`DELETE FROM teams WHERE id = ${id}`;
-      if (result.count > 0) {
-        return true; // Team deleted successfully
+      const existingEntity = await db
+        .select()
+        .from(teams)
+        .where(eq(teams.id, id));
+      let result;
+      if (existingEntity.length > 0) {
+        result = await this.update({
+          id: existingEntity[0].id,
+          deletedBy: existingEntity[0].deletedBy!,
+          active: false,
+        });
+        if (result?.id) {
+          return true; // soft deleted successfully
+        }
+      } else {
+        await db.delete(usersToTeams).where(eq(usersToTeams.teamId, id));
+        result = await db.delete(teams).where(eq(teams.id, id));
+        if (result) {
+          return true; // hard deleted successfully
+        }
       }
-      return false; // Team not found
+
+      return false; // not found
     } catch (error) {
       return throwDbError("Error deleting team", error);
     }
   }
 
-  async addMember(teamData: TeamMemberDTO): Promise<TeamMemberDTO | null> {
+  async getMembers(teamId: string): Promise<UserDTO[]> {
     try {
-      const validatedData = teamMemberSchema.parse(teamData);
+      const data = await db
+        .select({
+          id: users.id,
+          username: users.username,
+        })
+        .from(usersToTeams)
+        .innerJoin(users, eq(usersToTeams.userId, users.id))
+        .where(and(eq(usersToTeams.teamId, teamId), eq(users.active, true)));
 
-      const data = await sql`
-          INSERT INTO users_teams ("userId", "teamId")
-          VALUES (${validatedData.userId}, ${validatedData.teamId})
-          RETURNING "userId", "teamId"
-        `;
-
-      if (data.length === 0) {
-        return null; // Insertion failed
-      }
-
-      const validatedInsert = teamMemberSchema.parse(data[0]);
-      const insertedData = validatedInsert as TeamMemberDTO;
-
-      return insertedData;
+      return data as UserDTO[];
     } catch (error) {
       return throwDbError("Error inserting team", error);
     }
   }
 
-  async removeMember(teamData: TeamMemberDTO): Promise<boolean> {
+  async addMember(member: TeamMemberDTO): Promise<TeamMemberDTO | null> {
     try {
-      const validatedData = teamMemberSchema.parse(teamData);
+      // TODO: check if exists and set to acive?
+      const data = await db.insert(usersToTeams).values(member).returning();
 
-      let result = await sql`
-        DELETE FROM users_teams
-        WHERE "userId" = ${validatedData.userId} AND "teamId" = ${validatedData.teamId}`;
+      if (data.length === 0) {
+        return null;
+      }
 
-      return result.count > 0;
+      return data[0] as TeamMemberDTO;
+    } catch (error) {
+      return throwDbError("Error inserting team", error);
+    }
+  }
+
+  async removeMember(member: TeamMemberDTO): Promise<boolean> {
+    try {
+      const data = await db
+        .delete(usersToTeams)
+        .where(
+          and(
+            eq(usersToTeams.userId, member.userId),
+            eq(usersToTeams.teamId, member.teamId),
+          ),
+        )
+        .returning();
+      if (data) {
+        return true; // hard deleted successfully
+      }
+      return false; // unsuccessful delete
     } catch (error) {
       return throwDbError("Error deleting team", error);
     }

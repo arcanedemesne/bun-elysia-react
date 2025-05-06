@@ -5,18 +5,17 @@ import { apiPrefix, teamMemberRoute, teamRoute } from "@/lib/constants";
 import { TeamMemberDTO } from "@/lib/models";
 import { JwtContext, ResponseError } from "@/lib/types";
 
-import { TeamRepository } from "../respositories";
+import { TeamService } from "../services";
 
 export const teamMemberRoutes = (
   app: Elysia<any, any, any, any, JwtContext>,
 ) => {
-  const repo = new TeamRepository();
-
   return app.group(`/${apiPrefix}/${teamRoute}/${teamMemberRoute}`, (group) =>
     group
-      .post(``, async ({ body }) => {
+      .post(``, async ({ user, body }) => {
         const parsed = JSON.parse(body as string) as TeamMemberDTO;
-        const entity = await repo.addMember(parsed);
+        const service = new TeamService(user);
+        const entity = await service.addMember(parsed);
         if (!entity) {
           return ResponseError.throw({
             status: StatusCodes.CONFLICT,
@@ -26,9 +25,10 @@ export const teamMemberRoutes = (
         }
         return entity;
       })
-      .delete(``, async ({ body }) => {
+      .delete(``, async ({ user, body }) => {
         const parsed = JSON.parse(body as string) as TeamMemberDTO;
-        const success = await repo.removeMember(parsed);
+        const service = new TeamService(user);
+        const success = await service.removeMember(parsed);
         if (!success) {
           return ResponseError.throw({
             status: StatusCodes.NOT_FOUND,

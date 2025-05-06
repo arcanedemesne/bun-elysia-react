@@ -1,0 +1,181 @@
+/* eslint-disable no-console */
+import { eq } from "drizzle-orm";
+
+import { db } from "./db";
+import { teams, todos, users, usersToTeams } from "./schema";
+
+interface SeedUser {
+  username: string;
+  email: string;
+  password: string;
+}
+
+const createUser = ({ username, email, password }: SeedUser) => {
+  return {
+    username,
+    email,
+    password,
+  };
+};
+
+interface SeedTeam {
+  name: string;
+  createdBy: string;
+}
+
+const createTeam = ({ name, createdBy }: SeedTeam) => {
+  return {
+    name,
+    createdBy,
+  };
+};
+
+const seedDatabase = async () => {
+  try {
+    await db.transaction(async (tx) => {
+      await tx.delete(teams);
+      await tx.delete(usersToTeams);
+      await tx.delete(todos);
+      await tx.delete(users);
+      console.log(`Tables cleared of data`);
+
+      const seedUsers: SeedUser[] = [];
+      seedUsers.push(
+        createUser({
+          username: "jenny",
+          email: "jenny@example.com",
+          password: await Bun.password.hash("123456"),
+        }),
+        createUser({
+          username: "jenny1",
+          email: "jenny1@example.com",
+          password: await Bun.password.hash("123456"),
+        }),
+      );
+
+      for (const seedUser of seedUsers) {
+        // 1. Insert or Update the user
+        const existingUser = await tx
+          .select({ username: users.username }) //, email: users.email })
+          .from(users)
+          .where(eq(users.username, seedUser.username));
+
+        let userId: string;
+
+        if (existingUser.length > 0) {
+          // Update existing user
+          const updatedUser = await tx
+            .update(users)
+            .set({ /*email: seedUser.email,*/ password: seedUser.password })
+            .where(eq(users.username, seedUser.username))
+            .returning({ id: users.id });
+          userId = updatedUser[0].id;
+          console.log(`User ${seedUser.username} updated`);
+        } else {
+          // Insert a seed user
+          const insertedUsers = await tx
+            .insert(users)
+            .values({
+              username: seedUser.username,
+              password: seedUser.password,
+              email: seedUser.email,
+            })
+            .returning({
+              id: users.id,
+            });
+
+          if (insertedUsers.length === 0) {
+            throw new Error("Failed to insert user");
+          }
+          userId = insertedUsers[0].id;
+          console.log(`User ${seedUser.username} created with ID: ${userId}`);
+        }
+
+        // 2. Insert a todo for the seed user
+        const insertedTodo = await tx
+          .insert(todos)
+          .values({
+            title: "This is an example todo item",
+            description: "This is an example description",
+            createdBy: userId,
+          })
+          .returning();
+        console.log("User todo inserted", insertedTodo);
+
+        const seedTeams: SeedTeam[] = [];
+        seedTeams.push(
+          createTeam({
+            name: "Seed Team #1",
+            createdBy: userId,
+          }),
+          createTeam({
+            name: "Seed Team #2",
+            createdBy: userId,
+          }),
+        );
+        for (const seedTeam of seedTeams) {
+          // 3. Insert or Update a seed team
+          const existingTeam = await tx
+            .select({ id: teams.id })
+            .from(teams)
+            .where(eq(teams.name, seedTeam.name));
+          let teamId: string;
+          if (existingTeam.length > 0) {
+            // Update existing team
+            const updatedTeam = await tx
+              .update(teams)
+              .set({ updatedBy: userId })
+              .where(eq(teams.name, seedTeam.name))
+              .returning({ id: teams.id });
+            teamId = updatedTeam[0].id;
+            console.log(`Team ${seedTeam.name} updated`);
+          } else {
+            const insertedTeams = await tx
+              .insert(teams)
+              .values({ name: seedTeam.name, createdBy: userId })
+              .returning({
+                id: teams.id,
+              });
+            if (insertedTeams.length === 0) {
+              throw new Error("Failed to insert team");
+            }
+            teamId = insertedTeams[0].id;
+            console.log(`Team "${seedTeam.name}" inserted with ID: ${teamId}`);
+          }
+
+          // 4. Insert a connection between seed user and seed team
+          const insertedUserTeam = await tx
+            .insert(usersToTeams)
+            .values({ userId: userId, teamId: teamId, createdBy: userId })
+            .returning();
+          console.log("User-Team connection inserted", insertedUserTeam);
+
+          // 5. Insert a todo for the seed team
+          const insertedTeamTodo = await tx
+            .insert(todos)
+            .values({
+              title: "This is a team example todo item",
+              description: "This is a team example description",
+              teamId: teamId,
+              createdBy: userId,
+            })
+            .returning();
+          console.log("Team todo inserted", insertedTeamTodo);
+        }
+      }
+    });
+
+    console.log("Seed data inserted successfully!");
+  } catch (error) {
+    console.error("Error seeding database:", error);
+    throw error; // Re-throw the error to be caught by the caller, if necessary
+  } finally {
+    process.exit();
+  }
+};
+
+// Run the seed function
+seedDatabase().catch((error) => {
+  console.error("Seeding failed", error);
+  process.exit(1);
+});

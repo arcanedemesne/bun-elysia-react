@@ -1,4 +1,5 @@
-export type UserDTO = {
-  id: string;
+import { BaseEntityId } from "../BaseEntity";
+
+export interface UserDTO extends BaseEntityId {
   username: string;
-};
+}

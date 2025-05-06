@@ -25,4 +25,5 @@ POSTGRES_PORT = 5432
 POSTGRES_USER = todo_user
 POSTGRES_PASSWORD = todo_password
 POSTGRES_DB = todo_database
+POSTGRES_URL = "postgres://todo_user:todo_password@localhost:5432/todo_database"
 ```

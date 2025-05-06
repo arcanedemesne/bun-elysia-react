@@ -71,7 +71,7 @@ export const TodoPage = () => {
 
   const teamOptions = teams
     ? teams.map((t) => ({
-        label: `${t.name} (${t.todos})`,
+        label: `${t.name} (${t.todosCount} todo${t.todosCount > 0 ? "s" : ""})`,
         value: t.id,
       }))
     : [];

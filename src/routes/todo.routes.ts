@@ -2,27 +2,27 @@ import Elysia from "elysia";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 import { apiPrefix, todoRoute } from "@/lib/constants";
-import { TodoInsert, TodoUpdate } from "@/lib/models";
+import { TodoInsertDTO, TodoUpdateDTO } from "@/lib/models";
 import { JwtContext, ResponseError } from "@/lib/types";
 
-import { TodoRepository } from "../respositories";
+import { TodoService } from "../services";
 
 export const todoRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
-  const repo = new TodoRepository();
-
   return app.group(`/${apiPrefix}/${todoRoute}`, (group) =>
     group
-      .get(``, async ({ query }) => {
+      .get(``, async ({ user, query }) => {
+        const service = new TodoService(user);
         if (query.userId) {
-          return await repo.getByUserId(query.userId);
+          return await service.getByUserId(query.userId);
         }
         if (query.teamId) {
-          return await repo.getByTeamId(query.teamId);
+          return await service.getByTeamId(query.teamId);
         }
-        return await repo.getAll();
+        return await service.getAll();
       })
-      .get(`/:id`, async ({ params: { id } }) => {
-        const todo = await repo.getById(id);
+      .get(`/:id`, async ({ user, params: { id } }) => {
+        const service = new TodoService(user);
+        const todo = await service.getById(id);
         if (!todo) {
           return ResponseError.throw({
             status: StatusCodes.NOT_FOUND,
@@ -32,9 +32,10 @@ export const todoRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
         }
         return todo;
       })
-      .post(``, async ({ body }) => {
-        const parsed = JSON.parse(body as string) as TodoInsert;
-        const entity = await repo.insert(parsed);
+      .post(``, async ({ user, body }) => {
+        const parsed = JSON.parse(body as string) as TodoInsertDTO;
+        const service = new TodoService(user);
+        const entity = await service.insert(parsed);
         if (!entity) {
           return ResponseError.throw({
             status: StatusCodes.CONFLICT,
@@ -44,8 +45,8 @@ export const todoRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
         }
         return entity;
       })
-      .put(`/:id`, async ({ params: { id }, body }) => {
-        const parsed = JSON.parse(body as string) as TodoUpdate;
+      .put(`/:id`, async ({ user, params: { id }, body }) => {
+        const parsed = JSON.parse(body as string) as TodoUpdateDTO;
 
         if (id !== parsed.id) {
           return ResponseError.throw({
@@ -55,7 +56,8 @@ export const todoRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           });
         }
 
-        const entity = await repo.update(parsed);
+        const service = new TodoService(user);
+        const entity = await service.update(parsed);
         if (!entity) {
           return ResponseError.throw({
             status: StatusCodes.CONFLICT,
@@ -65,8 +67,9 @@ export const todoRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
         }
         return entity;
       })
-      .delete(`/:id`, async ({ params: { id } }) => {
-        const success = await repo.delete(id);
+      .delete(`/:id`, async ({ user, params: { id } }) => {
+        const service = new TodoService(user);
+        const success = await service.delete(id);
         if (!success) {
           return ResponseError.throw({
             status: StatusCodes.NOT_FOUND,

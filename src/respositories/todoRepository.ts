@@ -1,54 +1,60 @@
-import { z } from "zod";
+import { and, eq, isNull } from "drizzle-orm";
 
-import { TodoDTO, TodoInsert, TodoUpdate } from "@/lib/models";
+import {
+  Todo,
+  TodoDTO,
+  TodoInsertDTO,
+  TodoUpdateDTO,
+  User,
+} from "@/lib/models";
 
-import sql from "../db";
+import { db } from "../data/db";
+import { teams, todos, users } from "../data/schema";
 import { IRepository } from "./IRepository";
 import { throwDbError } from "./utilities";
+import { alias } from "drizzle-orm/pg-core";
 
-const userSchema = z.object({
-  id: z.string().uuid(),
-  username: z.string(),
-});
-
-const todoSchema = z.object({
-  id: z.string().uuid(),
-  title: z.string(),
-  description: z.string().optional().nullable(),
-  teamdId: z.string().optional().nullable(),
-  createdBy: userSchema,
-  createdOn: z.date(),
-});
-
-const todosSchema = z.array(todoSchema);
-
-const todoInsertSchema = z.object({
-  title: z.string(),
-  description: z.string().optional().nullable(),
-  teamId: z.string().optional().nullable(),
-  createdBy: z.string(),
-});
-
-const todoUpdateSchema = z.object({
-  id: z.string().uuid(),
-  title: z.string(),
-  description: z.string().optional().nullable(),
-});
+const createdBy = alias(users, "createdBy");
+const updatedBy = alias(users, "updatedBy");
+const deletedBy = alias(users, "deletedBy");
 
 export class TodoRepository
-  implements IRepository<TodoDTO, TodoInsert, TodoUpdate>
+  implements IRepository<Todo, TodoDTO, TodoInsertDTO, TodoUpdateDTO>
 {
+  constructor(public user: User) {}
+
+  selectDTO = {
+    id: todos.id,
+    title: todos.title,
+    description: todos.description,
+    teamId: todos.teamId,
+    createdAt: todos.createdAt,
+    updatedAt: todos.updatedAt,
+    deletedAt: todos.deletedAt,
+    createdBy: {
+      id: createdBy.id,
+      username: createdBy.username,
+    },
+    updatedBy: {
+      id: updatedBy.id,
+      username: updatedBy.username,
+    },
+    deletedBy: {
+      id: deletedBy.id,
+      username: deletedBy.username,
+    },
+  };
+
   async getAll(): Promise<TodoDTO[]> {
     try {
-      const data = await sql`
-          SELECT t.id, t.title, t.description, t."teamId",
-          (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
-              FROM users u WHERE u.id = t."createdBy") AS "createdBy",
-          t."createdOn"
-          FROM todos t`;
-
-      const validatedData = todosSchema.parse(data);
-      return validatedData as TodoDTO[];
+      const data = await db
+        .select(this.selectDTO)
+        .from(todos)
+        .innerJoin(createdBy, eq(todos.createdBy, createdBy.id))
+        .fullJoin(updatedBy, eq(todos.updatedBy, updatedBy.id))
+        .fullJoin(deletedBy, eq(todos.deletedBy, deletedBy.id))
+        .where(eq(todos.active, true));
+      return data as TodoDTO[];
     } catch (error) {
       return throwDbError("Error getting todos", error);
     }
@@ -56,19 +62,19 @@ export class TodoRepository
 
   async getById(id: string): Promise<TodoDTO | null> {
     try {
-      const data = await sql`
-          SELECT t.id, t.title, t.description, t."teamId", 
-          (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
-              FROM users u WHERE u.id = t."createdBy") AS "createdBy",
-          t."createdOn"
-          FROM todos t WHERE t.id = ${id}`;
+      const data = await db
+        .select(this.selectDTO)
+        .from(todos)
+        .innerJoin(createdBy, eq(todos.createdBy, createdBy.id))
+        .fullJoin(updatedBy, eq(todos.updatedBy, updatedBy.id))
+        .fullJoin(deletedBy, eq(todos.deletedBy, deletedBy.id))
+        .where(and(eq(todos.id, id), eq(todos.active, true)));
 
       if (data.length === 0) {
-        return null; // Insertion failed
+        return null;
       }
 
-      const validatedData = todoSchema.parse(data[0]);
-      return validatedData as TodoDTO;
+      return data[0] as TodoDTO;
     } catch (error) {
       return throwDbError("Error getting todos", error);
     }
@@ -76,15 +82,20 @@ export class TodoRepository
 
   async getByUserId(userId: string): Promise<TodoDTO[]> {
     try {
-      const data = await sql`
-          SELECT t.id, t.title, t.description, t."teamId", 
-          (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
-              FROM users u WHERE u.id = t."createdBy") AS "createdBy",
-          t."createdOn"
-          FROM todos t WHERE t."createdBy" = ${userId} AND t."teamId" IS NULL`;
-
-      const validatedData = todosSchema.parse(data);
-      return validatedData as TodoDTO[];
+      const data = await db
+        .select(this.selectDTO)
+        .from(todos)
+        .innerJoin(createdBy, eq(todos.createdBy, createdBy.id))
+        .fullJoin(updatedBy, eq(todos.updatedBy, updatedBy.id))
+        .fullJoin(deletedBy, eq(todos.deletedBy, deletedBy.id))
+        .where(
+          and(
+            eq(todos.createdBy, userId),
+            isNull(todos.teamId),
+            eq(todos.active, true),
+          ),
+        );
+      return data as TodoDTO[];
     } catch (error) {
       return throwDbError("Error getting todos", error);
     }
@@ -92,100 +103,80 @@ export class TodoRepository
 
   async getByTeamId(teamId: string): Promise<TodoDTO[]> {
     try {
-      const data = await sql`
-          SELECT t.id, t.title, t.description, t."teamId", 
-          (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
-              FROM users u WHERE u.id = t."createdBy") AS "createdBy",
-          t."createdOn"
-          FROM todos t WHERE t."teamId" = ${teamId}`;
-
-      const validatedData = todosSchema.parse(data);
-      return validatedData as TodoDTO[];
+      const data = await db
+        .select(this.selectDTO)
+        .from(todos)
+        .innerJoin(teams, eq(todos.teamId, teams.id))
+        .innerJoin(createdBy, eq(todos.createdBy, createdBy.id))
+        .fullJoin(updatedBy, eq(todos.updatedBy, updatedBy.id))
+        .fullJoin(deletedBy, eq(todos.deletedBy, deletedBy.id))
+        .where(and(eq(todos.teamId, teamId), eq(todos.active, true)));
+      return data as TodoDTO[];
     } catch (error) {
       return throwDbError("Error getting todos", error);
     }
   }
 
-  async insert(todoData: TodoInsert): Promise<TodoDTO | null> {
+  async insert(insertData: TodoInsertDTO): Promise<Todo | null> {
     try {
-      const validatedInsertData = todoInsertSchema.parse(todoData);
-
-      const data =
-        await sql`INSERT INTO todos (title, description, "teamId", "createdBy")
-          VALUES (${validatedInsertData.title}, ${todoData.description ?? null}, ${todoData.teamId ?? null}, ${validatedInsertData.createdBy})
-          RETURNING id, title, description, "teamId",
-          (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
-            FROM users u WHERE u.id = "createdBy") AS "createdBy",
-          "createdOn"`;
+      const data = await db
+        .insert(todos)
+        .values({ ...insertData, createdBy: this.user.id })
+        .returning();
 
       if (data.length === 0) {
-        return null; // Insertion failed
+        return null;
       }
 
-      const insertedData = todoSchema.parse(data[0]);
-      return insertedData as TodoDTO;
+      return data[0] as Todo;
     } catch (error) {
       return throwDbError("Error inserting todo", error);
     }
   }
 
-  async update(updateData: TodoUpdate): Promise<TodoDTO | null> {
+  async update(updateData: TodoUpdateDTO): Promise<Todo | null> {
     try {
-      const validatedUpdateData = todoUpdateSchema.parse(updateData);
-
-      // Build the SET clause dynamically
-      const setClauses: string[] = [];
-      const values: any[] = [];
-      let valueIndex = 1; // Start at 1 for parameterized queries
-
-      if (validatedUpdateData.title !== undefined) {
-        setClauses.push(`title = $${valueIndex++}`);
-        values.push(validatedUpdateData.title);
-      }
-      if (validatedUpdateData.description !== undefined) {
-        setClauses.push(`description = $${valueIndex++}`);
-        values.push(validatedUpdateData.description);
-      }
-
-      if (setClauses.length === 0) {
-        return null;
-      }
-
-      // Build the SQL query
-      const setClauseString = setClauses.join(", ");
-      const query = `
-          UPDATE todos
-          SET ${setClauseString}
-          WHERE id = $${valueIndex}
-          RETURNING id, title, description, "teamId",
-          (SELECT json_build_object('id', u.id, 'username', u.username)::jsonb
-            FROM users u WHERE u.id = "createdBy") AS "createdBy",
-          "createdOn"`;
-      values.push(updateData.id);
-
-      const data = await sql.unsafe(query, values);
+      const { id, ...rest } = { ...updateData, updatedBy: this.user.id };
+      const data = await db
+        .update(todos)
+        .set(rest)
+        .where(eq(todos.id, id))
+        .returning();
 
       if (data.length === 0) {
         return null; // Update failed
       }
 
-      const updatedData = todoSchema.parse(data[0]);
-      return updatedData as TodoDTO;
+      return data[0] as Todo;
     } catch (error) {
-      return throwDbError("Error inserting todo", error);
+      return throwDbError("Error updating todo", error);
     }
   }
 
   async delete(id: string): Promise<boolean> {
     try {
-      const result = await sql`DELETE FROM todos WHERE id = ${id}`;
-
-      // Check if any rows were deleted
-      if (result.count > 0) {
-        return true;
+      const existingEntity = await db
+        .select()
+        .from(todos)
+        .where(eq(todos.id, id));
+      let data;
+      if (existingEntity.length > 0) {
+        data = await this.update({
+          id: existingEntity[0].id,
+          deletedBy: this.user.id,
+          active: false,
+        });
+        if (data?.id) {
+          return true; // soft deleted successfully
+        }
       } else {
-        return false;
+        data = await db.delete(todos).where(eq(todos.id, id)).returning();
+        if (data) {
+          return true; // hard deleted successfully
+        }
       }
+
+      return false; // unsuccessful delete
     } catch (error) {
       return throwDbError("Error deleting todo", error);
     }
