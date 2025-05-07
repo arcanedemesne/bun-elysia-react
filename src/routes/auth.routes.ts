@@ -36,9 +36,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           const loginInfo = JSON.parse(body as string) as LoginRequest;
           const service = new UserService();
 
-          const user = await service.getByUsername(
-            loginInfo.username,
-          );
+          const user = await service.getByUsername(loginInfo.username);
           if (!user) {
             set.status = StatusCodes.NOT_FOUND;
             return ResponseError.throw({
@@ -104,9 +102,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           const registerInfo = JSON.parse(body as string) as RegisterRequest;
           const service = new UserService();
 
-          let user = await service.getByUsername(
-            registerInfo.username,
-          );
+          let user = await service.getByUsername(registerInfo.username);
 
           if (user) {
             set.status = StatusCodes.CONFLICT;
@@ -117,9 +113,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
             });
           }
 
-          user = await service.getByEmail(
-            registerInfo.email,
-          );
+          user = await service.getByEmail(registerInfo.email);
 
           if (user) {
             set.status = StatusCodes.CONFLICT;
