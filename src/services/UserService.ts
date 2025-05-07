@@ -20,4 +20,12 @@ export class UserService extends BaseService<
   async search(query: string): Promise<UserDTO[]> {
     return await this.repo.search(query);
   }
+
+  async getByUsername(username: string): Promise<User | null> {
+    return await this.repo.getByUsername(username);
+  }
+
+  async getByEmail(email: string): Promise<User | null> {
+    return await this.repo.getByEmail(email);
+  }
 }

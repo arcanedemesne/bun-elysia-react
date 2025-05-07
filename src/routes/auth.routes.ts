@@ -12,27 +12,33 @@ import {
   refreshRoute,
   registerRoute,
 } from "@/lib/constants";
-import { UserInsertDTO, UserUpdateDTO } from "@/lib/models";
-import { JwtContext, LoginInfo, ResponseError } from "@/lib/types";
+import { User, UserInsertDTO, UserUpdateDTO } from "@/lib/models";
+import {
+  JwtContext,
+  LoginRequest,
+  RegisterRequest,
+  ResponseError,
+} from "@/lib/types";
 
-import { UserRepository } from "../respositories";
+import { UserService } from "../services";
 
 const getExpTimestamp = (secondsFromNow: number) => {
   return Math.floor(Date.now() / 1000) + secondsFromNow;
 };
 
 export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
-  const repo = new UserRepository();
-
   return app.group(`/${apiPrefix}/${authPrefix}`, (group) =>
     group
       // LOGIN
       .post(
         `/${loginRoute}`,
         async ({ body, jwt, cookie: { accessToken, refreshToken }, set }) => {
-          const loginInfo = JSON.parse(body as string) as LoginInfo;
+          const loginInfo = JSON.parse(body as string) as LoginRequest;
+          const service = new UserService();
 
-          const user = await repo.getByUsername(loginInfo.username.toString());
+          const user = await service.getByUsername(
+            loginInfo.username,
+          );
           if (!user) {
             set.status = StatusCodes.NOT_FOUND;
             return ResponseError.throw({
@@ -43,12 +49,12 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           }
 
           const verified = await Bun.password.verify(
-            loginInfo.password.toString(),
-            user.password.toString(),
+            loginInfo.password,
+            user.password,
           );
           if (verified) {
             const token = await jwt.sign({
-              sub: user.id.toString(),
+              sub: user.id,
               exp: getExpTimestamp(ACCESS_TOKEN_EXP),
             });
 
@@ -61,7 +67,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
             });
 
             const refreshJWTToken = await jwt.sign({
-              sub: user.id.toString(),
+              sub: user.id,
               exp: getExpTimestamp(REFRESH_TOKEN_EXP),
             });
             refreshToken.set({
@@ -71,7 +77,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
               path: "/",
             });
 
-            const updatedUser = await repo.update({
+            const updatedUser = await service.update({
               id: user.id,
               isOnline: true,
               refreshToken: refreshJWTToken,
@@ -95,9 +101,12 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
       .post(
         `/${registerRoute}`,
         async ({ body, jwt, cookie: { accessToken, refreshToken }, set }) => {
-          const loginInfo = JSON.parse(body as string) as LoginInfo;
+          const registerInfo = JSON.parse(body as string) as RegisterRequest;
+          const service = new UserService();
 
-          const user = await repo.getByUsername(loginInfo.username.toString());
+          let user = await service.getByUsername(
+            registerInfo.username,
+          );
 
           if (user) {
             set.status = StatusCodes.CONFLICT;
@@ -108,15 +117,29 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
             });
           }
 
+          user = await service.getByEmail(
+            registerInfo.email,
+          );
+
+          if (user) {
+            set.status = StatusCodes.CONFLICT;
+            return ResponseError.throw({
+              status: StatusCodes.CONFLICT,
+              statusText: ReasonPhrases.CONFLICT,
+              validation: "Email already exists",
+            });
+          }
+
           const newUser = {
-            username: loginInfo.username,
-            password: await Bun.password.hash(loginInfo.password.toString()),
+            username: registerInfo.username,
+            email: registerInfo.email,
+            password: await Bun.password.hash(registerInfo.password),
 
             isOnline: false,
             refreshToken: null,
           } as UserInsertDTO;
 
-          const insertedUser = await repo.insert(newUser);
+          const insertedUser = await service.insert(newUser);
           if (!insertedUser) {
             set.status = StatusCodes.UNPROCESSABLE_ENTITY;
             return ResponseError.throw({
@@ -127,7 +150,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           }
 
           const token = await jwt.sign({
-            sub: insertedUser.id.toString(),
+            sub: insertedUser.id,
             exp: getExpTimestamp(ACCESS_TOKEN_EXP),
           });
 
@@ -140,7 +163,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           });
 
           const refreshJWTToken = await jwt.sign({
-            sub: insertedUser.id.toString(),
+            sub: insertedUser.id,
             exp: getExpTimestamp(REFRESH_TOKEN_EXP),
           });
           refreshToken.set({
@@ -150,7 +173,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
             path: "/",
           });
 
-          const updatedUser = await repo.update({
+          const updatedUser = await service.update({
             id: insertedUser.id,
             isOnline: true,
             refreshToken: refreshJWTToken,
@@ -173,6 +196,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
       .post(
         `/${refreshRoute}`,
         async ({ cookie: { accessToken, refreshToken }, jwt, set }) => {
+          const service = new UserService();
           if (!refreshToken.value) {
             // handle error for refresh token is not available
             set.status = StatusCodes.UNAUTHORIZED;
@@ -198,7 +222,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           const userId = jwtPayload.sub;
 
           // verify user exists or not
-          const user = await repo.getById(userId!);
+          const user = await service.getById(userId!);
 
           if (!user) {
             // handle error for user not found from the provided refresh token
@@ -211,7 +235,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           }
           // create new access token
           const accessJWTToken = await jwt.sign({
-            sub: user.id.toString(),
+            sub: user.id,
             exp: getExpTimestamp(ACCESS_TOKEN_EXP),
           });
           accessToken.set({
@@ -223,7 +247,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
 
           // create new refresh token
           const refreshJWTToken = await jwt.sign({
-            sub: user.id.toString(),
+            sub: user.id,
             exp: getExpTimestamp(REFRESH_TOKEN_EXP),
           });
           refreshToken.set({
@@ -233,7 +257,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
             path: "/",
           });
 
-          const updatedUser = await repo.update({
+          const updatedUser = await service.update({
             id: userId,
             isOnline: true,
             refreshToken: refreshJWTToken,
@@ -254,6 +278,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
 
       // CHECK AUTH
       .get(`/${checkRoute}`, async ({ cookie: { accessToken }, jwt }) => {
+        const service = new UserService();
         if (!accessToken) {
           return ResponseError.throw({
             status: StatusCodes.UNAUTHORIZED,
@@ -281,7 +306,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
         }
 
         const userId = jwtPayload.sub;
-        const user = await repo.getById(userId!);
+        const user = (await service.getById(userId!)) as User;
 
         if (!user || !user.isOnline) {
           // handle error for user not found from the provided access token
@@ -299,12 +324,13 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
       .post(
         `/${logoutRoute}`,
         async ({ cookie: { accessToken, refreshToken }, set, jwt }) => {
+          const service = new UserService();
           const jwtPayload = await jwt.verify(accessToken.value);
           if (jwtPayload) {
             // verify user exists or not
-            const user = await repo.getById(jwtPayload.sub!);
+            const user = await service.getById(jwtPayload.sub!);
             if (user) {
-              await repo.update({
+              await service.update({
                 id: user.id,
                 isOnline: false,
                 refreshToken: null,

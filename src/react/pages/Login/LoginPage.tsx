@@ -2,65 +2,13 @@
 
 import React from "react";
 
-import {
-  apiPrefix,
-  authPrefix,
-  loginRoute,
-  registerRoute,
-  todoRoute,
-} from "@/lib/constants";
-import { LoginInfo } from "@/lib/types";
+import { registerRoute } from "@/lib/constants";
 
-import { apiFetch } from "@/api";
-import {
-  Form,
-  Layout,
-  LayoutTypes,
-  LinkButton,
-  ValidationError,
-} from "@/components";
+import { Form, Layout, LayoutTypes, LinkButton } from "@/components";
+import { useAuthLogin } from "@/hooks";
 
 export const LoginPage = () => {
-  const validate = (formData: FormData) => {
-    const username = formData.get("username");
-    const password = formData.get("password");
-
-    const errors: ValidationError[] = [];
-    if (username!.length <= 3) {
-      errors.push({
-        name: "username",
-        message: "Must be at least 3 characters long.",
-      });
-    }
-    if (password!.length < 6) {
-      errors.push({
-        name: "password",
-        message: "Must be at least 6 characters long.",
-      });
-    }
-
-    return errors;
-  };
-
-  const onSubmit = async (formData: FormData) => {
-    const username = formData.get("username")!;
-    const password = formData.get("password")!;
-
-    const loginInfo = {
-      username,
-      password,
-    } as LoginInfo;
-
-    return await apiFetch(`${apiPrefix}/${authPrefix}/${loginRoute}`, {
-      method: "POST",
-      body: JSON.stringify(loginInfo),
-    });
-  };
-
-  const onSuccess = () => {
-    location.href = `/${todoRoute}`;
-  };
-
+  const { validate, onLogin, onSuccess } = useAuthLogin();
   return (
     <Layout type={LayoutTypes.AUTH} title="Login">
       <Form
@@ -80,7 +28,7 @@ export const LoginPage = () => {
           },
         ]}
         validate={validate}
-        onSubmit={onSubmit}
+        onSubmit={onLogin}
         onSuccess={onSuccess}
         submitButtonText="Login"
         secondaryButtons={

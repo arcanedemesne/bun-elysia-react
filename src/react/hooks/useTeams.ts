@@ -1,7 +1,12 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiPrefix, teamMemberRoute, teamRoute } from "@/lib/constants";
-import { TeamDTO, TeamInsert, TeamMemberDTO, TeamUpdate } from "@/lib/models";
+import {
+  TeamDTO,
+  TeamInsertDTO,
+  TeamMemberDTO,
+  TeamUpdateDTO,
+} from "@/lib/models";
 
 import { apiFetch } from "@/api";
 import { ValidationError } from "@/components";
@@ -39,7 +44,7 @@ export const useTeams = () => {
     const newTeam = {
       name,
       createdBy: user?.id,
-    } as TeamInsert;
+    } as TeamInsertDTO;
 
     return await apiFetch(`/${apiPrefix}/${teamRoute}`, {
       method: "POST",
@@ -54,7 +59,7 @@ export const useTeams = () => {
     const updatedTeam = {
       id,
       name,
-    } as TeamUpdate;
+    } as TeamUpdateDTO;
 
     return await apiFetch(`/${apiPrefix}/${teamRoute}/${id}`, {
       method: "PUT",

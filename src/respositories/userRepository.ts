@@ -58,6 +58,18 @@ export class UserRepository
     }
   }
 
+  async getByEmail(email: string): Promise<User | null> {
+    try {
+      const data = await db.select().from(users).where(eq(users.email, email));
+      if (data.length === 0) {
+        return null;
+      }
+      return data[0] as User;
+    } catch (error) {
+      return throwDbError("Error getting user by email", error);
+    }
+  }
+
   async insert(insertData: UserInsertDTO): Promise<User | null> {
     try {
       const data = await db.insert(users).values(insertData).returning();

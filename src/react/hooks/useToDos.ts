@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiPrefix, todoRoute } from "@/lib/constants";
-import { TodoDTO, TodoInsert, TodoUpdate } from "@/lib/models";
+import { TodoDTO, TodoInsertDTO, TodoUpdateDTO } from "@/lib/models";
 
 import { apiFetch } from "@/api";
 import { ValidationError } from "@/components";
@@ -43,7 +43,7 @@ export const useTodos = () => {
       title,
       teamId: teamId && teamId?.length > 0 ? teamId : undefined,
       createdBy: user?.id,
-    } as TodoInsert;
+    } as TodoInsertDTO;
 
     return await apiFetch(`/${apiPrefix}/${todoRoute}`, {
       method: "POST",
@@ -60,7 +60,7 @@ export const useTodos = () => {
       id,
       title,
       description,
-    } as TodoUpdate;
+    } as TodoUpdateDTO;
 
     return await apiFetch(`/${apiPrefix}/${todoRoute}/${id}`, {
       method: "PUT",

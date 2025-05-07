@@ -2,72 +2,13 @@
 
 import React from "react";
 
-import {
-  apiPrefix,
-  authPrefix,
-  loginRoute,
-  registerRoute,
-  todoRoute,
-} from "@/lib/constants";
-import { LoginInfo } from "@/lib/types";
+import { loginRoute } from "@/lib/constants";
 
-import { apiFetch } from "@/api";
-import {
-  Form,
-  Layout,
-  LayoutTypes,
-  LinkButton,
-  ValidationError,
-} from "@/components";
+import { Form, Layout, LayoutTypes, LinkButton } from "@/components";
+import { useAuthRegister } from "@/hooks";
 
 export const RegisterPage = () => {
-  const validate = (formData: FormData) => {
-    const username = formData.get("username");
-    const password = formData.get("password");
-    const confirmPassword = formData.get("confirmPassword");
-
-    const errors: ValidationError[] = [];
-    if (username!.length <= 3) {
-      errors.push({
-        name: "username",
-        message: "Must be at least 3 characters long.",
-      });
-    }
-    if (password!.length < 6) {
-      errors.push({
-        name: "password",
-        message: "Must be at least 6 characters long.",
-      });
-    }
-    if (password !== confirmPassword) {
-      errors.push({
-        name: "confirmPassword",
-        message: "Passwords must match.",
-      });
-    }
-
-    return errors;
-  };
-
-  const onSubmit = async (formData: FormData) => {
-    const username = formData.get("username")!;
-    const password = formData.get("password")!;
-
-    const loginInfo = {
-      username,
-      password,
-    } as LoginInfo;
-
-    return await apiFetch(`${apiPrefix}/${authPrefix}/${registerRoute}`, {
-      method: "POST",
-      body: JSON.stringify(loginInfo),
-    });
-  };
-
-  const onSuccess = () => {
-    location.href = `/${todoRoute}`;
-  };
-
+  const { validate, onRegister, onSuccess } = useAuthRegister();
   return (
     <Layout type={LayoutTypes.AUTH} title="Register">
       <Form
@@ -80,19 +21,25 @@ export const RegisterPage = () => {
           },
           {
             type: "text",
+            name: "email",
+            label: "Email",
+            placeholder: "Enter email",
+          },
+          {
+            type: "password",
             name: "password",
             label: "Password",
             placeholder: "Enter password",
           },
           {
-            type: "text",
+            type: "password",
             name: "confirmPassword",
             label: "Confirm Password",
             placeholder: "Confirm password",
           },
         ]}
         validate={validate}
-        onSubmit={onSubmit}
+        onSubmit={onRegister}
         onSuccess={onSuccess}
         submitButtonText="Register"
         secondaryButtons={
