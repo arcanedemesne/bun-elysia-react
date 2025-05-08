@@ -3,15 +3,16 @@
 import React from "react";
 
 import { registerRoute } from "@/lib/constants";
+import { LoginRequest } from "@/lib/types";
 
 import { Form, Layout, LayoutTypes, LinkButton } from "@/components";
 import { useAuthLogin } from "@/hooks";
 
 export const LoginPage = () => {
-  const { validate, onLogin, onSuccess } = useAuthLogin();
+  const { validationSchema, onLogin, onSuccess } = useAuthLogin();
   return (
     <Layout type={LayoutTypes.AUTH} title="Login">
-      <Form
+      <Form<LoginRequest>
         inputs={[
           {
             type: "text",
@@ -27,7 +28,7 @@ export const LoginPage = () => {
             placeholder: "Enter password",
           },
         ]}
-        validate={validate}
+        validationSchema={validationSchema}
         onSubmit={onLogin}
         onSuccess={onSuccess}
         submitButtonText="Login"

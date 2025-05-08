@@ -3,15 +3,16 @@
 import React from "react";
 
 import { loginRoute } from "@/lib/constants";
+import { RegisterRequest } from "@/lib/types";
 
 import { Form, Layout, LayoutTypes, LinkButton } from "@/components";
 import { useAuthRegister } from "@/hooks";
 
 export const RegisterPage = () => {
-  const { validate, onRegister, onSuccess } = useAuthRegister();
+  const { validationSchema, onRegister, onSuccess } = useAuthRegister();
   return (
     <Layout type={LayoutTypes.AUTH} title="Register">
-      <Form
+      <Form<RegisterRequest>
         inputs={[
           {
             type: "text",
@@ -38,7 +39,7 @@ export const RegisterPage = () => {
             placeholder: "Confirm password",
           },
         ]}
-        validate={validate}
+        validationSchema={validationSchema}
         onSubmit={onRegister}
         onSuccess={onSuccess}
         submitButtonText="Register"

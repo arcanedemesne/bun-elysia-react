@@ -1,44 +1,24 @@
+import { z } from "zod";
+
 import { apiPrefix, authPrefix, loginRoute, todoRoute } from "@/lib/constants";
 import { LoginRequest } from "@/lib/types";
+import { passwordSchema, usernameSchema } from "@/lib/validation";
 
-import { apiFetch } from "@/api";
-import { ValidationError } from "@/components";
+import { ApiService } from "@/api";
 
 export const useAuthLogin = () => {
-  const validate = (formData: FormData) => {
-    const username = formData.get("username")?.toString();
-    const password = formData.get("password")?.toString();
+  const apiService = new ApiService();
 
-    const errors: ValidationError[] = [];
-    if (username!.length <= 3) {
-      errors.push({
-        name: "username",
-        message: "Must be at least 3 characters long.",
-      });
-    }
-    if (password!.length < 6) {
-      errors.push({
-        name: "password",
-        message: "Must be at least 6 characters long.",
-      });
-    }
+  const validationSchema = z.object({
+    username: usernameSchema,
+    password: passwordSchema,
+  });
 
-    return errors;
-  };
-
-  const onLogin = async (formData: FormData) => {
-    const username = formData.get("username")!;
-    const password = formData.get("password")!;
-
-    const loginRequest = {
-      username,
-      password,
-    } as LoginRequest;
-
-    return await apiFetch(`${apiPrefix}/${authPrefix}/${loginRoute}`, {
-      method: "POST",
-      body: JSON.stringify(loginRequest),
-    });
+  const onLogin = async (request: LoginRequest) => {
+    return await apiService.post(
+      `${apiPrefix}/${authPrefix}/${loginRoute}`,
+      request,
+    );
   };
 
   const onSuccess = () => {
@@ -46,7 +26,7 @@ export const useAuthLogin = () => {
   };
 
   return {
-    validate,
+    validationSchema,
     onLogin,
     onSuccess,
   };

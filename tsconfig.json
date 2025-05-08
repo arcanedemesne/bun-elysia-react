@@ -35,7 +35,7 @@
       "@/components": ["src/react/components/index.tsx"],
       "@/hooks": ["src/react/hooks/index.ts"],
       "@/providers": ["src/react/providers/index.tsx"]
-    },                                      
+    },
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     // "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */
     "types": ["bun-types", "./src/types/global.d.ts"],   /* Specify type package names to be included without being referenced in a source file. */

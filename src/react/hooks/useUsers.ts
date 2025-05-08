@@ -3,15 +3,17 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiPrefix, userRoute } from "@/lib/constants";
 import { UserDTO } from "@/lib/models";
 
-import { apiFetch } from "@/api";
+import { ApiService } from "@/api";
 
 export const useUsers = () => {
+  const apiService = new ApiService();
+
   const queryClient = useQueryClient();
 
   const search = async (search?: string): Promise<UserDTO[]> => {
     if (search && search?.length >= 3) {
       const queryString = search ? `search=${search}` : "";
-      return await apiFetch<UserDTO[]>(
+      return await apiService.get<UserDTO[]>(
         `/${apiPrefix}/${userRoute}?${queryString}`,
       );
     }
@@ -21,7 +23,8 @@ export const useUsers = () => {
   const GetData = () => {
     return useQuery<UserDTO[]>({
       queryKey: ["userData"],
-      queryFn: () => apiFetch(`/${apiPrefix}/${userRoute}`),
+      queryFn: async () =>
+        await apiService.get<UserDTO[]>(`/${apiPrefix}/${userRoute}`),
     });
   };
 

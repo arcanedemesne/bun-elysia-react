@@ -2,6 +2,8 @@
 
 import React, { MouseEvent, useEffect, useState } from "react";
 
+import { TeamInsertDTO, TeamUpdateDTO } from "@/lib/models";
+
 import { TeamCard } from "./TeamCard";
 import {
   Button,
@@ -39,7 +41,8 @@ export const TeamPage = () => {
 
   const {
     getData: getTeams,
-    validate,
+    createValidationSchema,
+    editValidationSchema,
     onCreate,
     onEdit,
     onDelete,
@@ -102,11 +105,11 @@ export const TeamPage = () => {
       <ErrorMessage>{error?.message ?? ""}</ErrorMessage>
 
       <div className="mb-4">
-        <Form
+        <Form<TeamInsertDTO>
           inputs={[
             { type: "text", name: "name", placeholder: "Add a new team..." },
           ]}
-          validate={validate}
+          validationSchema={createValidationSchema}
           onSubmit={onCreate}
           onSuccess={refetch}
           submitButtonText="Add"
@@ -133,7 +136,7 @@ export const TeamPage = () => {
         isOpen={isEditModelOpen && !!teamForEdit}
         onClose={handleCloseEditModal}
       >
-        <Form
+        <Form<TeamUpdateDTO>
           inputs={[
             {
               type: "hidden",
@@ -148,7 +151,7 @@ export const TeamPage = () => {
               value: teamForEdit?.name,
             },
           ]}
-          validate={validate}
+          validationSchema={editValidationSchema}
           onSubmit={onEdit}
           onSuccess={() => {
             handleCloseEditModal();

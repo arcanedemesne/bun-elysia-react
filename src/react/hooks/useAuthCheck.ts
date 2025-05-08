@@ -2,16 +2,18 @@ import { useEffect, useState } from "react";
 
 import { apiPrefix, authPrefix, checkRoute, loginRoute } from "@/lib/constants";
 
-import { apiFetch } from "@/api";
+import { ApiService } from "@/api";
 
 export const useAuthCheck = () => {
+  const apiService = new ApiService();
+
   const [authenticated, setAuthenticated] = useState<boolean | undefined>(
     undefined,
   );
 
   const checkAuth = async () => {
     try {
-      const { authorized } = await apiFetch(
+      const { authorized } = await apiService.get(
         `/${apiPrefix}/${authPrefix}/${checkRoute}`,
       );
       setAuthenticated(authorized);
@@ -33,5 +35,6 @@ export const useAuthCheck = () => {
     return () => {
       clearInterval(interval);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authenticated]);
 };

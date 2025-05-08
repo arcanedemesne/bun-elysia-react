@@ -1,7 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
 import React, { ReactNode, useActionState, useRef, useState } from "react";
 
+import { z } from "zod";
+
 import { ApiError } from "@/lib/types";
+import { FieldErrors, validateForm } from "@/lib/validation";
 
 import {
   Button,
@@ -10,15 +13,14 @@ import {
   HiddenInput,
   InputProps,
   TextInput,
-  ValidationError,
   ValueType,
 } from "@/components";
 import { usePersistentForm } from "@/hooks";
 
-type FormProps = {
+type FormProps<T> = {
   inputs: InputProps[];
-  validate: (formData: FormData) => ValidationError[];
-  onSubmit: (formData: FormData) => Promise<any>;
+  validationSchema: z.Schema;
+  onSubmit: (formData: T) => Promise<T>;
   onSuccess?: (data?: any) => void;
   onCancel?: () => void;
   submitButtonText?: string;
@@ -27,9 +29,9 @@ type FormProps = {
   secondaryButtons?: ReactNode;
 };
 
-export const Form = ({
+export const Form = <T,>({
   inputs,
-  validate,
+  validationSchema,
   onSubmit,
   onSuccess,
   onCancel,
@@ -37,7 +39,7 @@ export const Form = ({
   cancelButtonText,
   showCancelButton = false,
   secondaryButtons,
-}: FormProps) => {
+}: FormProps<T>) => {
   const [_, formAction] = useActionState<string | undefined, FormData>(
     async (_, formData) => {
       await handleFormSubmit(formData);
@@ -57,9 +59,7 @@ export const Form = ({
   const [inputValues, setInputValues] =
     useState<Map<string, ValueType>>(getDefaultValues());
   const [apiError, setApiError] = useState("");
-  const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
-    [],
-  );
+  const [validationErrors, setValidationErrors] = useState<FieldErrors>({});
   const formRef = useRef<HTMLFormElement>(null);
 
   usePersistentForm(formRef);
@@ -71,14 +71,14 @@ export const Form = ({
 
   const resetForm = () => {
     setApiError("");
-    setValidationErrors([]);
+    setValidationErrors({});
     formRef.current?.reset();
     setInputValues(getDefaultValues());
   };
 
   const createMutation = useMutation({
-    mutationFn: async (formData: FormData) => {
-      return await onSubmit(formData);
+    mutationFn: async (data: T) => {
+      return await onSubmit(data);
     },
     onSuccess: (data) => {
       onSuccess && onSuccess(data);
@@ -93,14 +93,13 @@ export const Form = ({
     ("use server");
 
     setApiError("");
-    setValidationErrors([]);
-    const errors = validate(formData);
-    if (errors.length > 0) {
-      setValidationErrors(errors);
-      return;
+    setValidationErrors({});
+    const validation = validateForm(formData, validationSchema);
+    if (validation.isValid) {
+      createMutation.mutate(validation.validatedData);
+    } else {
+      setValidationErrors(validation.errors ?? {});
     }
-
-    createMutation.mutate(formData);
   };
 
   return (
@@ -108,7 +107,6 @@ export const Form = ({
       <ErrorMessage>{apiError}</ErrorMessage>
 
       {inputs.map((input) => {
-        const error = validationErrors.find((e) => e.name === input.name);
         let control;
 
         switch (input.type) {
@@ -121,7 +119,7 @@ export const Form = ({
               <TextInput
                 {...input}
                 value={inputValues.get(input.name) ?? input.value}
-                error={error}
+                errors={validationErrors[input.name]}
                 onChange={(event) => {
                   setInputValues((prev) =>
                     new Map(prev).set(input.name, event.target.value),

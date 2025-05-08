@@ -10,21 +10,19 @@ import {
   todoRoute,
 } from "@/lib/constants";
 
-import { apiFetch } from "@/api";
+import { ApiService } from "@/api";
 import { useUserContext } from "@/providers";
 
 export const Nav = () => {
+  const apiService = new ApiService();
   const navigate = useNavigate();
   const { user } = useUserContext();
 
   const handleLogout = async () => {
     ("use server");
 
-    const response = await apiFetch(
+    const response = await apiService.post(
       `${apiPrefix}/${authPrefix}/${logoutRoute}`,
-      {
-        method: "POST",
-      },
     );
 
     if (response.status === 200) {

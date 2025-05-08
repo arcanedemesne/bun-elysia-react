@@ -1,6 +1,4 @@
-import { BaseEntityUserInfo } from "../BaseEntity";
-
-export interface TodoInsertDTO extends BaseEntityUserInfo {
+export interface TodoInsertDTO {
   title: string;
   description?: string;
   teamId?: string;

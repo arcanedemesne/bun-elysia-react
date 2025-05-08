@@ -1,5 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { z } from "zod";
+
 import { apiPrefix, teamMemberRoute, teamRoute } from "@/lib/constants";
 import {
   TeamDTO,
@@ -7,12 +9,14 @@ import {
   TeamMemberDTO,
   TeamUpdateDTO,
 } from "@/lib/models";
+import { teamNameSchema, uuidSchema } from "@/lib/validation";
 
-import { apiFetch } from "@/api";
-import { ValidationError } from "@/components";
+import { ApiService } from "@/api";
 import { useUserContext } from "@/providers";
 
 export const useTeams = () => {
+  const apiService = new ApiService();
+
   const { user } = useUserContext();
   const queryClient = useQueryClient();
 
@@ -20,59 +24,40 @@ export const useTeams = () => {
     const queryString = `userId=${user?.id}`;
     return useQuery<TeamDTO[]>({
       queryKey: ["teamData", queryString],
-      queryFn: () => apiFetch(`/${apiPrefix}/${teamRoute}?${queryString}`),
+      queryFn: async () =>
+        await apiService.get<TeamDTO[]>(
+          `/${apiPrefix}/${teamRoute}?${queryString}`,
+        ),
     });
   };
 
-  const validate = (formData: FormData) => {
-    const name = formData.get("name");
+  const createValidationSchema = z.object({
+    name: teamNameSchema,
+    teamId: z.string().optional(),
+  });
 
-    const errors: ValidationError[] = [];
-    if (name!.toString().length < 6) {
-      errors.push({
-        name: "name",
-        message: "Must be at least 6 characters long.",
-      });
-    }
+  const editValidationSchema = z.object({
+    id: uuidSchema,
+    name: teamNameSchema,
+  });
 
-    return errors;
+  const onCreate = async (request: TeamInsertDTO) => {
+    return await apiService.post(`/${apiPrefix}/${teamRoute}`, request);
   };
 
-  const onCreate = async (formData: FormData) => {
-    const name = formData.get("name");
-
-    const newTeam = {
-      name,
-      createdBy: user?.id,
-    } as TeamInsertDTO;
-
-    return await apiFetch(`/${apiPrefix}/${teamRoute}`, {
-      method: "POST",
-      body: JSON.stringify(newTeam),
-    });
-  };
-
-  const onEdit = async (formData: FormData) => {
-    const id = formData.get("id");
-    const name = formData.get("name");
-
-    const updatedTeam = {
-      id,
-      name,
-    } as TeamUpdateDTO;
-
-    return await apiFetch(`/${apiPrefix}/${teamRoute}/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(updatedTeam),
-    });
+  const onEdit = async (request: TeamUpdateDTO) => {
+    return await apiService.put(
+      `/${apiPrefix}/${teamRoute}/${request.id}`,
+      request,
+    );
   };
 
   const onDelete = async (id: string): Promise<boolean> => {
     ("use server");
 
-    const response = await apiFetch(`/${apiPrefix}/${teamRoute}/${id}`, {
-      method: "DELETE",
-    });
+    const response = await apiService.delete(
+      `/${apiPrefix}/${teamRoute}/${id}`,
+    );
 
     if (response.status === 200) {
       refetch();
@@ -90,12 +75,9 @@ export const useTeams = () => {
   const onAddMember = async (teamMember: TeamMemberDTO) => {
     ("use server");
 
-    const response = await apiFetch(
+    const response = await apiService.post(
       `/${apiPrefix}/${teamRoute}/${teamMemberRoute}`,
-      {
-        method: "POST",
-        body: JSON.stringify(teamMember),
-      },
+      teamMember,
     );
 
     if (response.status === 200) {
@@ -106,12 +88,9 @@ export const useTeams = () => {
   const onRemoveMember = async (teamMember: TeamMemberDTO) => {
     ("use server");
 
-    const response = await apiFetch(
+    const response = await apiService.delete(
       `/${apiPrefix}/${teamRoute}/${teamMemberRoute}`,
-      {
-        method: "DELETE",
-        body: JSON.stringify(teamMember),
-      },
+      teamMember,
     );
 
     if (response.status === 200) {
@@ -121,7 +100,8 @@ export const useTeams = () => {
 
   return {
     getData: GetData,
-    validate,
+    createValidationSchema,
+    editValidationSchema,
     onCreate,
     onEdit,
     onDelete,

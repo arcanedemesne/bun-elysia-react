@@ -8,7 +8,34 @@ import {
 } from "@/lib/constants";
 import { ApiError, ResponseError } from "@/lib/types";
 
-export const apiFetch = async <T>(
+export class ApiService {
+  get = async <T>(url: string) => {
+    return await apiFetch<T>(url);
+  };
+
+  post = async <T>(url: string, request?: object) => {
+    return await apiFetch<T>(url, {
+      method: "POST",
+      body: JSON.stringify(request),
+    });
+  };
+
+  put = async <T>(url: string, request?: object) => {
+    return await apiFetch<T>(url, {
+      method: "PUT",
+      body: JSON.stringify(request),
+    });
+  };
+
+  delete = async <T>(url: string, request?: object) => {
+    return await apiFetch<T>(url, {
+      method: "DELETE",
+      body: JSON.stringify(request),
+    });
+  };
+}
+
+const apiFetch = async <T>(
   url: string,
   options: RequestInit = {},
 ): Promise<T | any> => {

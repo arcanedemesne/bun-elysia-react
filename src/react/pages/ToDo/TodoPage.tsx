@@ -2,6 +2,8 @@
 
 import React, { MouseEvent, useState } from "react";
 
+import { TodoInsertDTO, TodoUpdateDTO } from "@/lib/models";
+
 import { TodoCard } from "./TodoCard";
 import {
   Button,
@@ -29,7 +31,8 @@ export const TodoPage = () => {
 
   const {
     getData: getTodos,
-    validate,
+    createValidationSchema,
+    editValidationSchema,
     onCreate,
     onEdit,
     onDelete,
@@ -81,12 +84,12 @@ export const TodoPage = () => {
       <ErrorMessage>{error?.message ?? ""}</ErrorMessage>
 
       <div className="mb-4">
-        <Form
+        <Form<TodoInsertDTO>
           inputs={[
             { type: "hidden", name: "teamId", value: selectedTeamId },
             { type: "text", name: "title", placeholder: "Add a new todo..." },
           ]}
-          validate={validate}
+          validationSchema={createValidationSchema}
           onSubmit={onCreate}
           onSuccess={handleSuccess}
           submitButtonText="Add"
@@ -130,12 +133,17 @@ export const TodoPage = () => {
         isOpen={isEditModelOpen && !!todoForEdit}
         onClose={handleCloseEditModal}
       >
-        <Form
+        <Form<TodoUpdateDTO>
           inputs={[
             {
               type: "hidden",
               name: "id",
               value: todoForEdit?.id,
+            },
+            {
+              type: "hidden",
+              name: "teamId",
+              value: selectedTeamId,
             },
             {
               type: "text",
@@ -152,7 +160,7 @@ export const TodoPage = () => {
               value: todoForEdit?.description,
             },
           ]}
-          validate={validate}
+          validationSchema={editValidationSchema}
           onSubmit={onEdit}
           onSuccess={() => {
             handleCloseEditModal();
