@@ -32942,14 +32942,14 @@ var useTodos = () => {
     });
   };
   const createValidationSchema = z.object({
-    teamId: z.string().optional(),
-    title: todoTitleSchema
+    title: todoTitleSchema,
+    teamId: uuidSchema.optional()
   });
   const editValidationSchema = z.object({
     id: uuidSchema,
-    teamId: z.string().optional(),
     title: todoTitleSchema,
-    description: z.string().optional()
+    teamId: uuidSchema.optional(),
+    description: z.string().optional().nullable()
   });
   const onCreate = async (request) => {
     return await apiService.post(`/${apiPrefix}/${todoRoute}`, request);
@@ -33171,14 +33171,17 @@ var DropDownInput = ({
   name,
   options,
   value,
-  error,
+  errors,
   onChange,
   placeholder
 }) => {
+  const error = errors?.map((e) => /* @__PURE__ */ import_react46.default.createElement("p", {
+    key: e
+  }, e));
   const [isOpen, setIsOpen] = import_react46.useState(false);
   const selectRef = import_react46.useRef(null);
   const [highlightedIndex, setHighlightedIndex] = import_react46.useState(null);
-  const controlledValue = value ?? "";
+  const controlledValue = value ?? undefined;
   import_react46.useEffect(() => {
     const handleClickOutside = (event) => {
       if (selectRef.current && !selectRef.current.contains(event.target)) {
@@ -33231,7 +33234,7 @@ var DropDownInput = ({
     className: "relative w-full"
   }, label && /* @__PURE__ */ import_react46.default.createElement(Label, {
     htmlFor: name,
-    hasError: error?.message && error?.message.length > 0
+    hasError: !!error
   }, label), /* @__PURE__ */ import_react46.default.createElement("div", {
     className: "relative w-full"
   }, /* @__PURE__ */ import_react46.default.createElement("button", {
@@ -33272,7 +33275,7 @@ var DropDownInput = ({
     onClick: () => handleOptionClick(option.value),
     role: "option",
     "aria-selected": controlledValue === option.value
-  }, option.label)))), error && /* @__PURE__ */ import_react46.default.createElement(ErrorMessage, null, error.message));
+  }, option.label)))), !!error && /* @__PURE__ */ import_react46.default.createElement(ErrorMessage, null, error));
 };
 // src/react/components/Inputs/HiddenInput.tsx
 var import_react47 = __toESM(require_react(), 1);
@@ -33960,7 +33963,7 @@ var TodoPage = () => {
   const [editId, setEditId] = import_react64.useState(undefined);
   const [isDeleteModelOpen, setIsDeleteModalOpen] = import_react64.useState(false);
   const [deleteId, setDeleteId] = import_react64.useState(undefined);
-  const [selectedTeamId, setSelectedTeamId] = import_react64.useState("");
+  const [selectedTeamId, setSelectedTeamId] = import_react64.useState(undefined);
   const {
     getData: getTodos,
     createValidationSchema,
@@ -34020,7 +34023,7 @@ var TodoPage = () => {
       name: "team",
       value: selectedTeamId,
       options: [
-        { label: `My Personal Todos`, value: "" },
+        { label: `My Personal Todos`, value: undefined },
         ...teamOptions
       ],
       onChange: (value) => {

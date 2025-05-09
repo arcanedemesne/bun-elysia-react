@@ -43,11 +43,11 @@ const app = new Elysia()
   // DERIVE (get user during request)
   .use(deriveUser)
 
-  // TODOS
-  .use(todoRoutes)
-
   // USERS
   .use(userRoutes)
+
+  // TODOS
+  .use(todoRoutes)
 
   // TEAMS
   .use(teamRoutes)

@@ -27,7 +27,9 @@ export const TodoPage = () => {
   const [isDeleteModelOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | undefined>(undefined);
 
-  const [selectedTeamId, setSelectedTeamId] = useState("");
+  const [selectedTeamId, setSelectedTeamId] = useState<string | undefined>(
+    undefined,
+  );
 
   const {
     getData: getTodos,
@@ -101,7 +103,7 @@ export const TodoPage = () => {
                 name="team"
                 value={selectedTeamId}
                 options={[
-                  { label: `My Personal Todos`, value: "" },
+                  { label: `My Personal Todos`, value: undefined },
                   ...teamOptions,
                 ]}
                 onChange={(value) => {

@@ -28,15 +28,15 @@ export const useTodos = () => {
   };
 
   const createValidationSchema = z.object({
-    teamId: z.string().optional(),
     title: todoTitleSchema,
+    teamId: uuidSchema.optional(),
   });
 
   const editValidationSchema = z.object({
     id: uuidSchema,
-    teamId: z.string().optional(),
     title: todoTitleSchema,
-    description: z.string().optional(),
+    teamId: uuidSchema.optional(),
+    description: z.string().optional().nullable(),
   });
 
   const onCreate = async (request: TodoInsertDTO) => {

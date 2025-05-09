@@ -1,16 +1,16 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
-import { ErrorMessage, InputProps, Label, ValidationError } from "@/components";
+import { ErrorMessage, InputProps, Label } from "@/components";
 
 interface DropDownOption {
   label: string;
-  value: string;
+  value: string | undefined;
 }
 
 interface DropDownInputProps extends InputProps {
   options: DropDownOption[];
-  error?: ValidationError | undefined;
-  onChange?: (value: string) => void;
+  errors?: string[] | undefined;
+  onChange?: (value: string | undefined) => void;
 }
 
 export const DropDownInput: React.FC<DropDownInputProps> = ({
@@ -18,17 +18,18 @@ export const DropDownInput: React.FC<DropDownInputProps> = ({
   name,
   options,
   value,
-  error,
+  errors,
   onChange,
   placeholder,
 }) => {
+  const error = errors?.map((e) => <p key={e}>{e}</p>);
+
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
   const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
 
-  const controlledValue = value ?? "";
+  const controlledValue = value ?? undefined;
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -36,7 +37,7 @@ export const DropDownInput: React.FC<DropDownInputProps> = ({
         !selectRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
-        setHighlightedIndex(null); // Reset highlighted index
+        setHighlightedIndex(null);
       }
     };
 
@@ -50,7 +51,7 @@ export const DropDownInput: React.FC<DropDownInputProps> = ({
   }, [isOpen]);
 
   const handleOptionClick = useCallback(
-    (optionValue: string) => {
+    (optionValue: string | undefined) => {
       onChange?.(optionValue);
       setIsOpen(false);
       setHighlightedIndex(null);
@@ -90,10 +91,7 @@ export const DropDownInput: React.FC<DropDownInputProps> = ({
   return (
     <div ref={selectRef} className="relative w-full">
       {label && (
-        <Label
-          htmlFor={name}
-          hasError={error?.message && error?.message.length > 0}
-        >
+        <Label htmlFor={name} hasError={!!error}>
           {label}
         </Label>
       )}
@@ -165,7 +163,7 @@ export const DropDownInput: React.FC<DropDownInputProps> = ({
           </ul>
         )}
       </div>
-      {error && <ErrorMessage>{error.message}</ErrorMessage>}
+      {!!error && <ErrorMessage>{error}</ErrorMessage>}
     </div>
   );
 };
