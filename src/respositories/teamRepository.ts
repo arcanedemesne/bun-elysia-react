@@ -57,7 +57,8 @@ export class TeamRepository
         .innerJoin(createdBy, eq(teams.createdBy, createdBy.id))
         .fullJoin(updatedBy, eq(teams.updatedBy, updatedBy.id))
         .fullJoin(deletedBy, eq(teams.deletedBy, deletedBy.id))
-        .where(eq(teams.active, true));
+        .where(eq(teams.active, true))
+        .orderBy(teams.createdAt);
 
       const response = data as TeamDTO[];
 
@@ -107,7 +108,8 @@ export class TeamRepository
         .fullJoin(updatedBy, eq(teams.updatedBy, updatedBy.id))
         .fullJoin(deletedBy, eq(teams.deletedBy, deletedBy.id))
         .innerJoin(usersToTeams, eq(teams.id, usersToTeams.teamId))
-        .where(and(eq(usersToTeams.userId, userId), eq(teams.active, true)));
+        .where(and(eq(usersToTeams.userId, userId), eq(teams.active, true)))
+        .orderBy(teams.createdAt);
 
       const response = data as TeamDTO[];
       for (let team of response) {
@@ -204,7 +206,8 @@ export class TeamRepository
         })
         .from(usersToTeams)
         .innerJoin(users, eq(usersToTeams.userId, users.id))
-        .where(and(eq(usersToTeams.teamId, teamId), eq(users.active, true)));
+        .where(and(eq(usersToTeams.teamId, teamId), eq(users.active, true)))
+        .orderBy(usersToTeams.createdAt);
 
       return data as UserDTO[];
     } catch (error) {

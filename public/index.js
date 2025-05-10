@@ -32298,7 +32298,11 @@ var z = /* @__PURE__ */ Object.freeze({
 });
 
 // src/lib/validation/schemas.ts
-var uuidSchema = z.string().regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/, {
+var uuidRegex2 = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+var uuidSchema = z.string().regex(uuidRegex2, {
+  message: "Invalid UUID format"
+});
+var optionalTeamIdSchema = z.string().optional().refine((val) => !val || uuidRegex2.test(val), {
   message: "Invalid UUID format"
 });
 var usernameSchema = z.string().min(3, { message: "Must be at least 3 characters long." });
@@ -32312,28 +32316,14 @@ var validateForm = (formData, validationSchema) => {
   for (const [key, value] of formData.entries()) {
     formDataObject[key] = value;
   }
-  try {
-    const validatedData = validationSchema.parse(formDataObject);
+  const validation = validationSchema.safeParse(formDataObject);
+  if (validation.success) {
+    return validation;
+  } else {
     return {
-      isValid: true,
-      validatedData,
-      errors: undefined
+      ...validation,
+      errors: validation.error.flatten().fieldErrors
     };
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return {
-        isValid: false,
-        validatedData: undefined,
-        errors: error.flatten().fieldErrors
-      };
-    } else {
-      console.error("An unexpected error occurred:", error);
-      return {
-        isValid: false,
-        validatedData: undefined,
-        errors: undefined
-      };
-    }
   }
 };
 // src/react/hooks/useAuthCheck.ts
@@ -32943,15 +32933,18 @@ var useTodos = () => {
   };
   const createValidationSchema = z.object({
     title: todoTitleSchema,
-    teamId: uuidSchema.optional()
+    teamId: optionalTeamIdSchema
   });
   const editValidationSchema = z.object({
     id: uuidSchema,
     title: todoTitleSchema,
-    teamId: uuidSchema.optional(),
+    teamId: optionalTeamIdSchema,
     description: z.string().optional().nullable()
   });
   const onCreate = async (request) => {
+    if (request.teamId === "") {
+      delete request.teamId;
+    }
     return await apiService.post(`/${apiPrefix}/${todoRoute}`, request);
   };
   const onEdit = async (request) => {
@@ -33060,8 +33053,8 @@ var Form2 = ({
     setApiError("");
     setValidationErrors({});
     const validation = validateForm(formData, validationSchema);
-    if (validation.isValid) {
-      createMutation.mutate(validation.validatedData);
+    if (validation.success) {
+      createMutation.mutate(validation.data);
     } else {
       setValidationErrors(validation.errors ?? {});
     }

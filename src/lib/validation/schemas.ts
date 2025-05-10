@@ -1,13 +1,17 @@
 import { z } from "zod";
 
-export const uuidSchema = z
+const uuidRegex =
+  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+export const uuidSchema = z.string().regex(uuidRegex, {
+  message: "Invalid UUID format",
+});
+
+export const optionalTeamIdSchema = z
   .string()
-  .regex(
-    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
-    {
-      message: "Invalid UUID format",
-    },
-  );
+  .optional()
+  .refine((val) => !val || uuidRegex.test(val), {
+    message: "Invalid UUID format",
+  });
 
 export const usernameSchema = z
   .string()

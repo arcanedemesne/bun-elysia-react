@@ -94,9 +94,10 @@ export const Form = <T,>({
 
     setApiError("");
     setValidationErrors({});
-    const validation = validateForm(formData, validationSchema);
-    if (validation.isValid) {
-      createMutation.mutate(validation.validatedData);
+    const validation = validateForm<T>(formData, validationSchema);
+
+    if (validation.success) {
+      createMutation.mutate(validation.data);
     } else {
       setValidationErrors(validation.errors ?? {});
     }

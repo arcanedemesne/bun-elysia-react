@@ -4,7 +4,11 @@ import { z } from "zod";
 
 import { apiPrefix, todoRoute } from "@/lib/constants";
 import { TodoDTO, TodoInsertDTO, TodoUpdateDTO } from "@/lib/models";
-import { todoTitleSchema, uuidSchema } from "@/lib/validation";
+import {
+  optionalTeamIdSchema,
+  todoTitleSchema,
+  uuidSchema,
+} from "@/lib/validation";
 
 import { ApiService } from "@/api";
 import { useUserContext } from "@/providers";
@@ -15,7 +19,7 @@ export const useTodos = () => {
   const { user } = useUserContext();
   const queryClient = useQueryClient();
 
-  const GetData = (teamId?: string) => {
+  const GetData = (teamId?: string | null) => {
     const queryString = teamId ? `teamId=${teamId}` : `userId=${user?.id}`;
     return useQuery<TodoDTO[]>({
       queryKey: ["todoData", queryString],
@@ -29,17 +33,20 @@ export const useTodos = () => {
 
   const createValidationSchema = z.object({
     title: todoTitleSchema,
-    teamId: uuidSchema.optional(),
+    teamId: optionalTeamIdSchema,
   });
 
   const editValidationSchema = z.object({
     id: uuidSchema,
     title: todoTitleSchema,
-    teamId: uuidSchema.optional(),
+    teamId: optionalTeamIdSchema,
     description: z.string().optional().nullable(),
   });
 
   const onCreate = async (request: TodoInsertDTO) => {
+    if (request.teamId === "") {
+      delete request.teamId;
+    }
     return await apiService.post(`/${apiPrefix}/${todoRoute}`, request);
   };
 

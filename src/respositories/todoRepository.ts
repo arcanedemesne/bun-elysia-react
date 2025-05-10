@@ -53,7 +53,8 @@ export class TodoRepository
         .innerJoin(createdBy, eq(todos.createdBy, createdBy.id))
         .fullJoin(updatedBy, eq(todos.updatedBy, updatedBy.id))
         .fullJoin(deletedBy, eq(todos.deletedBy, deletedBy.id))
-        .where(eq(todos.active, true));
+        .where(eq(todos.active, true))
+        .orderBy(todos.createdAt);
       return data as TodoDTO[];
     } catch (error) {
       return throwDbError("Error getting todos", error);
@@ -94,7 +95,8 @@ export class TodoRepository
             isNull(todos.teamId),
             eq(todos.active, true),
           ),
-        );
+        )
+        .orderBy(todos.createdAt);
       return data as TodoDTO[];
     } catch (error) {
       return throwDbError("Error getting todos", error);
@@ -110,7 +112,8 @@ export class TodoRepository
         .innerJoin(createdBy, eq(todos.createdBy, createdBy.id))
         .fullJoin(updatedBy, eq(todos.updatedBy, updatedBy.id))
         .fullJoin(deletedBy, eq(todos.deletedBy, deletedBy.id))
-        .where(and(eq(todos.teamId, teamId), eq(todos.active, true)));
+        .where(and(eq(todos.teamId, teamId), eq(todos.active, true)))
+        .orderBy(todos.createdAt);
       return data as TodoDTO[];
     } catch (error) {
       return throwDbError("Error getting todos", error);

@@ -12,7 +12,7 @@ export class UserRepository
 {
   async getAll(): Promise<User[]> {
     try {
-      const data = await db.select().from(users);
+      const data = await db.select().from(users).orderBy(users.username);
       return data as User[];
     } catch (error) {
       return throwDbError("Error getting users", error);
@@ -24,7 +24,8 @@ export class UserRepository
       const data = await db
         .select({ id: users.id, username: users.username })
         .from(users)
-        .where(ilike(users.username, `%${searchTerm}%`));
+        .where(ilike(users.username, `%${searchTerm}%`))
+        .orderBy(users.username);
       return data as UserDTO[];
     } catch (error) {
       return throwDbError("Error searching users", error);
@@ -48,7 +49,8 @@ export class UserRepository
       const data = await db
         .select()
         .from(users)
-        .where(eq(users.username, username));
+        .where(eq(users.username, username))
+        .orderBy(users.username);
       if (data.length === 0) {
         return null;
       }
