@@ -9,9 +9,9 @@ import {
   TeamMemberDTO,
   TeamUpdateDTO,
 } from "@/lib/models";
+import { ApiService } from "@/lib/services/ApiService";
 import { teamNameSchema, uuidSchema } from "@/lib/validation";
 
-import { ApiService } from "@/api";
 import { useUserContext } from "@/providers";
 
 export const useTeams = () => {

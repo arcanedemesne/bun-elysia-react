@@ -9,8 +9,8 @@ import {
   teamRoute,
   todoRoute,
 } from "@/lib/constants";
+import { ApiService } from "@/lib/services";
 
-import { ApiService } from "@/api";
 import { useUserContext } from "@/providers";
 
 export const Nav = () => {
@@ -84,6 +84,14 @@ export const Nav = () => {
               to={`/${teamRoute}`}
             >
               Teams
+            </NavLink>
+            <NavLink
+              className={({ isActive }) =>
+                isActive ? activeNavLinkClassName : navLinkClassName
+              }
+              to={`/public-chat`}
+            >
+              Public Chat
             </NavLink>
             <span onClick={handleLogout} className={navLinkClassName}>
               Logout

@@ -1,15 +1,15 @@
-"use client";
-
 import React from "react";
 
+import { LinkButton } from "@/lib/components";
 import { registerRoute } from "@/lib/constants";
 import { LoginRequest } from "@/lib/types";
 
-import { Form, Layout, LayoutTypes, LinkButton } from "@/components";
+import { Form, Layout, LayoutTypes } from "@/components";
 import { useAuthLogin } from "@/hooks";
 
 export const LoginPage = () => {
   const { validationSchema, onLogin, onSuccess } = useAuthLogin();
+
   return (
     <Layout type={LayoutTypes.AUTH} title="Login">
       <Form<LoginRequest>

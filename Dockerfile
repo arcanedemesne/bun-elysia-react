@@ -2,7 +2,7 @@ FROM oven/bun:latest
 
 WORKDIR /app
 
-COPY package.json bun.lock ./
+COPY package.json bun.lock tsconfig.json drizzle.config.ts ./
 
 RUN bun install
 
@@ -10,5 +10,4 @@ COPY src/ ./src/
 COPY public/ ./public/
 
 EXPOSE 3000
-
-CMD ["bun", "run", "src/index.tsx"]
+EXPOSE 8080

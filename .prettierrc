@@ -12,6 +12,9 @@
     "prettier-plugin-tailwindcss"
   ],
   "importOrder": [
+    "drizzle-orm",
+    "elysia",
+    "@/server-lib/(.*)",
     "react",
     "<THIRD_PARTY_MODULES>",
     "@/lib/(.*)",

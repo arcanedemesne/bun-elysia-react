@@ -1,10 +1,9 @@
 import { z } from "zod";
 
 import { apiPrefix, authPrefix, loginRoute, todoRoute } from "@/lib/constants";
+import { ApiService } from "@/lib/services/ApiService";
 import { LoginRequest } from "@/lib/types";
 import { passwordSchema, usernameSchema } from "@/lib/validation";
-
-import { ApiService } from "@/api";
 
 export const useAuthLogin = () => {
   const apiService = new ApiService();

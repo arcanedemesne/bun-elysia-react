@@ -1,25 +1,21 @@
-"use client";
-
 import React, { MouseEvent, useEffect, useState } from "react";
 
-import { TeamInsertDTO, TeamUpdateDTO } from "@/lib/models";
-
-import { TeamCard } from "./TeamCard";
 import {
   Button,
   ButtonModes,
-  CardGrid,
   CloseButton,
   DeleteModal,
   ErrorMessage,
-  Form,
   Label,
-  Layout,
   Modal,
   Pill,
   TypeAheadSearchInput,
   TypeAheadSearchOption,
-} from "@/components";
+} from "@/lib/components";
+import { TeamInsertDTO, TeamUpdateDTO } from "@/lib/models";
+
+import { TeamCard } from "./TeamCard";
+import { CardGrid, Form, Layout } from "@/components";
 import { useAuthCheck, useTeams, useUsers } from "@/hooks";
 
 export const TeamPage = () => {
@@ -113,7 +109,7 @@ export const TeamPage = () => {
           onSubmit={onCreate}
           onSuccess={refetch}
           submitButtonText="Add"
-          showCancelButton={true}
+          showCancelButton
         />
       </div>
 
@@ -159,7 +155,7 @@ export const TeamPage = () => {
           }}
           onCancel={handleCloseEditModal}
           submitButtonText="Edit"
-          showCancelButton={true}
+          showCancelButton
           secondaryButtons={
             <Button
               mode={ButtonModes.DELETE}

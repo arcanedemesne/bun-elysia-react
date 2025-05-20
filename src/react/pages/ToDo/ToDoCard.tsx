@@ -1,8 +1,9 @@
 import React, { ReactNode } from "react";
 
+import { DeleteButton, EditButton } from "@/lib/components";
 import { TodoDTO } from "@/lib/models";
 
-import { CardBase, DeleteButton, EditButton } from "@/components";
+import { CardBase } from "@/components";
 
 type TodoCardProps = {
   todo: TodoDTO;

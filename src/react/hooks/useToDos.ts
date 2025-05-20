@@ -4,13 +4,13 @@ import { z } from "zod";
 
 import { apiPrefix, todoRoute } from "@/lib/constants";
 import { TodoDTO, TodoInsertDTO, TodoUpdateDTO } from "@/lib/models";
+import { ApiService } from "@/lib/services/ApiService";
 import {
   optionalTeamIdSchema,
   todoTitleSchema,
   uuidSchema,
 } from "@/lib/validation";
 
-import { ApiService } from "@/api";
 import { useUserContext } from "@/providers";
 
 export const useTodos = () => {
@@ -51,6 +51,9 @@ export const useTodos = () => {
   };
 
   const onEdit = async (request: TodoUpdateDTO) => {
+    if (request.teamId === "") {
+      delete request.teamId;
+    }
     return await apiService.put(
       `/${apiPrefix}/${todoRoute}/${request.id}`,
       request,

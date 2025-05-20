@@ -10,4 +10,5 @@ export interface TodoUpdateDTO
     BaseEntityActive {
   title?: string;
   description?: string;
+  teamId?: string;
 }

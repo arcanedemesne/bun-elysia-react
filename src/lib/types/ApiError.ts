@@ -1,4 +1,4 @@
-import { emitAlert } from "@/components";
+import { showApiError } from "@/lib/services";
 
 type ApiErrorProps = {
   status: number;
@@ -20,6 +20,6 @@ export class ApiError extends Error {
     this.validation = validation;
 
     // only emit if a message exists, or else it is for validation
-    message && emitAlert(this);
+    message && showApiError(this);
   }
 }

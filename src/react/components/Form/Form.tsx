@@ -3,18 +3,19 @@ import React, { ReactNode, useActionState, useRef, useState } from "react";
 
 import { z } from "zod";
 
-import { ApiError } from "@/lib/types";
-import { FieldErrors, validateForm } from "@/lib/validation";
-
 import {
   Button,
   ButtonModes,
   ErrorMessage,
   HiddenInput,
   InputProps,
+  TextArea,
   TextInput,
   ValueType,
-} from "@/components";
+} from "@/lib/components";
+import { ApiError } from "@/lib/types";
+import { FieldErrors, validateForm } from "@/lib/validation";
+
 import { usePersistentForm } from "@/hooks";
 
 type FormProps<T> = {
@@ -27,6 +28,7 @@ type FormProps<T> = {
   cancelButtonText?: string;
   showCancelButton?: boolean;
   secondaryButtons?: ReactNode;
+  disabled?: boolean;
 };
 
 export const Form = <T,>({
@@ -39,6 +41,7 @@ export const Form = <T,>({
   cancelButtonText,
   showCancelButton = false,
   secondaryButtons,
+  disabled,
 }: FormProps<T>) => {
   const [_, formAction] = useActionState<string | undefined, FormData>(
     async (_, formData) => {
@@ -129,6 +132,20 @@ export const Form = <T,>({
               />
             );
             break;
+          case "textarea":
+            control = (
+              <TextArea
+                {...input}
+                value={inputValues.get(input.name) ?? input.value}
+                errors={validationErrors[input.name]}
+                onChange={(event) => {
+                  setInputValues((prev) =>
+                    new Map(prev).set(input.name, event.target.value),
+                  );
+                }}
+              />
+            );
+            break;
           default:
             control = <>invlid input</>;
             break;
@@ -157,7 +174,7 @@ export const Form = <T,>({
           )}
           <Button
             type="submit"
-            disabled={createMutation.isPending}
+            disabled={disabled || createMutation.isPending}
             mode={ButtonModes.PRIMARY}
           >
             {submitButtonText ? submitButtonText : "Submit"}

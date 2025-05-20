@@ -30,8 +30,9 @@
     "moduleResolution": "node",                          /* Specify how TypeScript looks up a file from a given module specifier. */
     "baseUrl": "./",                                     /* Specify the base directory to resolve non-relative module names. */
     "paths": {                                           /* Specify a set of entries that re-map imports to additional lookup locations. */
+      "@/server-lib/*": ["src/server-lib/index.ts"],                            
       "@/lib/*": ["src/lib/*"],
-      "@/api": ["src/react/api/index.ts"],
+      "@/api": ["src/lib/services/ApiService.ts"],
       "@/components": ["src/react/components/index.tsx"],
       "@/hooks": ["src/react/hooks/index.ts"],
       "@/providers": ["src/react/providers/index.tsx"]

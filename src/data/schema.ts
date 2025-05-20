@@ -1,5 +1,4 @@
 import { relations } from "drizzle-orm";
-
 import {
   boolean,
   index,
@@ -42,6 +41,7 @@ export const users = schema.table(
     email: varchar({ length: 255 }).unique().notNull(),
     password: varchar({ length: 255 }).notNull(),
     isOnline: boolean().notNull().default(false),
+    sessionId: uuid(),
     refreshToken: text(),
     ...trackableEntityTimeStamps,
     ...trackableEntityActive,

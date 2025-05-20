@@ -3,7 +3,6 @@ import React, { ReactNode } from "react";
 import { CustomErrorBoundary } from "../CustomErrorBoundary";
 import { AuthLayout } from "./AuthLayout";
 import { PageLayout } from "./PageLayout";
-import { Alerts } from "@/components";
 
 export enum LayoutTypes {
   AUTH = "AUTH",
@@ -13,11 +12,11 @@ export enum LayoutTypes {
 type LayoutType = LayoutTypes.AUTH | LayoutTypes.PAGE;
 type LayoutProps = {
   type?: LayoutType;
-  title: string;
+  title?: string;
   children: ReactNode;
 };
 
-export const Layout = ({ type, title, children }: LayoutProps) => {
+export const Layout = ({ type, title = "", children }: LayoutProps) => {
   let layout;
   switch (type) {
     case LayoutTypes.AUTH:
@@ -31,7 +30,6 @@ export const Layout = ({ type, title, children }: LayoutProps) => {
     <CustomErrorBoundary
       fallback={<h2>Oops! Something went wrong in this section.</h2>}
     >
-      <Alerts />
       {layout}
     </CustomErrorBoundary>
   );

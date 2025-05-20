@@ -27,10 +27,11 @@ services:
       POSTGRES_USER: todo_user
       POSTGRES_PASSWORD: todo_password
       POSTGRES_DB: todo_database
+      POSTGRES_URL: postgres://todo_user:todo_password@todo_postgres_db:5432/todo_database
     depends_on:
       todo_postgres_db:
         condition: service_healthy
-    command: bun run src/init-db.ts
+    command: bun run db-publish
 
   todo_pgadmin:
     image: dpage/pgadmin4
@@ -52,16 +53,19 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+      - "8080:8080"
     environment:
       NODE_ENV: development
+      HOST: localhost
       HOST_PORT: 3000
+      SOCKET_PORT: 8080
       JWT_SECRET: secret-key-for-todo-app
       POSTGRES_PORT: 5432
       POSTGRES_HOST: todo_postgres_db
       POSTGRES_USER: todo_user
       POSTGRES_PASSWORD: todo_password
       POSTGRES_DB: todo_database
-      POSTGRES_URL: postgres://todo_user:todo_password@localhost:5432/todo_database
+      POSTGRES_URL: postgres://todo_user:todo_password@todo_postgres_db:5432/todo_database
     depends_on:
       todo_postgres_db:
         condition: service_healthy

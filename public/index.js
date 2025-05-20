@@ -1,3 +1,4 @@
+// @bun
 var __create = Object.create;
 var __getProtoOf = Object.getPrototypeOf;
 var __defProp = Object.defineProperty;
@@ -15,13 +16,7 @@ var __toESM = (mod, isNodeMode, target) => {
   return to;
 };
 var __commonJS = (cb, mod) => () => (mod || cb((mod = { exports: {} }).exports, mod), mod.exports);
-var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
-  get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
-}) : x)(function(x) {
-  if (typeof require !== "undefined")
-    return require.apply(this, arguments);
-  throw Error('Dynamic require of "' + x + '" is not supported');
-});
+var __require = import.meta.require;
 
 // node_modules/react/cjs/react.development.js
 var require_react_development = __commonJS((exports, module) => {
@@ -5763,12 +5758,12 @@ Incoming: %s`, currentHookNameInDev, "[" + prevDeps.join(", ") + "]", "[" + next
         var treeId = treeContextOverflow;
         var idWithLeadingBit = treeContextId;
         treeId = (idWithLeadingBit & ~(1 << 32 - clz32(idWithLeadingBit) - 1)).toString(32) + treeId;
-        identifierPrefix = "«" + identifierPrefix + "R" + treeId;
+        identifierPrefix = "\xAB" + identifierPrefix + "R" + treeId;
         treeId = localIdCounter++;
         0 < treeId && (identifierPrefix += "H" + treeId.toString(32));
-        identifierPrefix += "»";
+        identifierPrefix += "\xBB";
       } else
-        treeId = globalClientIdCounter++, identifierPrefix = "«" + identifierPrefix + "r" + treeId.toString(32) + "»";
+        treeId = globalClientIdCounter++, identifierPrefix = "\xAB" + identifierPrefix + "r" + treeId.toString(32) + "\xBB";
       return hook.memoizedState = identifierPrefix;
     }
     function mountRefresh() {
@@ -6113,7 +6108,7 @@ Incoming: %s`, currentHookNameInDev, "[" + prevDeps.join(", ") + "]", "[" + next
               break;
             }
             runWithFiberInDEV(workInProgress2, function() {
-              console.error("Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.", key);
+              console.error("Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted \u2014 the behavior is unsupported and could change in a future version.", key);
             });
             break;
           case REACT_LAZY_TYPE:
@@ -15678,6 +15673,671 @@ var require_client = __commonJS((exports, module) => {
   }
 });
 
+// node_modules/turbo-stream/dist/utils.js
+var require_utils = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.createLineSplittingTransform = exports.Deferred = exports.TYPE_PREVIOUS_RESOLVED = exports.TYPE_URL = exports.TYPE_SYMBOL = exports.TYPE_SET = exports.TYPE_REGEXP = exports.TYPE_PROMISE = exports.TYPE_NULL_OBJECT = exports.TYPE_MAP = exports.TYPE_ERROR = exports.TYPE_DATE = exports.TYPE_BIGINT = exports.UNDEFINED = exports.POSITIVE_INFINITY = exports.NULL = exports.NEGATIVE_ZERO = exports.NEGATIVE_INFINITY = exports.NAN = exports.HOLE = undefined;
+  exports.HOLE = -1;
+  exports.NAN = -2;
+  exports.NEGATIVE_INFINITY = -3;
+  exports.NEGATIVE_ZERO = -4;
+  exports.NULL = -5;
+  exports.POSITIVE_INFINITY = -6;
+  exports.UNDEFINED = -7;
+  exports.TYPE_BIGINT = "B";
+  exports.TYPE_DATE = "D";
+  exports.TYPE_ERROR = "E";
+  exports.TYPE_MAP = "M";
+  exports.TYPE_NULL_OBJECT = "N";
+  exports.TYPE_PROMISE = "P";
+  exports.TYPE_REGEXP = "R";
+  exports.TYPE_SET = "S";
+  exports.TYPE_SYMBOL = "Y";
+  exports.TYPE_URL = "U";
+  exports.TYPE_PREVIOUS_RESOLVED = "Z";
+
+  class Deferred {
+    promise;
+    resolve;
+    reject;
+    constructor() {
+      this.promise = new Promise((resolve, reject) => {
+        this.resolve = resolve;
+        this.reject = reject;
+      });
+    }
+  }
+  exports.Deferred = Deferred;
+  function createLineSplittingTransform() {
+    const decoder = new TextDecoder;
+    let leftover = "";
+    return new TransformStream({
+      transform(chunk, controller) {
+        const str = decoder.decode(chunk, { stream: true });
+        const parts = (leftover + str).split(`
+`);
+        leftover = parts.pop() || "";
+        for (const part of parts) {
+          controller.enqueue(part);
+        }
+      },
+      flush(controller) {
+        if (leftover) {
+          controller.enqueue(leftover);
+        }
+      }
+    });
+  }
+  exports.createLineSplittingTransform = createLineSplittingTransform;
+});
+
+// node_modules/turbo-stream/dist/flatten.js
+var require_flatten = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.flatten = undefined;
+  var utils_js_1 = require_utils();
+  function flatten(input) {
+    const { indices } = this;
+    const existing = indices.get(input);
+    if (existing)
+      return [existing];
+    if (input === undefined)
+      return utils_js_1.UNDEFINED;
+    if (input === null)
+      return utils_js_1.NULL;
+    if (Number.isNaN(input))
+      return utils_js_1.NAN;
+    if (input === Number.POSITIVE_INFINITY)
+      return utils_js_1.POSITIVE_INFINITY;
+    if (input === Number.NEGATIVE_INFINITY)
+      return utils_js_1.NEGATIVE_INFINITY;
+    if (input === 0 && 1 / input < 0)
+      return utils_js_1.NEGATIVE_ZERO;
+    const index = this.index++;
+    indices.set(input, index);
+    stringify.call(this, input, index);
+    return index;
+  }
+  exports.flatten = flatten;
+  function stringify(input, index) {
+    const { deferred, plugins, postPlugins } = this;
+    const str = this.stringified;
+    const stack = [[input, index]];
+    while (stack.length > 0) {
+      const [input2, index2] = stack.pop();
+      const partsForObj = (obj) => Object.keys(obj).map((k) => `"_${flatten.call(this, k)}":${flatten.call(this, obj[k])}`).join(",");
+      let error = null;
+      switch (typeof input2) {
+        case "boolean":
+        case "number":
+        case "string":
+          str[index2] = JSON.stringify(input2);
+          break;
+        case "bigint":
+          str[index2] = `["${utils_js_1.TYPE_BIGINT}","${input2}"]`;
+          break;
+        case "symbol": {
+          const keyFor = Symbol.keyFor(input2);
+          if (!keyFor) {
+            error = new Error("Cannot encode symbol unless created with Symbol.for()");
+          } else {
+            str[index2] = `["${utils_js_1.TYPE_SYMBOL}",${JSON.stringify(keyFor)}]`;
+          }
+          break;
+        }
+        case "object": {
+          if (!input2) {
+            str[index2] = `${utils_js_1.NULL}`;
+            break;
+          }
+          const isArray = Array.isArray(input2);
+          let pluginHandled = false;
+          if (!isArray && plugins) {
+            for (const plugin of plugins) {
+              const pluginResult = plugin(input2);
+              if (Array.isArray(pluginResult)) {
+                pluginHandled = true;
+                const [pluginIdentifier, ...rest] = pluginResult;
+                str[index2] = `[${JSON.stringify(pluginIdentifier)}`;
+                if (rest.length > 0) {
+                  str[index2] += `,${rest.map((v) => flatten.call(this, v)).join(",")}`;
+                }
+                str[index2] += "]";
+                break;
+              }
+            }
+          }
+          if (!pluginHandled) {
+            let result = isArray ? "[" : "{";
+            if (isArray) {
+              for (let i = 0;i < input2.length; i++)
+                result += (i ? "," : "") + (i in input2 ? flatten.call(this, input2[i]) : utils_js_1.HOLE);
+              str[index2] = `${result}]`;
+            } else if (input2 instanceof Date) {
+              str[index2] = `["${utils_js_1.TYPE_DATE}",${input2.getTime()}]`;
+            } else if (input2 instanceof URL) {
+              str[index2] = `["${utils_js_1.TYPE_URL}",${JSON.stringify(input2.href)}]`;
+            } else if (input2 instanceof RegExp) {
+              str[index2] = `["${utils_js_1.TYPE_REGEXP}",${JSON.stringify(input2.source)},${JSON.stringify(input2.flags)}]`;
+            } else if (input2 instanceof Set) {
+              if (input2.size > 0) {
+                str[index2] = `["${utils_js_1.TYPE_SET}",${[...input2].map((val) => flatten.call(this, val)).join(",")}]`;
+              } else {
+                str[index2] = `["${utils_js_1.TYPE_SET}"]`;
+              }
+            } else if (input2 instanceof Map) {
+              if (input2.size > 0) {
+                str[index2] = `["${utils_js_1.TYPE_MAP}",${[...input2].flatMap(([k, v]) => [
+                  flatten.call(this, k),
+                  flatten.call(this, v)
+                ]).join(",")}]`;
+              } else {
+                str[index2] = `["${utils_js_1.TYPE_MAP}"]`;
+              }
+            } else if (input2 instanceof Promise) {
+              str[index2] = `["${utils_js_1.TYPE_PROMISE}",${index2}]`;
+              deferred[index2] = input2;
+            } else if (input2 instanceof Error) {
+              str[index2] = `["${utils_js_1.TYPE_ERROR}",${JSON.stringify(input2.message)}`;
+              if (input2.name !== "Error") {
+                str[index2] += `,${JSON.stringify(input2.name)}`;
+              }
+              str[index2] += "]";
+            } else if (Object.getPrototypeOf(input2) === null) {
+              str[index2] = `["${utils_js_1.TYPE_NULL_OBJECT}",{${partsForObj(input2)}}]`;
+            } else if (isPlainObject(input2)) {
+              str[index2] = `{${partsForObj(input2)}}`;
+            } else {
+              error = new Error("Cannot encode object with prototype");
+            }
+          }
+          break;
+        }
+        default: {
+          const isArray = Array.isArray(input2);
+          let pluginHandled = false;
+          if (!isArray && plugins) {
+            for (const plugin of plugins) {
+              const pluginResult = plugin(input2);
+              if (Array.isArray(pluginResult)) {
+                pluginHandled = true;
+                const [pluginIdentifier, ...rest] = pluginResult;
+                str[index2] = `[${JSON.stringify(pluginIdentifier)}`;
+                if (rest.length > 0) {
+                  str[index2] += `,${rest.map((v) => flatten.call(this, v)).join(",")}`;
+                }
+                str[index2] += "]";
+                break;
+              }
+            }
+          }
+          if (!pluginHandled) {
+            error = new Error("Cannot encode function or unexpected type");
+          }
+        }
+      }
+      if (error) {
+        let pluginHandled = false;
+        if (postPlugins) {
+          for (const plugin of postPlugins) {
+            const pluginResult = plugin(input2);
+            if (Array.isArray(pluginResult)) {
+              pluginHandled = true;
+              const [pluginIdentifier, ...rest] = pluginResult;
+              str[index2] = `[${JSON.stringify(pluginIdentifier)}`;
+              if (rest.length > 0) {
+                str[index2] += `,${rest.map((v) => flatten.call(this, v)).join(",")}`;
+              }
+              str[index2] += "]";
+              break;
+            }
+          }
+        }
+        if (!pluginHandled) {
+          throw error;
+        }
+      }
+    }
+  }
+  var objectProtoNames = Object.getOwnPropertyNames(Object.prototype).sort().join("\x00");
+  function isPlainObject(thing) {
+    const proto = Object.getPrototypeOf(thing);
+    return proto === Object.prototype || proto === null || Object.getOwnPropertyNames(proto).sort().join("\x00") === objectProtoNames;
+  }
+});
+
+// node_modules/turbo-stream/dist/unflatten.js
+var require_unflatten = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.unflatten = undefined;
+  var utils_js_1 = require_utils();
+  var globalObj = typeof window !== "undefined" ? window : typeof globalThis !== "undefined" ? globalThis : undefined;
+  function unflatten(parsed) {
+    const { hydrated, values } = this;
+    if (typeof parsed === "number")
+      return hydrate.call(this, parsed);
+    if (!Array.isArray(parsed) || !parsed.length)
+      throw new SyntaxError;
+    const startIndex = values.length;
+    for (const value of parsed) {
+      values.push(value);
+    }
+    hydrated.length = values.length;
+    return hydrate.call(this, startIndex);
+  }
+  exports.unflatten = unflatten;
+  function hydrate(index) {
+    const { hydrated, values, deferred, plugins } = this;
+    let result;
+    const stack = [
+      [
+        index,
+        (v) => {
+          result = v;
+        }
+      ]
+    ];
+    let postRun = [];
+    while (stack.length > 0) {
+      const [index2, set] = stack.pop();
+      switch (index2) {
+        case utils_js_1.UNDEFINED:
+          set(undefined);
+          continue;
+        case utils_js_1.NULL:
+          set(null);
+          continue;
+        case utils_js_1.NAN:
+          set(NaN);
+          continue;
+        case utils_js_1.POSITIVE_INFINITY:
+          set(Infinity);
+          continue;
+        case utils_js_1.NEGATIVE_INFINITY:
+          set(-Infinity);
+          continue;
+        case utils_js_1.NEGATIVE_ZERO:
+          set(-0);
+          continue;
+      }
+      if (hydrated[index2]) {
+        set(hydrated[index2]);
+        continue;
+      }
+      const value = values[index2];
+      if (!value || typeof value !== "object") {
+        hydrated[index2] = value;
+        set(value);
+        continue;
+      }
+      if (Array.isArray(value)) {
+        if (typeof value[0] === "string") {
+          const [type, b, c] = value;
+          switch (type) {
+            case utils_js_1.TYPE_DATE:
+              set(hydrated[index2] = new Date(b));
+              continue;
+            case utils_js_1.TYPE_URL:
+              set(hydrated[index2] = new URL(b));
+              continue;
+            case utils_js_1.TYPE_BIGINT:
+              set(hydrated[index2] = BigInt(b));
+              continue;
+            case utils_js_1.TYPE_REGEXP:
+              set(hydrated[index2] = new RegExp(b, c));
+              continue;
+            case utils_js_1.TYPE_SYMBOL:
+              set(hydrated[index2] = Symbol.for(b));
+              continue;
+            case utils_js_1.TYPE_SET:
+              const newSet = new Set;
+              hydrated[index2] = newSet;
+              for (let i = 1;i < value.length; i++)
+                stack.push([
+                  value[i],
+                  (v) => {
+                    newSet.add(v);
+                  }
+                ]);
+              set(newSet);
+              continue;
+            case utils_js_1.TYPE_MAP:
+              const map = new Map;
+              hydrated[index2] = map;
+              for (let i = 1;i < value.length; i += 2) {
+                const r = [];
+                stack.push([
+                  value[i + 1],
+                  (v) => {
+                    r[1] = v;
+                  }
+                ]);
+                stack.push([
+                  value[i],
+                  (k) => {
+                    r[0] = k;
+                  }
+                ]);
+                postRun.push(() => {
+                  map.set(r[0], r[1]);
+                });
+              }
+              set(map);
+              continue;
+            case utils_js_1.TYPE_NULL_OBJECT:
+              const obj = Object.create(null);
+              hydrated[index2] = obj;
+              for (const key of Object.keys(b).reverse()) {
+                const r = [];
+                stack.push([
+                  b[key],
+                  (v) => {
+                    r[1] = v;
+                  }
+                ]);
+                stack.push([
+                  Number(key.slice(1)),
+                  (k) => {
+                    r[0] = k;
+                  }
+                ]);
+                postRun.push(() => {
+                  obj[r[0]] = r[1];
+                });
+              }
+              set(obj);
+              continue;
+            case utils_js_1.TYPE_PROMISE:
+              if (hydrated[b]) {
+                set(hydrated[index2] = hydrated[b]);
+              } else {
+                const d = new utils_js_1.Deferred;
+                deferred[b] = d;
+                set(hydrated[index2] = d.promise);
+              }
+              continue;
+            case utils_js_1.TYPE_ERROR:
+              const [, message, errorType] = value;
+              let error = errorType && globalObj && globalObj[errorType] ? new globalObj[errorType](message) : new Error(message);
+              hydrated[index2] = error;
+              set(error);
+              continue;
+            case utils_js_1.TYPE_PREVIOUS_RESOLVED:
+              set(hydrated[index2] = hydrated[b]);
+              continue;
+            default:
+              if (Array.isArray(plugins)) {
+                const r = [];
+                const vals = value.slice(1);
+                for (let i = 0;i < vals.length; i++) {
+                  const v = vals[i];
+                  stack.push([
+                    v,
+                    (v2) => {
+                      r[i] = v2;
+                    }
+                  ]);
+                }
+                postRun.push(() => {
+                  for (const plugin of plugins) {
+                    const result2 = plugin(value[0], ...r);
+                    if (result2) {
+                      set(hydrated[index2] = result2.value);
+                      return;
+                    }
+                  }
+                  throw new SyntaxError;
+                });
+                continue;
+              }
+              throw new SyntaxError;
+          }
+        } else {
+          const array = [];
+          hydrated[index2] = array;
+          for (let i = 0;i < value.length; i++) {
+            const n = value[i];
+            if (n !== utils_js_1.HOLE) {
+              stack.push([
+                n,
+                (v) => {
+                  array[i] = v;
+                }
+              ]);
+            }
+          }
+          set(array);
+          continue;
+        }
+      } else {
+        const object = {};
+        hydrated[index2] = object;
+        for (const key of Object.keys(value).reverse()) {
+          const r = [];
+          stack.push([
+            value[key],
+            (v) => {
+              r[1] = v;
+            }
+          ]);
+          stack.push([
+            Number(key.slice(1)),
+            (k) => {
+              r[0] = k;
+            }
+          ]);
+          postRun.push(() => {
+            object[r[0]] = r[1];
+          });
+        }
+        set(object);
+        continue;
+      }
+    }
+    while (postRun.length > 0) {
+      postRun.pop()();
+    }
+    return result;
+  }
+});
+
+// node_modules/turbo-stream/dist/turbo-stream.js
+var require_turbo_stream = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.encode = exports.decode = undefined;
+  var flatten_js_1 = require_flatten();
+  var unflatten_js_1 = require_unflatten();
+  var utils_js_1 = require_utils();
+  async function decode(readable, options) {
+    const { plugins } = options ?? {};
+    const done = new utils_js_1.Deferred;
+    const reader = readable.pipeThrough((0, utils_js_1.createLineSplittingTransform)()).getReader();
+    const decoder = {
+      values: [],
+      hydrated: [],
+      deferred: {},
+      plugins
+    };
+    const decoded = await decodeInitial.call(decoder, reader);
+    let donePromise = done.promise;
+    if (decoded.done) {
+      done.resolve();
+    } else {
+      donePromise = decodeDeferred.call(decoder, reader).then(done.resolve).catch((reason) => {
+        for (const deferred of Object.values(decoder.deferred)) {
+          deferred.reject(reason);
+        }
+        done.reject(reason);
+      });
+    }
+    return {
+      done: donePromise.then(() => reader.closed),
+      value: decoded.value
+    };
+  }
+  exports.decode = decode;
+  async function decodeInitial(reader) {
+    const read = await reader.read();
+    if (!read.value) {
+      throw new SyntaxError;
+    }
+    let line;
+    try {
+      line = JSON.parse(read.value);
+    } catch (reason) {
+      throw new SyntaxError;
+    }
+    return {
+      done: read.done,
+      value: unflatten_js_1.unflatten.call(this, line)
+    };
+  }
+  async function decodeDeferred(reader) {
+    let read = await reader.read();
+    while (!read.done) {
+      if (!read.value)
+        continue;
+      const line = read.value;
+      switch (line[0]) {
+        case utils_js_1.TYPE_PROMISE: {
+          const colonIndex = line.indexOf(":");
+          const deferredId = Number(line.slice(1, colonIndex));
+          const deferred = this.deferred[deferredId];
+          if (!deferred) {
+            throw new Error(`Deferred ID ${deferredId} not found in stream`);
+          }
+          const lineData = line.slice(colonIndex + 1);
+          let jsonLine;
+          try {
+            jsonLine = JSON.parse(lineData);
+          } catch (reason) {
+            throw new SyntaxError;
+          }
+          const value = unflatten_js_1.unflatten.call(this, jsonLine);
+          deferred.resolve(value);
+          break;
+        }
+        case utils_js_1.TYPE_ERROR: {
+          const colonIndex = line.indexOf(":");
+          const deferredId = Number(line.slice(1, colonIndex));
+          const deferred = this.deferred[deferredId];
+          if (!deferred) {
+            throw new Error(`Deferred ID ${deferredId} not found in stream`);
+          }
+          const lineData = line.slice(colonIndex + 1);
+          let jsonLine;
+          try {
+            jsonLine = JSON.parse(lineData);
+          } catch (reason) {
+            throw new SyntaxError;
+          }
+          const value = unflatten_js_1.unflatten.call(this, jsonLine);
+          deferred.reject(value);
+          break;
+        }
+        default:
+          throw new SyntaxError;
+      }
+      read = await reader.read();
+    }
+  }
+  function encode(input, options) {
+    const { plugins, postPlugins, signal } = options ?? {};
+    const encoder = {
+      deferred: {},
+      index: 0,
+      indices: new Map,
+      stringified: [],
+      plugins,
+      postPlugins,
+      signal
+    };
+    const textEncoder = new TextEncoder;
+    let lastSentIndex = 0;
+    const readable = new ReadableStream({
+      async start(controller) {
+        const id = flatten_js_1.flatten.call(encoder, input);
+        if (Array.isArray(id)) {
+          throw new Error("This should never happen");
+        }
+        if (id < 0) {
+          controller.enqueue(textEncoder.encode(`${id}
+`));
+        } else {
+          controller.enqueue(textEncoder.encode(`[${encoder.stringified.join(",")}]
+`));
+          lastSentIndex = encoder.stringified.length - 1;
+        }
+        const seenPromises = new WeakSet;
+        while (Object.keys(encoder.deferred).length > 0) {
+          for (const [deferredId, deferred] of Object.entries(encoder.deferred)) {
+            if (seenPromises.has(deferred))
+              continue;
+            seenPromises.add(encoder.deferred[Number(deferredId)] = raceSignal(deferred, encoder.signal).then((resolved) => {
+              const id2 = flatten_js_1.flatten.call(encoder, resolved);
+              if (Array.isArray(id2)) {
+                controller.enqueue(textEncoder.encode(`${utils_js_1.TYPE_PROMISE}${deferredId}:[["${utils_js_1.TYPE_PREVIOUS_RESOLVED}",${id2[0]}]]
+`));
+                encoder.index++;
+                lastSentIndex++;
+              } else if (id2 < 0) {
+                controller.enqueue(textEncoder.encode(`${utils_js_1.TYPE_PROMISE}${deferredId}:${id2}
+`));
+              } else {
+                const values = encoder.stringified.slice(lastSentIndex + 1).join(",");
+                controller.enqueue(textEncoder.encode(`${utils_js_1.TYPE_PROMISE}${deferredId}:[${values}]
+`));
+                lastSentIndex = encoder.stringified.length - 1;
+              }
+            }, (reason) => {
+              if (!reason || typeof reason !== "object" || !(reason instanceof Error)) {
+                reason = new Error("An unknown error occurred");
+              }
+              const id2 = flatten_js_1.flatten.call(encoder, reason);
+              if (Array.isArray(id2)) {
+                controller.enqueue(textEncoder.encode(`${utils_js_1.TYPE_ERROR}${deferredId}:[["${utils_js_1.TYPE_PREVIOUS_RESOLVED}",${id2[0]}]]
+`));
+                encoder.index++;
+                lastSentIndex++;
+              } else if (id2 < 0) {
+                controller.enqueue(textEncoder.encode(`${utils_js_1.TYPE_ERROR}${deferredId}:${id2}
+`));
+              } else {
+                const values = encoder.stringified.slice(lastSentIndex + 1).join(",");
+                controller.enqueue(textEncoder.encode(`${utils_js_1.TYPE_ERROR}${deferredId}:[${values}]
+`));
+                lastSentIndex = encoder.stringified.length - 1;
+              }
+            }).finally(() => {
+              delete encoder.deferred[Number(deferredId)];
+            }));
+          }
+          await Promise.race(Object.values(encoder.deferred));
+        }
+        await Promise.all(Object.values(encoder.deferred));
+        controller.close();
+      }
+    });
+    return readable;
+  }
+  exports.encode = encode;
+  function raceSignal(promise, signal) {
+    if (!signal)
+      return promise;
+    if (signal.aborted)
+      return Promise.reject(signal.reason || new Error("Signal was aborted."));
+    const abort = new Promise((resolve, reject) => {
+      signal.addEventListener("abort", (event) => {
+        reject(signal.reason || new Error("Signal was aborted."));
+      });
+      promise.then(resolve).catch(reject);
+    });
+    abort.catch(() => {
+    });
+    return Promise.race([abort, promise]);
+  }
+});
+
 // node_modules/react-router/node_modules/cookie/dist/index.js
 var require_dist = __commonJS((exports) => {
   Object.defineProperty(exports, "__esModule", { value: true });
@@ -15834,9 +16494,8976 @@ var require_dist = __commonJS((exports) => {
   }
 });
 
+// node_modules/set-cookie-parser/lib/set-cookie.js
+var require_set_cookie = __commonJS((exports, module) => {
+  var defaultParseOptions = {
+    decodeValues: true,
+    map: false,
+    silent: false
+  };
+  function isNonEmptyString(str) {
+    return typeof str === "string" && !!str.trim();
+  }
+  function parseString(setCookieValue, options) {
+    var parts = setCookieValue.split(";").filter(isNonEmptyString);
+    var nameValuePairStr = parts.shift();
+    var parsed = parseNameValuePair(nameValuePairStr);
+    var name = parsed.name;
+    var value = parsed.value;
+    options = options ? Object.assign({}, defaultParseOptions, options) : defaultParseOptions;
+    try {
+      value = options.decodeValues ? decodeURIComponent(value) : value;
+    } catch (e) {
+      console.error("set-cookie-parser encountered an error while decoding a cookie with value '" + value + "'. Set options.decodeValues to false to disable this feature.", e);
+    }
+    var cookie = {
+      name,
+      value
+    };
+    parts.forEach(function(part) {
+      var sides = part.split("=");
+      var key = sides.shift().trimLeft().toLowerCase();
+      var value2 = sides.join("=");
+      if (key === "expires") {
+        cookie.expires = new Date(value2);
+      } else if (key === "max-age") {
+        cookie.maxAge = parseInt(value2, 10);
+      } else if (key === "secure") {
+        cookie.secure = true;
+      } else if (key === "httponly") {
+        cookie.httpOnly = true;
+      } else if (key === "samesite") {
+        cookie.sameSite = value2;
+      } else if (key === "partitioned") {
+        cookie.partitioned = true;
+      } else {
+        cookie[key] = value2;
+      }
+    });
+    return cookie;
+  }
+  function parseNameValuePair(nameValuePairStr) {
+    var name = "";
+    var value = "";
+    var nameValueArr = nameValuePairStr.split("=");
+    if (nameValueArr.length > 1) {
+      name = nameValueArr.shift();
+      value = nameValueArr.join("=");
+    } else {
+      value = nameValuePairStr;
+    }
+    return { name, value };
+  }
+  function parse(input, options) {
+    options = options ? Object.assign({}, defaultParseOptions, options) : defaultParseOptions;
+    if (!input) {
+      if (!options.map) {
+        return [];
+      } else {
+        return {};
+      }
+    }
+    if (input.headers) {
+      if (typeof input.headers.getSetCookie === "function") {
+        input = input.headers.getSetCookie();
+      } else if (input.headers["set-cookie"]) {
+        input = input.headers["set-cookie"];
+      } else {
+        var sch = input.headers[Object.keys(input.headers).find(function(key) {
+          return key.toLowerCase() === "set-cookie";
+        })];
+        if (!sch && input.headers.cookie && !options.silent) {
+          console.warn("Warning: set-cookie-parser appears to have been called on a request object. It is designed to parse Set-Cookie headers from responses, not Cookie headers from requests. Set the option {silent: true} to suppress this warning.");
+        }
+        input = sch;
+      }
+    }
+    if (!Array.isArray(input)) {
+      input = [input];
+    }
+    if (!options.map) {
+      return input.filter(isNonEmptyString).map(function(str) {
+        return parseString(str, options);
+      });
+    } else {
+      var cookies = {};
+      return input.filter(isNonEmptyString).reduce(function(cookies2, str) {
+        var cookie = parseString(str, options);
+        cookies2[cookie.name] = cookie;
+        return cookies2;
+      }, cookies);
+    }
+  }
+  function splitCookiesString(cookiesString) {
+    if (Array.isArray(cookiesString)) {
+      return cookiesString;
+    }
+    if (typeof cookiesString !== "string") {
+      return [];
+    }
+    var cookiesStrings = [];
+    var pos = 0;
+    var start;
+    var ch;
+    var lastComma;
+    var nextStart;
+    var cookiesSeparatorFound;
+    function skipWhitespace() {
+      while (pos < cookiesString.length && /\s/.test(cookiesString.charAt(pos))) {
+        pos += 1;
+      }
+      return pos < cookiesString.length;
+    }
+    function notSpecialChar() {
+      ch = cookiesString.charAt(pos);
+      return ch !== "=" && ch !== ";" && ch !== ",";
+    }
+    while (pos < cookiesString.length) {
+      start = pos;
+      cookiesSeparatorFound = false;
+      while (skipWhitespace()) {
+        ch = cookiesString.charAt(pos);
+        if (ch === ",") {
+          lastComma = pos;
+          pos += 1;
+          skipWhitespace();
+          nextStart = pos;
+          while (pos < cookiesString.length && notSpecialChar()) {
+            pos += 1;
+          }
+          if (pos < cookiesString.length && cookiesString.charAt(pos) === "=") {
+            cookiesSeparatorFound = true;
+            pos = nextStart;
+            cookiesStrings.push(cookiesString.substring(start, lastComma));
+            start = pos;
+          } else {
+            pos = lastComma + 1;
+          }
+        } else {
+          pos += 1;
+        }
+      }
+      if (!cookiesSeparatorFound || pos >= cookiesString.length) {
+        cookiesStrings.push(cookiesString.substring(start, cookiesString.length));
+      }
+    }
+    return cookiesStrings;
+  }
+  module.exports = parse;
+  module.exports.parse = parse;
+  module.exports.parseString = parseString;
+  module.exports.splitCookiesString = splitCookiesString;
+});
+
+// node_modules/react-router/dist/development/index.js
+var require_development = __commonJS((exports, module) => {
+  var react = __toESM(require_react(), 1);
+  var react2 = __toESM(require_react(), 1);
+  var react3 = __toESM(require_react(), 1);
+  var react4 = __toESM(require_react(), 1);
+  var react5 = __toESM(require_react(), 1);
+  var react6 = __toESM(require_react(), 1);
+  var react7 = __toESM(require_react(), 1);
+  var react8 = __toESM(require_react(), 1);
+  var react9 = __toESM(require_react(), 1);
+  var react10 = __toESM(require_react(), 1);
+  var react11 = __toESM(require_react(), 1);
+  var react12 = __toESM(require_react(), 1);
+  var react13 = __toESM(require_react(), 1);
+  var __create2 = Object.create;
+  var __defProp2 = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames2 = Object.getOwnPropertyNames;
+  var __getProtoOf2 = Object.getPrototypeOf;
+  var __hasOwnProp2 = Object.prototype.hasOwnProperty;
+  var __typeError = (msg) => {
+    throw TypeError(msg);
+  };
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp2(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames2(from))
+        if (!__hasOwnProp2.call(to, key) && key !== except)
+          __defProp2(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toESM2 = (mod, isNodeMode, target) => (target = mod != null ? __create2(__getProtoOf2(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp2(target, "default", { value: mod, enumerable: true }) : target, mod));
+  var __toCommonJS = (mod) => __copyProps(__defProp2({}, "__esModule", { value: true }), mod);
+  var __accessCheck = (obj, member, msg) => member.has(obj) || __typeError("Cannot " + msg);
+  var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read from private field"), getter ? getter.call(obj) : member.get(obj));
+  var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
+  var react_router_exports = {};
+  __export(react_router_exports, {
+    Await: () => Await,
+    BrowserRouter: () => BrowserRouter,
+    Form: () => Form,
+    HashRouter: () => HashRouter,
+    IDLE_BLOCKER: () => IDLE_BLOCKER,
+    IDLE_FETCHER: () => IDLE_FETCHER,
+    IDLE_NAVIGATION: () => IDLE_NAVIGATION,
+    Link: () => Link,
+    Links: () => Links,
+    MemoryRouter: () => MemoryRouter,
+    Meta: () => Meta,
+    NavLink: () => NavLink,
+    Navigate: () => Navigate,
+    NavigationType: () => Action,
+    Outlet: () => Outlet,
+    PrefetchPageLinks: () => PrefetchPageLinks,
+    Route: () => Route,
+    Router: () => Router,
+    RouterProvider: () => RouterProvider2,
+    Routes: () => Routes,
+    Scripts: () => Scripts,
+    ScrollRestoration: () => ScrollRestoration,
+    ServerRouter: () => ServerRouter,
+    StaticRouter: () => StaticRouter,
+    StaticRouterProvider: () => StaticRouterProvider,
+    UNSAFE_DataRouterContext: () => DataRouterContext,
+    UNSAFE_DataRouterStateContext: () => DataRouterStateContext,
+    UNSAFE_ErrorResponseImpl: () => ErrorResponseImpl,
+    UNSAFE_FetchersContext: () => FetchersContext,
+    UNSAFE_FrameworkContext: () => FrameworkContext,
+    UNSAFE_LocationContext: () => LocationContext,
+    UNSAFE_NavigationContext: () => NavigationContext,
+    UNSAFE_RemixErrorBoundary: () => RemixErrorBoundary,
+    UNSAFE_RouteContext: () => RouteContext,
+    UNSAFE_ServerMode: () => ServerMode,
+    UNSAFE_SingleFetchRedirectSymbol: () => SingleFetchRedirectSymbol,
+    UNSAFE_ViewTransitionContext: () => ViewTransitionContext,
+    UNSAFE_createBrowserHistory: () => createBrowserHistory,
+    UNSAFE_createClientRoutes: () => createClientRoutes,
+    UNSAFE_createClientRoutesWithHMRRevalidationOptOut: () => createClientRoutesWithHMRRevalidationOptOut,
+    UNSAFE_createRouter: () => createRouter,
+    UNSAFE_decodeViaTurboStream: () => decodeViaTurboStream,
+    UNSAFE_deserializeErrors: () => deserializeErrors2,
+    UNSAFE_getHydrationData: () => getHydrationData,
+    UNSAFE_getPatchRoutesOnNavigationFunction: () => getPatchRoutesOnNavigationFunction,
+    UNSAFE_getTurboStreamSingleFetchDataStrategy: () => getTurboStreamSingleFetchDataStrategy,
+    UNSAFE_hydrationRouteProperties: () => hydrationRouteProperties,
+    UNSAFE_invariant: () => invariant,
+    UNSAFE_mapRouteProperties: () => mapRouteProperties,
+    UNSAFE_shouldHydrateRouteLoader: () => shouldHydrateRouteLoader,
+    UNSAFE_useFogOFWarDiscovery: () => useFogOFWarDiscovery,
+    UNSAFE_useScrollRestoration: () => useScrollRestoration,
+    createBrowserRouter: () => createBrowserRouter,
+    createCookie: () => createCookie,
+    createCookieSessionStorage: () => createCookieSessionStorage,
+    createHashRouter: () => createHashRouter,
+    createMemoryRouter: () => createMemoryRouter,
+    createMemorySessionStorage: () => createMemorySessionStorage,
+    createPath: () => createPath,
+    createRequestHandler: () => createRequestHandler,
+    createRoutesFromChildren: () => createRoutesFromChildren,
+    createRoutesFromElements: () => createRoutesFromElements,
+    createRoutesStub: () => createRoutesStub,
+    createSearchParams: () => createSearchParams,
+    createSession: () => createSession,
+    createSessionStorage: () => createSessionStorage,
+    createStaticHandler: () => createStaticHandler2,
+    createStaticRouter: () => createStaticRouter,
+    data: () => data,
+    generatePath: () => generatePath,
+    href: () => href,
+    isCookie: () => isCookie,
+    isRouteErrorResponse: () => isRouteErrorResponse,
+    isSession: () => isSession,
+    matchPath: () => matchPath,
+    matchRoutes: () => matchRoutes,
+    parsePath: () => parsePath,
+    redirect: () => redirect,
+    redirectDocument: () => redirectDocument,
+    renderMatches: () => renderMatches,
+    replace: () => replace,
+    resolvePath: () => resolvePath,
+    unstable_HistoryRouter: () => HistoryRouter,
+    unstable_RouterContextProvider: () => unstable_RouterContextProvider,
+    unstable_createContext: () => unstable_createContext,
+    unstable_setDevServerHooks: () => setDevServerHooks,
+    unstable_usePrompt: () => usePrompt,
+    useActionData: () => useActionData,
+    useAsyncError: () => useAsyncError,
+    useAsyncValue: () => useAsyncValue,
+    useBeforeUnload: () => useBeforeUnload,
+    useBlocker: () => useBlocker,
+    useFetcher: () => useFetcher,
+    useFetchers: () => useFetchers,
+    useFormAction: () => useFormAction,
+    useHref: () => useHref,
+    useInRouterContext: () => useInRouterContext,
+    useLinkClickHandler: () => useLinkClickHandler,
+    useLoaderData: () => useLoaderData,
+    useLocation: () => useLocation,
+    useMatch: () => useMatch,
+    useMatches: () => useMatches,
+    useNavigate: () => useNavigate,
+    useNavigation: () => useNavigation,
+    useNavigationType: () => useNavigationType,
+    useOutlet: () => useOutlet,
+    useOutletContext: () => useOutletContext,
+    useParams: () => useParams,
+    useResolvedPath: () => useResolvedPath,
+    useRevalidator: () => useRevalidator,
+    useRouteError: () => useRouteError,
+    useRouteLoaderData: () => useRouteLoaderData,
+    useRoutes: () => useRoutes,
+    useSearchParams: () => useSearchParams,
+    useSubmit: () => useSubmit,
+    useViewTransitionState: () => useViewTransitionState
+  });
+  module.exports = __toCommonJS(react_router_exports);
+  var Action = /* @__PURE__ */ ((Action2) => {
+    Action2["Pop"] = "POP";
+    Action2["Push"] = "PUSH";
+    Action2["Replace"] = "REPLACE";
+    return Action2;
+  })(Action || {});
+  var PopStateEventType = "popstate";
+  function createMemoryHistory(options = {}) {
+    let { initialEntries = ["/"], initialIndex, v5Compat = false } = options;
+    let entries;
+    entries = initialEntries.map((entry, index2) => createMemoryLocation(entry, typeof entry === "string" ? null : entry.state, index2 === 0 ? "default" : undefined));
+    let index = clampIndex(initialIndex == null ? entries.length - 1 : initialIndex);
+    let action = "POP";
+    let listener = null;
+    function clampIndex(n) {
+      return Math.min(Math.max(n, 0), entries.length - 1);
+    }
+    function getCurrentLocation() {
+      return entries[index];
+    }
+    function createMemoryLocation(to, state = null, key) {
+      let location2 = createLocation(entries ? getCurrentLocation().pathname : "/", to, state, key);
+      warning(location2.pathname.charAt(0) === "/", `relative pathnames are not supported in memory history: ${JSON.stringify(to)}`);
+      return location2;
+    }
+    function createHref2(to) {
+      return typeof to === "string" ? to : createPath(to);
+    }
+    let history = {
+      get index() {
+        return index;
+      },
+      get action() {
+        return action;
+      },
+      get location() {
+        return getCurrentLocation();
+      },
+      createHref: createHref2,
+      createURL(to) {
+        return new URL(createHref2(to), "http://localhost");
+      },
+      encodeLocation(to) {
+        let path = typeof to === "string" ? parsePath(to) : to;
+        return {
+          pathname: path.pathname || "",
+          search: path.search || "",
+          hash: path.hash || ""
+        };
+      },
+      push(to, state) {
+        action = "PUSH";
+        let nextLocation = createMemoryLocation(to, state);
+        index += 1;
+        entries.splice(index, entries.length, nextLocation);
+        if (v5Compat && listener) {
+          listener({ action, location: nextLocation, delta: 1 });
+        }
+      },
+      replace(to, state) {
+        action = "REPLACE";
+        let nextLocation = createMemoryLocation(to, state);
+        entries[index] = nextLocation;
+        if (v5Compat && listener) {
+          listener({ action, location: nextLocation, delta: 0 });
+        }
+      },
+      go(delta) {
+        action = "POP";
+        let nextIndex = clampIndex(index + delta);
+        let nextLocation = entries[nextIndex];
+        index = nextIndex;
+        if (listener) {
+          listener({ action, location: nextLocation, delta });
+        }
+      },
+      listen(fn) {
+        listener = fn;
+        return () => {
+          listener = null;
+        };
+      }
+    };
+    return history;
+  }
+  function createBrowserHistory(options = {}) {
+    function createBrowserLocation(window2, globalHistory) {
+      let { pathname, search, hash } = window2.location;
+      return createLocation("", { pathname, search, hash }, globalHistory.state && globalHistory.state.usr || null, globalHistory.state && globalHistory.state.key || "default");
+    }
+    function createBrowserHref(window2, to) {
+      return typeof to === "string" ? to : createPath(to);
+    }
+    return getUrlBasedHistory(createBrowserLocation, createBrowserHref, null, options);
+  }
+  function createHashHistory(options = {}) {
+    function createHashLocation(window2, globalHistory) {
+      let {
+        pathname = "/",
+        search = "",
+        hash = ""
+      } = parsePath(window2.location.hash.substring(1));
+      if (!pathname.startsWith("/") && !pathname.startsWith(".")) {
+        pathname = "/" + pathname;
+      }
+      return createLocation("", { pathname, search, hash }, globalHistory.state && globalHistory.state.usr || null, globalHistory.state && globalHistory.state.key || "default");
+    }
+    function createHashHref(window2, to) {
+      let base = window2.document.querySelector("base");
+      let href2 = "";
+      if (base && base.getAttribute("href")) {
+        let url = window2.location.href;
+        let hashIndex = url.indexOf("#");
+        href2 = hashIndex === -1 ? url : url.slice(0, hashIndex);
+      }
+      return href2 + "#" + (typeof to === "string" ? to : createPath(to));
+    }
+    function validateHashLocation(location2, to) {
+      warning(location2.pathname.charAt(0) === "/", `relative pathnames are not supported in hash history.push(${JSON.stringify(to)})`);
+    }
+    return getUrlBasedHistory(createHashLocation, createHashHref, validateHashLocation, options);
+  }
+  function invariant(value, message) {
+    if (value === false || value === null || typeof value === "undefined") {
+      throw new Error(message);
+    }
+  }
+  function warning(cond, message) {
+    if (!cond) {
+      if (typeof console !== "undefined")
+        console.warn(message);
+      try {
+        throw new Error(message);
+      } catch (e) {
+      }
+    }
+  }
+  function createKey() {
+    return Math.random().toString(36).substring(2, 10);
+  }
+  function getHistoryState(location2, index) {
+    return {
+      usr: location2.state,
+      key: location2.key,
+      idx: index
+    };
+  }
+  function createLocation(current, to, state = null, key) {
+    let location2 = {
+      pathname: typeof current === "string" ? current : current.pathname,
+      search: "",
+      hash: "",
+      ...typeof to === "string" ? parsePath(to) : to,
+      state,
+      key: to && to.key || key || createKey()
+    };
+    return location2;
+  }
+  function createPath({
+    pathname = "/",
+    search = "",
+    hash = ""
+  }) {
+    if (search && search !== "?")
+      pathname += search.charAt(0) === "?" ? search : "?" + search;
+    if (hash && hash !== "#")
+      pathname += hash.charAt(0) === "#" ? hash : "#" + hash;
+    return pathname;
+  }
+  function parsePath(path) {
+    let parsedPath = {};
+    if (path) {
+      let hashIndex = path.indexOf("#");
+      if (hashIndex >= 0) {
+        parsedPath.hash = path.substring(hashIndex);
+        path = path.substring(0, hashIndex);
+      }
+      let searchIndex = path.indexOf("?");
+      if (searchIndex >= 0) {
+        parsedPath.search = path.substring(searchIndex);
+        path = path.substring(0, searchIndex);
+      }
+      if (path) {
+        parsedPath.pathname = path;
+      }
+    }
+    return parsedPath;
+  }
+  function getUrlBasedHistory(getLocation, createHref2, validateLocation, options = {}) {
+    let { window: window2 = document.defaultView, v5Compat = false } = options;
+    let globalHistory = window2.history;
+    let action = "POP";
+    let listener = null;
+    let index = getIndex();
+    if (index == null) {
+      index = 0;
+      globalHistory.replaceState({ ...globalHistory.state, idx: index }, "");
+    }
+    function getIndex() {
+      let state = globalHistory.state || { idx: null };
+      return state.idx;
+    }
+    function handlePop() {
+      action = "POP";
+      let nextIndex = getIndex();
+      let delta = nextIndex == null ? null : nextIndex - index;
+      index = nextIndex;
+      if (listener) {
+        listener({ action, location: history.location, delta });
+      }
+    }
+    function push(to, state) {
+      action = "PUSH";
+      let location2 = createLocation(history.location, to, state);
+      if (validateLocation)
+        validateLocation(location2, to);
+      index = getIndex() + 1;
+      let historyState = getHistoryState(location2, index);
+      let url = history.createHref(location2);
+      try {
+        globalHistory.pushState(historyState, "", url);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "DataCloneError") {
+          throw error;
+        }
+        window2.location.assign(url);
+      }
+      if (v5Compat && listener) {
+        listener({ action, location: history.location, delta: 1 });
+      }
+    }
+    function replace2(to, state) {
+      action = "REPLACE";
+      let location2 = createLocation(history.location, to, state);
+      if (validateLocation)
+        validateLocation(location2, to);
+      index = getIndex();
+      let historyState = getHistoryState(location2, index);
+      let url = history.createHref(location2);
+      globalHistory.replaceState(historyState, "", url);
+      if (v5Compat && listener) {
+        listener({ action, location: history.location, delta: 0 });
+      }
+    }
+    function createURL(to) {
+      let base = window2.location.origin !== "null" ? window2.location.origin : window2.location.href;
+      let href2 = typeof to === "string" ? to : createPath(to);
+      href2 = href2.replace(/ $/, "%20");
+      invariant(base, `No window.location.(origin|href) available to create URL for href: ${href2}`);
+      return new URL(href2, base);
+    }
+    let history = {
+      get action() {
+        return action;
+      },
+      get location() {
+        return getLocation(window2, globalHistory);
+      },
+      listen(fn) {
+        if (listener) {
+          throw new Error("A history only accepts one active listener");
+        }
+        window2.addEventListener(PopStateEventType, handlePop);
+        listener = fn;
+        return () => {
+          window2.removeEventListener(PopStateEventType, handlePop);
+          listener = null;
+        };
+      },
+      createHref(to) {
+        return createHref2(window2, to);
+      },
+      createURL,
+      encodeLocation(to) {
+        let url = createURL(to);
+        return {
+          pathname: url.pathname,
+          search: url.search,
+          hash: url.hash
+        };
+      },
+      push,
+      replace: replace2,
+      go(n) {
+        return globalHistory.go(n);
+      }
+    };
+    return history;
+  }
+  function unstable_createContext(defaultValue) {
+    return { defaultValue };
+  }
+  var _map;
+  var unstable_RouterContextProvider = class {
+    constructor(init) {
+      __privateAdd(this, _map, /* @__PURE__ */ new Map);
+      if (init) {
+        for (let [context, value] of init) {
+          this.set(context, value);
+        }
+      }
+    }
+    get(context) {
+      if (__privateGet(this, _map).has(context)) {
+        return __privateGet(this, _map).get(context);
+      }
+      if (context.defaultValue !== undefined) {
+        return context.defaultValue;
+      }
+      throw new Error("No value found for context");
+    }
+    set(context, value) {
+      __privateGet(this, _map).set(context, value);
+    }
+  };
+  _map = new WeakMap;
+  var unsupportedLazyRouteObjectKeys = /* @__PURE__ */ new Set([
+    "lazy",
+    "caseSensitive",
+    "path",
+    "id",
+    "index",
+    "children"
+  ]);
+  function isUnsupportedLazyRouteObjectKey(key) {
+    return unsupportedLazyRouteObjectKeys.has(key);
+  }
+  var unsupportedLazyRouteFunctionKeys = /* @__PURE__ */ new Set([
+    "lazy",
+    "caseSensitive",
+    "path",
+    "id",
+    "index",
+    "unstable_middleware",
+    "children"
+  ]);
+  function isUnsupportedLazyRouteFunctionKey(key) {
+    return unsupportedLazyRouteFunctionKeys.has(key);
+  }
+  function isIndexRoute(route) {
+    return route.index === true;
+  }
+  function convertRoutesToDataRoutes(routes, mapRouteProperties2, parentPath = [], manifest = {}) {
+    return routes.map((route, index) => {
+      let treePath = [...parentPath, String(index)];
+      let id = typeof route.id === "string" ? route.id : treePath.join("-");
+      invariant(route.index !== true || !route.children, `Cannot specify children on an index route`);
+      invariant(!manifest[id], `Found a route id collision on id "${id}".  Route id's must be globally unique within Data Router usages`);
+      if (isIndexRoute(route)) {
+        let indexRoute = {
+          ...route,
+          ...mapRouteProperties2(route),
+          id
+        };
+        manifest[id] = indexRoute;
+        return indexRoute;
+      } else {
+        let pathOrLayoutRoute = {
+          ...route,
+          ...mapRouteProperties2(route),
+          id,
+          children: undefined
+        };
+        manifest[id] = pathOrLayoutRoute;
+        if (route.children) {
+          pathOrLayoutRoute.children = convertRoutesToDataRoutes(route.children, mapRouteProperties2, treePath, manifest);
+        }
+        return pathOrLayoutRoute;
+      }
+    });
+  }
+  function matchRoutes(routes, locationArg, basename = "/") {
+    return matchRoutesImpl(routes, locationArg, basename, false);
+  }
+  function matchRoutesImpl(routes, locationArg, basename, allowPartial) {
+    let location2 = typeof locationArg === "string" ? parsePath(locationArg) : locationArg;
+    let pathname = stripBasename(location2.pathname || "/", basename);
+    if (pathname == null) {
+      return null;
+    }
+    let branches = flattenRoutes(routes);
+    rankRouteBranches(branches);
+    let matches = null;
+    for (let i = 0;matches == null && i < branches.length; ++i) {
+      let decoded = decodePath(pathname);
+      matches = matchRouteBranch(branches[i], decoded, allowPartial);
+    }
+    return matches;
+  }
+  function convertRouteMatchToUiMatch(match, loaderData) {
+    let { route, pathname, params } = match;
+    return {
+      id: route.id,
+      pathname,
+      params,
+      data: loaderData[route.id],
+      handle: route.handle
+    };
+  }
+  function flattenRoutes(routes, branches = [], parentsMeta = [], parentPath = "") {
+    let flattenRoute = (route, index, relativePath) => {
+      let meta = {
+        relativePath: relativePath === undefined ? route.path || "" : relativePath,
+        caseSensitive: route.caseSensitive === true,
+        childrenIndex: index,
+        route
+      };
+      if (meta.relativePath.startsWith("/")) {
+        invariant(meta.relativePath.startsWith(parentPath), `Absolute route path "${meta.relativePath}" nested under path "${parentPath}" is not valid. An absolute child route path must start with the combined path of all its parent routes.`);
+        meta.relativePath = meta.relativePath.slice(parentPath.length);
+      }
+      let path = joinPaths([parentPath, meta.relativePath]);
+      let routesMeta = parentsMeta.concat(meta);
+      if (route.children && route.children.length > 0) {
+        invariant(route.index !== true, `Index routes must not have child routes. Please remove all child routes from route path "${path}".`);
+        flattenRoutes(route.children, branches, routesMeta, path);
+      }
+      if (route.path == null && !route.index) {
+        return;
+      }
+      branches.push({
+        path,
+        score: computeScore(path, route.index),
+        routesMeta
+      });
+    };
+    routes.forEach((route, index) => {
+      if (route.path === "" || !route.path?.includes("?")) {
+        flattenRoute(route, index);
+      } else {
+        for (let exploded of explodeOptionalSegments(route.path)) {
+          flattenRoute(route, index, exploded);
+        }
+      }
+    });
+    return branches;
+  }
+  function explodeOptionalSegments(path) {
+    let segments = path.split("/");
+    if (segments.length === 0)
+      return [];
+    let [first, ...rest] = segments;
+    let isOptional = first.endsWith("?");
+    let required = first.replace(/\?$/, "");
+    if (rest.length === 0) {
+      return isOptional ? [required, ""] : [required];
+    }
+    let restExploded = explodeOptionalSegments(rest.join("/"));
+    let result = [];
+    result.push(...restExploded.map((subpath) => subpath === "" ? required : [required, subpath].join("/")));
+    if (isOptional) {
+      result.push(...restExploded);
+    }
+    return result.map((exploded) => path.startsWith("/") && exploded === "" ? "/" : exploded);
+  }
+  function rankRouteBranches(branches) {
+    branches.sort((a, b) => a.score !== b.score ? b.score - a.score : compareIndexes(a.routesMeta.map((meta) => meta.childrenIndex), b.routesMeta.map((meta) => meta.childrenIndex)));
+  }
+  var paramRe = /^:[\w-]+$/;
+  var dynamicSegmentValue = 3;
+  var indexRouteValue = 2;
+  var emptySegmentValue = 1;
+  var staticSegmentValue = 10;
+  var splatPenalty = -2;
+  var isSplat = (s) => s === "*";
+  function computeScore(path, index) {
+    let segments = path.split("/");
+    let initialScore = segments.length;
+    if (segments.some(isSplat)) {
+      initialScore += splatPenalty;
+    }
+    if (index) {
+      initialScore += indexRouteValue;
+    }
+    return segments.filter((s) => !isSplat(s)).reduce((score, segment) => score + (paramRe.test(segment) ? dynamicSegmentValue : segment === "" ? emptySegmentValue : staticSegmentValue), initialScore);
+  }
+  function compareIndexes(a, b) {
+    let siblings = a.length === b.length && a.slice(0, -1).every((n, i) => n === b[i]);
+    return siblings ? a[a.length - 1] - b[b.length - 1] : 0;
+  }
+  function matchRouteBranch(branch, pathname, allowPartial = false) {
+    let { routesMeta } = branch;
+    let matchedParams = {};
+    let matchedPathname = "/";
+    let matches = [];
+    for (let i = 0;i < routesMeta.length; ++i) {
+      let meta = routesMeta[i];
+      let end = i === routesMeta.length - 1;
+      let remainingPathname = matchedPathname === "/" ? pathname : pathname.slice(matchedPathname.length) || "/";
+      let match = matchPath({ path: meta.relativePath, caseSensitive: meta.caseSensitive, end }, remainingPathname);
+      let route = meta.route;
+      if (!match && end && allowPartial && !routesMeta[routesMeta.length - 1].route.index) {
+        match = matchPath({
+          path: meta.relativePath,
+          caseSensitive: meta.caseSensitive,
+          end: false
+        }, remainingPathname);
+      }
+      if (!match) {
+        return null;
+      }
+      Object.assign(matchedParams, match.params);
+      matches.push({
+        params: matchedParams,
+        pathname: joinPaths([matchedPathname, match.pathname]),
+        pathnameBase: normalizePathname(joinPaths([matchedPathname, match.pathnameBase])),
+        route
+      });
+      if (match.pathnameBase !== "/") {
+        matchedPathname = joinPaths([matchedPathname, match.pathnameBase]);
+      }
+    }
+    return matches;
+  }
+  function generatePath(originalPath, params = {}) {
+    let path = originalPath;
+    if (path.endsWith("*") && path !== "*" && !path.endsWith("/*")) {
+      warning(false, `Route path "${path}" will be treated as if it were "${path.replace(/\*$/, "/*")}" because the \`*\` character must always follow a \`/\` in the pattern. To get rid of this warning, please change the route path to "${path.replace(/\*$/, "/*")}".`);
+      path = path.replace(/\*$/, "/*");
+    }
+    const prefix = path.startsWith("/") ? "/" : "";
+    const stringify = (p) => p == null ? "" : typeof p === "string" ? p : String(p);
+    const segments = path.split(/\/+/).map((segment, index, array) => {
+      const isLastSegment = index === array.length - 1;
+      if (isLastSegment && segment === "*") {
+        const star = "*";
+        return stringify(params[star]);
+      }
+      const keyMatch = segment.match(/^:([\w-]+)(\??)$/);
+      if (keyMatch) {
+        const [, key, optional] = keyMatch;
+        let param = params[key];
+        invariant(optional === "?" || param != null, `Missing ":${key}" param`);
+        return stringify(param);
+      }
+      return segment.replace(/\?$/g, "");
+    }).filter((segment) => !!segment);
+    return prefix + segments.join("/");
+  }
+  function matchPath(pattern, pathname) {
+    if (typeof pattern === "string") {
+      pattern = { path: pattern, caseSensitive: false, end: true };
+    }
+    let [matcher, compiledParams] = compilePath(pattern.path, pattern.caseSensitive, pattern.end);
+    let match = pathname.match(matcher);
+    if (!match)
+      return null;
+    let matchedPathname = match[0];
+    let pathnameBase = matchedPathname.replace(/(.)\/+$/, "$1");
+    let captureGroups = match.slice(1);
+    let params = compiledParams.reduce((memo2, { paramName, isOptional }, index) => {
+      if (paramName === "*") {
+        let splatValue = captureGroups[index] || "";
+        pathnameBase = matchedPathname.slice(0, matchedPathname.length - splatValue.length).replace(/(.)\/+$/, "$1");
+      }
+      const value = captureGroups[index];
+      if (isOptional && !value) {
+        memo2[paramName] = undefined;
+      } else {
+        memo2[paramName] = (value || "").replace(/%2F/g, "/");
+      }
+      return memo2;
+    }, {});
+    return {
+      params,
+      pathname: matchedPathname,
+      pathnameBase,
+      pattern
+    };
+  }
+  function compilePath(path, caseSensitive = false, end = true) {
+    warning(path === "*" || !path.endsWith("*") || path.endsWith("/*"), `Route path "${path}" will be treated as if it were "${path.replace(/\*$/, "/*")}" because the \`*\` character must always follow a \`/\` in the pattern. To get rid of this warning, please change the route path to "${path.replace(/\*$/, "/*")}".`);
+    let params = [];
+    let regexpSource = "^" + path.replace(/\/*\*?$/, "").replace(/^\/*/, "/").replace(/[\\.*+^${}|()[\]]/g, "\\$&").replace(/\/:([\w-]+)(\?)?/g, (_, paramName, isOptional) => {
+      params.push({ paramName, isOptional: isOptional != null });
+      return isOptional ? "/?([^\\/]+)?" : "/([^\\/]+)";
+    });
+    if (path.endsWith("*")) {
+      params.push({ paramName: "*" });
+      regexpSource += path === "*" || path === "/*" ? "(.*)$" : "(?:\\/(.+)|\\/*)$";
+    } else if (end) {
+      regexpSource += "\\/*$";
+    } else if (path !== "" && path !== "/") {
+      regexpSource += "(?:(?=\\/|$))";
+    } else {
+    }
+    let matcher = new RegExp(regexpSource, caseSensitive ? undefined : "i");
+    return [matcher, params];
+  }
+  function decodePath(value) {
+    try {
+      return value.split("/").map((v) => decodeURIComponent(v).replace(/\//g, "%2F")).join("/");
+    } catch (error) {
+      warning(false, `The URL path "${value}" could not be decoded because it is a malformed URL segment. This is probably due to a bad percent encoding (${error}).`);
+      return value;
+    }
+  }
+  function stripBasename(pathname, basename) {
+    if (basename === "/")
+      return pathname;
+    if (!pathname.toLowerCase().startsWith(basename.toLowerCase())) {
+      return null;
+    }
+    let startIndex = basename.endsWith("/") ? basename.length - 1 : basename.length;
+    let nextChar = pathname.charAt(startIndex);
+    if (nextChar && nextChar !== "/") {
+      return null;
+    }
+    return pathname.slice(startIndex) || "/";
+  }
+  function resolvePath(to, fromPathname = "/") {
+    let {
+      pathname: toPathname,
+      search = "",
+      hash = ""
+    } = typeof to === "string" ? parsePath(to) : to;
+    let pathname = toPathname ? toPathname.startsWith("/") ? toPathname : resolvePathname(toPathname, fromPathname) : fromPathname;
+    return {
+      pathname,
+      search: normalizeSearch(search),
+      hash: normalizeHash(hash)
+    };
+  }
+  function resolvePathname(relativePath, fromPathname) {
+    let segments = fromPathname.replace(/\/+$/, "").split("/");
+    let relativeSegments = relativePath.split("/");
+    relativeSegments.forEach((segment) => {
+      if (segment === "..") {
+        if (segments.length > 1)
+          segments.pop();
+      } else if (segment !== ".") {
+        segments.push(segment);
+      }
+    });
+    return segments.length > 1 ? segments.join("/") : "/";
+  }
+  function getInvalidPathError(char, field, dest, path) {
+    return `Cannot include a '${char}' character in a manually specified \`to.${field}\` field [${JSON.stringify(path)}].  Please separate it out to the \`to.${dest}\` field. Alternatively you may provide the full path as a string in <Link to="..."> and the router will parse it for you.`;
+  }
+  function getPathContributingMatches(matches) {
+    return matches.filter((match, index) => index === 0 || match.route.path && match.route.path.length > 0);
+  }
+  function getResolveToMatches(matches) {
+    let pathMatches = getPathContributingMatches(matches);
+    return pathMatches.map((match, idx) => idx === pathMatches.length - 1 ? match.pathname : match.pathnameBase);
+  }
+  function resolveTo(toArg, routePathnames, locationPathname, isPathRelative = false) {
+    let to;
+    if (typeof toArg === "string") {
+      to = parsePath(toArg);
+    } else {
+      to = { ...toArg };
+      invariant(!to.pathname || !to.pathname.includes("?"), getInvalidPathError("?", "pathname", "search", to));
+      invariant(!to.pathname || !to.pathname.includes("#"), getInvalidPathError("#", "pathname", "hash", to));
+      invariant(!to.search || !to.search.includes("#"), getInvalidPathError("#", "search", "hash", to));
+    }
+    let isEmptyPath = toArg === "" || to.pathname === "";
+    let toPathname = isEmptyPath ? "/" : to.pathname;
+    let from;
+    if (toPathname == null) {
+      from = locationPathname;
+    } else {
+      let routePathnameIndex = routePathnames.length - 1;
+      if (!isPathRelative && toPathname.startsWith("..")) {
+        let toSegments = toPathname.split("/");
+        while (toSegments[0] === "..") {
+          toSegments.shift();
+          routePathnameIndex -= 1;
+        }
+        to.pathname = toSegments.join("/");
+      }
+      from = routePathnameIndex >= 0 ? routePathnames[routePathnameIndex] : "/";
+    }
+    let path = resolvePath(to, from);
+    let hasExplicitTrailingSlash = toPathname && toPathname !== "/" && toPathname.endsWith("/");
+    let hasCurrentTrailingSlash = (isEmptyPath || toPathname === ".") && locationPathname.endsWith("/");
+    if (!path.pathname.endsWith("/") && (hasExplicitTrailingSlash || hasCurrentTrailingSlash)) {
+      path.pathname += "/";
+    }
+    return path;
+  }
+  var joinPaths = (paths) => paths.join("/").replace(/\/\/+/g, "/");
+  var normalizePathname = (pathname) => pathname.replace(/\/+$/, "").replace(/^\/*/, "/");
+  var normalizeSearch = (search) => !search || search === "?" ? "" : search.startsWith("?") ? search : "?" + search;
+  var normalizeHash = (hash) => !hash || hash === "#" ? "" : hash.startsWith("#") ? hash : "#" + hash;
+  var DataWithResponseInit = class {
+    constructor(data2, init) {
+      this.type = "DataWithResponseInit";
+      this.data = data2;
+      this.init = init || null;
+    }
+  };
+  function data(data2, init) {
+    return new DataWithResponseInit(data2, typeof init === "number" ? { status: init } : init);
+  }
+  var redirect = (url, init = 302) => {
+    let responseInit = init;
+    if (typeof responseInit === "number") {
+      responseInit = { status: responseInit };
+    } else if (typeof responseInit.status === "undefined") {
+      responseInit.status = 302;
+    }
+    let headers = new Headers(responseInit.headers);
+    headers.set("Location", url);
+    return new Response(null, { ...responseInit, headers });
+  };
+  var redirectDocument = (url, init) => {
+    let response = redirect(url, init);
+    response.headers.set("X-Remix-Reload-Document", "true");
+    return response;
+  };
+  var replace = (url, init) => {
+    let response = redirect(url, init);
+    response.headers.set("X-Remix-Replace", "true");
+    return response;
+  };
+  var ErrorResponseImpl = class {
+    constructor(status, statusText, data2, internal = false) {
+      this.status = status;
+      this.statusText = statusText || "";
+      this.internal = internal;
+      if (data2 instanceof Error) {
+        this.data = data2.toString();
+        this.error = data2;
+      } else {
+        this.data = data2;
+      }
+    }
+  };
+  function isRouteErrorResponse(error) {
+    return error != null && typeof error.status === "number" && typeof error.statusText === "string" && typeof error.internal === "boolean" && "data" in error;
+  }
+  var validMutationMethodsArr = [
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE"
+  ];
+  var validMutationMethods = new Set(validMutationMethodsArr);
+  var validRequestMethodsArr = [
+    "GET",
+    ...validMutationMethodsArr
+  ];
+  var validRequestMethods = new Set(validRequestMethodsArr);
+  var redirectStatusCodes = /* @__PURE__ */ new Set([301, 302, 303, 307, 308]);
+  var redirectPreserveMethodStatusCodes = /* @__PURE__ */ new Set([307, 308]);
+  var IDLE_NAVIGATION = {
+    state: "idle",
+    location: undefined,
+    formMethod: undefined,
+    formAction: undefined,
+    formEncType: undefined,
+    formData: undefined,
+    json: undefined,
+    text: undefined
+  };
+  var IDLE_FETCHER = {
+    state: "idle",
+    data: undefined,
+    formMethod: undefined,
+    formAction: undefined,
+    formEncType: undefined,
+    formData: undefined,
+    json: undefined,
+    text: undefined
+  };
+  var IDLE_BLOCKER = {
+    state: "unblocked",
+    proceed: undefined,
+    reset: undefined,
+    location: undefined
+  };
+  var ABSOLUTE_URL_REGEX = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
+  var defaultMapRouteProperties = (route) => ({
+    hasErrorBoundary: Boolean(route.hasErrorBoundary)
+  });
+  var TRANSITIONS_STORAGE_KEY = "remix-router-transitions";
+  var ResetLoaderDataSymbol = Symbol("ResetLoaderData");
+  function createRouter(init) {
+    const routerWindow = init.window ? init.window : typeof window !== "undefined" ? window : undefined;
+    const isBrowser2 = typeof routerWindow !== "undefined" && typeof routerWindow.document !== "undefined" && typeof routerWindow.document.createElement !== "undefined";
+    invariant(init.routes.length > 0, "You must provide a non-empty routes array to createRouter");
+    let hydrationRouteProperties2 = init.hydrationRouteProperties || [];
+    let mapRouteProperties2 = init.mapRouteProperties || defaultMapRouteProperties;
+    let manifest = {};
+    let dataRoutes = convertRoutesToDataRoutes(init.routes, mapRouteProperties2, undefined, manifest);
+    let inFlightDataRoutes;
+    let basename = init.basename || "/";
+    let dataStrategyImpl = init.dataStrategy || defaultDataStrategyWithMiddleware;
+    let future = {
+      unstable_middleware: false,
+      ...init.future
+    };
+    let unlistenHistory = null;
+    let subscribers = /* @__PURE__ */ new Set;
+    let savedScrollPositions2 = null;
+    let getScrollRestorationKey2 = null;
+    let getScrollPosition = null;
+    let initialScrollRestored = init.hydrationData != null;
+    let initialMatches = matchRoutes(dataRoutes, init.history.location, basename);
+    let initialMatchesIsFOW = false;
+    let initialErrors = null;
+    if (initialMatches == null && !init.patchRoutesOnNavigation) {
+      let error = getInternalRouterError(404, {
+        pathname: init.history.location.pathname
+      });
+      let { matches, route } = getShortCircuitMatches(dataRoutes);
+      initialMatches = matches;
+      initialErrors = { [route.id]: error };
+    }
+    if (initialMatches && !init.hydrationData) {
+      let fogOfWar = checkFogOfWar(initialMatches, dataRoutes, init.history.location.pathname);
+      if (fogOfWar.active) {
+        initialMatches = null;
+      }
+    }
+    let initialized;
+    if (!initialMatches) {
+      initialized = false;
+      initialMatches = [];
+      let fogOfWar = checkFogOfWar(null, dataRoutes, init.history.location.pathname);
+      if (fogOfWar.active && fogOfWar.matches) {
+        initialMatchesIsFOW = true;
+        initialMatches = fogOfWar.matches;
+      }
+    } else if (initialMatches.some((m) => m.route.lazy)) {
+      initialized = false;
+    } else if (!initialMatches.some((m) => m.route.loader)) {
+      initialized = true;
+    } else {
+      let loaderData = init.hydrationData ? init.hydrationData.loaderData : null;
+      let errors = init.hydrationData ? init.hydrationData.errors : null;
+      if (errors) {
+        let idx = initialMatches.findIndex((m) => errors[m.route.id] !== undefined);
+        initialized = initialMatches.slice(0, idx + 1).every((m) => !shouldLoadRouteOnHydration(m.route, loaderData, errors));
+      } else {
+        initialized = initialMatches.every((m) => !shouldLoadRouteOnHydration(m.route, loaderData, errors));
+      }
+    }
+    let router;
+    let state = {
+      historyAction: init.history.action,
+      location: init.history.location,
+      matches: initialMatches,
+      initialized,
+      navigation: IDLE_NAVIGATION,
+      restoreScrollPosition: init.hydrationData != null ? false : null,
+      preventScrollReset: false,
+      revalidation: "idle",
+      loaderData: init.hydrationData && init.hydrationData.loaderData || {},
+      actionData: init.hydrationData && init.hydrationData.actionData || null,
+      errors: init.hydrationData && init.hydrationData.errors || initialErrors,
+      fetchers: /* @__PURE__ */ new Map,
+      blockers: /* @__PURE__ */ new Map
+    };
+    let pendingAction = "POP";
+    let pendingPreventScrollReset = false;
+    let pendingNavigationController;
+    let pendingViewTransitionEnabled = false;
+    let appliedViewTransitions = /* @__PURE__ */ new Map;
+    let removePageHideEventListener = null;
+    let isUninterruptedRevalidation = false;
+    let isRevalidationRequired = false;
+    let cancelledFetcherLoads = /* @__PURE__ */ new Set;
+    let fetchControllers = /* @__PURE__ */ new Map;
+    let incrementingLoadId = 0;
+    let pendingNavigationLoadId = -1;
+    let fetchReloadIds = /* @__PURE__ */ new Map;
+    let fetchRedirectIds = /* @__PURE__ */ new Set;
+    let fetchLoadMatches = /* @__PURE__ */ new Map;
+    let activeFetchers = /* @__PURE__ */ new Map;
+    let fetchersQueuedForDeletion = /* @__PURE__ */ new Set;
+    let blockerFunctions = /* @__PURE__ */ new Map;
+    let unblockBlockerHistoryUpdate = undefined;
+    let pendingRevalidationDfd = null;
+    function initialize() {
+      unlistenHistory = init.history.listen(({ action: historyAction, location: location2, delta }) => {
+        if (unblockBlockerHistoryUpdate) {
+          unblockBlockerHistoryUpdate();
+          unblockBlockerHistoryUpdate = undefined;
+          return;
+        }
+        warning(blockerFunctions.size === 0 || delta != null, "You are trying to use a blocker on a POP navigation to a location that was not created by @remix-run/router. This will fail silently in production. This can happen if you are navigating outside the router via `window.history.pushState`/`window.location.hash` instead of using router navigation APIs.  This can also happen if you are using createHashRouter and the user manually changes the URL.");
+        let blockerKey = shouldBlockNavigation({
+          currentLocation: state.location,
+          nextLocation: location2,
+          historyAction
+        });
+        if (blockerKey && delta != null) {
+          let nextHistoryUpdatePromise = new Promise((resolve) => {
+            unblockBlockerHistoryUpdate = resolve;
+          });
+          init.history.go(delta * -1);
+          updateBlocker(blockerKey, {
+            state: "blocked",
+            location: location2,
+            proceed() {
+              updateBlocker(blockerKey, {
+                state: "proceeding",
+                proceed: undefined,
+                reset: undefined,
+                location: location2
+              });
+              nextHistoryUpdatePromise.then(() => init.history.go(delta));
+            },
+            reset() {
+              let blockers = new Map(state.blockers);
+              blockers.set(blockerKey, IDLE_BLOCKER);
+              updateState({ blockers });
+            }
+          });
+          return;
+        }
+        return startNavigation(historyAction, location2);
+      });
+      if (isBrowser2) {
+        restoreAppliedTransitions(routerWindow, appliedViewTransitions);
+        let _saveAppliedTransitions = () => persistAppliedTransitions(routerWindow, appliedViewTransitions);
+        routerWindow.addEventListener("pagehide", _saveAppliedTransitions);
+        removePageHideEventListener = () => routerWindow.removeEventListener("pagehide", _saveAppliedTransitions);
+      }
+      if (!state.initialized) {
+        startNavigation("POP", state.location, {
+          initialHydration: true
+        });
+      }
+      return router;
+    }
+    function dispose() {
+      if (unlistenHistory) {
+        unlistenHistory();
+      }
+      if (removePageHideEventListener) {
+        removePageHideEventListener();
+      }
+      subscribers.clear();
+      pendingNavigationController && pendingNavigationController.abort();
+      state.fetchers.forEach((_, key) => deleteFetcher(key));
+      state.blockers.forEach((_, key) => deleteBlocker(key));
+    }
+    function subscribe(fn) {
+      subscribers.add(fn);
+      return () => subscribers.delete(fn);
+    }
+    function updateState(newState, opts = {}) {
+      state = {
+        ...state,
+        ...newState
+      };
+      let unmountedFetchers = [];
+      let mountedFetchers = [];
+      state.fetchers.forEach((fetcher, key) => {
+        if (fetcher.state === "idle") {
+          if (fetchersQueuedForDeletion.has(key)) {
+            unmountedFetchers.push(key);
+          } else {
+            mountedFetchers.push(key);
+          }
+        }
+      });
+      fetchersQueuedForDeletion.forEach((key) => {
+        if (!state.fetchers.has(key) && !fetchControllers.has(key)) {
+          unmountedFetchers.push(key);
+        }
+      });
+      [...subscribers].forEach((subscriber) => subscriber(state, {
+        deletedFetchers: unmountedFetchers,
+        viewTransitionOpts: opts.viewTransitionOpts,
+        flushSync: opts.flushSync === true
+      }));
+      unmountedFetchers.forEach((key) => deleteFetcher(key));
+      mountedFetchers.forEach((key) => state.fetchers.delete(key));
+    }
+    function completeNavigation(location2, newState, { flushSync } = {}) {
+      let isActionReload = state.actionData != null && state.navigation.formMethod != null && isMutationMethod(state.navigation.formMethod) && state.navigation.state === "loading" && location2.state?._isRedirect !== true;
+      let actionData;
+      if (newState.actionData) {
+        if (Object.keys(newState.actionData).length > 0) {
+          actionData = newState.actionData;
+        } else {
+          actionData = null;
+        }
+      } else if (isActionReload) {
+        actionData = state.actionData;
+      } else {
+        actionData = null;
+      }
+      let loaderData = newState.loaderData ? mergeLoaderData(state.loaderData, newState.loaderData, newState.matches || [], newState.errors) : state.loaderData;
+      let blockers = state.blockers;
+      if (blockers.size > 0) {
+        blockers = new Map(blockers);
+        blockers.forEach((_, k) => blockers.set(k, IDLE_BLOCKER));
+      }
+      let preventScrollReset = pendingPreventScrollReset === true || state.navigation.formMethod != null && isMutationMethod(state.navigation.formMethod) && location2.state?._isRedirect !== true;
+      if (inFlightDataRoutes) {
+        dataRoutes = inFlightDataRoutes;
+        inFlightDataRoutes = undefined;
+      }
+      if (isUninterruptedRevalidation) {
+      } else if (pendingAction === "POP") {
+      } else if (pendingAction === "PUSH") {
+        init.history.push(location2, location2.state);
+      } else if (pendingAction === "REPLACE") {
+        init.history.replace(location2, location2.state);
+      }
+      let viewTransitionOpts;
+      if (pendingAction === "POP") {
+        let priorPaths = appliedViewTransitions.get(state.location.pathname);
+        if (priorPaths && priorPaths.has(location2.pathname)) {
+          viewTransitionOpts = {
+            currentLocation: state.location,
+            nextLocation: location2
+          };
+        } else if (appliedViewTransitions.has(location2.pathname)) {
+          viewTransitionOpts = {
+            currentLocation: location2,
+            nextLocation: state.location
+          };
+        }
+      } else if (pendingViewTransitionEnabled) {
+        let toPaths = appliedViewTransitions.get(state.location.pathname);
+        if (toPaths) {
+          toPaths.add(location2.pathname);
+        } else {
+          toPaths = /* @__PURE__ */ new Set([location2.pathname]);
+          appliedViewTransitions.set(state.location.pathname, toPaths);
+        }
+        viewTransitionOpts = {
+          currentLocation: state.location,
+          nextLocation: location2
+        };
+      }
+      updateState({
+        ...newState,
+        actionData,
+        loaderData,
+        historyAction: pendingAction,
+        location: location2,
+        initialized: true,
+        navigation: IDLE_NAVIGATION,
+        revalidation: "idle",
+        restoreScrollPosition: getSavedScrollPosition(location2, newState.matches || state.matches),
+        preventScrollReset,
+        blockers
+      }, {
+        viewTransitionOpts,
+        flushSync: flushSync === true
+      });
+      pendingAction = "POP";
+      pendingPreventScrollReset = false;
+      pendingViewTransitionEnabled = false;
+      isUninterruptedRevalidation = false;
+      isRevalidationRequired = false;
+      pendingRevalidationDfd?.resolve();
+      pendingRevalidationDfd = null;
+    }
+    async function navigate(to, opts) {
+      if (typeof to === "number") {
+        init.history.go(to);
+        return;
+      }
+      let normalizedPath = normalizeTo(state.location, state.matches, basename, to, opts?.fromRouteId, opts?.relative);
+      let { path, submission, error } = normalizeNavigateOptions(false, normalizedPath, opts);
+      let currentLocation = state.location;
+      let nextLocation = createLocation(state.location, path, opts && opts.state);
+      nextLocation = {
+        ...nextLocation,
+        ...init.history.encodeLocation(nextLocation)
+      };
+      let userReplace = opts && opts.replace != null ? opts.replace : undefined;
+      let historyAction = "PUSH";
+      if (userReplace === true) {
+        historyAction = "REPLACE";
+      } else if (userReplace === false) {
+      } else if (submission != null && isMutationMethod(submission.formMethod) && submission.formAction === state.location.pathname + state.location.search) {
+        historyAction = "REPLACE";
+      }
+      let preventScrollReset = opts && "preventScrollReset" in opts ? opts.preventScrollReset === true : undefined;
+      let flushSync = (opts && opts.flushSync) === true;
+      let blockerKey = shouldBlockNavigation({
+        currentLocation,
+        nextLocation,
+        historyAction
+      });
+      if (blockerKey) {
+        updateBlocker(blockerKey, {
+          state: "blocked",
+          location: nextLocation,
+          proceed() {
+            updateBlocker(blockerKey, {
+              state: "proceeding",
+              proceed: undefined,
+              reset: undefined,
+              location: nextLocation
+            });
+            navigate(to, opts);
+          },
+          reset() {
+            let blockers = new Map(state.blockers);
+            blockers.set(blockerKey, IDLE_BLOCKER);
+            updateState({ blockers });
+          }
+        });
+        return;
+      }
+      await startNavigation(historyAction, nextLocation, {
+        submission,
+        pendingError: error,
+        preventScrollReset,
+        replace: opts && opts.replace,
+        enableViewTransition: opts && opts.viewTransition,
+        flushSync
+      });
+    }
+    function revalidate() {
+      if (!pendingRevalidationDfd) {
+        pendingRevalidationDfd = createDeferred();
+      }
+      interruptActiveLoads();
+      updateState({ revalidation: "loading" });
+      let promise = pendingRevalidationDfd.promise;
+      if (state.navigation.state === "submitting") {
+        return promise;
+      }
+      if (state.navigation.state === "idle") {
+        startNavigation(state.historyAction, state.location, {
+          startUninterruptedRevalidation: true
+        });
+        return promise;
+      }
+      startNavigation(pendingAction || state.historyAction, state.navigation.location, {
+        overrideNavigation: state.navigation,
+        enableViewTransition: pendingViewTransitionEnabled === true
+      });
+      return promise;
+    }
+    async function startNavigation(historyAction, location2, opts) {
+      pendingNavigationController && pendingNavigationController.abort();
+      pendingNavigationController = null;
+      pendingAction = historyAction;
+      isUninterruptedRevalidation = (opts && opts.startUninterruptedRevalidation) === true;
+      saveScrollPosition(state.location, state.matches);
+      pendingPreventScrollReset = (opts && opts.preventScrollReset) === true;
+      pendingViewTransitionEnabled = (opts && opts.enableViewTransition) === true;
+      let routesToUse = inFlightDataRoutes || dataRoutes;
+      let loadingNavigation = opts && opts.overrideNavigation;
+      let matches = opts?.initialHydration && state.matches && state.matches.length > 0 && !initialMatchesIsFOW ? state.matches : matchRoutes(routesToUse, location2, basename);
+      let flushSync = (opts && opts.flushSync) === true;
+      if (matches && state.initialized && !isRevalidationRequired && isHashChangeOnly(state.location, location2) && !(opts && opts.submission && isMutationMethod(opts.submission.formMethod))) {
+        completeNavigation(location2, { matches }, { flushSync });
+        return;
+      }
+      let fogOfWar = checkFogOfWar(matches, routesToUse, location2.pathname);
+      if (fogOfWar.active && fogOfWar.matches) {
+        matches = fogOfWar.matches;
+      }
+      if (!matches) {
+        let { error, notFoundMatches, route } = handleNavigational404(location2.pathname);
+        completeNavigation(location2, {
+          matches: notFoundMatches,
+          loaderData: {},
+          errors: {
+            [route.id]: error
+          }
+        }, { flushSync });
+        return;
+      }
+      pendingNavigationController = new AbortController;
+      let request = createClientSideRequest(init.history, location2, pendingNavigationController.signal, opts && opts.submission);
+      let scopedContext = new unstable_RouterContextProvider(init.unstable_getContext ? await init.unstable_getContext() : undefined);
+      let pendingActionResult;
+      if (opts && opts.pendingError) {
+        pendingActionResult = [
+          findNearestBoundary(matches).route.id,
+          { type: "error", error: opts.pendingError }
+        ];
+      } else if (opts && opts.submission && isMutationMethod(opts.submission.formMethod)) {
+        let actionResult = await handleAction(request, location2, opts.submission, matches, scopedContext, fogOfWar.active, opts && opts.initialHydration === true, { replace: opts.replace, flushSync });
+        if (actionResult.shortCircuited) {
+          return;
+        }
+        if (actionResult.pendingActionResult) {
+          let [routeId, result] = actionResult.pendingActionResult;
+          if (isErrorResult(result) && isRouteErrorResponse(result.error) && result.error.status === 404) {
+            pendingNavigationController = null;
+            completeNavigation(location2, {
+              matches: actionResult.matches,
+              loaderData: {},
+              errors: {
+                [routeId]: result.error
+              }
+            });
+            return;
+          }
+        }
+        matches = actionResult.matches || matches;
+        pendingActionResult = actionResult.pendingActionResult;
+        loadingNavigation = getLoadingNavigation(location2, opts.submission);
+        flushSync = false;
+        fogOfWar.active = false;
+        request = createClientSideRequest(init.history, request.url, request.signal);
+      }
+      let {
+        shortCircuited,
+        matches: updatedMatches,
+        loaderData,
+        errors
+      } = await handleLoaders(request, location2, matches, scopedContext, fogOfWar.active, loadingNavigation, opts && opts.submission, opts && opts.fetcherSubmission, opts && opts.replace, opts && opts.initialHydration === true, flushSync, pendingActionResult);
+      if (shortCircuited) {
+        return;
+      }
+      pendingNavigationController = null;
+      completeNavigation(location2, {
+        matches: updatedMatches || matches,
+        ...getActionDataForCommit(pendingActionResult),
+        loaderData,
+        errors
+      });
+    }
+    async function handleAction(request, location2, submission, matches, scopedContext, isFogOfWar, initialHydration, opts = {}) {
+      interruptActiveLoads();
+      let navigation = getSubmittingNavigation(location2, submission);
+      updateState({ navigation }, { flushSync: opts.flushSync === true });
+      if (isFogOfWar) {
+        let discoverResult = await discoverRoutes(matches, location2.pathname, request.signal);
+        if (discoverResult.type === "aborted") {
+          return { shortCircuited: true };
+        } else if (discoverResult.type === "error") {
+          let boundaryId = findNearestBoundary(discoverResult.partialMatches).route.id;
+          return {
+            matches: discoverResult.partialMatches,
+            pendingActionResult: [
+              boundaryId,
+              {
+                type: "error",
+                error: discoverResult.error
+              }
+            ]
+          };
+        } else if (!discoverResult.matches) {
+          let { notFoundMatches, error, route } = handleNavigational404(location2.pathname);
+          return {
+            matches: notFoundMatches,
+            pendingActionResult: [
+              route.id,
+              {
+                type: "error",
+                error
+              }
+            ]
+          };
+        } else {
+          matches = discoverResult.matches;
+        }
+      }
+      let result;
+      let actionMatch = getTargetMatch(matches, location2);
+      if (!actionMatch.route.action && !actionMatch.route.lazy) {
+        result = {
+          type: "error",
+          error: getInternalRouterError(405, {
+            method: request.method,
+            pathname: location2.pathname,
+            routeId: actionMatch.route.id
+          })
+        };
+      } else {
+        let dsMatches = getTargetedDataStrategyMatches(mapRouteProperties2, manifest, request, matches, actionMatch, initialHydration ? [] : hydrationRouteProperties2, scopedContext);
+        let results = await callDataStrategy(request, dsMatches, scopedContext, null);
+        result = results[actionMatch.route.id];
+        if (!result) {
+          for (let match of matches) {
+            if (results[match.route.id]) {
+              result = results[match.route.id];
+              break;
+            }
+          }
+        }
+        if (request.signal.aborted) {
+          return { shortCircuited: true };
+        }
+      }
+      if (isRedirectResult(result)) {
+        let replace2;
+        if (opts && opts.replace != null) {
+          replace2 = opts.replace;
+        } else {
+          let location22 = normalizeRedirectLocation(result.response.headers.get("Location"), new URL(request.url), basename);
+          replace2 = location22 === state.location.pathname + state.location.search;
+        }
+        await startRedirectNavigation(request, result, true, {
+          submission,
+          replace: replace2
+        });
+        return { shortCircuited: true };
+      }
+      if (isErrorResult(result)) {
+        let boundaryMatch = findNearestBoundary(matches, actionMatch.route.id);
+        if ((opts && opts.replace) !== true) {
+          pendingAction = "PUSH";
+        }
+        return {
+          matches,
+          pendingActionResult: [
+            boundaryMatch.route.id,
+            result,
+            actionMatch.route.id
+          ]
+        };
+      }
+      return {
+        matches,
+        pendingActionResult: [actionMatch.route.id, result]
+      };
+    }
+    async function handleLoaders(request, location2, matches, scopedContext, isFogOfWar, overrideNavigation, submission, fetcherSubmission, replace2, initialHydration, flushSync, pendingActionResult) {
+      let loadingNavigation = overrideNavigation || getLoadingNavigation(location2, submission);
+      let activeSubmission = submission || fetcherSubmission || getSubmissionFromNavigation(loadingNavigation);
+      let shouldUpdateNavigationState = !isUninterruptedRevalidation && !initialHydration;
+      if (isFogOfWar) {
+        if (shouldUpdateNavigationState) {
+          let actionData = getUpdatedActionData(pendingActionResult);
+          updateState({
+            navigation: loadingNavigation,
+            ...actionData !== undefined ? { actionData } : {}
+          }, {
+            flushSync
+          });
+        }
+        let discoverResult = await discoverRoutes(matches, location2.pathname, request.signal);
+        if (discoverResult.type === "aborted") {
+          return { shortCircuited: true };
+        } else if (discoverResult.type === "error") {
+          let boundaryId = findNearestBoundary(discoverResult.partialMatches).route.id;
+          return {
+            matches: discoverResult.partialMatches,
+            loaderData: {},
+            errors: {
+              [boundaryId]: discoverResult.error
+            }
+          };
+        } else if (!discoverResult.matches) {
+          let { error, notFoundMatches, route } = handleNavigational404(location2.pathname);
+          return {
+            matches: notFoundMatches,
+            loaderData: {},
+            errors: {
+              [route.id]: error
+            }
+          };
+        } else {
+          matches = discoverResult.matches;
+        }
+      }
+      let routesToUse = inFlightDataRoutes || dataRoutes;
+      let { dsMatches, revalidatingFetchers } = getMatchesToLoad(request, scopedContext, mapRouteProperties2, manifest, init.history, state, matches, activeSubmission, location2, initialHydration ? [] : hydrationRouteProperties2, initialHydration === true, isRevalidationRequired, cancelledFetcherLoads, fetchersQueuedForDeletion, fetchLoadMatches, fetchRedirectIds, routesToUse, basename, pendingActionResult);
+      pendingNavigationLoadId = ++incrementingLoadId;
+      if (!init.dataStrategy && !dsMatches.some((m) => m.shouldLoad) && revalidatingFetchers.length === 0) {
+        let updatedFetchers2 = markFetchRedirectsDone();
+        completeNavigation(location2, {
+          matches,
+          loaderData: {},
+          errors: pendingActionResult && isErrorResult(pendingActionResult[1]) ? { [pendingActionResult[0]]: pendingActionResult[1].error } : null,
+          ...getActionDataForCommit(pendingActionResult),
+          ...updatedFetchers2 ? { fetchers: new Map(state.fetchers) } : {}
+        }, { flushSync });
+        return { shortCircuited: true };
+      }
+      if (shouldUpdateNavigationState) {
+        let updates = {};
+        if (!isFogOfWar) {
+          updates.navigation = loadingNavigation;
+          let actionData = getUpdatedActionData(pendingActionResult);
+          if (actionData !== undefined) {
+            updates.actionData = actionData;
+          }
+        }
+        if (revalidatingFetchers.length > 0) {
+          updates.fetchers = getUpdatedRevalidatingFetchers(revalidatingFetchers);
+        }
+        updateState(updates, { flushSync });
+      }
+      revalidatingFetchers.forEach((rf) => {
+        abortFetcher(rf.key);
+        if (rf.controller) {
+          fetchControllers.set(rf.key, rf.controller);
+        }
+      });
+      let abortPendingFetchRevalidations = () => revalidatingFetchers.forEach((f) => abortFetcher(f.key));
+      if (pendingNavigationController) {
+        pendingNavigationController.signal.addEventListener("abort", abortPendingFetchRevalidations);
+      }
+      let { loaderResults, fetcherResults } = await callLoadersAndMaybeResolveData(dsMatches, revalidatingFetchers, request, scopedContext);
+      if (request.signal.aborted) {
+        return { shortCircuited: true };
+      }
+      if (pendingNavigationController) {
+        pendingNavigationController.signal.removeEventListener("abort", abortPendingFetchRevalidations);
+      }
+      revalidatingFetchers.forEach((rf) => fetchControllers.delete(rf.key));
+      let redirect2 = findRedirect(loaderResults);
+      if (redirect2) {
+        await startRedirectNavigation(request, redirect2.result, true, {
+          replace: replace2
+        });
+        return { shortCircuited: true };
+      }
+      redirect2 = findRedirect(fetcherResults);
+      if (redirect2) {
+        fetchRedirectIds.add(redirect2.key);
+        await startRedirectNavigation(request, redirect2.result, true, {
+          replace: replace2
+        });
+        return { shortCircuited: true };
+      }
+      let { loaderData, errors } = processLoaderData(state, matches, loaderResults, pendingActionResult, revalidatingFetchers, fetcherResults);
+      if (initialHydration && state.errors) {
+        errors = { ...state.errors, ...errors };
+      }
+      let updatedFetchers = markFetchRedirectsDone();
+      let didAbortFetchLoads = abortStaleFetchLoads(pendingNavigationLoadId);
+      let shouldUpdateFetchers = updatedFetchers || didAbortFetchLoads || revalidatingFetchers.length > 0;
+      return {
+        matches,
+        loaderData,
+        errors,
+        ...shouldUpdateFetchers ? { fetchers: new Map(state.fetchers) } : {}
+      };
+    }
+    function getUpdatedActionData(pendingActionResult) {
+      if (pendingActionResult && !isErrorResult(pendingActionResult[1])) {
+        return {
+          [pendingActionResult[0]]: pendingActionResult[1].data
+        };
+      } else if (state.actionData) {
+        if (Object.keys(state.actionData).length === 0) {
+          return null;
+        } else {
+          return state.actionData;
+        }
+      }
+    }
+    function getUpdatedRevalidatingFetchers(revalidatingFetchers) {
+      revalidatingFetchers.forEach((rf) => {
+        let fetcher = state.fetchers.get(rf.key);
+        let revalidatingFetcher = getLoadingFetcher(undefined, fetcher ? fetcher.data : undefined);
+        state.fetchers.set(rf.key, revalidatingFetcher);
+      });
+      return new Map(state.fetchers);
+    }
+    async function fetch2(key, routeId, href2, opts) {
+      abortFetcher(key);
+      let flushSync = (opts && opts.flushSync) === true;
+      let routesToUse = inFlightDataRoutes || dataRoutes;
+      let normalizedPath = normalizeTo(state.location, state.matches, basename, href2, routeId, opts?.relative);
+      let matches = matchRoutes(routesToUse, normalizedPath, basename);
+      let fogOfWar = checkFogOfWar(matches, routesToUse, normalizedPath);
+      if (fogOfWar.active && fogOfWar.matches) {
+        matches = fogOfWar.matches;
+      }
+      if (!matches) {
+        setFetcherError(key, routeId, getInternalRouterError(404, { pathname: normalizedPath }), { flushSync });
+        return;
+      }
+      let { path, submission, error } = normalizeNavigateOptions(true, normalizedPath, opts);
+      if (error) {
+        setFetcherError(key, routeId, error, { flushSync });
+        return;
+      }
+      let match = getTargetMatch(matches, path);
+      let scopedContext = new unstable_RouterContextProvider(init.unstable_getContext ? await init.unstable_getContext() : undefined);
+      let preventScrollReset = (opts && opts.preventScrollReset) === true;
+      if (submission && isMutationMethod(submission.formMethod)) {
+        await handleFetcherAction(key, routeId, path, match, matches, scopedContext, fogOfWar.active, flushSync, preventScrollReset, submission);
+        return;
+      }
+      fetchLoadMatches.set(key, { routeId, path });
+      await handleFetcherLoader(key, routeId, path, match, matches, scopedContext, fogOfWar.active, flushSync, preventScrollReset, submission);
+    }
+    async function handleFetcherAction(key, routeId, path, match, requestMatches, scopedContext, isFogOfWar, flushSync, preventScrollReset, submission) {
+      interruptActiveLoads();
+      fetchLoadMatches.delete(key);
+      function detectAndHandle405Error(m) {
+        if (!m.route.action && !m.route.lazy) {
+          let error = getInternalRouterError(405, {
+            method: submission.formMethod,
+            pathname: path,
+            routeId
+          });
+          setFetcherError(key, routeId, error, { flushSync });
+          return true;
+        }
+        return false;
+      }
+      if (!isFogOfWar && detectAndHandle405Error(match)) {
+        return;
+      }
+      let existingFetcher = state.fetchers.get(key);
+      updateFetcherState(key, getSubmittingFetcher(submission, existingFetcher), {
+        flushSync
+      });
+      let abortController = new AbortController;
+      let fetchRequest = createClientSideRequest(init.history, path, abortController.signal, submission);
+      if (isFogOfWar) {
+        let discoverResult = await discoverRoutes(requestMatches, path, fetchRequest.signal, key);
+        if (discoverResult.type === "aborted") {
+          return;
+        } else if (discoverResult.type === "error") {
+          setFetcherError(key, routeId, discoverResult.error, { flushSync });
+          return;
+        } else if (!discoverResult.matches) {
+          setFetcherError(key, routeId, getInternalRouterError(404, { pathname: path }), { flushSync });
+          return;
+        } else {
+          requestMatches = discoverResult.matches;
+          match = getTargetMatch(requestMatches, path);
+          if (detectAndHandle405Error(match)) {
+            return;
+          }
+        }
+      }
+      fetchControllers.set(key, abortController);
+      let originatingLoadId = incrementingLoadId;
+      let fetchMatches = getTargetedDataStrategyMatches(mapRouteProperties2, manifest, fetchRequest, requestMatches, match, hydrationRouteProperties2, scopedContext);
+      let actionResults = await callDataStrategy(fetchRequest, fetchMatches, scopedContext, key);
+      let actionResult = actionResults[match.route.id];
+      if (fetchRequest.signal.aborted) {
+        if (fetchControllers.get(key) === abortController) {
+          fetchControllers.delete(key);
+        }
+        return;
+      }
+      if (fetchersQueuedForDeletion.has(key)) {
+        if (isRedirectResult(actionResult) || isErrorResult(actionResult)) {
+          updateFetcherState(key, getDoneFetcher(undefined));
+          return;
+        }
+      } else {
+        if (isRedirectResult(actionResult)) {
+          fetchControllers.delete(key);
+          if (pendingNavigationLoadId > originatingLoadId) {
+            updateFetcherState(key, getDoneFetcher(undefined));
+            return;
+          } else {
+            fetchRedirectIds.add(key);
+            updateFetcherState(key, getLoadingFetcher(submission));
+            return startRedirectNavigation(fetchRequest, actionResult, false, {
+              fetcherSubmission: submission,
+              preventScrollReset
+            });
+          }
+        }
+        if (isErrorResult(actionResult)) {
+          setFetcherError(key, routeId, actionResult.error);
+          return;
+        }
+      }
+      let nextLocation = state.navigation.location || state.location;
+      let revalidationRequest = createClientSideRequest(init.history, nextLocation, abortController.signal);
+      let routesToUse = inFlightDataRoutes || dataRoutes;
+      let matches = state.navigation.state !== "idle" ? matchRoutes(routesToUse, state.navigation.location, basename) : state.matches;
+      invariant(matches, "Didn't find any matches after fetcher action");
+      let loadId = ++incrementingLoadId;
+      fetchReloadIds.set(key, loadId);
+      let loadFetcher = getLoadingFetcher(submission, actionResult.data);
+      state.fetchers.set(key, loadFetcher);
+      let { dsMatches, revalidatingFetchers } = getMatchesToLoad(revalidationRequest, scopedContext, mapRouteProperties2, manifest, init.history, state, matches, submission, nextLocation, hydrationRouteProperties2, false, isRevalidationRequired, cancelledFetcherLoads, fetchersQueuedForDeletion, fetchLoadMatches, fetchRedirectIds, routesToUse, basename, [match.route.id, actionResult]);
+      revalidatingFetchers.filter((rf) => rf.key !== key).forEach((rf) => {
+        let staleKey = rf.key;
+        let existingFetcher2 = state.fetchers.get(staleKey);
+        let revalidatingFetcher = getLoadingFetcher(undefined, existingFetcher2 ? existingFetcher2.data : undefined);
+        state.fetchers.set(staleKey, revalidatingFetcher);
+        abortFetcher(staleKey);
+        if (rf.controller) {
+          fetchControllers.set(staleKey, rf.controller);
+        }
+      });
+      updateState({ fetchers: new Map(state.fetchers) });
+      let abortPendingFetchRevalidations = () => revalidatingFetchers.forEach((rf) => abortFetcher(rf.key));
+      abortController.signal.addEventListener("abort", abortPendingFetchRevalidations);
+      let { loaderResults, fetcherResults } = await callLoadersAndMaybeResolveData(dsMatches, revalidatingFetchers, revalidationRequest, scopedContext);
+      if (abortController.signal.aborted) {
+        return;
+      }
+      abortController.signal.removeEventListener("abort", abortPendingFetchRevalidations);
+      fetchReloadIds.delete(key);
+      fetchControllers.delete(key);
+      revalidatingFetchers.forEach((r) => fetchControllers.delete(r.key));
+      let redirect2 = findRedirect(loaderResults);
+      if (redirect2) {
+        return startRedirectNavigation(revalidationRequest, redirect2.result, false, { preventScrollReset });
+      }
+      redirect2 = findRedirect(fetcherResults);
+      if (redirect2) {
+        fetchRedirectIds.add(redirect2.key);
+        return startRedirectNavigation(revalidationRequest, redirect2.result, false, { preventScrollReset });
+      }
+      let { loaderData, errors } = processLoaderData(state, matches, loaderResults, undefined, revalidatingFetchers, fetcherResults);
+      if (state.fetchers.has(key)) {
+        let doneFetcher = getDoneFetcher(actionResult.data);
+        state.fetchers.set(key, doneFetcher);
+      }
+      abortStaleFetchLoads(loadId);
+      if (state.navigation.state === "loading" && loadId > pendingNavigationLoadId) {
+        invariant(pendingAction, "Expected pending action");
+        pendingNavigationController && pendingNavigationController.abort();
+        completeNavigation(state.navigation.location, {
+          matches,
+          loaderData,
+          errors,
+          fetchers: new Map(state.fetchers)
+        });
+      } else {
+        updateState({
+          errors,
+          loaderData: mergeLoaderData(state.loaderData, loaderData, matches, errors),
+          fetchers: new Map(state.fetchers)
+        });
+        isRevalidationRequired = false;
+      }
+    }
+    async function handleFetcherLoader(key, routeId, path, match, matches, scopedContext, isFogOfWar, flushSync, preventScrollReset, submission) {
+      let existingFetcher = state.fetchers.get(key);
+      updateFetcherState(key, getLoadingFetcher(submission, existingFetcher ? existingFetcher.data : undefined), { flushSync });
+      let abortController = new AbortController;
+      let fetchRequest = createClientSideRequest(init.history, path, abortController.signal);
+      if (isFogOfWar) {
+        let discoverResult = await discoverRoutes(matches, path, fetchRequest.signal, key);
+        if (discoverResult.type === "aborted") {
+          return;
+        } else if (discoverResult.type === "error") {
+          setFetcherError(key, routeId, discoverResult.error, { flushSync });
+          return;
+        } else if (!discoverResult.matches) {
+          setFetcherError(key, routeId, getInternalRouterError(404, { pathname: path }), { flushSync });
+          return;
+        } else {
+          matches = discoverResult.matches;
+          match = getTargetMatch(matches, path);
+        }
+      }
+      fetchControllers.set(key, abortController);
+      let originatingLoadId = incrementingLoadId;
+      let dsMatches = getTargetedDataStrategyMatches(mapRouteProperties2, manifest, fetchRequest, matches, match, hydrationRouteProperties2, scopedContext);
+      let results = await callDataStrategy(fetchRequest, dsMatches, scopedContext, key);
+      let result = results[match.route.id];
+      if (fetchControllers.get(key) === abortController) {
+        fetchControllers.delete(key);
+      }
+      if (fetchRequest.signal.aborted) {
+        return;
+      }
+      if (fetchersQueuedForDeletion.has(key)) {
+        updateFetcherState(key, getDoneFetcher(undefined));
+        return;
+      }
+      if (isRedirectResult(result)) {
+        if (pendingNavigationLoadId > originatingLoadId) {
+          updateFetcherState(key, getDoneFetcher(undefined));
+          return;
+        } else {
+          fetchRedirectIds.add(key);
+          await startRedirectNavigation(fetchRequest, result, false, {
+            preventScrollReset
+          });
+          return;
+        }
+      }
+      if (isErrorResult(result)) {
+        setFetcherError(key, routeId, result.error);
+        return;
+      }
+      updateFetcherState(key, getDoneFetcher(result.data));
+    }
+    async function startRedirectNavigation(request, redirect2, isNavigation, {
+      submission,
+      fetcherSubmission,
+      preventScrollReset,
+      replace: replace2
+    } = {}) {
+      if (redirect2.response.headers.has("X-Remix-Revalidate")) {
+        isRevalidationRequired = true;
+      }
+      let location2 = redirect2.response.headers.get("Location");
+      invariant(location2, "Expected a Location header on the redirect Response");
+      location2 = normalizeRedirectLocation(location2, new URL(request.url), basename);
+      let redirectLocation = createLocation(state.location, location2, {
+        _isRedirect: true
+      });
+      if (isBrowser2) {
+        let isDocumentReload = false;
+        if (redirect2.response.headers.has("X-Remix-Reload-Document")) {
+          isDocumentReload = true;
+        } else if (ABSOLUTE_URL_REGEX.test(location2)) {
+          const url = init.history.createURL(location2);
+          isDocumentReload = url.origin !== routerWindow.location.origin || stripBasename(url.pathname, basename) == null;
+        }
+        if (isDocumentReload) {
+          if (replace2) {
+            routerWindow.location.replace(location2);
+          } else {
+            routerWindow.location.assign(location2);
+          }
+          return;
+        }
+      }
+      pendingNavigationController = null;
+      let redirectNavigationType = replace2 === true || redirect2.response.headers.has("X-Remix-Replace") ? "REPLACE" : "PUSH";
+      let { formMethod, formAction, formEncType } = state.navigation;
+      if (!submission && !fetcherSubmission && formMethod && formAction && formEncType) {
+        submission = getSubmissionFromNavigation(state.navigation);
+      }
+      let activeSubmission = submission || fetcherSubmission;
+      if (redirectPreserveMethodStatusCodes.has(redirect2.response.status) && activeSubmission && isMutationMethod(activeSubmission.formMethod)) {
+        await startNavigation(redirectNavigationType, redirectLocation, {
+          submission: {
+            ...activeSubmission,
+            formAction: location2
+          },
+          preventScrollReset: preventScrollReset || pendingPreventScrollReset,
+          enableViewTransition: isNavigation ? pendingViewTransitionEnabled : undefined
+        });
+      } else {
+        let overrideNavigation = getLoadingNavigation(redirectLocation, submission);
+        await startNavigation(redirectNavigationType, redirectLocation, {
+          overrideNavigation,
+          fetcherSubmission,
+          preventScrollReset: preventScrollReset || pendingPreventScrollReset,
+          enableViewTransition: isNavigation ? pendingViewTransitionEnabled : undefined
+        });
+      }
+    }
+    async function callDataStrategy(request, matches, scopedContext, fetcherKey) {
+      let results;
+      let dataResults = {};
+      try {
+        results = await callDataStrategyImpl(dataStrategyImpl, request, matches, fetcherKey, scopedContext, false);
+      } catch (e) {
+        matches.filter((m) => m.shouldLoad).forEach((m) => {
+          dataResults[m.route.id] = {
+            type: "error",
+            error: e
+          };
+        });
+        return dataResults;
+      }
+      for (let [routeId, result] of Object.entries(results)) {
+        if (isRedirectDataStrategyResult(result)) {
+          let response = result.result;
+          dataResults[routeId] = {
+            type: "redirect",
+            response: normalizeRelativeRoutingRedirectResponse(response, request, routeId, matches, basename)
+          };
+        } else {
+          dataResults[routeId] = await convertDataStrategyResultToDataResult(result);
+        }
+      }
+      return dataResults;
+    }
+    async function callLoadersAndMaybeResolveData(matches, fetchersToLoad, request, scopedContext) {
+      let loaderResultsPromise = callDataStrategy(request, matches, scopedContext, null);
+      let fetcherResultsPromise = Promise.all(fetchersToLoad.map(async (f) => {
+        if (f.matches && f.match && f.request && f.controller) {
+          let results = await callDataStrategy(f.request, f.matches, scopedContext, f.key);
+          let result = results[f.match.route.id];
+          return { [f.key]: result };
+        } else {
+          return Promise.resolve({
+            [f.key]: {
+              type: "error",
+              error: getInternalRouterError(404, {
+                pathname: f.path
+              })
+            }
+          });
+        }
+      }));
+      let loaderResults = await loaderResultsPromise;
+      let fetcherResults = (await fetcherResultsPromise).reduce((acc, r) => Object.assign(acc, r), {});
+      return {
+        loaderResults,
+        fetcherResults
+      };
+    }
+    function interruptActiveLoads() {
+      isRevalidationRequired = true;
+      fetchLoadMatches.forEach((_, key) => {
+        if (fetchControllers.has(key)) {
+          cancelledFetcherLoads.add(key);
+        }
+        abortFetcher(key);
+      });
+    }
+    function updateFetcherState(key, fetcher, opts = {}) {
+      state.fetchers.set(key, fetcher);
+      updateState({ fetchers: new Map(state.fetchers) }, { flushSync: (opts && opts.flushSync) === true });
+    }
+    function setFetcherError(key, routeId, error, opts = {}) {
+      let boundaryMatch = findNearestBoundary(state.matches, routeId);
+      deleteFetcher(key);
+      updateState({
+        errors: {
+          [boundaryMatch.route.id]: error
+        },
+        fetchers: new Map(state.fetchers)
+      }, { flushSync: (opts && opts.flushSync) === true });
+    }
+    function getFetcher(key) {
+      activeFetchers.set(key, (activeFetchers.get(key) || 0) + 1);
+      if (fetchersQueuedForDeletion.has(key)) {
+        fetchersQueuedForDeletion.delete(key);
+      }
+      return state.fetchers.get(key) || IDLE_FETCHER;
+    }
+    function deleteFetcher(key) {
+      let fetcher = state.fetchers.get(key);
+      if (fetchControllers.has(key) && !(fetcher && fetcher.state === "loading" && fetchReloadIds.has(key))) {
+        abortFetcher(key);
+      }
+      fetchLoadMatches.delete(key);
+      fetchReloadIds.delete(key);
+      fetchRedirectIds.delete(key);
+      fetchersQueuedForDeletion.delete(key);
+      cancelledFetcherLoads.delete(key);
+      state.fetchers.delete(key);
+    }
+    function queueFetcherForDeletion(key) {
+      let count = (activeFetchers.get(key) || 0) - 1;
+      if (count <= 0) {
+        activeFetchers.delete(key);
+        fetchersQueuedForDeletion.add(key);
+      } else {
+        activeFetchers.set(key, count);
+      }
+      updateState({ fetchers: new Map(state.fetchers) });
+    }
+    function abortFetcher(key) {
+      let controller = fetchControllers.get(key);
+      if (controller) {
+        controller.abort();
+        fetchControllers.delete(key);
+      }
+    }
+    function markFetchersDone(keys) {
+      for (let key of keys) {
+        let fetcher = getFetcher(key);
+        let doneFetcher = getDoneFetcher(fetcher.data);
+        state.fetchers.set(key, doneFetcher);
+      }
+    }
+    function markFetchRedirectsDone() {
+      let doneKeys = [];
+      let updatedFetchers = false;
+      for (let key of fetchRedirectIds) {
+        let fetcher = state.fetchers.get(key);
+        invariant(fetcher, `Expected fetcher: ${key}`);
+        if (fetcher.state === "loading") {
+          fetchRedirectIds.delete(key);
+          doneKeys.push(key);
+          updatedFetchers = true;
+        }
+      }
+      markFetchersDone(doneKeys);
+      return updatedFetchers;
+    }
+    function abortStaleFetchLoads(landedId) {
+      let yeetedKeys = [];
+      for (let [key, id] of fetchReloadIds) {
+        if (id < landedId) {
+          let fetcher = state.fetchers.get(key);
+          invariant(fetcher, `Expected fetcher: ${key}`);
+          if (fetcher.state === "loading") {
+            abortFetcher(key);
+            fetchReloadIds.delete(key);
+            yeetedKeys.push(key);
+          }
+        }
+      }
+      markFetchersDone(yeetedKeys);
+      return yeetedKeys.length > 0;
+    }
+    function getBlocker(key, fn) {
+      let blocker = state.blockers.get(key) || IDLE_BLOCKER;
+      if (blockerFunctions.get(key) !== fn) {
+        blockerFunctions.set(key, fn);
+      }
+      return blocker;
+    }
+    function deleteBlocker(key) {
+      state.blockers.delete(key);
+      blockerFunctions.delete(key);
+    }
+    function updateBlocker(key, newBlocker) {
+      let blocker = state.blockers.get(key) || IDLE_BLOCKER;
+      invariant(blocker.state === "unblocked" && newBlocker.state === "blocked" || blocker.state === "blocked" && newBlocker.state === "blocked" || blocker.state === "blocked" && newBlocker.state === "proceeding" || blocker.state === "blocked" && newBlocker.state === "unblocked" || blocker.state === "proceeding" && newBlocker.state === "unblocked", `Invalid blocker state transition: ${blocker.state} -> ${newBlocker.state}`);
+      let blockers = new Map(state.blockers);
+      blockers.set(key, newBlocker);
+      updateState({ blockers });
+    }
+    function shouldBlockNavigation({
+      currentLocation,
+      nextLocation,
+      historyAction
+    }) {
+      if (blockerFunctions.size === 0) {
+        return;
+      }
+      if (blockerFunctions.size > 1) {
+        warning(false, "A router only supports one blocker at a time");
+      }
+      let entries = Array.from(blockerFunctions.entries());
+      let [blockerKey, blockerFunction] = entries[entries.length - 1];
+      let blocker = state.blockers.get(blockerKey);
+      if (blocker && blocker.state === "proceeding") {
+        return;
+      }
+      if (blockerFunction({ currentLocation, nextLocation, historyAction })) {
+        return blockerKey;
+      }
+    }
+    function handleNavigational404(pathname) {
+      let error = getInternalRouterError(404, { pathname });
+      let routesToUse = inFlightDataRoutes || dataRoutes;
+      let { matches, route } = getShortCircuitMatches(routesToUse);
+      return { notFoundMatches: matches, route, error };
+    }
+    function enableScrollRestoration(positions, getPosition, getKey) {
+      savedScrollPositions2 = positions;
+      getScrollPosition = getPosition;
+      getScrollRestorationKey2 = getKey || null;
+      if (!initialScrollRestored && state.navigation === IDLE_NAVIGATION) {
+        initialScrollRestored = true;
+        let y = getSavedScrollPosition(state.location, state.matches);
+        if (y != null) {
+          updateState({ restoreScrollPosition: y });
+        }
+      }
+      return () => {
+        savedScrollPositions2 = null;
+        getScrollPosition = null;
+        getScrollRestorationKey2 = null;
+      };
+    }
+    function getScrollKey(location2, matches) {
+      if (getScrollRestorationKey2) {
+        let key = getScrollRestorationKey2(location2, matches.map((m) => convertRouteMatchToUiMatch(m, state.loaderData)));
+        return key || location2.key;
+      }
+      return location2.key;
+    }
+    function saveScrollPosition(location2, matches) {
+      if (savedScrollPositions2 && getScrollPosition) {
+        let key = getScrollKey(location2, matches);
+        savedScrollPositions2[key] = getScrollPosition();
+      }
+    }
+    function getSavedScrollPosition(location2, matches) {
+      if (savedScrollPositions2) {
+        let key = getScrollKey(location2, matches);
+        let y = savedScrollPositions2[key];
+        if (typeof y === "number") {
+          return y;
+        }
+      }
+      return null;
+    }
+    function checkFogOfWar(matches, routesToUse, pathname) {
+      if (init.patchRoutesOnNavigation) {
+        if (!matches) {
+          let fogMatches = matchRoutesImpl(routesToUse, pathname, basename, true);
+          return { active: true, matches: fogMatches || [] };
+        } else {
+          if (Object.keys(matches[0].params).length > 0) {
+            let partialMatches = matchRoutesImpl(routesToUse, pathname, basename, true);
+            return { active: true, matches: partialMatches };
+          }
+        }
+      }
+      return { active: false, matches: null };
+    }
+    async function discoverRoutes(matches, pathname, signal, fetcherKey) {
+      if (!init.patchRoutesOnNavigation) {
+        return { type: "success", matches };
+      }
+      let partialMatches = matches;
+      while (true) {
+        let isNonHMR = inFlightDataRoutes == null;
+        let routesToUse = inFlightDataRoutes || dataRoutes;
+        let localManifest = manifest;
+        try {
+          await init.patchRoutesOnNavigation({
+            signal,
+            path: pathname,
+            matches: partialMatches,
+            fetcherKey,
+            patch: (routeId, children) => {
+              if (signal.aborted)
+                return;
+              patchRoutesImpl(routeId, children, routesToUse, localManifest, mapRouteProperties2);
+            }
+          });
+        } catch (e) {
+          return { type: "error", error: e, partialMatches };
+        } finally {
+          if (isNonHMR && !signal.aborted) {
+            dataRoutes = [...dataRoutes];
+          }
+        }
+        if (signal.aborted) {
+          return { type: "aborted" };
+        }
+        let newMatches = matchRoutes(routesToUse, pathname, basename);
+        if (newMatches) {
+          return { type: "success", matches: newMatches };
+        }
+        let newPartialMatches = matchRoutesImpl(routesToUse, pathname, basename, true);
+        if (!newPartialMatches || partialMatches.length === newPartialMatches.length && partialMatches.every((m, i) => m.route.id === newPartialMatches[i].route.id)) {
+          return { type: "success", matches: null };
+        }
+        partialMatches = newPartialMatches;
+      }
+    }
+    function _internalSetRoutes(newRoutes) {
+      manifest = {};
+      inFlightDataRoutes = convertRoutesToDataRoutes(newRoutes, mapRouteProperties2, undefined, manifest);
+    }
+    function patchRoutes(routeId, children) {
+      let isNonHMR = inFlightDataRoutes == null;
+      let routesToUse = inFlightDataRoutes || dataRoutes;
+      patchRoutesImpl(routeId, children, routesToUse, manifest, mapRouteProperties2);
+      if (isNonHMR) {
+        dataRoutes = [...dataRoutes];
+        updateState({});
+      }
+    }
+    router = {
+      get basename() {
+        return basename;
+      },
+      get future() {
+        return future;
+      },
+      get state() {
+        return state;
+      },
+      get routes() {
+        return dataRoutes;
+      },
+      get window() {
+        return routerWindow;
+      },
+      initialize,
+      subscribe,
+      enableScrollRestoration,
+      navigate,
+      fetch: fetch2,
+      revalidate,
+      createHref: (to) => init.history.createHref(to),
+      encodeLocation: (to) => init.history.encodeLocation(to),
+      getFetcher,
+      deleteFetcher: queueFetcherForDeletion,
+      dispose,
+      getBlocker,
+      deleteBlocker,
+      patchRoutes,
+      _internalFetchControllers: fetchControllers,
+      _internalSetRoutes
+    };
+    return router;
+  }
+  function createStaticHandler(routes, opts) {
+    invariant(routes.length > 0, "You must provide a non-empty routes array to createStaticHandler");
+    let manifest = {};
+    let basename = (opts ? opts.basename : null) || "/";
+    let mapRouteProperties2 = opts?.mapRouteProperties || defaultMapRouteProperties;
+    let dataRoutes = convertRoutesToDataRoutes(routes, mapRouteProperties2, undefined, manifest);
+    async function query(request, {
+      requestContext,
+      filterMatchesToLoad,
+      skipLoaderErrorBubbling,
+      skipRevalidation,
+      dataStrategy,
+      unstable_respond: respond
+    } = {}) {
+      let url = new URL(request.url);
+      let method = request.method;
+      let location2 = createLocation("", createPath(url), null, "default");
+      let matches = matchRoutes(dataRoutes, location2, basename);
+      requestContext = requestContext != null ? requestContext : new unstable_RouterContextProvider;
+      if (!isValidMethod(method) && method !== "HEAD") {
+        let error = getInternalRouterError(405, { method });
+        let { matches: methodNotAllowedMatches, route } = getShortCircuitMatches(dataRoutes);
+        let staticContext = {
+          basename,
+          location: location2,
+          matches: methodNotAllowedMatches,
+          loaderData: {},
+          actionData: null,
+          errors: {
+            [route.id]: error
+          },
+          statusCode: error.status,
+          loaderHeaders: {},
+          actionHeaders: {}
+        };
+        return respond ? respond(staticContext) : staticContext;
+      } else if (!matches) {
+        let error = getInternalRouterError(404, { pathname: location2.pathname });
+        let { matches: notFoundMatches, route } = getShortCircuitMatches(dataRoutes);
+        let staticContext = {
+          basename,
+          location: location2,
+          matches: notFoundMatches,
+          loaderData: {},
+          actionData: null,
+          errors: {
+            [route.id]: error
+          },
+          statusCode: error.status,
+          loaderHeaders: {},
+          actionHeaders: {}
+        };
+        return respond ? respond(staticContext) : staticContext;
+      }
+      if (respond && matches.some((m) => m.route.unstable_middleware || typeof m.route.lazy === "object" && m.route.lazy.unstable_middleware)) {
+        invariant(requestContext instanceof unstable_RouterContextProvider, "When using middleware in `staticHandler.query()`, any provided `requestContext` must be an instance of `unstable_RouterContextProvider`");
+        try {
+          await loadLazyMiddlewareForMatches(matches, manifest, mapRouteProperties2);
+          let renderedStaticContext;
+          let response = await runMiddlewarePipeline({
+            request,
+            matches,
+            params: matches[0].params,
+            context: requestContext
+          }, true, async () => {
+            let result2 = await queryImpl(request, location2, matches, requestContext, dataStrategy || null, skipLoaderErrorBubbling === true, null, filterMatchesToLoad || null, skipRevalidation === true);
+            if (isResponse(result2)) {
+              return result2;
+            }
+            renderedStaticContext = { location: location2, basename, ...result2 };
+            let res = await respond(renderedStaticContext);
+            return res;
+          }, async (error, routeId) => {
+            if (isResponse(error)) {
+              return error;
+            }
+            if (renderedStaticContext) {
+              if (routeId in renderedStaticContext.loaderData) {
+                renderedStaticContext.loaderData[routeId] = undefined;
+              }
+              return respond(getStaticContextFromError(dataRoutes, renderedStaticContext, error, findNearestBoundary(matches, routeId).route.id));
+            } else {
+              let loaderIdx = matches.findIndex((m) => m.route.loader);
+              let boundary = loaderIdx >= 0 ? findNearestBoundary(matches, matches[loaderIdx].route.id) : findNearestBoundary(matches);
+              return respond({
+                matches,
+                location: location2,
+                basename,
+                loaderData: {},
+                actionData: null,
+                errors: {
+                  [boundary.route.id]: error
+                },
+                statusCode: isRouteErrorResponse(error) ? error.status : 500,
+                actionHeaders: {},
+                loaderHeaders: {}
+              });
+            }
+          });
+          invariant(isResponse(response), "Expected a response in query()");
+          return response;
+        } catch (e) {
+          if (isResponse(e)) {
+            return e;
+          }
+          throw e;
+        }
+      }
+      let result = await queryImpl(request, location2, matches, requestContext, dataStrategy || null, skipLoaderErrorBubbling === true, null, filterMatchesToLoad || null, skipRevalidation === true);
+      if (isResponse(result)) {
+        return result;
+      }
+      return { location: location2, basename, ...result };
+    }
+    async function queryRoute(request, {
+      routeId,
+      requestContext,
+      dataStrategy,
+      unstable_respond: respond
+    } = {}) {
+      let url = new URL(request.url);
+      let method = request.method;
+      let location2 = createLocation("", createPath(url), null, "default");
+      let matches = matchRoutes(dataRoutes, location2, basename);
+      requestContext = requestContext != null ? requestContext : new unstable_RouterContextProvider;
+      if (!isValidMethod(method) && method !== "HEAD" && method !== "OPTIONS") {
+        throw getInternalRouterError(405, { method });
+      } else if (!matches) {
+        throw getInternalRouterError(404, { pathname: location2.pathname });
+      }
+      let match = routeId ? matches.find((m) => m.route.id === routeId) : getTargetMatch(matches, location2);
+      if (routeId && !match) {
+        throw getInternalRouterError(403, {
+          pathname: location2.pathname,
+          routeId
+        });
+      } else if (!match) {
+        throw getInternalRouterError(404, { pathname: location2.pathname });
+      }
+      if (respond && matches.some((m) => m.route.unstable_middleware || typeof m.route.lazy === "object" && m.route.lazy.unstable_middleware)) {
+        invariant(requestContext instanceof unstable_RouterContextProvider, "When using middleware in `staticHandler.queryRoute()`, any provided `requestContext` must be an instance of `unstable_RouterContextProvider`");
+        await loadLazyMiddlewareForMatches(matches, manifest, mapRouteProperties2);
+        let response = await runMiddlewarePipeline({
+          request,
+          matches,
+          params: matches[0].params,
+          context: requestContext
+        }, true, async () => {
+          let result2 = await queryImpl(request, location2, matches, requestContext, dataStrategy || null, false, match, null, false);
+          if (isResponse(result2)) {
+            return respond(result2);
+          }
+          let error2 = result2.errors ? Object.values(result2.errors)[0] : undefined;
+          if (error2 !== undefined) {
+            throw error2;
+          }
+          let value = result2.actionData ? Object.values(result2.actionData)[0] : Object.values(result2.loaderData)[0];
+          return typeof value === "string" ? new Response(value) : Response.json(value);
+        }, (error2) => {
+          if (isResponse(error2)) {
+            return respond(error2);
+          }
+          return new Response(String(error2), {
+            status: 500,
+            statusText: "Unexpected Server Error"
+          });
+        });
+        return response;
+      }
+      let result = await queryImpl(request, location2, matches, requestContext, dataStrategy || null, false, match, null, false);
+      if (isResponse(result)) {
+        return result;
+      }
+      let error = result.errors ? Object.values(result.errors)[0] : undefined;
+      if (error !== undefined) {
+        throw error;
+      }
+      if (result.actionData) {
+        return Object.values(result.actionData)[0];
+      }
+      if (result.loaderData) {
+        return Object.values(result.loaderData)[0];
+      }
+      return;
+    }
+    async function queryImpl(request, location2, matches, requestContext, dataStrategy, skipLoaderErrorBubbling, routeMatch, filterMatchesToLoad, skipRevalidation) {
+      invariant(request.signal, "query()/queryRoute() requests must contain an AbortController signal");
+      try {
+        if (isMutationMethod(request.method)) {
+          let result2 = await submit(request, matches, routeMatch || getTargetMatch(matches, location2), requestContext, dataStrategy, skipLoaderErrorBubbling, routeMatch != null, filterMatchesToLoad, skipRevalidation);
+          return result2;
+        }
+        let result = await loadRouteData(request, matches, requestContext, dataStrategy, skipLoaderErrorBubbling, routeMatch, filterMatchesToLoad);
+        return isResponse(result) ? result : {
+          ...result,
+          actionData: null,
+          actionHeaders: {}
+        };
+      } catch (e) {
+        if (isDataStrategyResult(e) && isResponse(e.result)) {
+          if (e.type === "error") {
+            throw e.result;
+          }
+          return e.result;
+        }
+        if (isRedirectResponse(e)) {
+          return e;
+        }
+        throw e;
+      }
+    }
+    async function submit(request, matches, actionMatch, requestContext, dataStrategy, skipLoaderErrorBubbling, isRouteRequest, filterMatchesToLoad, skipRevalidation) {
+      let result;
+      if (!actionMatch.route.action && !actionMatch.route.lazy) {
+        let error = getInternalRouterError(405, {
+          method: request.method,
+          pathname: new URL(request.url).pathname,
+          routeId: actionMatch.route.id
+        });
+        if (isRouteRequest) {
+          throw error;
+        }
+        result = {
+          type: "error",
+          error
+        };
+      } else {
+        let dsMatches = getTargetedDataStrategyMatches(mapRouteProperties2, manifest, request, matches, actionMatch, [], requestContext);
+        let results = await callDataStrategy(request, dsMatches, isRouteRequest, requestContext, dataStrategy);
+        result = results[actionMatch.route.id];
+        if (request.signal.aborted) {
+          throwStaticHandlerAbortedError(request, isRouteRequest);
+        }
+      }
+      if (isRedirectResult(result)) {
+        throw new Response(null, {
+          status: result.response.status,
+          headers: {
+            Location: result.response.headers.get("Location")
+          }
+        });
+      }
+      if (isRouteRequest) {
+        if (isErrorResult(result)) {
+          throw result.error;
+        }
+        return {
+          matches: [actionMatch],
+          loaderData: {},
+          actionData: { [actionMatch.route.id]: result.data },
+          errors: null,
+          statusCode: 200,
+          loaderHeaders: {},
+          actionHeaders: {}
+        };
+      }
+      if (skipRevalidation) {
+        if (isErrorResult(result)) {
+          let boundaryMatch = skipLoaderErrorBubbling ? actionMatch : findNearestBoundary(matches, actionMatch.route.id);
+          return {
+            statusCode: isRouteErrorResponse(result.error) ? result.error.status : result.statusCode != null ? result.statusCode : 500,
+            actionData: null,
+            actionHeaders: {
+              ...result.headers ? { [actionMatch.route.id]: result.headers } : {}
+            },
+            matches,
+            loaderData: {},
+            errors: {
+              [boundaryMatch.route.id]: result.error
+            },
+            loaderHeaders: {}
+          };
+        } else {
+          return {
+            actionData: {
+              [actionMatch.route.id]: result.data
+            },
+            actionHeaders: result.headers ? { [actionMatch.route.id]: result.headers } : {},
+            matches,
+            loaderData: {},
+            errors: null,
+            statusCode: result.statusCode || 200,
+            loaderHeaders: {}
+          };
+        }
+      }
+      let loaderRequest = new Request(request.url, {
+        headers: request.headers,
+        redirect: request.redirect,
+        signal: request.signal
+      });
+      if (isErrorResult(result)) {
+        let boundaryMatch = skipLoaderErrorBubbling ? actionMatch : findNearestBoundary(matches, actionMatch.route.id);
+        let handlerContext2 = await loadRouteData(loaderRequest, matches, requestContext, dataStrategy, skipLoaderErrorBubbling, null, filterMatchesToLoad, [boundaryMatch.route.id, result]);
+        return {
+          ...handlerContext2,
+          statusCode: isRouteErrorResponse(result.error) ? result.error.status : result.statusCode != null ? result.statusCode : 500,
+          actionData: null,
+          actionHeaders: {
+            ...result.headers ? { [actionMatch.route.id]: result.headers } : {}
+          }
+        };
+      }
+      let handlerContext = await loadRouteData(loaderRequest, matches, requestContext, dataStrategy, skipLoaderErrorBubbling, null, filterMatchesToLoad);
+      return {
+        ...handlerContext,
+        actionData: {
+          [actionMatch.route.id]: result.data
+        },
+        ...result.statusCode ? { statusCode: result.statusCode } : {},
+        actionHeaders: result.headers ? { [actionMatch.route.id]: result.headers } : {}
+      };
+    }
+    async function loadRouteData(request, matches, requestContext, dataStrategy, skipLoaderErrorBubbling, routeMatch, filterMatchesToLoad, pendingActionResult) {
+      let isRouteRequest = routeMatch != null;
+      if (isRouteRequest && !routeMatch?.route.loader && !routeMatch?.route.lazy) {
+        throw getInternalRouterError(400, {
+          method: request.method,
+          pathname: new URL(request.url).pathname,
+          routeId: routeMatch?.route.id
+        });
+      }
+      let dsMatches;
+      if (routeMatch) {
+        dsMatches = getTargetedDataStrategyMatches(mapRouteProperties2, manifest, request, matches, routeMatch, [], requestContext);
+      } else {
+        let maxIdx = pendingActionResult && isErrorResult(pendingActionResult[1]) ? matches.findIndex((m) => m.route.id === pendingActionResult[0]) - 1 : undefined;
+        dsMatches = matches.map((match, index) => {
+          if (maxIdx != null && index > maxIdx) {
+            return getDataStrategyMatch(mapRouteProperties2, manifest, request, match, [], requestContext, false);
+          }
+          return getDataStrategyMatch(mapRouteProperties2, manifest, request, match, [], requestContext, (match.route.loader || match.route.lazy) != null && (!filterMatchesToLoad || filterMatchesToLoad(match)));
+        });
+      }
+      if (!dataStrategy && !dsMatches.some((m) => m.shouldLoad)) {
+        return {
+          matches,
+          loaderData: {},
+          errors: pendingActionResult && isErrorResult(pendingActionResult[1]) ? {
+            [pendingActionResult[0]]: pendingActionResult[1].error
+          } : null,
+          statusCode: 200,
+          loaderHeaders: {}
+        };
+      }
+      let results = await callDataStrategy(request, dsMatches, isRouteRequest, requestContext, dataStrategy);
+      if (request.signal.aborted) {
+        throwStaticHandlerAbortedError(request, isRouteRequest);
+      }
+      let handlerContext = processRouteLoaderData(matches, results, pendingActionResult, true, skipLoaderErrorBubbling);
+      return {
+        ...handlerContext,
+        matches
+      };
+    }
+    async function callDataStrategy(request, matches, isRouteRequest, requestContext, dataStrategy) {
+      let results = await callDataStrategyImpl(dataStrategy || defaultDataStrategy, request, matches, null, requestContext, true);
+      let dataResults = {};
+      await Promise.all(matches.map(async (match) => {
+        if (!(match.route.id in results)) {
+          return;
+        }
+        let result = results[match.route.id];
+        if (isRedirectDataStrategyResult(result)) {
+          let response = result.result;
+          throw normalizeRelativeRoutingRedirectResponse(response, request, match.route.id, matches, basename);
+        }
+        if (isResponse(result.result) && isRouteRequest) {
+          throw result;
+        }
+        dataResults[match.route.id] = await convertDataStrategyResultToDataResult(result);
+      }));
+      return dataResults;
+    }
+    return {
+      dataRoutes,
+      query,
+      queryRoute
+    };
+  }
+  function getStaticContextFromError(routes, handlerContext, error, boundaryId) {
+    let errorBoundaryId = boundaryId || handlerContext._deepestRenderedBoundaryId || routes[0].id;
+    return {
+      ...handlerContext,
+      statusCode: isRouteErrorResponse(error) ? error.status : 500,
+      errors: {
+        [errorBoundaryId]: error
+      }
+    };
+  }
+  function throwStaticHandlerAbortedError(request, isRouteRequest) {
+    if (request.signal.reason !== undefined) {
+      throw request.signal.reason;
+    }
+    let method = isRouteRequest ? "queryRoute" : "query";
+    throw new Error(`${method}() call aborted without an \`AbortSignal.reason\`: ${request.method} ${request.url}`);
+  }
+  function isSubmissionNavigation(opts) {
+    return opts != null && (("formData" in opts) && opts.formData != null || ("body" in opts) && opts.body !== undefined);
+  }
+  function normalizeTo(location2, matches, basename, to, fromRouteId, relative) {
+    let contextualMatches;
+    let activeRouteMatch;
+    if (fromRouteId) {
+      contextualMatches = [];
+      for (let match of matches) {
+        contextualMatches.push(match);
+        if (match.route.id === fromRouteId) {
+          activeRouteMatch = match;
+          break;
+        }
+      }
+    } else {
+      contextualMatches = matches;
+      activeRouteMatch = matches[matches.length - 1];
+    }
+    let path = resolveTo(to ? to : ".", getResolveToMatches(contextualMatches), stripBasename(location2.pathname, basename) || location2.pathname, relative === "path");
+    if (to == null) {
+      path.search = location2.search;
+      path.hash = location2.hash;
+    }
+    if ((to == null || to === "" || to === ".") && activeRouteMatch) {
+      let nakedIndex = hasNakedIndexQuery(path.search);
+      if (activeRouteMatch.route.index && !nakedIndex) {
+        path.search = path.search ? path.search.replace(/^\?/, "?index&") : "?index";
+      } else if (!activeRouteMatch.route.index && nakedIndex) {
+        let params = new URLSearchParams(path.search);
+        let indexValues = params.getAll("index");
+        params.delete("index");
+        indexValues.filter((v) => v).forEach((v) => params.append("index", v));
+        let qs = params.toString();
+        path.search = qs ? `?${qs}` : "";
+      }
+    }
+    if (basename !== "/") {
+      path.pathname = path.pathname === "/" ? basename : joinPaths([basename, path.pathname]);
+    }
+    return createPath(path);
+  }
+  function normalizeNavigateOptions(isFetcher, path, opts) {
+    if (!opts || !isSubmissionNavigation(opts)) {
+      return { path };
+    }
+    if (opts.formMethod && !isValidMethod(opts.formMethod)) {
+      return {
+        path,
+        error: getInternalRouterError(405, { method: opts.formMethod })
+      };
+    }
+    let getInvalidBodyError = () => ({
+      path,
+      error: getInternalRouterError(400, { type: "invalid-body" })
+    });
+    let rawFormMethod = opts.formMethod || "get";
+    let formMethod = rawFormMethod.toUpperCase();
+    let formAction = stripHashFromPath(path);
+    if (opts.body !== undefined) {
+      if (opts.formEncType === "text/plain") {
+        if (!isMutationMethod(formMethod)) {
+          return getInvalidBodyError();
+        }
+        let text = typeof opts.body === "string" ? opts.body : opts.body instanceof FormData || opts.body instanceof URLSearchParams ? Array.from(opts.body.entries()).reduce((acc, [name, value]) => `${acc}${name}=${value}
+`, "") : String(opts.body);
+        return {
+          path,
+          submission: {
+            formMethod,
+            formAction,
+            formEncType: opts.formEncType,
+            formData: undefined,
+            json: undefined,
+            text
+          }
+        };
+      } else if (opts.formEncType === "application/json") {
+        if (!isMutationMethod(formMethod)) {
+          return getInvalidBodyError();
+        }
+        try {
+          let json = typeof opts.body === "string" ? JSON.parse(opts.body) : opts.body;
+          return {
+            path,
+            submission: {
+              formMethod,
+              formAction,
+              formEncType: opts.formEncType,
+              formData: undefined,
+              json,
+              text: undefined
+            }
+          };
+        } catch (e) {
+          return getInvalidBodyError();
+        }
+      }
+    }
+    invariant(typeof FormData === "function", "FormData is not available in this environment");
+    let searchParams;
+    let formData;
+    if (opts.formData) {
+      searchParams = convertFormDataToSearchParams(opts.formData);
+      formData = opts.formData;
+    } else if (opts.body instanceof FormData) {
+      searchParams = convertFormDataToSearchParams(opts.body);
+      formData = opts.body;
+    } else if (opts.body instanceof URLSearchParams) {
+      searchParams = opts.body;
+      formData = convertSearchParamsToFormData(searchParams);
+    } else if (opts.body == null) {
+      searchParams = new URLSearchParams;
+      formData = new FormData;
+    } else {
+      try {
+        searchParams = new URLSearchParams(opts.body);
+        formData = convertSearchParamsToFormData(searchParams);
+      } catch (e) {
+        return getInvalidBodyError();
+      }
+    }
+    let submission = {
+      formMethod,
+      formAction,
+      formEncType: opts && opts.formEncType || "application/x-www-form-urlencoded",
+      formData,
+      json: undefined,
+      text: undefined
+    };
+    if (isMutationMethod(submission.formMethod)) {
+      return { path, submission };
+    }
+    let parsedPath = parsePath(path);
+    if (isFetcher && parsedPath.search && hasNakedIndexQuery(parsedPath.search)) {
+      searchParams.append("index", "");
+    }
+    parsedPath.search = `?${searchParams}`;
+    return { path: createPath(parsedPath), submission };
+  }
+  function getMatchesToLoad(request, scopedContext, mapRouteProperties2, manifest, history, state, matches, submission, location2, lazyRoutePropertiesToSkip, initialHydration, isRevalidationRequired, cancelledFetcherLoads, fetchersQueuedForDeletion, fetchLoadMatches, fetchRedirectIds, routesToUse, basename, pendingActionResult) {
+    let actionResult = pendingActionResult ? isErrorResult(pendingActionResult[1]) ? pendingActionResult[1].error : pendingActionResult[1].data : undefined;
+    let currentUrl = history.createURL(state.location);
+    let nextUrl = history.createURL(location2);
+    let maxIdx;
+    if (initialHydration && state.errors) {
+      let boundaryId = Object.keys(state.errors)[0];
+      maxIdx = matches.findIndex((m) => m.route.id === boundaryId);
+    } else if (pendingActionResult && isErrorResult(pendingActionResult[1])) {
+      let boundaryId = pendingActionResult[0];
+      maxIdx = matches.findIndex((m) => m.route.id === boundaryId) - 1;
+    }
+    let actionStatus = pendingActionResult ? pendingActionResult[1].statusCode : undefined;
+    let shouldSkipRevalidation = actionStatus && actionStatus >= 400;
+    let baseShouldRevalidateArgs = {
+      currentUrl,
+      currentParams: state.matches[0]?.params || {},
+      nextUrl,
+      nextParams: matches[0].params,
+      ...submission,
+      actionResult,
+      actionStatus
+    };
+    let dsMatches = matches.map((match, index) => {
+      let { route } = match;
+      let forceShouldLoad = null;
+      if (maxIdx != null && index > maxIdx) {
+        forceShouldLoad = false;
+      } else if (route.lazy) {
+        forceShouldLoad = true;
+      } else if (route.loader == null) {
+        forceShouldLoad = false;
+      } else if (initialHydration) {
+        forceShouldLoad = shouldLoadRouteOnHydration(route, state.loaderData, state.errors);
+      } else if (isNewLoader(state.loaderData, state.matches[index], match)) {
+        forceShouldLoad = true;
+      }
+      if (forceShouldLoad !== null) {
+        return getDataStrategyMatch(mapRouteProperties2, manifest, request, match, lazyRoutePropertiesToSkip, scopedContext, forceShouldLoad);
+      }
+      let defaultShouldRevalidate = shouldSkipRevalidation ? false : isRevalidationRequired || currentUrl.pathname + currentUrl.search === nextUrl.pathname + nextUrl.search || currentUrl.search !== nextUrl.search || isNewRouteInstance(state.matches[index], match);
+      let shouldRevalidateArgs = {
+        ...baseShouldRevalidateArgs,
+        defaultShouldRevalidate
+      };
+      let shouldLoad = shouldRevalidateLoader(match, shouldRevalidateArgs);
+      return getDataStrategyMatch(mapRouteProperties2, manifest, request, match, lazyRoutePropertiesToSkip, scopedContext, shouldLoad, shouldRevalidateArgs);
+    });
+    let revalidatingFetchers = [];
+    fetchLoadMatches.forEach((f, key) => {
+      if (initialHydration || !matches.some((m) => m.route.id === f.routeId) || fetchersQueuedForDeletion.has(key)) {
+        return;
+      }
+      let fetcherMatches = matchRoutes(routesToUse, f.path, basename);
+      if (!fetcherMatches) {
+        revalidatingFetchers.push({
+          key,
+          routeId: f.routeId,
+          path: f.path,
+          matches: null,
+          match: null,
+          request: null,
+          controller: null
+        });
+        return;
+      }
+      if (fetchRedirectIds.has(key)) {
+        return;
+      }
+      let fetcher = state.fetchers.get(key);
+      let fetcherMatch = getTargetMatch(fetcherMatches, f.path);
+      let fetchController = new AbortController;
+      let fetchRequest = createClientSideRequest(history, f.path, fetchController.signal);
+      let fetcherDsMatches = null;
+      if (cancelledFetcherLoads.has(key)) {
+        cancelledFetcherLoads.delete(key);
+        fetcherDsMatches = getTargetedDataStrategyMatches(mapRouteProperties2, manifest, fetchRequest, fetcherMatches, fetcherMatch, lazyRoutePropertiesToSkip, scopedContext);
+      } else if (fetcher && fetcher.state !== "idle" && fetcher.data === undefined) {
+        if (isRevalidationRequired) {
+          fetcherDsMatches = getTargetedDataStrategyMatches(mapRouteProperties2, manifest, fetchRequest, fetcherMatches, fetcherMatch, lazyRoutePropertiesToSkip, scopedContext);
+        }
+      } else {
+        let shouldRevalidateArgs = {
+          ...baseShouldRevalidateArgs,
+          defaultShouldRevalidate: shouldSkipRevalidation ? false : isRevalidationRequired
+        };
+        if (shouldRevalidateLoader(fetcherMatch, shouldRevalidateArgs)) {
+          fetcherDsMatches = getTargetedDataStrategyMatches(mapRouteProperties2, manifest, fetchRequest, fetcherMatches, fetcherMatch, lazyRoutePropertiesToSkip, scopedContext, shouldRevalidateArgs);
+        }
+      }
+      if (fetcherDsMatches) {
+        revalidatingFetchers.push({
+          key,
+          routeId: f.routeId,
+          path: f.path,
+          matches: fetcherDsMatches,
+          match: fetcherMatch,
+          request: fetchRequest,
+          controller: fetchController
+        });
+      }
+    });
+    return { dsMatches, revalidatingFetchers };
+  }
+  function shouldLoadRouteOnHydration(route, loaderData, errors) {
+    if (route.lazy) {
+      return true;
+    }
+    if (!route.loader) {
+      return false;
+    }
+    let hasData = loaderData != null && loaderData[route.id] !== undefined;
+    let hasError = errors != null && errors[route.id] !== undefined;
+    if (!hasData && hasError) {
+      return false;
+    }
+    if (typeof route.loader === "function" && route.loader.hydrate === true) {
+      return true;
+    }
+    return !hasData && !hasError;
+  }
+  function isNewLoader(currentLoaderData, currentMatch, match) {
+    let isNew = !currentMatch || match.route.id !== currentMatch.route.id;
+    let isMissingData = !currentLoaderData.hasOwnProperty(match.route.id);
+    return isNew || isMissingData;
+  }
+  function isNewRouteInstance(currentMatch, match) {
+    let currentPath = currentMatch.route.path;
+    return currentMatch.pathname !== match.pathname || currentPath != null && currentPath.endsWith("*") && currentMatch.params["*"] !== match.params["*"];
+  }
+  function shouldRevalidateLoader(loaderMatch, arg) {
+    if (loaderMatch.route.shouldRevalidate) {
+      let routeChoice = loaderMatch.route.shouldRevalidate(arg);
+      if (typeof routeChoice === "boolean") {
+        return routeChoice;
+      }
+    }
+    return arg.defaultShouldRevalidate;
+  }
+  function patchRoutesImpl(routeId, children, routesToUse, manifest, mapRouteProperties2) {
+    let childrenToPatch;
+    if (routeId) {
+      let route = manifest[routeId];
+      invariant(route, `No route found to patch children into: routeId = ${routeId}`);
+      if (!route.children) {
+        route.children = [];
+      }
+      childrenToPatch = route.children;
+    } else {
+      childrenToPatch = routesToUse;
+    }
+    let uniqueChildren = children.filter((newRoute) => !childrenToPatch.some((existingRoute) => isSameRoute(newRoute, existingRoute)));
+    let newRoutes = convertRoutesToDataRoutes(uniqueChildren, mapRouteProperties2, [routeId || "_", "patch", String(childrenToPatch?.length || "0")], manifest);
+    childrenToPatch.push(...newRoutes);
+  }
+  function isSameRoute(newRoute, existingRoute) {
+    if ("id" in newRoute && "id" in existingRoute && newRoute.id === existingRoute.id) {
+      return true;
+    }
+    if (!(newRoute.index === existingRoute.index && newRoute.path === existingRoute.path && newRoute.caseSensitive === existingRoute.caseSensitive)) {
+      return false;
+    }
+    if ((!newRoute.children || newRoute.children.length === 0) && (!existingRoute.children || existingRoute.children.length === 0)) {
+      return true;
+    }
+    return newRoute.children.every((aChild, i) => existingRoute.children?.some((bChild) => isSameRoute(aChild, bChild)));
+  }
+  var lazyRoutePropertyCache = /* @__PURE__ */ new WeakMap;
+  var loadLazyRouteProperty = ({
+    key,
+    route,
+    manifest,
+    mapRouteProperties: mapRouteProperties2
+  }) => {
+    let routeToUpdate = manifest[route.id];
+    invariant(routeToUpdate, "No route found in manifest");
+    if (!routeToUpdate.lazy || typeof routeToUpdate.lazy !== "object") {
+      return;
+    }
+    let lazyFn = routeToUpdate.lazy[key];
+    if (!lazyFn) {
+      return;
+    }
+    let cache = lazyRoutePropertyCache.get(routeToUpdate);
+    if (!cache) {
+      cache = {};
+      lazyRoutePropertyCache.set(routeToUpdate, cache);
+    }
+    let cachedPromise = cache[key];
+    if (cachedPromise) {
+      return cachedPromise;
+    }
+    let propertyPromise = (async () => {
+      let isUnsupported = isUnsupportedLazyRouteObjectKey(key);
+      let staticRouteValue = routeToUpdate[key];
+      let isStaticallyDefined = staticRouteValue !== undefined && key !== "hasErrorBoundary";
+      if (isUnsupported) {
+        warning(!isUnsupported, "Route property " + key + " is not a supported lazy route property. This property will be ignored.");
+        cache[key] = Promise.resolve();
+      } else if (isStaticallyDefined) {
+        warning(false, `Route "${routeToUpdate.id}" has a static property "${key}" defined. The lazy property will be ignored.`);
+      } else {
+        let value = await lazyFn();
+        if (value != null) {
+          Object.assign(routeToUpdate, { [key]: value });
+          Object.assign(routeToUpdate, mapRouteProperties2(routeToUpdate));
+        }
+      }
+      if (typeof routeToUpdate.lazy === "object") {
+        routeToUpdate.lazy[key] = undefined;
+        if (Object.values(routeToUpdate.lazy).every((value) => value === undefined)) {
+          routeToUpdate.lazy = undefined;
+        }
+      }
+    })();
+    cache[key] = propertyPromise;
+    return propertyPromise;
+  };
+  var lazyRouteFunctionCache = /* @__PURE__ */ new WeakMap;
+  function loadLazyRoute(route, type, manifest, mapRouteProperties2, lazyRoutePropertiesToSkip) {
+    let routeToUpdate = manifest[route.id];
+    invariant(routeToUpdate, "No route found in manifest");
+    if (!route.lazy) {
+      return {
+        lazyRoutePromise: undefined,
+        lazyHandlerPromise: undefined
+      };
+    }
+    if (typeof route.lazy === "function") {
+      let cachedPromise = lazyRouteFunctionCache.get(routeToUpdate);
+      if (cachedPromise) {
+        return {
+          lazyRoutePromise: cachedPromise,
+          lazyHandlerPromise: cachedPromise
+        };
+      }
+      let lazyRoutePromise2 = (async () => {
+        invariant(typeof route.lazy === "function", "No lazy route function found");
+        let lazyRoute = await route.lazy();
+        let routeUpdates = {};
+        for (let lazyRouteProperty in lazyRoute) {
+          let lazyValue = lazyRoute[lazyRouteProperty];
+          if (lazyValue === undefined) {
+            continue;
+          }
+          let isUnsupported = isUnsupportedLazyRouteFunctionKey(lazyRouteProperty);
+          let staticRouteValue = routeToUpdate[lazyRouteProperty];
+          let isStaticallyDefined = staticRouteValue !== undefined && lazyRouteProperty !== "hasErrorBoundary";
+          if (isUnsupported) {
+            warning(!isUnsupported, "Route property " + lazyRouteProperty + " is not a supported property to be returned from a lazy route function. This property will be ignored.");
+          } else if (isStaticallyDefined) {
+            warning(!isStaticallyDefined, `Route "${routeToUpdate.id}" has a static property "${lazyRouteProperty}" defined but its lazy function is also returning a value for this property. The lazy route property "${lazyRouteProperty}" will be ignored.`);
+          } else {
+            routeUpdates[lazyRouteProperty] = lazyValue;
+          }
+        }
+        Object.assign(routeToUpdate, routeUpdates);
+        Object.assign(routeToUpdate, {
+          ...mapRouteProperties2(routeToUpdate),
+          lazy: undefined
+        });
+      })();
+      lazyRouteFunctionCache.set(routeToUpdate, lazyRoutePromise2);
+      lazyRoutePromise2.catch(() => {
+      });
+      return {
+        lazyRoutePromise: lazyRoutePromise2,
+        lazyHandlerPromise: lazyRoutePromise2
+      };
+    }
+    let lazyKeys = Object.keys(route.lazy);
+    let lazyPropertyPromises = [];
+    let lazyHandlerPromise = undefined;
+    for (let key of lazyKeys) {
+      if (lazyRoutePropertiesToSkip && lazyRoutePropertiesToSkip.includes(key)) {
+        continue;
+      }
+      let promise = loadLazyRouteProperty({
+        key,
+        route,
+        manifest,
+        mapRouteProperties: mapRouteProperties2
+      });
+      if (promise) {
+        lazyPropertyPromises.push(promise);
+        if (key === type) {
+          lazyHandlerPromise = promise;
+        }
+      }
+    }
+    let lazyRoutePromise = lazyPropertyPromises.length > 0 ? Promise.all(lazyPropertyPromises).then(() => {
+    }) : undefined;
+    lazyRoutePromise?.catch(() => {
+    });
+    lazyHandlerPromise?.catch(() => {
+    });
+    return {
+      lazyRoutePromise,
+      lazyHandlerPromise
+    };
+  }
+  function isNonNullable(value) {
+    return value !== undefined;
+  }
+  function loadLazyMiddlewareForMatches(matches, manifest, mapRouteProperties2) {
+    let promises = matches.map(({ route }) => {
+      if (typeof route.lazy !== "object" || !route.lazy.unstable_middleware) {
+        return;
+      }
+      return loadLazyRouteProperty({
+        key: "unstable_middleware",
+        route,
+        manifest,
+        mapRouteProperties: mapRouteProperties2
+      });
+    }).filter(isNonNullable);
+    return promises.length > 0 ? Promise.all(promises) : undefined;
+  }
+  async function defaultDataStrategy(args) {
+    let matchesToLoad = args.matches.filter((m) => m.shouldLoad);
+    let keyedResults = {};
+    let results = await Promise.all(matchesToLoad.map((m) => m.resolve()));
+    results.forEach((result, i) => {
+      keyedResults[matchesToLoad[i].route.id] = result;
+    });
+    return keyedResults;
+  }
+  async function defaultDataStrategyWithMiddleware(args) {
+    if (!args.matches.some((m) => m.route.unstable_middleware)) {
+      return defaultDataStrategy(args);
+    }
+    return runMiddlewarePipeline(args, false, () => defaultDataStrategy(args), (error, routeId) => ({ [routeId]: { type: "error", result: error } }));
+  }
+  async function runMiddlewarePipeline(args, propagateResult, handler, errorHandler) {
+    let { matches, request, params, context } = args;
+    let middlewareState = {
+      handlerResult: undefined
+    };
+    try {
+      let tuples = matches.flatMap((m) => m.route.unstable_middleware ? m.route.unstable_middleware.map((fn) => [m.route.id, fn]) : []);
+      let result = await callRouteMiddleware({ request, params, context }, tuples, propagateResult, middlewareState, handler);
+      return propagateResult ? result : middlewareState.handlerResult;
+    } catch (e) {
+      if (!middlewareState.middlewareError) {
+        throw e;
+      }
+      let result = await errorHandler(middlewareState.middlewareError.error, middlewareState.middlewareError.routeId);
+      if (propagateResult || !middlewareState.handlerResult) {
+        return result;
+      }
+      return Object.assign(middlewareState.handlerResult, result);
+    }
+  }
+  async function callRouteMiddleware(args, middlewares, propagateResult, middlewareState, handler, idx = 0) {
+    let { request } = args;
+    if (request.signal.aborted) {
+      if (request.signal.reason) {
+        throw request.signal.reason;
+      }
+      throw new Error(`Request aborted without an \`AbortSignal.reason\`: ${request.method} ${request.url}`);
+    }
+    let tuple = middlewares[idx];
+    if (!tuple) {
+      middlewareState.handlerResult = await handler();
+      return middlewareState.handlerResult;
+    }
+    let [routeId, middleware] = tuple;
+    let nextCalled = false;
+    let nextResult = undefined;
+    let next = async () => {
+      if (nextCalled) {
+        throw new Error("You may only call `next()` once per middleware");
+      }
+      nextCalled = true;
+      let result = await callRouteMiddleware(args, middlewares, propagateResult, middlewareState, handler, idx + 1);
+      if (propagateResult) {
+        nextResult = result;
+        return nextResult;
+      }
+    };
+    try {
+      let result = await middleware({
+        request: args.request,
+        params: args.params,
+        context: args.context
+      }, next);
+      if (nextCalled) {
+        if (result === undefined) {
+          return nextResult;
+        } else {
+          return result;
+        }
+      } else {
+        return next();
+      }
+    } catch (error) {
+      if (!middlewareState.middlewareError) {
+        middlewareState.middlewareError = { routeId, error };
+      } else if (middlewareState.middlewareError.error !== error) {
+        middlewareState.middlewareError = { routeId, error };
+      }
+      throw error;
+    }
+  }
+  function getDataStrategyMatchLazyPromises(mapRouteProperties2, manifest, request, match, lazyRoutePropertiesToSkip) {
+    let lazyMiddlewarePromise = loadLazyRouteProperty({
+      key: "unstable_middleware",
+      route: match.route,
+      manifest,
+      mapRouteProperties: mapRouteProperties2
+    });
+    let lazyRoutePromises = loadLazyRoute(match.route, isMutationMethod(request.method) ? "action" : "loader", manifest, mapRouteProperties2, lazyRoutePropertiesToSkip);
+    return {
+      middleware: lazyMiddlewarePromise,
+      route: lazyRoutePromises.lazyRoutePromise,
+      handler: lazyRoutePromises.lazyHandlerPromise
+    };
+  }
+  function getDataStrategyMatch(mapRouteProperties2, manifest, request, match, lazyRoutePropertiesToSkip, scopedContext, shouldLoad, unstable_shouldRevalidateArgs = null) {
+    let isUsingNewApi = false;
+    let _lazyPromises = getDataStrategyMatchLazyPromises(mapRouteProperties2, manifest, request, match, lazyRoutePropertiesToSkip);
+    return {
+      ...match,
+      _lazyPromises,
+      shouldLoad,
+      unstable_shouldRevalidateArgs,
+      unstable_shouldCallHandler(defaultShouldRevalidate) {
+        isUsingNewApi = true;
+        if (!unstable_shouldRevalidateArgs) {
+          return shouldLoad;
+        }
+        if (typeof defaultShouldRevalidate === "boolean") {
+          return shouldRevalidateLoader(match, {
+            ...unstable_shouldRevalidateArgs,
+            defaultShouldRevalidate
+          });
+        }
+        return shouldRevalidateLoader(match, unstable_shouldRevalidateArgs);
+      },
+      resolve(handlerOverride) {
+        if (isUsingNewApi || shouldLoad || handlerOverride && request.method === "GET" && (match.route.lazy || match.route.loader)) {
+          return callLoaderOrAction({
+            request,
+            match,
+            lazyHandlerPromise: _lazyPromises?.handler,
+            lazyRoutePromise: _lazyPromises?.route,
+            handlerOverride,
+            scopedContext
+          });
+        }
+        return Promise.resolve({ type: "data", result: undefined });
+      }
+    };
+  }
+  function getTargetedDataStrategyMatches(mapRouteProperties2, manifest, request, matches, targetMatch, lazyRoutePropertiesToSkip, scopedContext, shouldRevalidateArgs = null) {
+    return matches.map((match) => {
+      if (match.route.id !== targetMatch.route.id) {
+        return {
+          ...match,
+          shouldLoad: false,
+          unstable_shouldRevalidateArgs: shouldRevalidateArgs,
+          unstable_shouldCallHandler: () => false,
+          _lazyPromises: getDataStrategyMatchLazyPromises(mapRouteProperties2, manifest, request, match, lazyRoutePropertiesToSkip),
+          resolve: () => Promise.resolve({ type: "data", result: undefined })
+        };
+      }
+      return getDataStrategyMatch(mapRouteProperties2, manifest, request, match, lazyRoutePropertiesToSkip, scopedContext, true, shouldRevalidateArgs);
+    });
+  }
+  async function callDataStrategyImpl(dataStrategyImpl, request, matches, fetcherKey, scopedContext, isStaticHandler) {
+    if (matches.some((m) => m._lazyPromises?.middleware)) {
+      await Promise.all(matches.map((m) => m._lazyPromises?.middleware));
+    }
+    let dataStrategyArgs = {
+      request,
+      params: matches[0].params,
+      context: scopedContext,
+      matches
+    };
+    let unstable_runClientMiddleware = isStaticHandler ? () => {
+      throw new Error("You cannot call `unstable_runClientMiddleware()` from a static handler `dataStrategy`. Middleware is run outside of `dataStrategy` during SSR in order to bubble up the Response.  You can enable middleware via the `respond` API in `query`/`queryRoute`");
+    } : (cb) => {
+      let typedDataStrategyArgs = dataStrategyArgs;
+      return runMiddlewarePipeline(typedDataStrategyArgs, false, () => cb({
+        ...typedDataStrategyArgs,
+        fetcherKey,
+        unstable_runClientMiddleware: () => {
+          throw new Error("Cannot call `unstable_runClientMiddleware()` from within an `unstable_runClientMiddleware` handler");
+        }
+      }), (error, routeId) => ({
+        [routeId]: { type: "error", result: error }
+      }));
+    };
+    let results = await dataStrategyImpl({
+      ...dataStrategyArgs,
+      fetcherKey,
+      unstable_runClientMiddleware
+    });
+    try {
+      await Promise.all(matches.flatMap((m) => [m._lazyPromises?.handler, m._lazyPromises?.route]));
+    } catch (e) {
+    }
+    return results;
+  }
+  async function callLoaderOrAction({
+    request,
+    match,
+    lazyHandlerPromise,
+    lazyRoutePromise,
+    handlerOverride,
+    scopedContext
+  }) {
+    let result;
+    let onReject;
+    let isAction = isMutationMethod(request.method);
+    let type = isAction ? "action" : "loader";
+    let runHandler = (handler) => {
+      let reject;
+      let abortPromise = new Promise((_, r) => reject = r);
+      onReject = () => reject();
+      request.signal.addEventListener("abort", onReject);
+      let actualHandler = (ctx) => {
+        if (typeof handler !== "function") {
+          return Promise.reject(new Error(`You cannot call the handler for a route which defines a boolean "${type}" [routeId: ${match.route.id}]`));
+        }
+        return handler({
+          request,
+          params: match.params,
+          context: scopedContext
+        }, ...ctx !== undefined ? [ctx] : []);
+      };
+      let handlerPromise = (async () => {
+        try {
+          let val = await (handlerOverride ? handlerOverride((ctx) => actualHandler(ctx)) : actualHandler());
+          return { type: "data", result: val };
+        } catch (e) {
+          return { type: "error", result: e };
+        }
+      })();
+      return Promise.race([handlerPromise, abortPromise]);
+    };
+    try {
+      let handler = isAction ? match.route.action : match.route.loader;
+      if (lazyHandlerPromise || lazyRoutePromise) {
+        if (handler) {
+          let handlerError;
+          let [value] = await Promise.all([
+            runHandler(handler).catch((e) => {
+              handlerError = e;
+            }),
+            lazyHandlerPromise,
+            lazyRoutePromise
+          ]);
+          if (handlerError !== undefined) {
+            throw handlerError;
+          }
+          result = value;
+        } else {
+          await lazyHandlerPromise;
+          let handler2 = isAction ? match.route.action : match.route.loader;
+          if (handler2) {
+            [result] = await Promise.all([runHandler(handler2), lazyRoutePromise]);
+          } else if (type === "action") {
+            let url = new URL(request.url);
+            let pathname = url.pathname + url.search;
+            throw getInternalRouterError(405, {
+              method: request.method,
+              pathname,
+              routeId: match.route.id
+            });
+          } else {
+            return { type: "data", result: undefined };
+          }
+        }
+      } else if (!handler) {
+        let url = new URL(request.url);
+        let pathname = url.pathname + url.search;
+        throw getInternalRouterError(404, {
+          pathname
+        });
+      } else {
+        result = await runHandler(handler);
+      }
+    } catch (e) {
+      return { type: "error", result: e };
+    } finally {
+      if (onReject) {
+        request.signal.removeEventListener("abort", onReject);
+      }
+    }
+    return result;
+  }
+  async function convertDataStrategyResultToDataResult(dataStrategyResult) {
+    let { result, type } = dataStrategyResult;
+    if (isResponse(result)) {
+      let data2;
+      try {
+        let contentType = result.headers.get("Content-Type");
+        if (contentType && /\bapplication\/json\b/.test(contentType)) {
+          if (result.body == null) {
+            data2 = null;
+          } else {
+            data2 = await result.json();
+          }
+        } else {
+          data2 = await result.text();
+        }
+      } catch (e) {
+        return { type: "error", error: e };
+      }
+      if (type === "error") {
+        return {
+          type: "error",
+          error: new ErrorResponseImpl(result.status, result.statusText, data2),
+          statusCode: result.status,
+          headers: result.headers
+        };
+      }
+      return {
+        type: "data",
+        data: data2,
+        statusCode: result.status,
+        headers: result.headers
+      };
+    }
+    if (type === "error") {
+      if (isDataWithResponseInit(result)) {
+        if (result.data instanceof Error) {
+          return {
+            type: "error",
+            error: result.data,
+            statusCode: result.init?.status,
+            headers: result.init?.headers ? new Headers(result.init.headers) : undefined
+          };
+        }
+        return {
+          type: "error",
+          error: new ErrorResponseImpl(result.init?.status || 500, undefined, result.data),
+          statusCode: isRouteErrorResponse(result) ? result.status : undefined,
+          headers: result.init?.headers ? new Headers(result.init.headers) : undefined
+        };
+      }
+      return {
+        type: "error",
+        error: result,
+        statusCode: isRouteErrorResponse(result) ? result.status : undefined
+      };
+    }
+    if (isDataWithResponseInit(result)) {
+      return {
+        type: "data",
+        data: result.data,
+        statusCode: result.init?.status,
+        headers: result.init?.headers ? new Headers(result.init.headers) : undefined
+      };
+    }
+    return { type: "data", data: result };
+  }
+  function normalizeRelativeRoutingRedirectResponse(response, request, routeId, matches, basename) {
+    let location2 = response.headers.get("Location");
+    invariant(location2, "Redirects returned/thrown from loaders/actions must have a Location header");
+    if (!ABSOLUTE_URL_REGEX.test(location2)) {
+      let trimmedMatches = matches.slice(0, matches.findIndex((m) => m.route.id === routeId) + 1);
+      location2 = normalizeTo(new URL(request.url), trimmedMatches, basename, location2);
+      response.headers.set("Location", location2);
+    }
+    return response;
+  }
+  function normalizeRedirectLocation(location2, currentUrl, basename) {
+    if (ABSOLUTE_URL_REGEX.test(location2)) {
+      let normalizedLocation = location2;
+      let url = normalizedLocation.startsWith("//") ? new URL(currentUrl.protocol + normalizedLocation) : new URL(normalizedLocation);
+      let isSameBasename = stripBasename(url.pathname, basename) != null;
+      if (url.origin === currentUrl.origin && isSameBasename) {
+        return url.pathname + url.search + url.hash;
+      }
+    }
+    return location2;
+  }
+  function createClientSideRequest(history, location2, signal, submission) {
+    let url = history.createURL(stripHashFromPath(location2)).toString();
+    let init = { signal };
+    if (submission && isMutationMethod(submission.formMethod)) {
+      let { formMethod, formEncType } = submission;
+      init.method = formMethod.toUpperCase();
+      if (formEncType === "application/json") {
+        init.headers = new Headers({ "Content-Type": formEncType });
+        init.body = JSON.stringify(submission.json);
+      } else if (formEncType === "text/plain") {
+        init.body = submission.text;
+      } else if (formEncType === "application/x-www-form-urlencoded" && submission.formData) {
+        init.body = convertFormDataToSearchParams(submission.formData);
+      } else {
+        init.body = submission.formData;
+      }
+    }
+    return new Request(url, init);
+  }
+  function convertFormDataToSearchParams(formData) {
+    let searchParams = new URLSearchParams;
+    for (let [key, value] of formData.entries()) {
+      searchParams.append(key, typeof value === "string" ? value : value.name);
+    }
+    return searchParams;
+  }
+  function convertSearchParamsToFormData(searchParams) {
+    let formData = new FormData;
+    for (let [key, value] of searchParams.entries()) {
+      formData.append(key, value);
+    }
+    return formData;
+  }
+  function processRouteLoaderData(matches, results, pendingActionResult, isStaticHandler = false, skipLoaderErrorBubbling = false) {
+    let loaderData = {};
+    let errors = null;
+    let statusCode;
+    let foundError = false;
+    let loaderHeaders = {};
+    let pendingError = pendingActionResult && isErrorResult(pendingActionResult[1]) ? pendingActionResult[1].error : undefined;
+    matches.forEach((match) => {
+      if (!(match.route.id in results)) {
+        return;
+      }
+      let id = match.route.id;
+      let result = results[id];
+      invariant(!isRedirectResult(result), "Cannot handle redirect results in processLoaderData");
+      if (isErrorResult(result)) {
+        let error = result.error;
+        if (pendingError !== undefined) {
+          error = pendingError;
+          pendingError = undefined;
+        }
+        errors = errors || {};
+        if (skipLoaderErrorBubbling) {
+          errors[id] = error;
+        } else {
+          let boundaryMatch = findNearestBoundary(matches, id);
+          if (errors[boundaryMatch.route.id] == null) {
+            errors[boundaryMatch.route.id] = error;
+          }
+        }
+        if (!isStaticHandler) {
+          loaderData[id] = ResetLoaderDataSymbol;
+        }
+        if (!foundError) {
+          foundError = true;
+          statusCode = isRouteErrorResponse(result.error) ? result.error.status : 500;
+        }
+        if (result.headers) {
+          loaderHeaders[id] = result.headers;
+        }
+      } else {
+        loaderData[id] = result.data;
+        if (result.statusCode && result.statusCode !== 200 && !foundError) {
+          statusCode = result.statusCode;
+        }
+        if (result.headers) {
+          loaderHeaders[id] = result.headers;
+        }
+      }
+    });
+    if (pendingError !== undefined && pendingActionResult) {
+      errors = { [pendingActionResult[0]]: pendingError };
+      if (pendingActionResult[2]) {
+        loaderData[pendingActionResult[2]] = undefined;
+      }
+    }
+    return {
+      loaderData,
+      errors,
+      statusCode: statusCode || 200,
+      loaderHeaders
+    };
+  }
+  function processLoaderData(state, matches, results, pendingActionResult, revalidatingFetchers, fetcherResults) {
+    let { loaderData, errors } = processRouteLoaderData(matches, results, pendingActionResult);
+    revalidatingFetchers.filter((f) => !f.matches || f.matches.some((m) => m.shouldLoad)).forEach((rf) => {
+      let { key, match, controller } = rf;
+      let result = fetcherResults[key];
+      invariant(result, "Did not find corresponding fetcher result");
+      if (controller && controller.signal.aborted) {
+        return;
+      } else if (isErrorResult(result)) {
+        let boundaryMatch = findNearestBoundary(state.matches, match?.route.id);
+        if (!(errors && errors[boundaryMatch.route.id])) {
+          errors = {
+            ...errors,
+            [boundaryMatch.route.id]: result.error
+          };
+        }
+        state.fetchers.delete(key);
+      } else if (isRedirectResult(result)) {
+        invariant(false, "Unhandled fetcher revalidation redirect");
+      } else {
+        let doneFetcher = getDoneFetcher(result.data);
+        state.fetchers.set(key, doneFetcher);
+      }
+    });
+    return { loaderData, errors };
+  }
+  function mergeLoaderData(loaderData, newLoaderData, matches, errors) {
+    let mergedLoaderData = Object.entries(newLoaderData).filter(([, v]) => v !== ResetLoaderDataSymbol).reduce((merged, [k, v]) => {
+      merged[k] = v;
+      return merged;
+    }, {});
+    for (let match of matches) {
+      let id = match.route.id;
+      if (!newLoaderData.hasOwnProperty(id) && loaderData.hasOwnProperty(id) && match.route.loader) {
+        mergedLoaderData[id] = loaderData[id];
+      }
+      if (errors && errors.hasOwnProperty(id)) {
+        break;
+      }
+    }
+    return mergedLoaderData;
+  }
+  function getActionDataForCommit(pendingActionResult) {
+    if (!pendingActionResult) {
+      return {};
+    }
+    return isErrorResult(pendingActionResult[1]) ? {
+      actionData: {}
+    } : {
+      actionData: {
+        [pendingActionResult[0]]: pendingActionResult[1].data
+      }
+    };
+  }
+  function findNearestBoundary(matches, routeId) {
+    let eligibleMatches = routeId ? matches.slice(0, matches.findIndex((m) => m.route.id === routeId) + 1) : [...matches];
+    return eligibleMatches.reverse().find((m) => m.route.hasErrorBoundary === true) || matches[0];
+  }
+  function getShortCircuitMatches(routes) {
+    let route = routes.length === 1 ? routes[0] : routes.find((r) => r.index || !r.path || r.path === "/") || {
+      id: `__shim-error-route__`
+    };
+    return {
+      matches: [
+        {
+          params: {},
+          pathname: "",
+          pathnameBase: "",
+          route
+        }
+      ],
+      route
+    };
+  }
+  function getInternalRouterError(status, {
+    pathname,
+    routeId,
+    method,
+    type,
+    message
+  } = {}) {
+    let statusText = "Unknown Server Error";
+    let errorMessage = "Unknown @remix-run/router error";
+    if (status === 400) {
+      statusText = "Bad Request";
+      if (method && pathname && routeId) {
+        errorMessage = `You made a ${method} request to "${pathname}" but did not provide a \`loader\` for route "${routeId}", so there is no way to handle the request.`;
+      } else if (type === "invalid-body") {
+        errorMessage = "Unable to encode submission body";
+      }
+    } else if (status === 403) {
+      statusText = "Forbidden";
+      errorMessage = `Route "${routeId}" does not match URL "${pathname}"`;
+    } else if (status === 404) {
+      statusText = "Not Found";
+      errorMessage = `No route matches URL "${pathname}"`;
+    } else if (status === 405) {
+      statusText = "Method Not Allowed";
+      if (method && pathname && routeId) {
+        errorMessage = `You made a ${method.toUpperCase()} request to "${pathname}" but did not provide an \`action\` for route "${routeId}", so there is no way to handle the request.`;
+      } else if (method) {
+        errorMessage = `Invalid request method "${method.toUpperCase()}"`;
+      }
+    }
+    return new ErrorResponseImpl(status || 500, statusText, new Error(errorMessage), true);
+  }
+  function findRedirect(results) {
+    let entries = Object.entries(results);
+    for (let i = entries.length - 1;i >= 0; i--) {
+      let [key, result] = entries[i];
+      if (isRedirectResult(result)) {
+        return { key, result };
+      }
+    }
+  }
+  function stripHashFromPath(path) {
+    let parsedPath = typeof path === "string" ? parsePath(path) : path;
+    return createPath({ ...parsedPath, hash: "" });
+  }
+  function isHashChangeOnly(a, b) {
+    if (a.pathname !== b.pathname || a.search !== b.search) {
+      return false;
+    }
+    if (a.hash === "") {
+      return b.hash !== "";
+    } else if (a.hash === b.hash) {
+      return true;
+    } else if (b.hash !== "") {
+      return true;
+    }
+    return false;
+  }
+  function isDataStrategyResult(result) {
+    return result != null && typeof result === "object" && "type" in result && "result" in result && (result.type === "data" || result.type === "error");
+  }
+  function isRedirectDataStrategyResult(result) {
+    return isResponse(result.result) && redirectStatusCodes.has(result.result.status);
+  }
+  function isErrorResult(result) {
+    return result.type === "error";
+  }
+  function isRedirectResult(result) {
+    return (result && result.type) === "redirect";
+  }
+  function isDataWithResponseInit(value) {
+    return typeof value === "object" && value != null && "type" in value && "data" in value && "init" in value && value.type === "DataWithResponseInit";
+  }
+  function isResponse(value) {
+    return value != null && typeof value.status === "number" && typeof value.statusText === "string" && typeof value.headers === "object" && typeof value.body !== "undefined";
+  }
+  function isRedirectStatusCode(statusCode) {
+    return redirectStatusCodes.has(statusCode);
+  }
+  function isRedirectResponse(result) {
+    return isResponse(result) && isRedirectStatusCode(result.status) && result.headers.has("Location");
+  }
+  function isValidMethod(method) {
+    return validRequestMethods.has(method.toUpperCase());
+  }
+  function isMutationMethod(method) {
+    return validMutationMethods.has(method.toUpperCase());
+  }
+  function hasNakedIndexQuery(search) {
+    return new URLSearchParams(search).getAll("index").some((v) => v === "");
+  }
+  function getTargetMatch(matches, location2) {
+    let search = typeof location2 === "string" ? parsePath(location2).search : location2.search;
+    if (matches[matches.length - 1].route.index && hasNakedIndexQuery(search || "")) {
+      return matches[matches.length - 1];
+    }
+    let pathMatches = getPathContributingMatches(matches);
+    return pathMatches[pathMatches.length - 1];
+  }
+  function getSubmissionFromNavigation(navigation) {
+    let { formMethod, formAction, formEncType, text, formData, json } = navigation;
+    if (!formMethod || !formAction || !formEncType) {
+      return;
+    }
+    if (text != null) {
+      return {
+        formMethod,
+        formAction,
+        formEncType,
+        formData: undefined,
+        json: undefined,
+        text
+      };
+    } else if (formData != null) {
+      return {
+        formMethod,
+        formAction,
+        formEncType,
+        formData,
+        json: undefined,
+        text: undefined
+      };
+    } else if (json !== undefined) {
+      return {
+        formMethod,
+        formAction,
+        formEncType,
+        formData: undefined,
+        json,
+        text: undefined
+      };
+    }
+  }
+  function getLoadingNavigation(location2, submission) {
+    if (submission) {
+      let navigation = {
+        state: "loading",
+        location: location2,
+        formMethod: submission.formMethod,
+        formAction: submission.formAction,
+        formEncType: submission.formEncType,
+        formData: submission.formData,
+        json: submission.json,
+        text: submission.text
+      };
+      return navigation;
+    } else {
+      let navigation = {
+        state: "loading",
+        location: location2,
+        formMethod: undefined,
+        formAction: undefined,
+        formEncType: undefined,
+        formData: undefined,
+        json: undefined,
+        text: undefined
+      };
+      return navigation;
+    }
+  }
+  function getSubmittingNavigation(location2, submission) {
+    let navigation = {
+      state: "submitting",
+      location: location2,
+      formMethod: submission.formMethod,
+      formAction: submission.formAction,
+      formEncType: submission.formEncType,
+      formData: submission.formData,
+      json: submission.json,
+      text: submission.text
+    };
+    return navigation;
+  }
+  function getLoadingFetcher(submission, data2) {
+    if (submission) {
+      let fetcher = {
+        state: "loading",
+        formMethod: submission.formMethod,
+        formAction: submission.formAction,
+        formEncType: submission.formEncType,
+        formData: submission.formData,
+        json: submission.json,
+        text: submission.text,
+        data: data2
+      };
+      return fetcher;
+    } else {
+      let fetcher = {
+        state: "loading",
+        formMethod: undefined,
+        formAction: undefined,
+        formEncType: undefined,
+        formData: undefined,
+        json: undefined,
+        text: undefined,
+        data: data2
+      };
+      return fetcher;
+    }
+  }
+  function getSubmittingFetcher(submission, existingFetcher) {
+    let fetcher = {
+      state: "submitting",
+      formMethod: submission.formMethod,
+      formAction: submission.formAction,
+      formEncType: submission.formEncType,
+      formData: submission.formData,
+      json: submission.json,
+      text: submission.text,
+      data: existingFetcher ? existingFetcher.data : undefined
+    };
+    return fetcher;
+  }
+  function getDoneFetcher(data2) {
+    let fetcher = {
+      state: "idle",
+      formMethod: undefined,
+      formAction: undefined,
+      formEncType: undefined,
+      formData: undefined,
+      json: undefined,
+      text: undefined,
+      data: data2
+    };
+    return fetcher;
+  }
+  function restoreAppliedTransitions(_window, transitions) {
+    try {
+      let sessionPositions = _window.sessionStorage.getItem(TRANSITIONS_STORAGE_KEY);
+      if (sessionPositions) {
+        let json = JSON.parse(sessionPositions);
+        for (let [k, v] of Object.entries(json || {})) {
+          if (v && Array.isArray(v)) {
+            transitions.set(k, new Set(v || []));
+          }
+        }
+      }
+    } catch (e) {
+    }
+  }
+  function persistAppliedTransitions(_window, transitions) {
+    if (transitions.size > 0) {
+      let json = {};
+      for (let [k, v] of transitions) {
+        json[k] = [...v];
+      }
+      try {
+        _window.sessionStorage.setItem(TRANSITIONS_STORAGE_KEY, JSON.stringify(json));
+      } catch (error) {
+        warning(false, `Failed to save applied view transitions in sessionStorage (${error}).`);
+      }
+    }
+  }
+  function createDeferred() {
+    let resolve;
+    let reject;
+    let promise = new Promise((res, rej) => {
+      resolve = async (val) => {
+        res(val);
+        try {
+          await promise;
+        } catch (e) {
+        }
+      };
+      reject = async (error) => {
+        rej(error);
+        try {
+          await promise;
+        } catch (e) {
+        }
+      };
+    });
+    return {
+      promise,
+      resolve,
+      reject
+    };
+  }
+  var React3 = __toESM2(react);
+  var React = __toESM2(react2);
+  var DataRouterContext = React.createContext(null);
+  DataRouterContext.displayName = "DataRouter";
+  var DataRouterStateContext = React.createContext(null);
+  DataRouterStateContext.displayName = "DataRouterState";
+  var ViewTransitionContext = React.createContext({
+    isTransitioning: false
+  });
+  ViewTransitionContext.displayName = "ViewTransition";
+  var FetchersContext = React.createContext(/* @__PURE__ */ new Map);
+  FetchersContext.displayName = "Fetchers";
+  var AwaitContext = React.createContext(null);
+  AwaitContext.displayName = "Await";
+  var NavigationContext = React.createContext(null);
+  NavigationContext.displayName = "Navigation";
+  var LocationContext = React.createContext(null);
+  LocationContext.displayName = "Location";
+  var RouteContext = React.createContext({
+    outlet: null,
+    matches: [],
+    isDataRoute: false
+  });
+  RouteContext.displayName = "Route";
+  var RouteErrorContext = React.createContext(null);
+  RouteErrorContext.displayName = "RouteError";
+  var React2 = __toESM2(react3);
+  var ENABLE_DEV_WARNINGS = true;
+  function useHref(to, { relative } = {}) {
+    invariant(useInRouterContext(), `useHref() may be used only in the context of a <Router> component.`);
+    let { basename, navigator: navigator2 } = React2.useContext(NavigationContext);
+    let { hash, pathname, search } = useResolvedPath(to, { relative });
+    let joinedPathname = pathname;
+    if (basename !== "/") {
+      joinedPathname = pathname === "/" ? basename : joinPaths([basename, pathname]);
+    }
+    return navigator2.createHref({ pathname: joinedPathname, search, hash });
+  }
+  function useInRouterContext() {
+    return React2.useContext(LocationContext) != null;
+  }
+  function useLocation() {
+    invariant(useInRouterContext(), `useLocation() may be used only in the context of a <Router> component.`);
+    return React2.useContext(LocationContext).location;
+  }
+  function useNavigationType() {
+    return React2.useContext(LocationContext).navigationType;
+  }
+  function useMatch(pattern) {
+    invariant(useInRouterContext(), `useMatch() may be used only in the context of a <Router> component.`);
+    let { pathname } = useLocation();
+    return React2.useMemo(() => matchPath(pattern, decodePath(pathname)), [pathname, pattern]);
+  }
+  var navigateEffectWarning = `You should call navigate() in a React.useEffect(), not when your component is first rendered.`;
+  function useIsomorphicLayoutEffect(cb) {
+    let isStatic = React2.useContext(NavigationContext).static;
+    if (!isStatic) {
+      React2.useLayoutEffect(cb);
+    }
+  }
+  function useNavigate() {
+    let { isDataRoute } = React2.useContext(RouteContext);
+    return isDataRoute ? useNavigateStable() : useNavigateUnstable();
+  }
+  function useNavigateUnstable() {
+    invariant(useInRouterContext(), `useNavigate() may be used only in the context of a <Router> component.`);
+    let dataRouterContext = React2.useContext(DataRouterContext);
+    let { basename, navigator: navigator2 } = React2.useContext(NavigationContext);
+    let { matches } = React2.useContext(RouteContext);
+    let { pathname: locationPathname } = useLocation();
+    let routePathnamesJson = JSON.stringify(getResolveToMatches(matches));
+    let activeRef = React2.useRef(false);
+    useIsomorphicLayoutEffect(() => {
+      activeRef.current = true;
+    });
+    let navigate = React2.useCallback((to, options = {}) => {
+      warning(activeRef.current, navigateEffectWarning);
+      if (!activeRef.current)
+        return;
+      if (typeof to === "number") {
+        navigator2.go(to);
+        return;
+      }
+      let path = resolveTo(to, JSON.parse(routePathnamesJson), locationPathname, options.relative === "path");
+      if (dataRouterContext == null && basename !== "/") {
+        path.pathname = path.pathname === "/" ? basename : joinPaths([basename, path.pathname]);
+      }
+      (options.replace ? navigator2.replace : navigator2.push)(path, options.state, options);
+    }, [
+      basename,
+      navigator2,
+      routePathnamesJson,
+      locationPathname,
+      dataRouterContext
+    ]);
+    return navigate;
+  }
+  var OutletContext = React2.createContext(null);
+  function useOutletContext() {
+    return React2.useContext(OutletContext);
+  }
+  function useOutlet(context) {
+    let outlet = React2.useContext(RouteContext).outlet;
+    if (outlet) {
+      return /* @__PURE__ */ React2.createElement(OutletContext.Provider, { value: context }, outlet);
+    }
+    return outlet;
+  }
+  function useParams() {
+    let { matches } = React2.useContext(RouteContext);
+    let routeMatch = matches[matches.length - 1];
+    return routeMatch ? routeMatch.params : {};
+  }
+  function useResolvedPath(to, { relative } = {}) {
+    let { matches } = React2.useContext(RouteContext);
+    let { pathname: locationPathname } = useLocation();
+    let routePathnamesJson = JSON.stringify(getResolveToMatches(matches));
+    return React2.useMemo(() => resolveTo(to, JSON.parse(routePathnamesJson), locationPathname, relative === "path"), [to, routePathnamesJson, locationPathname, relative]);
+  }
+  function useRoutes(routes, locationArg) {
+    return useRoutesImpl(routes, locationArg);
+  }
+  function useRoutesImpl(routes, locationArg, dataRouterState, future) {
+    invariant(useInRouterContext(), `useRoutes() may be used only in the context of a <Router> component.`);
+    let { navigator: navigator2, static: isStatic } = React2.useContext(NavigationContext);
+    let { matches: parentMatches } = React2.useContext(RouteContext);
+    let routeMatch = parentMatches[parentMatches.length - 1];
+    let parentParams = routeMatch ? routeMatch.params : {};
+    let parentPathname = routeMatch ? routeMatch.pathname : "/";
+    let parentPathnameBase = routeMatch ? routeMatch.pathnameBase : "/";
+    let parentRoute = routeMatch && routeMatch.route;
+    if (ENABLE_DEV_WARNINGS) {
+      let parentPath = parentRoute && parentRoute.path || "";
+      warningOnce(parentPathname, !parentRoute || parentPath.endsWith("*") || parentPath.endsWith("*?"), `You rendered descendant <Routes> (or called \`useRoutes()\`) at "${parentPathname}" (under <Route path="${parentPath}">) but the parent route path has no trailing "*". This means if you navigate deeper, the parent won't match anymore and therefore the child routes will never render.
+
+Please change the parent <Route path="${parentPath}"> to <Route path="${parentPath === "/" ? "*" : `${parentPath}/*`}">.`);
+    }
+    let locationFromContext = useLocation();
+    let location2;
+    if (locationArg) {
+      let parsedLocationArg = typeof locationArg === "string" ? parsePath(locationArg) : locationArg;
+      invariant(parentPathnameBase === "/" || parsedLocationArg.pathname?.startsWith(parentPathnameBase), `When overriding the location using \`<Routes location>\` or \`useRoutes(routes, location)\`, the location pathname must begin with the portion of the URL pathname that was matched by all parent routes. The current pathname base is "${parentPathnameBase}" but pathname "${parsedLocationArg.pathname}" was given in the \`location\` prop.`);
+      location2 = parsedLocationArg;
+    } else {
+      location2 = locationFromContext;
+    }
+    let pathname = location2.pathname || "/";
+    let remainingPathname = pathname;
+    if (parentPathnameBase !== "/") {
+      let parentSegments = parentPathnameBase.replace(/^\//, "").split("/");
+      let segments = pathname.replace(/^\//, "").split("/");
+      remainingPathname = "/" + segments.slice(parentSegments.length).join("/");
+    }
+    let matches = !isStatic && dataRouterState && dataRouterState.matches && dataRouterState.matches.length > 0 ? dataRouterState.matches : matchRoutes(routes, { pathname: remainingPathname });
+    if (ENABLE_DEV_WARNINGS) {
+      warning(parentRoute || matches != null, `No routes matched location "${location2.pathname}${location2.search}${location2.hash}" `);
+      warning(matches == null || matches[matches.length - 1].route.element !== undefined || matches[matches.length - 1].route.Component !== undefined || matches[matches.length - 1].route.lazy !== undefined, `Matched leaf route at location "${location2.pathname}${location2.search}${location2.hash}" does not have an element or Component. This means it will render an <Outlet /> with a null value by default resulting in an "empty" page.`);
+    }
+    let renderedMatches = _renderMatches(matches && matches.map((match) => Object.assign({}, match, {
+      params: Object.assign({}, parentParams, match.params),
+      pathname: joinPaths([
+        parentPathnameBase,
+        navigator2.encodeLocation ? navigator2.encodeLocation(match.pathname).pathname : match.pathname
+      ]),
+      pathnameBase: match.pathnameBase === "/" ? parentPathnameBase : joinPaths([
+        parentPathnameBase,
+        navigator2.encodeLocation ? navigator2.encodeLocation(match.pathnameBase).pathname : match.pathnameBase
+      ])
+    })), parentMatches, dataRouterState, future);
+    if (locationArg && renderedMatches) {
+      return /* @__PURE__ */ React2.createElement(LocationContext.Provider, {
+        value: {
+          location: {
+            pathname: "/",
+            search: "",
+            hash: "",
+            state: null,
+            key: "default",
+            ...location2
+          },
+          navigationType: "POP"
+        }
+      }, renderedMatches);
+    }
+    return renderedMatches;
+  }
+  function DefaultErrorComponent() {
+    let error = useRouteError();
+    let message = isRouteErrorResponse(error) ? `${error.status} ${error.statusText}` : error instanceof Error ? error.message : JSON.stringify(error);
+    let stack = error instanceof Error ? error.stack : null;
+    let lightgrey = "rgba(200,200,200, 0.5)";
+    let preStyles = { padding: "0.5rem", backgroundColor: lightgrey };
+    let codeStyles = { padding: "2px 4px", backgroundColor: lightgrey };
+    let devInfo = null;
+    if (ENABLE_DEV_WARNINGS) {
+      console.error("Error handled by React Router default ErrorBoundary:", error);
+      devInfo = /* @__PURE__ */ React2.createElement(React2.Fragment, null, /* @__PURE__ */ React2.createElement("p", null, "\uD83D\uDCBF Hey developer \uD83D\uDC4B"), /* @__PURE__ */ React2.createElement("p", null, "You can provide a way better UX than this when your app throws errors by providing your own ", /* @__PURE__ */ React2.createElement("code", { style: codeStyles }, "ErrorBoundary"), " or", " ", /* @__PURE__ */ React2.createElement("code", { style: codeStyles }, "errorElement"), " prop on your route."));
+    }
+    return /* @__PURE__ */ React2.createElement(React2.Fragment, null, /* @__PURE__ */ React2.createElement("h2", null, "Unexpected Application Error!"), /* @__PURE__ */ React2.createElement("h3", { style: { fontStyle: "italic" } }, message), stack ? /* @__PURE__ */ React2.createElement("pre", { style: preStyles }, stack) : null, devInfo);
+  }
+  var defaultErrorElement = /* @__PURE__ */ React2.createElement(DefaultErrorComponent, null);
+  var RenderErrorBoundary = class extends React2.Component {
+    constructor(props) {
+      super(props);
+      this.state = {
+        location: props.location,
+        revalidation: props.revalidation,
+        error: props.error
+      };
+    }
+    static getDerivedStateFromError(error) {
+      return { error };
+    }
+    static getDerivedStateFromProps(props, state) {
+      if (state.location !== props.location || state.revalidation !== "idle" && props.revalidation === "idle") {
+        return {
+          error: props.error,
+          location: props.location,
+          revalidation: props.revalidation
+        };
+      }
+      return {
+        error: props.error !== undefined ? props.error : state.error,
+        location: state.location,
+        revalidation: props.revalidation || state.revalidation
+      };
+    }
+    componentDidCatch(error, errorInfo) {
+      console.error("React Router caught the following error during render", error, errorInfo);
+    }
+    render() {
+      return this.state.error !== undefined ? /* @__PURE__ */ React2.createElement(RouteContext.Provider, { value: this.props.routeContext }, /* @__PURE__ */ React2.createElement(RouteErrorContext.Provider, {
+        value: this.state.error,
+        children: this.props.component
+      })) : this.props.children;
+    }
+  };
+  function RenderedRoute({ routeContext, match, children }) {
+    let dataRouterContext = React2.useContext(DataRouterContext);
+    if (dataRouterContext && dataRouterContext.static && dataRouterContext.staticContext && (match.route.errorElement || match.route.ErrorBoundary)) {
+      dataRouterContext.staticContext._deepestRenderedBoundaryId = match.route.id;
+    }
+    return /* @__PURE__ */ React2.createElement(RouteContext.Provider, { value: routeContext }, children);
+  }
+  function _renderMatches(matches, parentMatches = [], dataRouterState = null, future = null) {
+    if (matches == null) {
+      if (!dataRouterState) {
+        return null;
+      }
+      if (dataRouterState.errors) {
+        matches = dataRouterState.matches;
+      } else if (parentMatches.length === 0 && !dataRouterState.initialized && dataRouterState.matches.length > 0) {
+        matches = dataRouterState.matches;
+      } else {
+        return null;
+      }
+    }
+    let renderedMatches = matches;
+    let errors = dataRouterState?.errors;
+    if (errors != null) {
+      let errorIndex = renderedMatches.findIndex((m) => m.route.id && errors?.[m.route.id] !== undefined);
+      invariant(errorIndex >= 0, `Could not find a matching route for errors on route IDs: ${Object.keys(errors).join(",")}`);
+      renderedMatches = renderedMatches.slice(0, Math.min(renderedMatches.length, errorIndex + 1));
+    }
+    let renderFallback = false;
+    let fallbackIndex = -1;
+    if (dataRouterState) {
+      for (let i = 0;i < renderedMatches.length; i++) {
+        let match = renderedMatches[i];
+        if (match.route.HydrateFallback || match.route.hydrateFallbackElement) {
+          fallbackIndex = i;
+        }
+        if (match.route.id) {
+          let { loaderData, errors: errors2 } = dataRouterState;
+          let needsToRunLoader = match.route.loader && !loaderData.hasOwnProperty(match.route.id) && (!errors2 || errors2[match.route.id] === undefined);
+          if (match.route.lazy || needsToRunLoader) {
+            renderFallback = true;
+            if (fallbackIndex >= 0) {
+              renderedMatches = renderedMatches.slice(0, fallbackIndex + 1);
+            } else {
+              renderedMatches = [renderedMatches[0]];
+            }
+            break;
+          }
+        }
+      }
+    }
+    return renderedMatches.reduceRight((outlet, match, index) => {
+      let error;
+      let shouldRenderHydrateFallback = false;
+      let errorElement = null;
+      let hydrateFallbackElement = null;
+      if (dataRouterState) {
+        error = errors && match.route.id ? errors[match.route.id] : undefined;
+        errorElement = match.route.errorElement || defaultErrorElement;
+        if (renderFallback) {
+          if (fallbackIndex < 0 && index === 0) {
+            warningOnce("route-fallback", false, "No `HydrateFallback` element provided to render during initial hydration");
+            shouldRenderHydrateFallback = true;
+            hydrateFallbackElement = null;
+          } else if (fallbackIndex === index) {
+            shouldRenderHydrateFallback = true;
+            hydrateFallbackElement = match.route.hydrateFallbackElement || null;
+          }
+        }
+      }
+      let matches2 = parentMatches.concat(renderedMatches.slice(0, index + 1));
+      let getChildren = () => {
+        let children;
+        if (error) {
+          children = errorElement;
+        } else if (shouldRenderHydrateFallback) {
+          children = hydrateFallbackElement;
+        } else if (match.route.Component) {
+          children = /* @__PURE__ */ React2.createElement(match.route.Component, null);
+        } else if (match.route.element) {
+          children = match.route.element;
+        } else {
+          children = outlet;
+        }
+        return /* @__PURE__ */ React2.createElement(RenderedRoute, {
+          match,
+          routeContext: {
+            outlet,
+            matches: matches2,
+            isDataRoute: dataRouterState != null
+          },
+          children
+        });
+      };
+      return dataRouterState && (match.route.ErrorBoundary || match.route.errorElement || index === 0) ? /* @__PURE__ */ React2.createElement(RenderErrorBoundary, {
+        location: dataRouterState.location,
+        revalidation: dataRouterState.revalidation,
+        component: errorElement,
+        error,
+        children: getChildren(),
+        routeContext: { outlet: null, matches: matches2, isDataRoute: true }
+      }) : getChildren();
+    }, null);
+  }
+  function getDataRouterConsoleError(hookName) {
+    return `${hookName} must be used within a data router.  See https://reactrouter.com/en/main/routers/picking-a-router.`;
+  }
+  function useDataRouterContext(hookName) {
+    let ctx = React2.useContext(DataRouterContext);
+    invariant(ctx, getDataRouterConsoleError(hookName));
+    return ctx;
+  }
+  function useDataRouterState(hookName) {
+    let state = React2.useContext(DataRouterStateContext);
+    invariant(state, getDataRouterConsoleError(hookName));
+    return state;
+  }
+  function useRouteContext(hookName) {
+    let route = React2.useContext(RouteContext);
+    invariant(route, getDataRouterConsoleError(hookName));
+    return route;
+  }
+  function useCurrentRouteId(hookName) {
+    let route = useRouteContext(hookName);
+    let thisRoute = route.matches[route.matches.length - 1];
+    invariant(thisRoute.route.id, `${hookName} can only be used on routes that contain a unique "id"`);
+    return thisRoute.route.id;
+  }
+  function useRouteId() {
+    return useCurrentRouteId("useRouteId");
+  }
+  function useNavigation() {
+    let state = useDataRouterState("useNavigation");
+    return state.navigation;
+  }
+  function useRevalidator() {
+    let dataRouterContext = useDataRouterContext("useRevalidator");
+    let state = useDataRouterState("useRevalidator");
+    return React2.useMemo(() => ({
+      async revalidate() {
+        await dataRouterContext.router.revalidate();
+      },
+      state: state.revalidation
+    }), [dataRouterContext.router, state.revalidation]);
+  }
+  function useMatches() {
+    let { matches, loaderData } = useDataRouterState("useMatches");
+    return React2.useMemo(() => matches.map((m) => convertRouteMatchToUiMatch(m, loaderData)), [matches, loaderData]);
+  }
+  function useLoaderData() {
+    let state = useDataRouterState("useLoaderData");
+    let routeId = useCurrentRouteId("useLoaderData");
+    return state.loaderData[routeId];
+  }
+  function useRouteLoaderData(routeId) {
+    let state = useDataRouterState("useRouteLoaderData");
+    return state.loaderData[routeId];
+  }
+  function useActionData() {
+    let state = useDataRouterState("useActionData");
+    let routeId = useCurrentRouteId("useLoaderData");
+    return state.actionData ? state.actionData[routeId] : undefined;
+  }
+  function useRouteError() {
+    let error = React2.useContext(RouteErrorContext);
+    let state = useDataRouterState("useRouteError");
+    let routeId = useCurrentRouteId("useRouteError");
+    if (error !== undefined) {
+      return error;
+    }
+    return state.errors?.[routeId];
+  }
+  function useAsyncValue() {
+    let value = React2.useContext(AwaitContext);
+    return value?._data;
+  }
+  function useAsyncError() {
+    let value = React2.useContext(AwaitContext);
+    return value?._error;
+  }
+  var blockerId = 0;
+  function useBlocker(shouldBlock) {
+    let { router, basename } = useDataRouterContext("useBlocker");
+    let state = useDataRouterState("useBlocker");
+    let [blockerKey, setBlockerKey] = React2.useState("");
+    let blockerFunction = React2.useCallback((arg) => {
+      if (typeof shouldBlock !== "function") {
+        return !!shouldBlock;
+      }
+      if (basename === "/") {
+        return shouldBlock(arg);
+      }
+      let { currentLocation, nextLocation, historyAction } = arg;
+      return shouldBlock({
+        currentLocation: {
+          ...currentLocation,
+          pathname: stripBasename(currentLocation.pathname, basename) || currentLocation.pathname
+        },
+        nextLocation: {
+          ...nextLocation,
+          pathname: stripBasename(nextLocation.pathname, basename) || nextLocation.pathname
+        },
+        historyAction
+      });
+    }, [basename, shouldBlock]);
+    React2.useEffect(() => {
+      let key = String(++blockerId);
+      setBlockerKey(key);
+      return () => router.deleteBlocker(key);
+    }, [router]);
+    React2.useEffect(() => {
+      if (blockerKey !== "") {
+        router.getBlocker(blockerKey, blockerFunction);
+      }
+    }, [router, blockerKey, blockerFunction]);
+    return blockerKey && state.blockers.has(blockerKey) ? state.blockers.get(blockerKey) : IDLE_BLOCKER;
+  }
+  function useNavigateStable() {
+    let { router } = useDataRouterContext("useNavigate");
+    let id = useCurrentRouteId("useNavigate");
+    let activeRef = React2.useRef(false);
+    useIsomorphicLayoutEffect(() => {
+      activeRef.current = true;
+    });
+    let navigate = React2.useCallback(async (to, options = {}) => {
+      warning(activeRef.current, navigateEffectWarning);
+      if (!activeRef.current)
+        return;
+      if (typeof to === "number") {
+        router.navigate(to);
+      } else {
+        await router.navigate(to, { fromRouteId: id, ...options });
+      }
+    }, [router, id]);
+    return navigate;
+  }
+  var alreadyWarned = {};
+  function warningOnce(key, cond, message) {
+    if (!cond && !alreadyWarned[key]) {
+      alreadyWarned[key] = true;
+      warning(false, message);
+    }
+  }
+  var alreadyWarned2 = {};
+  function warnOnce(condition, message) {
+    if (!condition && !alreadyWarned2[message]) {
+      alreadyWarned2[message] = true;
+      console.warn(message);
+    }
+  }
+  var ENABLE_DEV_WARNINGS2 = true;
+  function mapRouteProperties(route) {
+    let updates = {
+      hasErrorBoundary: route.hasErrorBoundary || route.ErrorBoundary != null || route.errorElement != null
+    };
+    if (route.Component) {
+      if (ENABLE_DEV_WARNINGS2) {
+        if (route.element) {
+          warning(false, "You should not include both `Component` and `element` on your route - `Component` will be used.");
+        }
+      }
+      Object.assign(updates, {
+        element: React3.createElement(route.Component),
+        Component: undefined
+      });
+    }
+    if (route.HydrateFallback) {
+      if (ENABLE_DEV_WARNINGS2) {
+        if (route.hydrateFallbackElement) {
+          warning(false, "You should not include both `HydrateFallback` and `hydrateFallbackElement` on your route - `HydrateFallback` will be used.");
+        }
+      }
+      Object.assign(updates, {
+        hydrateFallbackElement: React3.createElement(route.HydrateFallback),
+        HydrateFallback: undefined
+      });
+    }
+    if (route.ErrorBoundary) {
+      if (ENABLE_DEV_WARNINGS2) {
+        if (route.errorElement) {
+          warning(false, "You should not include both `ErrorBoundary` and `errorElement` on your route - `ErrorBoundary` will be used.");
+        }
+      }
+      Object.assign(updates, {
+        errorElement: React3.createElement(route.ErrorBoundary),
+        ErrorBoundary: undefined
+      });
+    }
+    return updates;
+  }
+  var hydrationRouteProperties = [
+    "HydrateFallback",
+    "hydrateFallbackElement"
+  ];
+  function createMemoryRouter(routes, opts) {
+    return createRouter({
+      basename: opts?.basename,
+      unstable_getContext: opts?.unstable_getContext,
+      future: opts?.future,
+      history: createMemoryHistory({
+        initialEntries: opts?.initialEntries,
+        initialIndex: opts?.initialIndex
+      }),
+      hydrationData: opts?.hydrationData,
+      routes,
+      hydrationRouteProperties,
+      mapRouteProperties,
+      dataStrategy: opts?.dataStrategy,
+      patchRoutesOnNavigation: opts?.patchRoutesOnNavigation
+    }).initialize();
+  }
+  var Deferred = class {
+    constructor() {
+      this.status = "pending";
+      this.promise = new Promise((resolve, reject) => {
+        this.resolve = (value) => {
+          if (this.status === "pending") {
+            this.status = "resolved";
+            resolve(value);
+          }
+        };
+        this.reject = (reason) => {
+          if (this.status === "pending") {
+            this.status = "rejected";
+            reject(reason);
+          }
+        };
+      });
+    }
+  };
+  function RouterProvider2({
+    router,
+    flushSync: reactDomFlushSyncImpl
+  }) {
+    let [state, setStateImpl] = React3.useState(router.state);
+    let [pendingState, setPendingState] = React3.useState();
+    let [vtContext, setVtContext] = React3.useState({
+      isTransitioning: false
+    });
+    let [renderDfd, setRenderDfd] = React3.useState();
+    let [transition, setTransition] = React3.useState();
+    let [interruption, setInterruption] = React3.useState();
+    let fetcherData = React3.useRef(/* @__PURE__ */ new Map);
+    let setState = React3.useCallback((newState, { deletedFetchers, flushSync, viewTransitionOpts }) => {
+      newState.fetchers.forEach((fetcher, key) => {
+        if (fetcher.data !== undefined) {
+          fetcherData.current.set(key, fetcher.data);
+        }
+      });
+      deletedFetchers.forEach((key) => fetcherData.current.delete(key));
+      warnOnce(flushSync === false || reactDomFlushSyncImpl != null, 'You provided the `flushSync` option to a router update, but you are not using the `<RouterProvider>` from `react-router/dom` so `ReactDOM.flushSync()` is unavailable.  Please update your app to `import { RouterProvider } from "react-router/dom"` and ensure you have `react-dom` installed as a dependency to use the `flushSync` option.');
+      let isViewTransitionAvailable = router.window != null && router.window.document != null && typeof router.window.document.startViewTransition === "function";
+      warnOnce(viewTransitionOpts == null || isViewTransitionAvailable, "You provided the `viewTransition` option to a router update, but you do not appear to be running in a DOM environment as `window.startViewTransition` is not available.");
+      if (!viewTransitionOpts || !isViewTransitionAvailable) {
+        if (reactDomFlushSyncImpl && flushSync) {
+          reactDomFlushSyncImpl(() => setStateImpl(newState));
+        } else {
+          React3.startTransition(() => setStateImpl(newState));
+        }
+        return;
+      }
+      if (reactDomFlushSyncImpl && flushSync) {
+        reactDomFlushSyncImpl(() => {
+          if (transition) {
+            renderDfd && renderDfd.resolve();
+            transition.skipTransition();
+          }
+          setVtContext({
+            isTransitioning: true,
+            flushSync: true,
+            currentLocation: viewTransitionOpts.currentLocation,
+            nextLocation: viewTransitionOpts.nextLocation
+          });
+        });
+        let t = router.window.document.startViewTransition(() => {
+          reactDomFlushSyncImpl(() => setStateImpl(newState));
+        });
+        t.finished.finally(() => {
+          reactDomFlushSyncImpl(() => {
+            setRenderDfd(undefined);
+            setTransition(undefined);
+            setPendingState(undefined);
+            setVtContext({ isTransitioning: false });
+          });
+        });
+        reactDomFlushSyncImpl(() => setTransition(t));
+        return;
+      }
+      if (transition) {
+        renderDfd && renderDfd.resolve();
+        transition.skipTransition();
+        setInterruption({
+          state: newState,
+          currentLocation: viewTransitionOpts.currentLocation,
+          nextLocation: viewTransitionOpts.nextLocation
+        });
+      } else {
+        setPendingState(newState);
+        setVtContext({
+          isTransitioning: true,
+          flushSync: false,
+          currentLocation: viewTransitionOpts.currentLocation,
+          nextLocation: viewTransitionOpts.nextLocation
+        });
+      }
+    }, [router.window, reactDomFlushSyncImpl, transition, renderDfd]);
+    React3.useLayoutEffect(() => router.subscribe(setState), [router, setState]);
+    React3.useEffect(() => {
+      if (vtContext.isTransitioning && !vtContext.flushSync) {
+        setRenderDfd(new Deferred);
+      }
+    }, [vtContext]);
+    React3.useEffect(() => {
+      if (renderDfd && pendingState && router.window) {
+        let newState = pendingState;
+        let renderPromise = renderDfd.promise;
+        let transition2 = router.window.document.startViewTransition(async () => {
+          React3.startTransition(() => setStateImpl(newState));
+          await renderPromise;
+        });
+        transition2.finished.finally(() => {
+          setRenderDfd(undefined);
+          setTransition(undefined);
+          setPendingState(undefined);
+          setVtContext({ isTransitioning: false });
+        });
+        setTransition(transition2);
+      }
+    }, [pendingState, renderDfd, router.window]);
+    React3.useEffect(() => {
+      if (renderDfd && pendingState && state.location.key === pendingState.location.key) {
+        renderDfd.resolve();
+      }
+    }, [renderDfd, transition, state.location, pendingState]);
+    React3.useEffect(() => {
+      if (!vtContext.isTransitioning && interruption) {
+        setPendingState(interruption.state);
+        setVtContext({
+          isTransitioning: true,
+          flushSync: false,
+          currentLocation: interruption.currentLocation,
+          nextLocation: interruption.nextLocation
+        });
+        setInterruption(undefined);
+      }
+    }, [vtContext.isTransitioning, interruption]);
+    let navigator2 = React3.useMemo(() => {
+      return {
+        createHref: router.createHref,
+        encodeLocation: router.encodeLocation,
+        go: (n) => router.navigate(n),
+        push: (to, state2, opts) => router.navigate(to, {
+          state: state2,
+          preventScrollReset: opts?.preventScrollReset
+        }),
+        replace: (to, state2, opts) => router.navigate(to, {
+          replace: true,
+          state: state2,
+          preventScrollReset: opts?.preventScrollReset
+        })
+      };
+    }, [router]);
+    let basename = router.basename || "/";
+    let dataRouterContext = React3.useMemo(() => ({
+      router,
+      navigator: navigator2,
+      static: false,
+      basename
+    }), [router, navigator2, basename]);
+    return /* @__PURE__ */ React3.createElement(React3.Fragment, null, /* @__PURE__ */ React3.createElement(DataRouterContext.Provider, { value: dataRouterContext }, /* @__PURE__ */ React3.createElement(DataRouterStateContext.Provider, { value: state }, /* @__PURE__ */ React3.createElement(FetchersContext.Provider, { value: fetcherData.current }, /* @__PURE__ */ React3.createElement(ViewTransitionContext.Provider, { value: vtContext }, /* @__PURE__ */ React3.createElement(Router, {
+      basename,
+      location: state.location,
+      navigationType: state.historyAction,
+      navigator: navigator2
+    }, /* @__PURE__ */ React3.createElement(MemoizedDataRoutes, {
+      routes: router.routes,
+      future: router.future,
+      state
+    })))))), null);
+  }
+  var MemoizedDataRoutes = React3.memo(DataRoutes);
+  function DataRoutes({
+    routes,
+    future,
+    state
+  }) {
+    return useRoutesImpl(routes, undefined, state, future);
+  }
+  function MemoryRouter({
+    basename,
+    children,
+    initialEntries,
+    initialIndex
+  }) {
+    let historyRef = React3.useRef();
+    if (historyRef.current == null) {
+      historyRef.current = createMemoryHistory({
+        initialEntries,
+        initialIndex,
+        v5Compat: true
+      });
+    }
+    let history = historyRef.current;
+    let [state, setStateImpl] = React3.useState({
+      action: history.action,
+      location: history.location
+    });
+    let setState = React3.useCallback((newState) => {
+      React3.startTransition(() => setStateImpl(newState));
+    }, [setStateImpl]);
+    React3.useLayoutEffect(() => history.listen(setState), [history, setState]);
+    return /* @__PURE__ */ React3.createElement(Router, {
+      basename,
+      children,
+      location: state.location,
+      navigationType: state.action,
+      navigator: history
+    });
+  }
+  function Navigate({
+    to,
+    replace: replace2,
+    state,
+    relative
+  }) {
+    invariant(useInRouterContext(), `<Navigate> may be used only in the context of a <Router> component.`);
+    let { static: isStatic } = React3.useContext(NavigationContext);
+    warning(!isStatic, `<Navigate> must not be used on the initial render in a <StaticRouter>. This is a no-op, but you should modify your code so the <Navigate> is only ever rendered in response to some user interaction or state change.`);
+    let { matches } = React3.useContext(RouteContext);
+    let { pathname: locationPathname } = useLocation();
+    let navigate = useNavigate();
+    let path = resolveTo(to, getResolveToMatches(matches), locationPathname, relative === "path");
+    let jsonPath = JSON.stringify(path);
+    React3.useEffect(() => {
+      navigate(JSON.parse(jsonPath), { replace: replace2, state, relative });
+    }, [navigate, jsonPath, relative, replace2, state]);
+    return null;
+  }
+  function Outlet(props) {
+    return useOutlet(props.context);
+  }
+  function Route(_props) {
+    invariant(false, `A <Route> is only ever to be used as the child of <Routes> element, never rendered directly. Please wrap your <Route> in a <Routes>.`);
+  }
+  function Router({
+    basename: basenameProp = "/",
+    children = null,
+    location: locationProp,
+    navigationType = "POP",
+    navigator: navigator2,
+    static: staticProp = false
+  }) {
+    invariant(!useInRouterContext(), `You cannot render a <Router> inside another <Router>. You should never have more than one in your app.`);
+    let basename = basenameProp.replace(/^\/*/, "/");
+    let navigationContext = React3.useMemo(() => ({
+      basename,
+      navigator: navigator2,
+      static: staticProp,
+      future: {}
+    }), [basename, navigator2, staticProp]);
+    if (typeof locationProp === "string") {
+      locationProp = parsePath(locationProp);
+    }
+    let {
+      pathname = "/",
+      search = "",
+      hash = "",
+      state = null,
+      key = "default"
+    } = locationProp;
+    let locationContext = React3.useMemo(() => {
+      let trailingPathname = stripBasename(pathname, basename);
+      if (trailingPathname == null) {
+        return null;
+      }
+      return {
+        location: {
+          pathname: trailingPathname,
+          search,
+          hash,
+          state,
+          key
+        },
+        navigationType
+      };
+    }, [basename, pathname, search, hash, state, key, navigationType]);
+    warning(locationContext != null, `<Router basename="${basename}"> is not able to match the URL "${pathname}${search}${hash}" because it does not start with the basename, so the <Router> won't render anything.`);
+    if (locationContext == null) {
+      return null;
+    }
+    return /* @__PURE__ */ React3.createElement(NavigationContext.Provider, { value: navigationContext }, /* @__PURE__ */ React3.createElement(LocationContext.Provider, { children, value: locationContext }));
+  }
+  function Routes({
+    children,
+    location: location2
+  }) {
+    return useRoutes(createRoutesFromChildren(children), location2);
+  }
+  function Await({
+    children,
+    errorElement,
+    resolve
+  }) {
+    return /* @__PURE__ */ React3.createElement(AwaitErrorBoundary, { resolve, errorElement }, /* @__PURE__ */ React3.createElement(ResolveAwait, null, children));
+  }
+  var AwaitErrorBoundary = class extends React3.Component {
+    constructor(props) {
+      super(props);
+      this.state = { error: null };
+    }
+    static getDerivedStateFromError(error) {
+      return { error };
+    }
+    componentDidCatch(error, errorInfo) {
+      console.error("<Await> caught the following error during render", error, errorInfo);
+    }
+    render() {
+      let { children, errorElement, resolve } = this.props;
+      let promise = null;
+      let status = 0;
+      if (!(resolve instanceof Promise)) {
+        status = 1;
+        promise = Promise.resolve();
+        Object.defineProperty(promise, "_tracked", { get: () => true });
+        Object.defineProperty(promise, "_data", { get: () => resolve });
+      } else if (this.state.error) {
+        status = 2;
+        let renderError = this.state.error;
+        promise = Promise.reject().catch(() => {
+        });
+        Object.defineProperty(promise, "_tracked", { get: () => true });
+        Object.defineProperty(promise, "_error", { get: () => renderError });
+      } else if (resolve._tracked) {
+        promise = resolve;
+        status = "_error" in promise ? 2 : ("_data" in promise) ? 1 : 0;
+      } else {
+        status = 0;
+        Object.defineProperty(resolve, "_tracked", { get: () => true });
+        promise = resolve.then((data2) => Object.defineProperty(resolve, "_data", { get: () => data2 }), (error) => Object.defineProperty(resolve, "_error", { get: () => error }));
+      }
+      if (status === 2 && !errorElement) {
+        throw promise._error;
+      }
+      if (status === 2) {
+        return /* @__PURE__ */ React3.createElement(AwaitContext.Provider, { value: promise, children: errorElement });
+      }
+      if (status === 1) {
+        return /* @__PURE__ */ React3.createElement(AwaitContext.Provider, { value: promise, children });
+      }
+      throw promise;
+    }
+  };
+  function ResolveAwait({
+    children
+  }) {
+    let data2 = useAsyncValue();
+    let toRender = typeof children === "function" ? children(data2) : children;
+    return /* @__PURE__ */ React3.createElement(React3.Fragment, null, toRender);
+  }
+  function createRoutesFromChildren(children, parentPath = []) {
+    let routes = [];
+    React3.Children.forEach(children, (element, index) => {
+      if (!React3.isValidElement(element)) {
+        return;
+      }
+      let treePath = [...parentPath, index];
+      if (element.type === React3.Fragment) {
+        routes.push.apply(routes, createRoutesFromChildren(element.props.children, treePath));
+        return;
+      }
+      invariant(element.type === Route, `[${typeof element.type === "string" ? element.type : element.type.name}] is not a <Route> component. All component children of <Routes> must be a <Route> or <React.Fragment>`);
+      invariant(!element.props.index || !element.props.children, "An index route cannot have child routes.");
+      let route = {
+        id: element.props.id || treePath.join("-"),
+        caseSensitive: element.props.caseSensitive,
+        element: element.props.element,
+        Component: element.props.Component,
+        index: element.props.index,
+        path: element.props.path,
+        loader: element.props.loader,
+        action: element.props.action,
+        hydrateFallbackElement: element.props.hydrateFallbackElement,
+        HydrateFallback: element.props.HydrateFallback,
+        errorElement: element.props.errorElement,
+        ErrorBoundary: element.props.ErrorBoundary,
+        hasErrorBoundary: element.props.hasErrorBoundary === true || element.props.ErrorBoundary != null || element.props.errorElement != null,
+        shouldRevalidate: element.props.shouldRevalidate,
+        handle: element.props.handle,
+        lazy: element.props.lazy
+      };
+      if (element.props.children) {
+        route.children = createRoutesFromChildren(element.props.children, treePath);
+      }
+      routes.push(route);
+    });
+    return routes;
+  }
+  var createRoutesFromElements = createRoutesFromChildren;
+  function renderMatches(matches) {
+    return _renderMatches(matches);
+  }
+  var React10 = __toESM2(react4);
+  var defaultMethod = "get";
+  var defaultEncType = "application/x-www-form-urlencoded";
+  function isHtmlElement(object) {
+    return object != null && typeof object.tagName === "string";
+  }
+  function isButtonElement(object) {
+    return isHtmlElement(object) && object.tagName.toLowerCase() === "button";
+  }
+  function isFormElement(object) {
+    return isHtmlElement(object) && object.tagName.toLowerCase() === "form";
+  }
+  function isInputElement(object) {
+    return isHtmlElement(object) && object.tagName.toLowerCase() === "input";
+  }
+  function isModifiedEvent(event) {
+    return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
+  }
+  function shouldProcessLinkClick(event, target) {
+    return event.button === 0 && (!target || target === "_self") && !isModifiedEvent(event);
+  }
+  function createSearchParams(init = "") {
+    return new URLSearchParams(typeof init === "string" || Array.isArray(init) || init instanceof URLSearchParams ? init : Object.keys(init).reduce((memo2, key) => {
+      let value = init[key];
+      return memo2.concat(Array.isArray(value) ? value.map((v) => [key, v]) : [[key, value]]);
+    }, []));
+  }
+  function getSearchParamsForLocation(locationSearch, defaultSearchParams) {
+    let searchParams = createSearchParams(locationSearch);
+    if (defaultSearchParams) {
+      defaultSearchParams.forEach((_, key) => {
+        if (!searchParams.has(key)) {
+          defaultSearchParams.getAll(key).forEach((value) => {
+            searchParams.append(key, value);
+          });
+        }
+      });
+    }
+    return searchParams;
+  }
+  var _formDataSupportsSubmitter = null;
+  function isFormDataSubmitterSupported() {
+    if (_formDataSupportsSubmitter === null) {
+      try {
+        new FormData(document.createElement("form"), 0);
+        _formDataSupportsSubmitter = false;
+      } catch (e) {
+        _formDataSupportsSubmitter = true;
+      }
+    }
+    return _formDataSupportsSubmitter;
+  }
+  var supportedFormEncTypes = /* @__PURE__ */ new Set([
+    "application/x-www-form-urlencoded",
+    "multipart/form-data",
+    "text/plain"
+  ]);
+  function getFormEncType(encType) {
+    if (encType != null && !supportedFormEncTypes.has(encType)) {
+      warning(false, `"${encType}" is not a valid \`encType\` for \`<Form>\`/\`<fetcher.Form>\` and will default to "${defaultEncType}"`);
+      return null;
+    }
+    return encType;
+  }
+  function getFormSubmissionInfo(target, basename) {
+    let method;
+    let action;
+    let encType;
+    let formData;
+    let body;
+    if (isFormElement(target)) {
+      let attr = target.getAttribute("action");
+      action = attr ? stripBasename(attr, basename) : null;
+      method = target.getAttribute("method") || defaultMethod;
+      encType = getFormEncType(target.getAttribute("enctype")) || defaultEncType;
+      formData = new FormData(target);
+    } else if (isButtonElement(target) || isInputElement(target) && (target.type === "submit" || target.type === "image")) {
+      let form = target.form;
+      if (form == null) {
+        throw new Error(`Cannot submit a <button> or <input type="submit"> without a <form>`);
+      }
+      let attr = target.getAttribute("formaction") || form.getAttribute("action");
+      action = attr ? stripBasename(attr, basename) : null;
+      method = target.getAttribute("formmethod") || form.getAttribute("method") || defaultMethod;
+      encType = getFormEncType(target.getAttribute("formenctype")) || getFormEncType(form.getAttribute("enctype")) || defaultEncType;
+      formData = new FormData(form, target);
+      if (!isFormDataSubmitterSupported()) {
+        let { name, type, value } = target;
+        if (type === "image") {
+          let prefix = name ? `${name}.` : "";
+          formData.append(`${prefix}x`, "0");
+          formData.append(`${prefix}y`, "0");
+        } else if (name) {
+          formData.append(name, value);
+        }
+      }
+    } else if (isHtmlElement(target)) {
+      throw new Error(`Cannot submit element that is not <form>, <button>, or <input type="submit|image">`);
+    } else {
+      method = defaultMethod;
+      action = null;
+      encType = defaultEncType;
+      body = target;
+    }
+    if (formData && encType === "text/plain") {
+      body = formData;
+      formData = undefined;
+    }
+    return { action, method: method.toLowerCase(), encType, formData, body };
+  }
+  var React9 = __toESM2(react5);
+  function invariant2(value, message) {
+    if (value === false || value === null || typeof value === "undefined") {
+      throw new Error(message);
+    }
+  }
+  async function loadRouteModule(route, routeModulesCache) {
+    if (route.id in routeModulesCache) {
+      return routeModulesCache[route.id];
+    }
+    try {
+      let routeModule = await import(route.module);
+      routeModulesCache[route.id] = routeModule;
+      return routeModule;
+    } catch (error) {
+      console.error(`Error loading route module \`${route.module}\`, reloading page...`);
+      console.error(error);
+      if (window.__reactRouterContext && window.__reactRouterContext.isSpaMode && undefined) {
+      }
+      window.location.reload();
+      return new Promise(() => {
+      });
+    }
+  }
+  function getKeyedLinksForMatches(matches, routeModules, manifest) {
+    let descriptors = matches.map((match) => {
+      let module2 = routeModules[match.route.id];
+      let route = manifest.routes[match.route.id];
+      return [
+        route && route.css ? route.css.map((href2) => ({ rel: "stylesheet", href: href2 })) : [],
+        module2?.links?.() || []
+      ];
+    }).flat(2);
+    let preloads = getModuleLinkHrefs(matches, manifest);
+    return dedupeLinkDescriptors(descriptors, preloads);
+  }
+  function getRouteCssDescriptors(route) {
+    if (!route.css)
+      return [];
+    return route.css.map((href2) => ({ rel: "stylesheet", href: href2 }));
+  }
+  async function prefetchRouteCss(route) {
+    if (!route.css)
+      return;
+    let descriptors = getRouteCssDescriptors(route);
+    await Promise.all(descriptors.map(prefetchStyleLink));
+  }
+  async function prefetchStyleLinks(route, routeModule) {
+    if (!route.css && !routeModule.links || !isPreloadSupported())
+      return;
+    let descriptors = [];
+    if (route.css) {
+      descriptors.push(...getRouteCssDescriptors(route));
+    }
+    if (routeModule.links) {
+      descriptors.push(...routeModule.links());
+    }
+    if (descriptors.length === 0)
+      return;
+    let styleLinks = [];
+    for (let descriptor of descriptors) {
+      if (!isPageLinkDescriptor(descriptor) && descriptor.rel === "stylesheet") {
+        styleLinks.push({
+          ...descriptor,
+          rel: "preload",
+          as: "style"
+        });
+      }
+    }
+    await Promise.all(styleLinks.map(prefetchStyleLink));
+  }
+  async function prefetchStyleLink(descriptor) {
+    return new Promise((resolve) => {
+      if (descriptor.media && !window.matchMedia(descriptor.media).matches || document.querySelector(`link[rel="stylesheet"][href="${descriptor.href}"]`)) {
+        return resolve();
+      }
+      let link = document.createElement("link");
+      Object.assign(link, descriptor);
+      function removeLink() {
+        if (document.head.contains(link)) {
+          document.head.removeChild(link);
+        }
+      }
+      link.onload = () => {
+        removeLink();
+        resolve();
+      };
+      link.onerror = () => {
+        removeLink();
+        resolve();
+      };
+      document.head.appendChild(link);
+    });
+  }
+  function isPageLinkDescriptor(object) {
+    return object != null && typeof object.page === "string";
+  }
+  function isHtmlLinkDescriptor(object) {
+    if (object == null) {
+      return false;
+    }
+    if (object.href == null) {
+      return object.rel === "preload" && typeof object.imageSrcSet === "string" && typeof object.imageSizes === "string";
+    }
+    return typeof object.rel === "string" && typeof object.href === "string";
+  }
+  async function getKeyedPrefetchLinks(matches, manifest, routeModules) {
+    let links = await Promise.all(matches.map(async (match) => {
+      let route = manifest.routes[match.route.id];
+      if (route) {
+        let mod = await loadRouteModule(route, routeModules);
+        return mod.links ? mod.links() : [];
+      }
+      return [];
+    }));
+    return dedupeLinkDescriptors(links.flat(1).filter(isHtmlLinkDescriptor).filter((link) => link.rel === "stylesheet" || link.rel === "preload").map((link) => link.rel === "stylesheet" ? { ...link, rel: "prefetch", as: "style" } : { ...link, rel: "prefetch" }));
+  }
+  function getNewMatchesForLinks(page, nextMatches, currentMatches, manifest, location2, mode) {
+    let isNew = (match, index) => {
+      if (!currentMatches[index])
+        return true;
+      return match.route.id !== currentMatches[index].route.id;
+    };
+    let matchPathChanged = (match, index) => {
+      return currentMatches[index].pathname !== match.pathname || currentMatches[index].route.path?.endsWith("*") && currentMatches[index].params["*"] !== match.params["*"];
+    };
+    if (mode === "assets") {
+      return nextMatches.filter((match, index) => isNew(match, index) || matchPathChanged(match, index));
+    }
+    if (mode === "data") {
+      return nextMatches.filter((match, index) => {
+        let manifestRoute = manifest.routes[match.route.id];
+        if (!manifestRoute || !manifestRoute.hasLoader) {
+          return false;
+        }
+        if (isNew(match, index) || matchPathChanged(match, index)) {
+          return true;
+        }
+        if (match.route.shouldRevalidate) {
+          let routeChoice = match.route.shouldRevalidate({
+            currentUrl: new URL(location2.pathname + location2.search + location2.hash, window.origin),
+            currentParams: currentMatches[0]?.params || {},
+            nextUrl: new URL(page, window.origin),
+            nextParams: match.params,
+            defaultShouldRevalidate: true
+          });
+          if (typeof routeChoice === "boolean") {
+            return routeChoice;
+          }
+        }
+        return true;
+      });
+    }
+    return [];
+  }
+  function getModuleLinkHrefs(matches, manifest, { includeHydrateFallback } = {}) {
+    return dedupeHrefs(matches.map((match) => {
+      let route = manifest.routes[match.route.id];
+      if (!route)
+        return [];
+      let hrefs = [route.module];
+      if (route.clientActionModule) {
+        hrefs = hrefs.concat(route.clientActionModule);
+      }
+      if (route.clientLoaderModule) {
+        hrefs = hrefs.concat(route.clientLoaderModule);
+      }
+      if (includeHydrateFallback && route.hydrateFallbackModule) {
+        hrefs = hrefs.concat(route.hydrateFallbackModule);
+      }
+      if (route.imports) {
+        hrefs = hrefs.concat(route.imports);
+      }
+      return hrefs;
+    }).flat(1));
+  }
+  function dedupeHrefs(hrefs) {
+    return [...new Set(hrefs)];
+  }
+  function sortKeys(obj) {
+    let sorted = {};
+    let keys = Object.keys(obj).sort();
+    for (let key of keys) {
+      sorted[key] = obj[key];
+    }
+    return sorted;
+  }
+  function dedupeLinkDescriptors(descriptors, preloads) {
+    let set = /* @__PURE__ */ new Set;
+    let preloadsSet = new Set(preloads);
+    return descriptors.reduce((deduped, descriptor) => {
+      let alreadyModulePreload = preloads && !isPageLinkDescriptor(descriptor) && descriptor.as === "script" && descriptor.href && preloadsSet.has(descriptor.href);
+      if (alreadyModulePreload) {
+        return deduped;
+      }
+      let key = JSON.stringify(sortKeys(descriptor));
+      if (!set.has(key)) {
+        set.add(key);
+        deduped.push({ key, link: descriptor });
+      }
+      return deduped;
+    }, []);
+  }
+  var _isPreloadSupported;
+  function isPreloadSupported() {
+    if (_isPreloadSupported !== undefined) {
+      return _isPreloadSupported;
+    }
+    let el = document.createElement("link");
+    _isPreloadSupported = el.relList.supports("preload");
+    el = null;
+    return _isPreloadSupported;
+  }
+  var ESCAPE_LOOKUP = {
+    "&": "\\u0026",
+    ">": "\\u003e",
+    "<": "\\u003c",
+    "\u2028": "\\u2028",
+    "\u2029": "\\u2029"
+  };
+  var ESCAPE_REGEX = /[&><\u2028\u2029]/g;
+  function escapeHtml(html) {
+    return html.replace(ESCAPE_REGEX, (match) => ESCAPE_LOOKUP[match]);
+  }
+  function createHtml(html) {
+    return { __html: html };
+  }
+  var React4 = __toESM2(react6);
+  var import_turbo_stream = require_turbo_stream();
+  async function createRequestInit(request) {
+    let init = { signal: request.signal };
+    if (request.method !== "GET") {
+      init.method = request.method;
+      let contentType = request.headers.get("Content-Type");
+      if (contentType && /\bapplication\/json\b/.test(contentType)) {
+        init.headers = { "Content-Type": contentType };
+        init.body = JSON.stringify(await request.json());
+      } else if (contentType && /\btext\/plain\b/.test(contentType)) {
+        init.headers = { "Content-Type": contentType };
+        init.body = await request.text();
+      } else if (contentType && /\bapplication\/x-www-form-urlencoded\b/.test(contentType)) {
+        init.body = new URLSearchParams(await request.text());
+      } else {
+        init.body = await request.formData();
+      }
+    }
+    return init;
+  }
+  var SingleFetchRedirectSymbol = Symbol("SingleFetchRedirect");
+  var SINGLE_FETCH_REDIRECT_STATUS = 202;
+  var NO_BODY_STATUS_CODES = /* @__PURE__ */ new Set([100, 101, 204, 205]);
+  function StreamTransfer({
+    context,
+    identifier,
+    reader,
+    textDecoder,
+    nonce
+  }) {
+    if (!context.renderMeta || !context.renderMeta.didRenderScripts) {
+      return null;
+    }
+    if (!context.renderMeta.streamCache) {
+      context.renderMeta.streamCache = {};
+    }
+    let { streamCache } = context.renderMeta;
+    let promise = streamCache[identifier];
+    if (!promise) {
+      promise = streamCache[identifier] = reader.read().then((result) => {
+        streamCache[identifier].result = {
+          done: result.done,
+          value: textDecoder.decode(result.value, { stream: true })
+        };
+      }).catch((e) => {
+        streamCache[identifier].error = e;
+      });
+    }
+    if (promise.error) {
+      throw promise.error;
+    }
+    if (promise.result === undefined) {
+      throw promise;
+    }
+    let { done, value } = promise.result;
+    let scriptTag = value ? /* @__PURE__ */ React4.createElement("script", {
+      nonce,
+      dangerouslySetInnerHTML: {
+        __html: `window.__reactRouterContext.streamController.enqueue(${escapeHtml(JSON.stringify(value))});`
+      }
+    }) : null;
+    if (done) {
+      return /* @__PURE__ */ React4.createElement(React4.Fragment, null, scriptTag, /* @__PURE__ */ React4.createElement("script", {
+        nonce,
+        dangerouslySetInnerHTML: {
+          __html: `window.__reactRouterContext.streamController.close();`
+        }
+      }));
+    } else {
+      return /* @__PURE__ */ React4.createElement(React4.Fragment, null, scriptTag, /* @__PURE__ */ React4.createElement(React4.Suspense, null, /* @__PURE__ */ React4.createElement(StreamTransfer, {
+        context,
+        identifier: identifier + 1,
+        reader,
+        textDecoder,
+        nonce
+      })));
+    }
+  }
+  function getTurboStreamSingleFetchDataStrategy(getRouter, manifest, routeModules, ssr, basename) {
+    let dataStrategy = getSingleFetchDataStrategyImpl(getRouter, (match) => {
+      let manifestRoute = manifest.routes[match.route.id];
+      invariant2(manifestRoute, "Route not found in manifest");
+      let routeModule = routeModules[match.route.id];
+      return {
+        hasLoader: manifestRoute.hasLoader,
+        hasClientLoader: manifestRoute.hasClientLoader,
+        hasShouldRevalidate: Boolean(routeModule?.shouldRevalidate)
+      };
+    }, fetchAndDecodeViaTurboStream, ssr, basename);
+    return async (args) => args.unstable_runClientMiddleware(dataStrategy);
+  }
+  function getSingleFetchDataStrategyImpl(getRouter, getRouteInfo, fetchAndDecode, ssr, basename) {
+    return async (args) => {
+      let { request, matches, fetcherKey } = args;
+      let router = getRouter();
+      if (request.method !== "GET") {
+        return singleFetchActionStrategy(args, fetchAndDecode, basename);
+      }
+      let foundRevalidatingServerLoader = matches.some((m) => {
+        let { hasLoader, hasClientLoader } = getRouteInfo(m);
+        return m.unstable_shouldCallHandler() && hasLoader && !hasClientLoader;
+      });
+      if (!ssr && !foundRevalidatingServerLoader) {
+        return nonSsrStrategy(args, getRouteInfo, fetchAndDecode, basename);
+      }
+      if (fetcherKey) {
+        return singleFetchLoaderFetcherStrategy(args, fetchAndDecode, basename);
+      }
+      return singleFetchLoaderNavigationStrategy(args, router, getRouteInfo, fetchAndDecode, ssr, basename);
+    };
+  }
+  async function singleFetchActionStrategy(args, fetchAndDecode, basename) {
+    let actionMatch = args.matches.find((m) => m.unstable_shouldCallHandler());
+    invariant2(actionMatch, "No action match found");
+    let actionStatus = undefined;
+    let result = await actionMatch.resolve(async (handler) => {
+      let result2 = await handler(async () => {
+        let { data: data2, status } = await fetchAndDecode(args, basename, [
+          actionMatch.route.id
+        ]);
+        actionStatus = status;
+        return unwrapSingleFetchResult(data2, actionMatch.route.id);
+      });
+      return result2;
+    });
+    if (isResponse(result.result) || isRouteErrorResponse(result.result)) {
+      return { [actionMatch.route.id]: result };
+    }
+    return {
+      [actionMatch.route.id]: {
+        type: result.type,
+        result: data(result.result, actionStatus)
+      }
+    };
+  }
+  async function nonSsrStrategy(args, getRouteInfo, fetchAndDecode, basename) {
+    let matchesToLoad = args.matches.filter((m) => m.unstable_shouldCallHandler());
+    let results = {};
+    await Promise.all(matchesToLoad.map((m) => m.resolve(async (handler) => {
+      try {
+        let { hasClientLoader } = getRouteInfo(m);
+        let routeId = m.route.id;
+        let result = hasClientLoader ? await handler(async () => {
+          let { data: data2 } = await fetchAndDecode(args, basename, [routeId]);
+          return unwrapSingleFetchResult(data2, routeId);
+        }) : await handler();
+        results[m.route.id] = { type: "data", result };
+      } catch (e) {
+        results[m.route.id] = { type: "error", result: e };
+      }
+    })));
+    return results;
+  }
+  async function singleFetchLoaderNavigationStrategy(args, router, getRouteInfo, fetchAndDecode, ssr, basename) {
+    let routesParams = /* @__PURE__ */ new Set;
+    let foundOptOutRoute = false;
+    let routeDfds = args.matches.map(() => createDeferred2());
+    let singleFetchDfd = createDeferred2();
+    let results = {};
+    let resolvePromise = Promise.all(args.matches.map(async (m, i) => m.resolve(async (handler) => {
+      routeDfds[i].resolve();
+      let routeId = m.route.id;
+      let { hasLoader, hasClientLoader, hasShouldRevalidate } = getRouteInfo(m);
+      let defaultShouldRevalidate = !m.unstable_shouldRevalidateArgs || m.unstable_shouldRevalidateArgs.actionStatus == null || m.unstable_shouldRevalidateArgs.actionStatus < 400;
+      let shouldCall = m.unstable_shouldCallHandler(defaultShouldRevalidate);
+      if (!shouldCall) {
+        foundOptOutRoute || (foundOptOutRoute = m.unstable_shouldRevalidateArgs != null && hasLoader && hasShouldRevalidate === true);
+        return;
+      }
+      if (hasClientLoader) {
+        if (hasLoader) {
+          foundOptOutRoute = true;
+        }
+        try {
+          let result = await handler(async () => {
+            let { data: data2 } = await fetchAndDecode(args, basename, [routeId]);
+            return unwrapSingleFetchResult(data2, routeId);
+          });
+          results[routeId] = { type: "data", result };
+        } catch (e) {
+          results[routeId] = { type: "error", result: e };
+        }
+        return;
+      }
+      if (hasLoader) {
+        routesParams.add(routeId);
+      }
+      try {
+        let result = await handler(async () => {
+          let data2 = await singleFetchDfd.promise;
+          return unwrapSingleFetchResult(data2, routeId);
+        });
+        results[routeId] = { type: "data", result };
+      } catch (e) {
+        results[routeId] = { type: "error", result: e };
+      }
+    })));
+    await Promise.all(routeDfds.map((d) => d.promise));
+    let isInitialLoad = !router.state.initialized && router.state.navigation.state === "idle";
+    if ((isInitialLoad || routesParams.size === 0) && !window.__reactRouterHdrActive) {
+      singleFetchDfd.resolve({ routes: {} });
+    } else {
+      let targetRoutes = ssr && foundOptOutRoute && routesParams.size > 0 ? [...routesParams.keys()] : undefined;
+      try {
+        let data2 = await fetchAndDecode(args, basename, targetRoutes);
+        singleFetchDfd.resolve(data2.data);
+      } catch (e) {
+        singleFetchDfd.reject(e);
+      }
+    }
+    await resolvePromise;
+    return results;
+  }
+  async function singleFetchLoaderFetcherStrategy(args, fetchAndDecode, basename) {
+    let fetcherMatch = args.matches.find((m) => m.unstable_shouldCallHandler());
+    invariant2(fetcherMatch, "No fetcher match found");
+    let routeId = fetcherMatch.route.id;
+    let result = await fetcherMatch.resolve(async (handler) => handler(async () => {
+      let { data: data2 } = await fetchAndDecode(args, basename, [routeId]);
+      return unwrapSingleFetchResult(data2, routeId);
+    }));
+    return { [fetcherMatch.route.id]: result };
+  }
+  function stripIndexParam(url) {
+    let indexValues = url.searchParams.getAll("index");
+    url.searchParams.delete("index");
+    let indexValuesToKeep = [];
+    for (let indexValue of indexValues) {
+      if (indexValue) {
+        indexValuesToKeep.push(indexValue);
+      }
+    }
+    for (let toKeep of indexValuesToKeep) {
+      url.searchParams.append("index", toKeep);
+    }
+    return url;
+  }
+  function singleFetchUrl(reqUrl, basename) {
+    let url = typeof reqUrl === "string" ? new URL(reqUrl, typeof window === "undefined" ? "server://singlefetch/" : window.location.origin) : reqUrl;
+    if (url.pathname === "/") {
+      url.pathname = "_root.data";
+    } else if (basename && stripBasename(url.pathname, basename) === "/") {
+      url.pathname = `${basename.replace(/\/$/, "")}/_root.data`;
+    } else {
+      url.pathname = `${url.pathname.replace(/\/$/, "")}.data`;
+    }
+    return url;
+  }
+  async function fetchAndDecodeViaTurboStream(args, basename, targetRoutes) {
+    let { request } = args;
+    let url = singleFetchUrl(request.url, basename);
+    if (request.method === "GET") {
+      url = stripIndexParam(url);
+      if (targetRoutes) {
+        url.searchParams.set("_routes", targetRoutes.join(","));
+      }
+    }
+    let res = await fetch(url, await createRequestInit(request));
+    if (res.status === 404 && !res.headers.has("X-Remix-Response")) {
+      throw new ErrorResponseImpl(404, "Not Found", true);
+    }
+    if (res.status === 204 && res.headers.has("X-Remix-Redirect")) {
+      return {
+        status: SINGLE_FETCH_REDIRECT_STATUS,
+        data: {
+          redirect: {
+            redirect: res.headers.get("X-Remix-Redirect"),
+            status: Number(res.headers.get("X-Remix-Status") || "302"),
+            revalidate: res.headers.get("X-Remix-Revalidate") === "true",
+            reload: res.headers.get("X-Remix-Reload-Document") === "true",
+            replace: res.headers.get("X-Remix-Replace") === "true"
+          }
+        }
+      };
+    }
+    if (NO_BODY_STATUS_CODES.has(res.status)) {
+      let routes = {};
+      if (targetRoutes && request.method !== "GET") {
+        routes[targetRoutes[0]] = { data: undefined };
+      }
+      return {
+        status: res.status,
+        data: { routes }
+      };
+    }
+    invariant2(res.body, "No response body to decode");
+    try {
+      let decoded = await decodeViaTurboStream(res.body, window);
+      let data2;
+      if (request.method === "GET") {
+        let typed = decoded.value;
+        if (SingleFetchRedirectSymbol in typed) {
+          data2 = { redirect: typed[SingleFetchRedirectSymbol] };
+        } else {
+          data2 = { routes: typed };
+        }
+      } else {
+        let typed = decoded.value;
+        let routeId = targetRoutes?.[0];
+        invariant2(routeId, "No routeId found for single fetch call decoding");
+        if ("redirect" in typed) {
+          data2 = { redirect: typed };
+        } else {
+          data2 = { routes: { [routeId]: typed } };
+        }
+      }
+      return { status: res.status, data: data2 };
+    } catch (e) {
+      throw new Error("Unable to decode turbo-stream response");
+    }
+  }
+  function decodeViaTurboStream(body, global2) {
+    return (0, import_turbo_stream.decode)(body, {
+      plugins: [
+        (type, ...rest) => {
+          if (type === "SanitizedError") {
+            let [name, message, stack] = rest;
+            let Constructor = Error;
+            if (name && name in global2 && typeof global2[name] === "function") {
+              Constructor = global2[name];
+            }
+            let error = new Constructor(message);
+            error.stack = stack;
+            return { value: error };
+          }
+          if (type === "ErrorResponse") {
+            let [data2, status, statusText] = rest;
+            return {
+              value: new ErrorResponseImpl(status, statusText, data2)
+            };
+          }
+          if (type === "SingleFetchRedirect") {
+            return { value: { [SingleFetchRedirectSymbol]: rest[0] } };
+          }
+          if (type === "SingleFetchClassInstance") {
+            return { value: rest[0] };
+          }
+          if (type === "SingleFetchFallback") {
+            return { value: undefined };
+          }
+        }
+      ]
+    });
+  }
+  function unwrapSingleFetchResult(result, routeId) {
+    if ("redirect" in result) {
+      let {
+        redirect: location2,
+        revalidate,
+        reload,
+        replace: replace2,
+        status
+      } = result.redirect;
+      throw redirect(location2, {
+        status,
+        headers: {
+          ...revalidate ? { "X-Remix-Revalidate": "yes" } : null,
+          ...reload ? { "X-Remix-Reload-Document": "yes" } : null,
+          ...replace2 ? { "X-Remix-Replace": "yes" } : null
+        }
+      });
+    }
+    let routeResult = result.routes[routeId];
+    if ("error" in routeResult) {
+      throw routeResult.error;
+    } else if ("data" in routeResult) {
+      return routeResult.data;
+    } else {
+      throw new Error(`No response found for routeId "${routeId}"`);
+    }
+  }
+  function createDeferred2() {
+    let resolve;
+    let reject;
+    let promise = new Promise((res, rej) => {
+      resolve = async (val) => {
+        res(val);
+        try {
+          await promise;
+        } catch (e) {
+        }
+      };
+      reject = async (error) => {
+        rej(error);
+        try {
+          await promise;
+        } catch (e) {
+        }
+      };
+    });
+    return {
+      promise,
+      resolve,
+      reject
+    };
+  }
+  var React8 = __toESM2(react7);
+  var React7 = __toESM2(react8);
+  var React5 = __toESM2(react9);
+  var RemixErrorBoundary = class extends React5.Component {
+    constructor(props) {
+      super(props);
+      this.state = { error: props.error || null, location: props.location };
+    }
+    static getDerivedStateFromError(error) {
+      return { error };
+    }
+    static getDerivedStateFromProps(props, state) {
+      if (state.location !== props.location) {
+        return { error: props.error || null, location: props.location };
+      }
+      return { error: props.error || state.error, location: state.location };
+    }
+    render() {
+      if (this.state.error) {
+        return /* @__PURE__ */ React5.createElement(RemixRootDefaultErrorBoundary, {
+          error: this.state.error,
+          isOutsideRemixApp: true
+        });
+      } else {
+        return this.props.children;
+      }
+    }
+  };
+  function RemixRootDefaultErrorBoundary({
+    error,
+    isOutsideRemixApp
+  }) {
+    console.error(error);
+    let heyDeveloper = /* @__PURE__ */ React5.createElement("script", {
+      dangerouslySetInnerHTML: {
+        __html: `
+        console.log(
+          "\uD83D\uDCBF Hey developer \uD83D\uDC4B. You can provide a way better UX than this when your app throws errors. Check out https://remix.run/guides/errors for more information."
+        );
+      `
+      }
+    });
+    if (isRouteErrorResponse(error)) {
+      return /* @__PURE__ */ React5.createElement(BoundaryShell, { title: "Unhandled Thrown Response!" }, /* @__PURE__ */ React5.createElement("h1", { style: { fontSize: "24px" } }, error.status, " ", error.statusText), heyDeveloper);
+    }
+    let errorInstance;
+    if (error instanceof Error) {
+      errorInstance = error;
+    } else {
+      let errorString = error == null ? "Unknown Error" : typeof error === "object" && ("toString" in error) ? error.toString() : JSON.stringify(error);
+      errorInstance = new Error(errorString);
+    }
+    return /* @__PURE__ */ React5.createElement(BoundaryShell, {
+      title: "Application Error!",
+      isOutsideRemixApp
+    }, /* @__PURE__ */ React5.createElement("h1", { style: { fontSize: "24px" } }, "Application Error"), /* @__PURE__ */ React5.createElement("pre", {
+      style: {
+        padding: "2rem",
+        background: "hsla(10, 50%, 50%, 0.1)",
+        color: "red",
+        overflow: "auto"
+      }
+    }, errorInstance.stack), heyDeveloper);
+  }
+  function BoundaryShell({
+    title,
+    renderScripts,
+    isOutsideRemixApp,
+    children
+  }) {
+    let { routeModules } = useFrameworkContext();
+    if (routeModules.root?.Layout && !isOutsideRemixApp) {
+      return children;
+    }
+    return /* @__PURE__ */ React5.createElement("html", { lang: "en" }, /* @__PURE__ */ React5.createElement("head", null, /* @__PURE__ */ React5.createElement("meta", { charSet: "utf-8" }), /* @__PURE__ */ React5.createElement("meta", {
+      name: "viewport",
+      content: "width=device-width,initial-scale=1,viewport-fit=cover"
+    }), /* @__PURE__ */ React5.createElement("title", null, title)), /* @__PURE__ */ React5.createElement("body", null, /* @__PURE__ */ React5.createElement("main", { style: { fontFamily: "system-ui, sans-serif", padding: "2rem" } }, children, renderScripts ? /* @__PURE__ */ React5.createElement(Scripts, null) : null)));
+  }
+  var React6 = __toESM2(react10);
+  function RemixRootDefaultHydrateFallback() {
+    return /* @__PURE__ */ React6.createElement(BoundaryShell, { title: "Loading...", renderScripts: true }, /* @__PURE__ */ React6.createElement("script", {
+      dangerouslySetInnerHTML: {
+        __html: `
+              console.log(
+                "\uD83D\uDCBF Hey developer \uD83D\uDC4B. You can provide a way better UX than this " +
+                "when your app is loading JS modules and/or running \`clientLoader\` " +
+                "functions. Check out https://remix.run/route/hydrate-fallback " +
+                "for more information."
+              );
+            `
+      }
+    }));
+  }
+  function groupRoutesByParentId(manifest) {
+    let routes = {};
+    Object.values(manifest).forEach((route) => {
+      if (route) {
+        let parentId = route.parentId || "";
+        if (!routes[parentId]) {
+          routes[parentId] = [];
+        }
+        routes[parentId].push(route);
+      }
+    });
+    return routes;
+  }
+  function getRouteComponents(route, routeModule, isSpaMode) {
+    let Component4 = getRouteModuleComponent(routeModule);
+    let HydrateFallback = routeModule.HydrateFallback && (!isSpaMode || route.id === "root") ? routeModule.HydrateFallback : route.id === "root" ? RemixRootDefaultHydrateFallback : undefined;
+    let ErrorBoundary = routeModule.ErrorBoundary ? routeModule.ErrorBoundary : route.id === "root" ? () => /* @__PURE__ */ React7.createElement(RemixRootDefaultErrorBoundary, { error: useRouteError() }) : undefined;
+    if (route.id === "root" && routeModule.Layout) {
+      return {
+        ...Component4 ? {
+          element: /* @__PURE__ */ React7.createElement(routeModule.Layout, null, /* @__PURE__ */ React7.createElement(Component4, null))
+        } : { Component: Component4 },
+        ...ErrorBoundary ? {
+          errorElement: /* @__PURE__ */ React7.createElement(routeModule.Layout, null, /* @__PURE__ */ React7.createElement(ErrorBoundary, null))
+        } : { ErrorBoundary },
+        ...HydrateFallback ? {
+          hydrateFallbackElement: /* @__PURE__ */ React7.createElement(routeModule.Layout, null, /* @__PURE__ */ React7.createElement(HydrateFallback, null))
+        } : { HydrateFallback }
+      };
+    }
+    return { Component: Component4, ErrorBoundary, HydrateFallback };
+  }
+  function createServerRoutes(manifest, routeModules, future, isSpaMode, parentId = "", routesByParentId = groupRoutesByParentId(manifest), spaModeLazyPromise = Promise.resolve({ Component: () => null })) {
+    return (routesByParentId[parentId] || []).map((route) => {
+      let routeModule = routeModules[route.id];
+      invariant2(routeModule, "No `routeModule` available to create server routes");
+      let dataRoute = {
+        ...getRouteComponents(route, routeModule, isSpaMode),
+        caseSensitive: route.caseSensitive,
+        id: route.id,
+        index: route.index,
+        path: route.path,
+        handle: routeModule.handle,
+        lazy: isSpaMode ? () => spaModeLazyPromise : undefined,
+        loader: route.hasLoader || route.hasClientLoader ? () => null : undefined
+      };
+      let children = createServerRoutes(manifest, routeModules, future, isSpaMode, route.id, routesByParentId, spaModeLazyPromise);
+      if (children.length > 0)
+        dataRoute.children = children;
+      return dataRoute;
+    });
+  }
+  function createClientRoutesWithHMRRevalidationOptOut(needsRevalidation, manifest, routeModulesCache, initialState, ssr, isSpaMode) {
+    return createClientRoutes(manifest, routeModulesCache, initialState, ssr, isSpaMode, "", groupRoutesByParentId(manifest), needsRevalidation);
+  }
+  function preventInvalidServerHandlerCall(type, route) {
+    if (type === "loader" && !route.hasLoader || type === "action" && !route.hasAction) {
+      let fn = type === "action" ? "serverAction()" : "serverLoader()";
+      let msg = `You are trying to call ${fn} on a route that does not have a server ${type} (routeId: "${route.id}")`;
+      console.error(msg);
+      throw new ErrorResponseImpl(400, "Bad Request", new Error(msg), true);
+    }
+  }
+  function noActionDefinedError(type, routeId) {
+    let article = type === "clientAction" ? "a" : "an";
+    let msg = `Route "${routeId}" does not have ${article} ${type}, but you are trying to submit to it. To fix this, please add ${article} \`${type}\` function to the route`;
+    console.error(msg);
+    throw new ErrorResponseImpl(405, "Method Not Allowed", new Error(msg), true);
+  }
+  function createClientRoutes(manifest, routeModulesCache, initialState, ssr, isSpaMode, parentId = "", routesByParentId = groupRoutesByParentId(manifest), needsRevalidation) {
+    return (routesByParentId[parentId] || []).map((route) => {
+      let routeModule = routeModulesCache[route.id];
+      function fetchServerHandler(singleFetch) {
+        invariant2(typeof singleFetch === "function", "No single fetch function available for route handler");
+        return singleFetch();
+      }
+      function fetchServerLoader(singleFetch) {
+        if (!route.hasLoader)
+          return Promise.resolve(null);
+        return fetchServerHandler(singleFetch);
+      }
+      function fetchServerAction(singleFetch) {
+        if (!route.hasAction) {
+          throw noActionDefinedError("action", route.id);
+        }
+        return fetchServerHandler(singleFetch);
+      }
+      function prefetchModule(modulePath) {
+        import(modulePath);
+      }
+      function prefetchRouteModuleChunks(route2) {
+        if (route2.clientActionModule) {
+          prefetchModule(route2.clientActionModule);
+        }
+        if (route2.clientLoaderModule) {
+          prefetchModule(route2.clientLoaderModule);
+        }
+      }
+      async function prefetchStylesAndCallHandler(handler) {
+        let cachedModule = routeModulesCache[route.id];
+        let linkPrefetchPromise = cachedModule ? prefetchStyleLinks(route, cachedModule) : Promise.resolve();
+        try {
+          return handler();
+        } finally {
+          await linkPrefetchPromise;
+        }
+      }
+      let dataRoute = {
+        id: route.id,
+        index: route.index,
+        path: route.path
+      };
+      if (routeModule) {
+        Object.assign(dataRoute, {
+          ...dataRoute,
+          ...getRouteComponents(route, routeModule, isSpaMode),
+          unstable_middleware: routeModule.unstable_clientMiddleware,
+          handle: routeModule.handle,
+          shouldRevalidate: getShouldRevalidateFunction(dataRoute.path, routeModule, route, ssr, needsRevalidation)
+        });
+        let hasInitialData = initialState && initialState.loaderData && route.id in initialState.loaderData;
+        let initialData = hasInitialData ? initialState?.loaderData?.[route.id] : undefined;
+        let hasInitialError = initialState && initialState.errors && route.id in initialState.errors;
+        let initialError = hasInitialError ? initialState?.errors?.[route.id] : undefined;
+        let isHydrationRequest = needsRevalidation == null && (routeModule.clientLoader?.hydrate === true || !route.hasLoader);
+        dataRoute.loader = async ({ request, params, context }, singleFetch) => {
+          try {
+            let result = await prefetchStylesAndCallHandler(async () => {
+              invariant2(routeModule, "No `routeModule` available for critical-route loader");
+              if (!routeModule.clientLoader) {
+                return fetchServerLoader(singleFetch);
+              }
+              return routeModule.clientLoader({
+                request,
+                params,
+                context,
+                async serverLoader() {
+                  preventInvalidServerHandlerCall("loader", route);
+                  if (isHydrationRequest) {
+                    if (hasInitialData) {
+                      return initialData;
+                    }
+                    if (hasInitialError) {
+                      throw initialError;
+                    }
+                  }
+                  return fetchServerLoader(singleFetch);
+                }
+              });
+            });
+            return result;
+          } finally {
+            isHydrationRequest = false;
+          }
+        };
+        dataRoute.loader.hydrate = shouldHydrateRouteLoader(route.id, routeModule.clientLoader, route.hasLoader, isSpaMode);
+        dataRoute.action = ({ request, params, context }, singleFetch) => {
+          return prefetchStylesAndCallHandler(async () => {
+            invariant2(routeModule, "No `routeModule` available for critical-route action");
+            if (!routeModule.clientAction) {
+              if (isSpaMode) {
+                throw noActionDefinedError("clientAction", route.id);
+              }
+              return fetchServerAction(singleFetch);
+            }
+            return routeModule.clientAction({
+              request,
+              params,
+              context,
+              async serverAction() {
+                preventInvalidServerHandlerCall("action", route);
+                return fetchServerAction(singleFetch);
+              }
+            });
+          });
+        };
+      } else {
+        if (!route.hasClientLoader) {
+          dataRoute.loader = (_, singleFetch) => prefetchStylesAndCallHandler(() => {
+            return fetchServerLoader(singleFetch);
+          });
+        }
+        if (!route.hasClientAction) {
+          dataRoute.action = (_, singleFetch) => prefetchStylesAndCallHandler(() => {
+            if (isSpaMode) {
+              throw noActionDefinedError("clientAction", route.id);
+            }
+            return fetchServerAction(singleFetch);
+          });
+        }
+        let lazyRoutePromise;
+        async function getLazyRoute() {
+          if (lazyRoutePromise) {
+            return await lazyRoutePromise;
+          }
+          lazyRoutePromise = (async () => {
+            if (route.clientLoaderModule || route.clientActionModule) {
+              await new Promise((resolve) => setTimeout(resolve, 0));
+            }
+            let routeModulePromise = loadRouteModuleWithBlockingLinks(route, routeModulesCache);
+            prefetchRouteModuleChunks(route);
+            return await routeModulePromise;
+          })();
+          return await lazyRoutePromise;
+        }
+        dataRoute.lazy = {
+          loader: route.hasClientLoader ? async () => {
+            let { clientLoader } = route.clientLoaderModule ? await import(route.clientLoaderModule) : await getLazyRoute();
+            invariant2(clientLoader, "No `clientLoader` export found");
+            return (args, singleFetch) => clientLoader({
+              ...args,
+              async serverLoader() {
+                preventInvalidServerHandlerCall("loader", route);
+                return fetchServerLoader(singleFetch);
+              }
+            });
+          } : undefined,
+          action: route.hasClientAction ? async () => {
+            let clientActionPromise = route.clientActionModule ? import(route.clientActionModule) : getLazyRoute();
+            prefetchRouteModuleChunks(route);
+            let { clientAction } = await clientActionPromise;
+            invariant2(clientAction, "No `clientAction` export found");
+            return (args, singleFetch) => clientAction({
+              ...args,
+              async serverAction() {
+                preventInvalidServerHandlerCall("action", route);
+                return fetchServerAction(singleFetch);
+              }
+            });
+          } : undefined,
+          unstable_middleware: route.hasClientMiddleware ? async () => {
+            let { unstable_clientMiddleware } = route.clientMiddlewareModule ? await import(route.clientMiddlewareModule) : await getLazyRoute();
+            invariant2(unstable_clientMiddleware, "No `unstable_clientMiddleware` export found");
+            return unstable_clientMiddleware;
+          } : undefined,
+          shouldRevalidate: async () => {
+            let lazyRoute = await getLazyRoute();
+            return getShouldRevalidateFunction(dataRoute.path, lazyRoute, route, ssr, needsRevalidation);
+          },
+          handle: async () => (await getLazyRoute()).handle,
+          Component: async () => (await getLazyRoute()).Component,
+          ErrorBoundary: route.hasErrorBoundary ? async () => (await getLazyRoute()).ErrorBoundary : undefined
+        };
+      }
+      let children = createClientRoutes(manifest, routeModulesCache, initialState, ssr, isSpaMode, route.id, routesByParentId, needsRevalidation);
+      if (children.length > 0)
+        dataRoute.children = children;
+      return dataRoute;
+    });
+  }
+  function getShouldRevalidateFunction(path, route, manifestRoute, ssr, needsRevalidation) {
+    if (needsRevalidation) {
+      return wrapShouldRevalidateForHdr(manifestRoute.id, route.shouldRevalidate, needsRevalidation);
+    }
+    if (!ssr && manifestRoute.hasLoader && !manifestRoute.hasClientLoader) {
+      let myParams = path ? compilePath(path)[1].map((p) => p.paramName) : [];
+      const didParamsChange = (opts) => myParams.some((p) => opts.currentParams[p] !== opts.nextParams[p]);
+      if (route.shouldRevalidate) {
+        let fn = route.shouldRevalidate;
+        return (opts) => fn({
+          ...opts,
+          defaultShouldRevalidate: didParamsChange(opts)
+        });
+      } else {
+        return (opts) => didParamsChange(opts);
+      }
+    }
+    if (ssr && route.shouldRevalidate) {
+      let fn = route.shouldRevalidate;
+      return (opts) => fn({ ...opts, defaultShouldRevalidate: true });
+    }
+    return route.shouldRevalidate;
+  }
+  function wrapShouldRevalidateForHdr(routeId, routeShouldRevalidate, needsRevalidation) {
+    let handledRevalidation = false;
+    return (arg) => {
+      if (!handledRevalidation) {
+        handledRevalidation = true;
+        return needsRevalidation.has(routeId);
+      }
+      return routeShouldRevalidate ? routeShouldRevalidate(arg) : arg.defaultShouldRevalidate;
+    };
+  }
+  async function loadRouteModuleWithBlockingLinks(route, routeModules) {
+    let routeModulePromise = loadRouteModule(route, routeModules);
+    let prefetchRouteCssPromise = prefetchRouteCss(route);
+    let routeModule = await routeModulePromise;
+    await Promise.all([
+      prefetchRouteCssPromise,
+      prefetchStyleLinks(route, routeModule)
+    ]);
+    return {
+      Component: getRouteModuleComponent(routeModule),
+      ErrorBoundary: routeModule.ErrorBoundary,
+      unstable_clientMiddleware: routeModule.unstable_clientMiddleware,
+      clientAction: routeModule.clientAction,
+      clientLoader: routeModule.clientLoader,
+      handle: routeModule.handle,
+      links: routeModule.links,
+      meta: routeModule.meta,
+      shouldRevalidate: routeModule.shouldRevalidate
+    };
+  }
+  function getRouteModuleComponent(routeModule) {
+    if (routeModule.default == null)
+      return;
+    let isEmptyObject = typeof routeModule.default === "object" && Object.keys(routeModule.default).length === 0;
+    if (!isEmptyObject) {
+      return routeModule.default;
+    }
+  }
+  function shouldHydrateRouteLoader(routeId, clientLoader, hasLoader, isSpaMode) {
+    return isSpaMode && routeId !== "root" || clientLoader != null && (clientLoader.hydrate === true || hasLoader !== true);
+  }
+  var nextPaths = /* @__PURE__ */ new Set;
+  var discoveredPathsMaxSize = 1000;
+  var discoveredPaths = /* @__PURE__ */ new Set;
+  var URL_LIMIT = 7680;
+  function isFogOfWarEnabled(ssr) {
+    return ssr === true;
+  }
+  function getPartialManifest({ sri, ...manifest }, router) {
+    let routeIds = new Set(router.state.matches.map((m) => m.route.id));
+    let segments = router.state.location.pathname.split("/").filter(Boolean);
+    let paths = ["/"];
+    segments.pop();
+    while (segments.length > 0) {
+      paths.push(`/${segments.join("/")}`);
+      segments.pop();
+    }
+    paths.forEach((path) => {
+      let matches = matchRoutes(router.routes, path, router.basename);
+      if (matches) {
+        matches.forEach((m) => routeIds.add(m.route.id));
+      }
+    });
+    let initialRoutes = [...routeIds].reduce((acc, id) => Object.assign(acc, { [id]: manifest.routes[id] }), {});
+    return {
+      ...manifest,
+      routes: initialRoutes,
+      sri: sri ? true : undefined
+    };
+  }
+  function getPatchRoutesOnNavigationFunction(manifest, routeModules, ssr, isSpaMode, basename) {
+    if (!isFogOfWarEnabled(ssr)) {
+      return;
+    }
+    return async ({ path, patch, signal, fetcherKey }) => {
+      if (discoveredPaths.has(path)) {
+        return;
+      }
+      await fetchAndApplyManifestPatches([path], fetcherKey ? window.location.href : path, manifest, routeModules, ssr, isSpaMode, basename, patch, signal);
+    };
+  }
+  function useFogOFWarDiscovery(router, manifest, routeModules, ssr, isSpaMode) {
+    React8.useEffect(() => {
+      if (!isFogOfWarEnabled(ssr) || navigator.connection?.saveData === true) {
+        return;
+      }
+      function registerElement(el) {
+        let path = el.tagName === "FORM" ? el.getAttribute("action") : el.getAttribute("href");
+        if (!path) {
+          return;
+        }
+        let pathname = el.tagName === "A" ? el.pathname : new URL(path, window.location.origin).pathname;
+        if (!discoveredPaths.has(pathname)) {
+          nextPaths.add(pathname);
+        }
+      }
+      async function fetchPatches() {
+        document.querySelectorAll("a[data-discover], form[data-discover]").forEach(registerElement);
+        let lazyPaths = Array.from(nextPaths.keys()).filter((path) => {
+          if (discoveredPaths.has(path)) {
+            nextPaths.delete(path);
+            return false;
+          }
+          return true;
+        });
+        if (lazyPaths.length === 0) {
+          return;
+        }
+        try {
+          await fetchAndApplyManifestPatches(lazyPaths, null, manifest, routeModules, ssr, isSpaMode, router.basename, router.patchRoutes);
+        } catch (e) {
+          console.error("Failed to fetch manifest patches", e);
+        }
+      }
+      let debouncedFetchPatches = debounce(fetchPatches, 100);
+      fetchPatches();
+      let observer = new MutationObserver(() => debouncedFetchPatches());
+      observer.observe(document.documentElement, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: ["data-discover", "href", "action"]
+      });
+      return () => observer.disconnect();
+    }, [ssr, isSpaMode, manifest, routeModules, router]);
+  }
+  var MANIFEST_VERSION_STORAGE_KEY = "react-router-manifest-version";
+  async function fetchAndApplyManifestPatches(paths, errorReloadPath, manifest, routeModules, ssr, isSpaMode, basename, patchRoutes, signal) {
+    let manifestPath = `${basename != null ? basename : "/"}/__manifest`.replace(/\/+/g, "/");
+    let url = new URL(manifestPath, window.location.origin);
+    paths.sort().forEach((path) => url.searchParams.append("p", path));
+    url.searchParams.set("version", manifest.version);
+    if (url.toString().length > URL_LIMIT) {
+      nextPaths.clear();
+      return;
+    }
+    let serverPatches;
+    try {
+      let res = await fetch(url, { signal });
+      if (!res.ok) {
+        throw new Error(`${res.status} ${res.statusText}`);
+      } else if (res.status === 204 && res.headers.has("X-Remix-Reload-Document")) {
+        if (!errorReloadPath) {
+          console.warn("Detected a manifest version mismatch during eager route discovery. The next navigation/fetch to an undiscovered route will result in a new document navigation to sync up with the latest manifest.");
+          return;
+        }
+        if (sessionStorage.getItem(MANIFEST_VERSION_STORAGE_KEY) === manifest.version) {
+          console.error("Unable to discover routes due to manifest version mismatch.");
+          return;
+        }
+        sessionStorage.setItem(MANIFEST_VERSION_STORAGE_KEY, manifest.version);
+        window.location.href = errorReloadPath;
+        throw new Error("Detected manifest version mismatch, reloading...");
+      } else if (res.status >= 400) {
+        throw new Error(await res.text());
+      }
+      sessionStorage.removeItem(MANIFEST_VERSION_STORAGE_KEY);
+      serverPatches = await res.json();
+    } catch (e) {
+      if (signal?.aborted)
+        return;
+      throw e;
+    }
+    let knownRoutes = new Set(Object.keys(manifest.routes));
+    let patches = Object.values(serverPatches).reduce((acc, route) => {
+      if (route && !knownRoutes.has(route.id)) {
+        acc[route.id] = route;
+      }
+      return acc;
+    }, {});
+    Object.assign(manifest.routes, patches);
+    paths.forEach((p) => addToFifoQueue(p, discoveredPaths));
+    let parentIds = /* @__PURE__ */ new Set;
+    Object.values(patches).forEach((patch) => {
+      if (patch && (!patch.parentId || !patches[patch.parentId])) {
+        parentIds.add(patch.parentId);
+      }
+    });
+    parentIds.forEach((parentId) => patchRoutes(parentId || null, createClientRoutes(patches, routeModules, null, ssr, isSpaMode, parentId)));
+  }
+  function addToFifoQueue(path, queue) {
+    if (queue.size >= discoveredPathsMaxSize) {
+      let first = queue.values().next().value;
+      queue.delete(first);
+    }
+    queue.add(path);
+  }
+  function debounce(callback, wait) {
+    let timeoutId;
+    return (...args) => {
+      window.clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(() => callback(...args), wait);
+    };
+  }
+  function useDataRouterContext2() {
+    let context = React9.useContext(DataRouterContext);
+    invariant2(context, "You must render this element inside a <DataRouterContext.Provider> element");
+    return context;
+  }
+  function useDataRouterStateContext() {
+    let context = React9.useContext(DataRouterStateContext);
+    invariant2(context, "You must render this element inside a <DataRouterStateContext.Provider> element");
+    return context;
+  }
+  var FrameworkContext = React9.createContext(undefined);
+  FrameworkContext.displayName = "FrameworkContext";
+  function useFrameworkContext() {
+    let context = React9.useContext(FrameworkContext);
+    invariant2(context, "You must render this element inside a <HydratedRouter> element");
+    return context;
+  }
+  function usePrefetchBehavior(prefetch, theirElementProps) {
+    let frameworkContext = React9.useContext(FrameworkContext);
+    let [maybePrefetch, setMaybePrefetch] = React9.useState(false);
+    let [shouldPrefetch, setShouldPrefetch] = React9.useState(false);
+    let { onFocus, onBlur, onMouseEnter, onMouseLeave, onTouchStart } = theirElementProps;
+    let ref = React9.useRef(null);
+    React9.useEffect(() => {
+      if (prefetch === "render") {
+        setShouldPrefetch(true);
+      }
+      if (prefetch === "viewport") {
+        let callback = (entries) => {
+          entries.forEach((entry) => {
+            setShouldPrefetch(entry.isIntersecting);
+          });
+        };
+        let observer = new IntersectionObserver(callback, { threshold: 0.5 });
+        if (ref.current)
+          observer.observe(ref.current);
+        return () => {
+          observer.disconnect();
+        };
+      }
+    }, [prefetch]);
+    React9.useEffect(() => {
+      if (maybePrefetch) {
+        let id = setTimeout(() => {
+          setShouldPrefetch(true);
+        }, 100);
+        return () => {
+          clearTimeout(id);
+        };
+      }
+    }, [maybePrefetch]);
+    let setIntent = () => {
+      setMaybePrefetch(true);
+    };
+    let cancelIntent = () => {
+      setMaybePrefetch(false);
+      setShouldPrefetch(false);
+    };
+    if (!frameworkContext) {
+      return [false, ref, {}];
+    }
+    if (prefetch !== "intent") {
+      return [shouldPrefetch, ref, {}];
+    }
+    return [
+      shouldPrefetch,
+      ref,
+      {
+        onFocus: composeEventHandlers(onFocus, setIntent),
+        onBlur: composeEventHandlers(onBlur, cancelIntent),
+        onMouseEnter: composeEventHandlers(onMouseEnter, setIntent),
+        onMouseLeave: composeEventHandlers(onMouseLeave, cancelIntent),
+        onTouchStart: composeEventHandlers(onTouchStart, setIntent)
+      }
+    ];
+  }
+  function composeEventHandlers(theirHandler, ourHandler) {
+    return (event) => {
+      theirHandler && theirHandler(event);
+      if (!event.defaultPrevented) {
+        ourHandler(event);
+      }
+    };
+  }
+  function getActiveMatches(matches, errors, isSpaMode) {
+    if (isSpaMode && !isHydrated) {
+      return [matches[0]];
+    }
+    if (errors) {
+      let errorIdx = matches.findIndex((m) => errors[m.route.id] !== undefined);
+      return matches.slice(0, errorIdx + 1);
+    }
+    return matches;
+  }
+  function Links() {
+    let { isSpaMode, manifest, routeModules, criticalCss } = useFrameworkContext();
+    let { errors, matches: routerMatches } = useDataRouterStateContext();
+    let matches = getActiveMatches(routerMatches, errors, isSpaMode);
+    let keyedLinks = React9.useMemo(() => getKeyedLinksForMatches(matches, routeModules, manifest), [matches, routeModules, manifest]);
+    return /* @__PURE__ */ React9.createElement(React9.Fragment, null, typeof criticalCss === "string" ? /* @__PURE__ */ React9.createElement("style", { dangerouslySetInnerHTML: { __html: criticalCss } }) : null, typeof criticalCss === "object" ? /* @__PURE__ */ React9.createElement("link", { rel: "stylesheet", href: criticalCss.href }) : null, keyedLinks.map(({ key, link }) => isPageLinkDescriptor(link) ? /* @__PURE__ */ React9.createElement(PrefetchPageLinks, { key, ...link }) : /* @__PURE__ */ React9.createElement("link", { key, ...link })));
+  }
+  function PrefetchPageLinks({
+    page,
+    ...dataLinkProps
+  }) {
+    let { router } = useDataRouterContext2();
+    let matches = React9.useMemo(() => matchRoutes(router.routes, page, router.basename), [router.routes, page, router.basename]);
+    if (!matches) {
+      return null;
+    }
+    return /* @__PURE__ */ React9.createElement(PrefetchPageLinksImpl, { page, matches, ...dataLinkProps });
+  }
+  function useKeyedPrefetchLinks(matches) {
+    let { manifest, routeModules } = useFrameworkContext();
+    let [keyedPrefetchLinks, setKeyedPrefetchLinks] = React9.useState([]);
+    React9.useEffect(() => {
+      let interrupted = false;
+      getKeyedPrefetchLinks(matches, manifest, routeModules).then((links) => {
+        if (!interrupted) {
+          setKeyedPrefetchLinks(links);
+        }
+      });
+      return () => {
+        interrupted = true;
+      };
+    }, [matches, manifest, routeModules]);
+    return keyedPrefetchLinks;
+  }
+  function PrefetchPageLinksImpl({
+    page,
+    matches: nextMatches,
+    ...linkProps
+  }) {
+    let location2 = useLocation();
+    let { manifest, routeModules } = useFrameworkContext();
+    let { basename } = useDataRouterContext2();
+    let { loaderData, matches } = useDataRouterStateContext();
+    let newMatchesForData = React9.useMemo(() => getNewMatchesForLinks(page, nextMatches, matches, manifest, location2, "data"), [page, nextMatches, matches, manifest, location2]);
+    let newMatchesForAssets = React9.useMemo(() => getNewMatchesForLinks(page, nextMatches, matches, manifest, location2, "assets"), [page, nextMatches, matches, manifest, location2]);
+    let dataHrefs = React9.useMemo(() => {
+      if (page === location2.pathname + location2.search + location2.hash) {
+        return [];
+      }
+      let routesParams = /* @__PURE__ */ new Set;
+      let foundOptOutRoute = false;
+      nextMatches.forEach((m) => {
+        let manifestRoute = manifest.routes[m.route.id];
+        if (!manifestRoute || !manifestRoute.hasLoader) {
+          return;
+        }
+        if (!newMatchesForData.some((m2) => m2.route.id === m.route.id) && m.route.id in loaderData && routeModules[m.route.id]?.shouldRevalidate) {
+          foundOptOutRoute = true;
+        } else if (manifestRoute.hasClientLoader) {
+          foundOptOutRoute = true;
+        } else {
+          routesParams.add(m.route.id);
+        }
+      });
+      if (routesParams.size === 0) {
+        return [];
+      }
+      let url = singleFetchUrl(page, basename);
+      if (foundOptOutRoute && routesParams.size > 0) {
+        url.searchParams.set("_routes", nextMatches.filter((m) => routesParams.has(m.route.id)).map((m) => m.route.id).join(","));
+      }
+      return [url.pathname + url.search];
+    }, [
+      basename,
+      loaderData,
+      location2,
+      manifest,
+      newMatchesForData,
+      nextMatches,
+      page,
+      routeModules
+    ]);
+    let moduleHrefs = React9.useMemo(() => getModuleLinkHrefs(newMatchesForAssets, manifest), [newMatchesForAssets, manifest]);
+    let keyedPrefetchLinks = useKeyedPrefetchLinks(newMatchesForAssets);
+    return /* @__PURE__ */ React9.createElement(React9.Fragment, null, dataHrefs.map((href2) => /* @__PURE__ */ React9.createElement("link", { key: href2, rel: "prefetch", as: "fetch", href: href2, ...linkProps })), moduleHrefs.map((href2) => /* @__PURE__ */ React9.createElement("link", { key: href2, rel: "modulepreload", href: href2, ...linkProps })), keyedPrefetchLinks.map(({ key, link }) => /* @__PURE__ */ React9.createElement("link", { key, ...link })));
+  }
+  function Meta() {
+    let { isSpaMode, routeModules } = useFrameworkContext();
+    let {
+      errors,
+      matches: routerMatches,
+      loaderData
+    } = useDataRouterStateContext();
+    let location2 = useLocation();
+    let _matches = getActiveMatches(routerMatches, errors, isSpaMode);
+    let error = null;
+    if (errors) {
+      error = errors[_matches[_matches.length - 1].route.id];
+    }
+    let meta = [];
+    let leafMeta = null;
+    let matches = [];
+    for (let i = 0;i < _matches.length; i++) {
+      let _match = _matches[i];
+      let routeId = _match.route.id;
+      let data2 = loaderData[routeId];
+      let params = _match.params;
+      let routeModule = routeModules[routeId];
+      let routeMeta = [];
+      let match = {
+        id: routeId,
+        data: data2,
+        meta: [],
+        params: _match.params,
+        pathname: _match.pathname,
+        handle: _match.route.handle,
+        error
+      };
+      matches[i] = match;
+      if (routeModule?.meta) {
+        routeMeta = typeof routeModule.meta === "function" ? routeModule.meta({
+          data: data2,
+          params,
+          location: location2,
+          matches,
+          error
+        }) : Array.isArray(routeModule.meta) ? [...routeModule.meta] : routeModule.meta;
+      } else if (leafMeta) {
+        routeMeta = [...leafMeta];
+      }
+      routeMeta = routeMeta || [];
+      if (!Array.isArray(routeMeta)) {
+        throw new Error("The route at " + _match.route.path + ` returns an invalid value. All route meta functions must return an array of meta objects.
+
+To reference the meta function API, see https://remix.run/route/meta`);
+      }
+      match.meta = routeMeta;
+      matches[i] = match;
+      meta = [...routeMeta];
+      leafMeta = meta;
+    }
+    return /* @__PURE__ */ React9.createElement(React9.Fragment, null, meta.flat().map((metaProps) => {
+      if (!metaProps) {
+        return null;
+      }
+      if ("tagName" in metaProps) {
+        let { tagName, ...rest } = metaProps;
+        if (!isValidMetaTag(tagName)) {
+          console.warn(`A meta object uses an invalid tagName: ${tagName}. Expected either 'link' or 'meta'`);
+          return null;
+        }
+        let Comp = tagName;
+        return /* @__PURE__ */ React9.createElement(Comp, { key: JSON.stringify(rest), ...rest });
+      }
+      if ("title" in metaProps) {
+        return /* @__PURE__ */ React9.createElement("title", { key: "title" }, String(metaProps.title));
+      }
+      if ("charset" in metaProps) {
+        metaProps.charSet ?? (metaProps.charSet = metaProps.charset);
+        delete metaProps.charset;
+      }
+      if ("charSet" in metaProps && metaProps.charSet != null) {
+        return typeof metaProps.charSet === "string" ? /* @__PURE__ */ React9.createElement("meta", { key: "charSet", charSet: metaProps.charSet }) : null;
+      }
+      if ("script:ld+json" in metaProps) {
+        try {
+          let json = JSON.stringify(metaProps["script:ld+json"]);
+          return /* @__PURE__ */ React9.createElement("script", {
+            key: `script:ld+json:${json}`,
+            type: "application/ld+json",
+            dangerouslySetInnerHTML: { __html: json }
+          });
+        } catch (err) {
+          return null;
+        }
+      }
+      return /* @__PURE__ */ React9.createElement("meta", { key: JSON.stringify(metaProps), ...metaProps });
+    }));
+  }
+  function isValidMetaTag(tagName) {
+    return typeof tagName === "string" && /^(meta|link)$/.test(tagName);
+  }
+  var isHydrated = false;
+  function Scripts(props) {
+    let { manifest, serverHandoffString, isSpaMode, ssr, renderMeta } = useFrameworkContext();
+    let { router, static: isStatic, staticContext } = useDataRouterContext2();
+    let { matches: routerMatches } = useDataRouterStateContext();
+    let enableFogOfWar = isFogOfWarEnabled(ssr);
+    if (renderMeta) {
+      renderMeta.didRenderScripts = true;
+    }
+    let matches = getActiveMatches(routerMatches, null, isSpaMode);
+    React9.useEffect(() => {
+      isHydrated = true;
+    }, []);
+    let initialScripts = React9.useMemo(() => {
+      let streamScript = "window.__reactRouterContext.stream = new ReadableStream({start(controller){window.__reactRouterContext.streamController = controller;}}).pipeThrough(new TextEncoderStream());";
+      let contextScript = staticContext ? `window.__reactRouterContext = ${serverHandoffString};${streamScript}` : " ";
+      let routeModulesScript = !isStatic ? " " : `${manifest.hmr?.runtime ? `import ${JSON.stringify(manifest.hmr.runtime)};` : ""}${!enableFogOfWar ? `import ${JSON.stringify(manifest.url)}` : ""};
+${matches.map((match, routeIndex) => {
+        let routeVarName = `route${routeIndex}`;
+        let manifestEntry = manifest.routes[match.route.id];
+        invariant2(manifestEntry, `Route ${match.route.id} not found in manifest`);
+        let {
+          clientActionModule,
+          clientLoaderModule,
+          clientMiddlewareModule,
+          hydrateFallbackModule,
+          module: module2
+        } = manifestEntry;
+        let chunks = [
+          ...clientActionModule ? [
+            {
+              module: clientActionModule,
+              varName: `${routeVarName}_clientAction`
+            }
+          ] : [],
+          ...clientLoaderModule ? [
+            {
+              module: clientLoaderModule,
+              varName: `${routeVarName}_clientLoader`
+            }
+          ] : [],
+          ...clientMiddlewareModule ? [
+            {
+              module: clientMiddlewareModule,
+              varName: `${routeVarName}_clientMiddleware`
+            }
+          ] : [],
+          ...hydrateFallbackModule ? [
+            {
+              module: hydrateFallbackModule,
+              varName: `${routeVarName}_HydrateFallback`
+            }
+          ] : [],
+          { module: module2, varName: `${routeVarName}_main` }
+        ];
+        if (chunks.length === 1) {
+          return `import * as ${routeVarName} from ${JSON.stringify(module2)};`;
+        }
+        let chunkImportsSnippet = chunks.map((chunk) => `import * as ${chunk.varName} from "${chunk.module}";`).join(`
+`);
+        let mergedChunksSnippet = `const ${routeVarName} = {${chunks.map((chunk) => `...${chunk.varName}`).join(",")}};`;
+        return [chunkImportsSnippet, mergedChunksSnippet].join(`
+`);
+      }).join(`
+`)}
+  ${enableFogOfWar ? `window.__reactRouterManifest = ${JSON.stringify(getPartialManifest(manifest, router), null, 2)};` : ""}
+  window.__reactRouterRouteModules = {${matches.map((match, index) => `${JSON.stringify(match.route.id)}:route${index}`).join(",")}};
+
+import(${JSON.stringify(manifest.entry.module)});`;
+      return /* @__PURE__ */ React9.createElement(React9.Fragment, null, /* @__PURE__ */ React9.createElement("script", {
+        ...props,
+        suppressHydrationWarning: true,
+        dangerouslySetInnerHTML: createHtml(contextScript),
+        type: undefined
+      }), /* @__PURE__ */ React9.createElement("script", {
+        ...props,
+        suppressHydrationWarning: true,
+        dangerouslySetInnerHTML: createHtml(routeModulesScript),
+        type: "module",
+        async: true
+      }));
+    }, []);
+    let preloads = isHydrated ? [] : dedupe(manifest.entry.imports.concat(getModuleLinkHrefs(matches, manifest, {
+      includeHydrateFallback: true
+    })));
+    let sri = typeof manifest.sri === "object" ? manifest.sri : {};
+    return isHydrated ? null : /* @__PURE__ */ React9.createElement(React9.Fragment, null, typeof manifest.sri === "object" ? /* @__PURE__ */ React9.createElement("script", {
+      "rr-importmap": "",
+      type: "importmap",
+      suppressHydrationWarning: true,
+      dangerouslySetInnerHTML: {
+        __html: JSON.stringify({
+          integrity: sri
+        })
+      }
+    }) : null, !enableFogOfWar ? /* @__PURE__ */ React9.createElement("link", {
+      rel: "modulepreload",
+      href: manifest.url,
+      crossOrigin: props.crossOrigin,
+      integrity: sri[manifest.url],
+      suppressHydrationWarning: true
+    }) : null, /* @__PURE__ */ React9.createElement("link", {
+      rel: "modulepreload",
+      href: manifest.entry.module,
+      crossOrigin: props.crossOrigin,
+      integrity: sri[manifest.entry.module],
+      suppressHydrationWarning: true
+    }), preloads.map((path) => /* @__PURE__ */ React9.createElement("link", {
+      key: path,
+      rel: "modulepreload",
+      href: path,
+      crossOrigin: props.crossOrigin,
+      integrity: sri[path],
+      suppressHydrationWarning: true
+    })), initialScripts);
+  }
+  function dedupe(array) {
+    return [...new Set(array)];
+  }
+  function mergeRefs(...refs) {
+    return (value) => {
+      refs.forEach((ref) => {
+        if (typeof ref === "function") {
+          ref(value);
+        } else if (ref != null) {
+          ref.current = value;
+        }
+      });
+    };
+  }
+  var isBrowser = typeof window !== "undefined" && typeof window.document !== "undefined" && typeof window.document.createElement !== "undefined";
+  try {
+    if (isBrowser) {
+      window.__reactRouterVersion = "7.5.3";
+    }
+  } catch (e) {
+  }
+  function createBrowserRouter(routes, opts) {
+    return createRouter({
+      basename: opts?.basename,
+      unstable_getContext: opts?.unstable_getContext,
+      future: opts?.future,
+      history: createBrowserHistory({ window: opts?.window }),
+      hydrationData: opts?.hydrationData || parseHydrationData(),
+      routes,
+      mapRouteProperties,
+      hydrationRouteProperties,
+      dataStrategy: opts?.dataStrategy,
+      patchRoutesOnNavigation: opts?.patchRoutesOnNavigation,
+      window: opts?.window
+    }).initialize();
+  }
+  function createHashRouter(routes, opts) {
+    return createRouter({
+      basename: opts?.basename,
+      unstable_getContext: opts?.unstable_getContext,
+      future: opts?.future,
+      history: createHashHistory({ window: opts?.window }),
+      hydrationData: opts?.hydrationData || parseHydrationData(),
+      routes,
+      mapRouteProperties,
+      hydrationRouteProperties,
+      dataStrategy: opts?.dataStrategy,
+      patchRoutesOnNavigation: opts?.patchRoutesOnNavigation,
+      window: opts?.window
+    }).initialize();
+  }
+  function parseHydrationData() {
+    let state = window?.__staticRouterHydrationData;
+    if (state && state.errors) {
+      state = {
+        ...state,
+        errors: deserializeErrors(state.errors)
+      };
+    }
+    return state;
+  }
+  function deserializeErrors(errors) {
+    if (!errors)
+      return null;
+    let entries = Object.entries(errors);
+    let serialized = {};
+    for (let [key, val] of entries) {
+      if (val && val.__type === "RouteErrorResponse") {
+        serialized[key] = new ErrorResponseImpl(val.status, val.statusText, val.data, val.internal === true);
+      } else if (val && val.__type === "Error") {
+        if (val.__subType) {
+          let ErrorConstructor = window[val.__subType];
+          if (typeof ErrorConstructor === "function") {
+            try {
+              let error = new ErrorConstructor(val.message);
+              error.stack = "";
+              serialized[key] = error;
+            } catch (e) {
+            }
+          }
+        }
+        if (serialized[key] == null) {
+          let error = new Error(val.message);
+          error.stack = "";
+          serialized[key] = error;
+        }
+      } else {
+        serialized[key] = val;
+      }
+    }
+    return serialized;
+  }
+  function BrowserRouter({
+    basename,
+    children,
+    window: window2
+  }) {
+    let historyRef = React10.useRef();
+    if (historyRef.current == null) {
+      historyRef.current = createBrowserHistory({ window: window2, v5Compat: true });
+    }
+    let history = historyRef.current;
+    let [state, setStateImpl] = React10.useState({
+      action: history.action,
+      location: history.location
+    });
+    let setState = React10.useCallback((newState) => {
+      React10.startTransition(() => setStateImpl(newState));
+    }, [setStateImpl]);
+    React10.useLayoutEffect(() => history.listen(setState), [history, setState]);
+    return /* @__PURE__ */ React10.createElement(Router, {
+      basename,
+      children,
+      location: state.location,
+      navigationType: state.action,
+      navigator: history
+    });
+  }
+  function HashRouter({ basename, children, window: window2 }) {
+    let historyRef = React10.useRef();
+    if (historyRef.current == null) {
+      historyRef.current = createHashHistory({ window: window2, v5Compat: true });
+    }
+    let history = historyRef.current;
+    let [state, setStateImpl] = React10.useState({
+      action: history.action,
+      location: history.location
+    });
+    let setState = React10.useCallback((newState) => {
+      React10.startTransition(() => setStateImpl(newState));
+    }, [setStateImpl]);
+    React10.useLayoutEffect(() => history.listen(setState), [history, setState]);
+    return /* @__PURE__ */ React10.createElement(Router, {
+      basename,
+      children,
+      location: state.location,
+      navigationType: state.action,
+      navigator: history
+    });
+  }
+  function HistoryRouter({
+    basename,
+    children,
+    history
+  }) {
+    let [state, setStateImpl] = React10.useState({
+      action: history.action,
+      location: history.location
+    });
+    let setState = React10.useCallback((newState) => {
+      React10.startTransition(() => setStateImpl(newState));
+    }, [setStateImpl]);
+    React10.useLayoutEffect(() => history.listen(setState), [history, setState]);
+    return /* @__PURE__ */ React10.createElement(Router, {
+      basename,
+      children,
+      location: state.location,
+      navigationType: state.action,
+      navigator: history
+    });
+  }
+  HistoryRouter.displayName = "unstable_HistoryRouter";
+  var ABSOLUTE_URL_REGEX2 = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
+  var Link = React10.forwardRef(function LinkWithRef({
+    onClick,
+    discover = "render",
+    prefetch = "none",
+    relative,
+    reloadDocument,
+    replace: replace2,
+    state,
+    target,
+    to,
+    preventScrollReset,
+    viewTransition,
+    ...rest
+  }, forwardedRef) {
+    let { basename } = React10.useContext(NavigationContext);
+    let isAbsolute = typeof to === "string" && ABSOLUTE_URL_REGEX2.test(to);
+    let absoluteHref;
+    let isExternal = false;
+    if (typeof to === "string" && isAbsolute) {
+      absoluteHref = to;
+      if (isBrowser) {
+        try {
+          let currentUrl = new URL(window.location.href);
+          let targetUrl = to.startsWith("//") ? new URL(currentUrl.protocol + to) : new URL(to);
+          let path = stripBasename(targetUrl.pathname, basename);
+          if (targetUrl.origin === currentUrl.origin && path != null) {
+            to = path + targetUrl.search + targetUrl.hash;
+          } else {
+            isExternal = true;
+          }
+        } catch (e) {
+          warning(false, `<Link to="${to}"> contains an invalid URL which will probably break when clicked - please update to a valid URL path.`);
+        }
+      }
+    }
+    let href2 = useHref(to, { relative });
+    let [shouldPrefetch, prefetchRef, prefetchHandlers] = usePrefetchBehavior(prefetch, rest);
+    let internalOnClick = useLinkClickHandler(to, {
+      replace: replace2,
+      state,
+      target,
+      preventScrollReset,
+      relative,
+      viewTransition
+    });
+    function handleClick(event) {
+      if (onClick)
+        onClick(event);
+      if (!event.defaultPrevented) {
+        internalOnClick(event);
+      }
+    }
+    let link = /* @__PURE__ */ React10.createElement("a", {
+      ...rest,
+      ...prefetchHandlers,
+      href: absoluteHref || href2,
+      onClick: isExternal || reloadDocument ? onClick : handleClick,
+      ref: mergeRefs(forwardedRef, prefetchRef),
+      target,
+      "data-discover": !isAbsolute && discover === "render" ? "true" : undefined
+    });
+    return shouldPrefetch && !isAbsolute ? /* @__PURE__ */ React10.createElement(React10.Fragment, null, link, /* @__PURE__ */ React10.createElement(PrefetchPageLinks, { page: href2 })) : link;
+  });
+  Link.displayName = "Link";
+  var NavLink = React10.forwardRef(function NavLinkWithRef({
+    "aria-current": ariaCurrentProp = "page",
+    caseSensitive = false,
+    className: classNameProp = "",
+    end = false,
+    style: styleProp,
+    to,
+    viewTransition,
+    children,
+    ...rest
+  }, ref) {
+    let path = useResolvedPath(to, { relative: rest.relative });
+    let location2 = useLocation();
+    let routerState = React10.useContext(DataRouterStateContext);
+    let { navigator: navigator2, basename } = React10.useContext(NavigationContext);
+    let isTransitioning = routerState != null && useViewTransitionState(path) && viewTransition === true;
+    let toPathname = navigator2.encodeLocation ? navigator2.encodeLocation(path).pathname : path.pathname;
+    let locationPathname = location2.pathname;
+    let nextLocationPathname = routerState && routerState.navigation && routerState.navigation.location ? routerState.navigation.location.pathname : null;
+    if (!caseSensitive) {
+      locationPathname = locationPathname.toLowerCase();
+      nextLocationPathname = nextLocationPathname ? nextLocationPathname.toLowerCase() : null;
+      toPathname = toPathname.toLowerCase();
+    }
+    if (nextLocationPathname && basename) {
+      nextLocationPathname = stripBasename(nextLocationPathname, basename) || nextLocationPathname;
+    }
+    const endSlashPosition = toPathname !== "/" && toPathname.endsWith("/") ? toPathname.length - 1 : toPathname.length;
+    let isActive = locationPathname === toPathname || !end && locationPathname.startsWith(toPathname) && locationPathname.charAt(endSlashPosition) === "/";
+    let isPending = nextLocationPathname != null && (nextLocationPathname === toPathname || !end && nextLocationPathname.startsWith(toPathname) && nextLocationPathname.charAt(toPathname.length) === "/");
+    let renderProps = {
+      isActive,
+      isPending,
+      isTransitioning
+    };
+    let ariaCurrent = isActive ? ariaCurrentProp : undefined;
+    let className;
+    if (typeof classNameProp === "function") {
+      className = classNameProp(renderProps);
+    } else {
+      className = [
+        classNameProp,
+        isActive ? "active" : null,
+        isPending ? "pending" : null,
+        isTransitioning ? "transitioning" : null
+      ].filter(Boolean).join(" ");
+    }
+    let style = typeof styleProp === "function" ? styleProp(renderProps) : styleProp;
+    return /* @__PURE__ */ React10.createElement(Link, {
+      ...rest,
+      "aria-current": ariaCurrent,
+      className,
+      ref,
+      style,
+      to,
+      viewTransition
+    }, typeof children === "function" ? children(renderProps) : children);
+  });
+  NavLink.displayName = "NavLink";
+  var Form = React10.forwardRef(({
+    discover = "render",
+    fetcherKey,
+    navigate,
+    reloadDocument,
+    replace: replace2,
+    state,
+    method = defaultMethod,
+    action,
+    onSubmit,
+    relative,
+    preventScrollReset,
+    viewTransition,
+    ...props
+  }, forwardedRef) => {
+    let submit = useSubmit();
+    let formAction = useFormAction(action, { relative });
+    let formMethod = method.toLowerCase() === "get" ? "get" : "post";
+    let isAbsolute = typeof action === "string" && ABSOLUTE_URL_REGEX2.test(action);
+    let submitHandler = (event) => {
+      onSubmit && onSubmit(event);
+      if (event.defaultPrevented)
+        return;
+      event.preventDefault();
+      let submitter = event.nativeEvent.submitter;
+      let submitMethod = submitter?.getAttribute("formmethod") || method;
+      submit(submitter || event.currentTarget, {
+        fetcherKey,
+        method: submitMethod,
+        navigate,
+        replace: replace2,
+        state,
+        relative,
+        preventScrollReset,
+        viewTransition
+      });
+    };
+    return /* @__PURE__ */ React10.createElement("form", {
+      ref: forwardedRef,
+      method: formMethod,
+      action: formAction,
+      onSubmit: reloadDocument ? onSubmit : submitHandler,
+      ...props,
+      "data-discover": !isAbsolute && discover === "render" ? "true" : undefined
+    });
+  });
+  Form.displayName = "Form";
+  function ScrollRestoration({
+    getKey,
+    storageKey,
+    ...props
+  }) {
+    let remixContext = React10.useContext(FrameworkContext);
+    let { basename } = React10.useContext(NavigationContext);
+    let location2 = useLocation();
+    let matches = useMatches();
+    useScrollRestoration({ getKey, storageKey });
+    let ssrKey = React10.useMemo(() => {
+      if (!remixContext || !getKey)
+        return null;
+      let userKey = getScrollRestorationKey(location2, matches, basename, getKey);
+      return userKey !== location2.key ? userKey : null;
+    }, []);
+    if (!remixContext || remixContext.isSpaMode) {
+      return null;
+    }
+    let restoreScroll = ((storageKey2, restoreKey) => {
+      if (!window.history.state || !window.history.state.key) {
+        let key = Math.random().toString(32).slice(2);
+        window.history.replaceState({ key }, "");
+      }
+      try {
+        let positions = JSON.parse(sessionStorage.getItem(storageKey2) || "{}");
+        let storedY = positions[restoreKey || window.history.state.key];
+        if (typeof storedY === "number") {
+          window.scrollTo(0, storedY);
+        }
+      } catch (error) {
+        console.error(error);
+        sessionStorage.removeItem(storageKey2);
+      }
+    }).toString();
+    return /* @__PURE__ */ React10.createElement("script", {
+      ...props,
+      suppressHydrationWarning: true,
+      dangerouslySetInnerHTML: {
+        __html: `(${restoreScroll})(${JSON.stringify(storageKey || SCROLL_RESTORATION_STORAGE_KEY)}, ${JSON.stringify(ssrKey)})`
+      }
+    });
+  }
+  ScrollRestoration.displayName = "ScrollRestoration";
+  function getDataRouterConsoleError2(hookName) {
+    return `${hookName} must be used within a data router.  See https://reactrouter.com/en/main/routers/picking-a-router.`;
+  }
+  function useDataRouterContext3(hookName) {
+    let ctx = React10.useContext(DataRouterContext);
+    invariant(ctx, getDataRouterConsoleError2(hookName));
+    return ctx;
+  }
+  function useDataRouterState2(hookName) {
+    let state = React10.useContext(DataRouterStateContext);
+    invariant(state, getDataRouterConsoleError2(hookName));
+    return state;
+  }
+  function useLinkClickHandler(to, {
+    target,
+    replace: replaceProp,
+    state,
+    preventScrollReset,
+    relative,
+    viewTransition
+  } = {}) {
+    let navigate = useNavigate();
+    let location2 = useLocation();
+    let path = useResolvedPath(to, { relative });
+    return React10.useCallback((event) => {
+      if (shouldProcessLinkClick(event, target)) {
+        event.preventDefault();
+        let replace2 = replaceProp !== undefined ? replaceProp : createPath(location2) === createPath(path);
+        navigate(to, {
+          replace: replace2,
+          state,
+          preventScrollReset,
+          relative,
+          viewTransition
+        });
+      }
+    }, [
+      location2,
+      navigate,
+      path,
+      replaceProp,
+      state,
+      target,
+      to,
+      preventScrollReset,
+      relative,
+      viewTransition
+    ]);
+  }
+  function useSearchParams(defaultInit) {
+    warning(typeof URLSearchParams !== "undefined", `You cannot use the \`useSearchParams\` hook in a browser that does not support the URLSearchParams API. If you need to support Internet Explorer 11, we recommend you load a polyfill such as https://github.com/ungap/url-search-params.`);
+    let defaultSearchParamsRef = React10.useRef(createSearchParams(defaultInit));
+    let hasSetSearchParamsRef = React10.useRef(false);
+    let location2 = useLocation();
+    let searchParams = React10.useMemo(() => getSearchParamsForLocation(location2.search, hasSetSearchParamsRef.current ? null : defaultSearchParamsRef.current), [location2.search]);
+    let navigate = useNavigate();
+    let setSearchParams = React10.useCallback((nextInit, navigateOptions) => {
+      const newSearchParams = createSearchParams(typeof nextInit === "function" ? nextInit(searchParams) : nextInit);
+      hasSetSearchParamsRef.current = true;
+      navigate("?" + newSearchParams, navigateOptions);
+    }, [navigate, searchParams]);
+    return [searchParams, setSearchParams];
+  }
+  var fetcherId = 0;
+  var getUniqueFetcherId = () => `__${String(++fetcherId)}__`;
+  function useSubmit() {
+    let { router } = useDataRouterContext3("useSubmit");
+    let { basename } = React10.useContext(NavigationContext);
+    let currentRouteId = useRouteId();
+    return React10.useCallback(async (target, options = {}) => {
+      let { action, method, encType, formData, body } = getFormSubmissionInfo(target, basename);
+      if (options.navigate === false) {
+        let key = options.fetcherKey || getUniqueFetcherId();
+        await router.fetch(key, currentRouteId, options.action || action, {
+          preventScrollReset: options.preventScrollReset,
+          formData,
+          body,
+          formMethod: options.method || method,
+          formEncType: options.encType || encType,
+          flushSync: options.flushSync
+        });
+      } else {
+        await router.navigate(options.action || action, {
+          preventScrollReset: options.preventScrollReset,
+          formData,
+          body,
+          formMethod: options.method || method,
+          formEncType: options.encType || encType,
+          replace: options.replace,
+          state: options.state,
+          fromRouteId: currentRouteId,
+          flushSync: options.flushSync,
+          viewTransition: options.viewTransition
+        });
+      }
+    }, [router, basename, currentRouteId]);
+  }
+  function useFormAction(action, { relative } = {}) {
+    let { basename } = React10.useContext(NavigationContext);
+    let routeContext = React10.useContext(RouteContext);
+    invariant(routeContext, "useFormAction must be used inside a RouteContext");
+    let [match] = routeContext.matches.slice(-1);
+    let path = { ...useResolvedPath(action ? action : ".", { relative }) };
+    let location2 = useLocation();
+    if (action == null) {
+      path.search = location2.search;
+      let params = new URLSearchParams(path.search);
+      let indexValues = params.getAll("index");
+      let hasNakedIndexParam = indexValues.some((v) => v === "");
+      if (hasNakedIndexParam) {
+        params.delete("index");
+        indexValues.filter((v) => v).forEach((v) => params.append("index", v));
+        let qs = params.toString();
+        path.search = qs ? `?${qs}` : "";
+      }
+    }
+    if ((!action || action === ".") && match.route.index) {
+      path.search = path.search ? path.search.replace(/^\?/, "?index&") : "?index";
+    }
+    if (basename !== "/") {
+      path.pathname = path.pathname === "/" ? basename : joinPaths([basename, path.pathname]);
+    }
+    return createPath(path);
+  }
+  function useFetcher({
+    key
+  } = {}) {
+    let { router } = useDataRouterContext3("useFetcher");
+    let state = useDataRouterState2("useFetcher");
+    let fetcherData = React10.useContext(FetchersContext);
+    let route = React10.useContext(RouteContext);
+    let routeId = route.matches[route.matches.length - 1]?.route.id;
+    invariant(fetcherData, `useFetcher must be used inside a FetchersContext`);
+    invariant(route, `useFetcher must be used inside a RouteContext`);
+    invariant(routeId != null, `useFetcher can only be used on routes that contain a unique "id"`);
+    let defaultKey = React10.useId();
+    let [fetcherKey, setFetcherKey] = React10.useState(key || defaultKey);
+    if (key && key !== fetcherKey) {
+      setFetcherKey(key);
+    }
+    React10.useEffect(() => {
+      router.getFetcher(fetcherKey);
+      return () => router.deleteFetcher(fetcherKey);
+    }, [router, fetcherKey]);
+    let load = React10.useCallback(async (href2, opts) => {
+      invariant(routeId, "No routeId available for fetcher.load()");
+      await router.fetch(fetcherKey, routeId, href2, opts);
+    }, [fetcherKey, routeId, router]);
+    let submitImpl = useSubmit();
+    let submit = React10.useCallback(async (target, opts) => {
+      await submitImpl(target, {
+        ...opts,
+        navigate: false,
+        fetcherKey
+      });
+    }, [fetcherKey, submitImpl]);
+    let FetcherForm = React10.useMemo(() => {
+      let FetcherForm2 = React10.forwardRef((props, ref) => {
+        return /* @__PURE__ */ React10.createElement(Form, { ...props, navigate: false, fetcherKey, ref });
+      });
+      FetcherForm2.displayName = "fetcher.Form";
+      return FetcherForm2;
+    }, [fetcherKey]);
+    let fetcher = state.fetchers.get(fetcherKey) || IDLE_FETCHER;
+    let data2 = fetcherData.get(fetcherKey);
+    let fetcherWithComponents = React10.useMemo(() => ({
+      Form: FetcherForm,
+      submit,
+      load,
+      ...fetcher,
+      data: data2
+    }), [FetcherForm, submit, load, fetcher, data2]);
+    return fetcherWithComponents;
+  }
+  function useFetchers() {
+    let state = useDataRouterState2("useFetchers");
+    return Array.from(state.fetchers.entries()).map(([key, fetcher]) => ({
+      ...fetcher,
+      key
+    }));
+  }
+  var SCROLL_RESTORATION_STORAGE_KEY = "react-router-scroll-positions";
+  var savedScrollPositions = {};
+  function getScrollRestorationKey(location2, matches, basename, getKey) {
+    let key = null;
+    if (getKey) {
+      if (basename !== "/") {
+        key = getKey({
+          ...location2,
+          pathname: stripBasename(location2.pathname, basename) || location2.pathname
+        }, matches);
+      } else {
+        key = getKey(location2, matches);
+      }
+    }
+    if (key == null) {
+      key = location2.key;
+    }
+    return key;
+  }
+  function useScrollRestoration({
+    getKey,
+    storageKey
+  } = {}) {
+    let { router } = useDataRouterContext3("useScrollRestoration");
+    let { restoreScrollPosition, preventScrollReset } = useDataRouterState2("useScrollRestoration");
+    let { basename } = React10.useContext(NavigationContext);
+    let location2 = useLocation();
+    let matches = useMatches();
+    let navigation = useNavigation();
+    React10.useEffect(() => {
+      window.history.scrollRestoration = "manual";
+      return () => {
+        window.history.scrollRestoration = "auto";
+      };
+    }, []);
+    usePageHide(React10.useCallback(() => {
+      if (navigation.state === "idle") {
+        let key = getScrollRestorationKey(location2, matches, basename, getKey);
+        savedScrollPositions[key] = window.scrollY;
+      }
+      try {
+        sessionStorage.setItem(storageKey || SCROLL_RESTORATION_STORAGE_KEY, JSON.stringify(savedScrollPositions));
+      } catch (error) {
+        warning(false, `Failed to save scroll positions in sessionStorage, <ScrollRestoration /> will not work properly (${error}).`);
+      }
+      window.history.scrollRestoration = "auto";
+    }, [navigation.state, getKey, basename, location2, matches, storageKey]));
+    if (typeof document !== "undefined") {
+      React10.useLayoutEffect(() => {
+        try {
+          let sessionPositions = sessionStorage.getItem(storageKey || SCROLL_RESTORATION_STORAGE_KEY);
+          if (sessionPositions) {
+            savedScrollPositions = JSON.parse(sessionPositions);
+          }
+        } catch (e) {
+        }
+      }, [storageKey]);
+      React10.useLayoutEffect(() => {
+        let disableScrollRestoration = router?.enableScrollRestoration(savedScrollPositions, () => window.scrollY, getKey ? (location22, matches2) => getScrollRestorationKey(location22, matches2, basename, getKey) : undefined);
+        return () => disableScrollRestoration && disableScrollRestoration();
+      }, [router, basename, getKey]);
+      React10.useLayoutEffect(() => {
+        if (restoreScrollPosition === false) {
+          return;
+        }
+        if (typeof restoreScrollPosition === "number") {
+          window.scrollTo(0, restoreScrollPosition);
+          return;
+        }
+        if (location2.hash) {
+          let el = document.getElementById(decodeURIComponent(location2.hash.slice(1)));
+          if (el) {
+            el.scrollIntoView();
+            return;
+          }
+        }
+        if (preventScrollReset === true) {
+          return;
+        }
+        window.scrollTo(0, 0);
+      }, [location2, restoreScrollPosition, preventScrollReset]);
+    }
+  }
+  function useBeforeUnload(callback, options) {
+    let { capture } = options || {};
+    React10.useEffect(() => {
+      let opts = capture != null ? { capture } : undefined;
+      window.addEventListener("beforeunload", callback, opts);
+      return () => {
+        window.removeEventListener("beforeunload", callback, opts);
+      };
+    }, [callback, capture]);
+  }
+  function usePageHide(callback, options) {
+    let { capture } = options || {};
+    React10.useEffect(() => {
+      let opts = capture != null ? { capture } : undefined;
+      window.addEventListener("pagehide", callback, opts);
+      return () => {
+        window.removeEventListener("pagehide", callback, opts);
+      };
+    }, [callback, capture]);
+  }
+  function usePrompt({
+    when,
+    message
+  }) {
+    let blocker = useBlocker(when);
+    React10.useEffect(() => {
+      if (blocker.state === "blocked") {
+        let proceed = window.confirm(message);
+        if (proceed) {
+          setTimeout(blocker.proceed, 0);
+        } else {
+          blocker.reset();
+        }
+      }
+    }, [blocker, message]);
+    React10.useEffect(() => {
+      if (blocker.state === "blocked" && !when) {
+        blocker.reset();
+      }
+    }, [blocker, when]);
+  }
+  function useViewTransitionState(to, opts = {}) {
+    let vtContext = React10.useContext(ViewTransitionContext);
+    invariant(vtContext != null, "`useViewTransitionState` must be used within `react-router-dom`'s `RouterProvider`.  Did you accidentally import `RouterProvider` from `react-router`?");
+    let { basename } = useDataRouterContext3("useViewTransitionState");
+    let path = useResolvedPath(to, { relative: opts.relative });
+    if (!vtContext.isTransitioning) {
+      return false;
+    }
+    let currentPath = stripBasename(vtContext.currentLocation.pathname, basename) || vtContext.currentLocation.pathname;
+    let nextPath = stripBasename(vtContext.nextLocation.pathname, basename) || vtContext.nextLocation.pathname;
+    return matchPath(path.pathname, nextPath) != null || matchPath(path.pathname, currentPath) != null;
+  }
+  var React11 = __toESM2(react11);
+  function StaticRouter({
+    basename,
+    children,
+    location: locationProp = "/"
+  }) {
+    if (typeof locationProp === "string") {
+      locationProp = parsePath(locationProp);
+    }
+    let action = "POP";
+    let location2 = {
+      pathname: locationProp.pathname || "/",
+      search: locationProp.search || "",
+      hash: locationProp.hash || "",
+      state: locationProp.state != null ? locationProp.state : null,
+      key: locationProp.key || "default"
+    };
+    let staticNavigator = getStatelessNavigator();
+    return /* @__PURE__ */ React11.createElement(Router, {
+      basename,
+      children,
+      location: location2,
+      navigationType: action,
+      navigator: staticNavigator,
+      static: true
+    });
+  }
+  function StaticRouterProvider({
+    context,
+    router,
+    hydrate = true,
+    nonce
+  }) {
+    invariant(router && context, "You must provide `router` and `context` to <StaticRouterProvider>");
+    let dataRouterContext = {
+      router,
+      navigator: getStatelessNavigator(),
+      static: true,
+      staticContext: context,
+      basename: context.basename || "/"
+    };
+    let fetchersContext = /* @__PURE__ */ new Map;
+    let hydrateScript = "";
+    if (hydrate !== false) {
+      let data2 = {
+        loaderData: context.loaderData,
+        actionData: context.actionData,
+        errors: serializeErrors(context.errors)
+      };
+      let json = htmlEscape(JSON.stringify(JSON.stringify(data2)));
+      hydrateScript = `window.__staticRouterHydrationData = JSON.parse(${json});`;
+    }
+    let { state } = dataRouterContext.router;
+    return /* @__PURE__ */ React11.createElement(React11.Fragment, null, /* @__PURE__ */ React11.createElement(DataRouterContext.Provider, { value: dataRouterContext }, /* @__PURE__ */ React11.createElement(DataRouterStateContext.Provider, { value: state }, /* @__PURE__ */ React11.createElement(FetchersContext.Provider, { value: fetchersContext }, /* @__PURE__ */ React11.createElement(ViewTransitionContext.Provider, { value: { isTransitioning: false } }, /* @__PURE__ */ React11.createElement(Router, {
+      basename: dataRouterContext.basename,
+      location: state.location,
+      navigationType: state.historyAction,
+      navigator: dataRouterContext.navigator,
+      static: dataRouterContext.static
+    }, /* @__PURE__ */ React11.createElement(DataRoutes2, {
+      routes: router.routes,
+      future: router.future,
+      state
+    })))))), hydrateScript ? /* @__PURE__ */ React11.createElement("script", {
+      suppressHydrationWarning: true,
+      nonce,
+      dangerouslySetInnerHTML: { __html: hydrateScript }
+    }) : null);
+  }
+  function DataRoutes2({
+    routes,
+    future,
+    state
+  }) {
+    return useRoutesImpl(routes, undefined, state, future);
+  }
+  function serializeErrors(errors) {
+    if (!errors)
+      return null;
+    let entries = Object.entries(errors);
+    let serialized = {};
+    for (let [key, val] of entries) {
+      if (isRouteErrorResponse(val)) {
+        serialized[key] = { ...val, __type: "RouteErrorResponse" };
+      } else if (val instanceof Error) {
+        serialized[key] = {
+          message: val.message,
+          __type: "Error",
+          ...val.name !== "Error" ? {
+            __subType: val.name
+          } : {}
+        };
+      } else {
+        serialized[key] = val;
+      }
+    }
+    return serialized;
+  }
+  function getStatelessNavigator() {
+    return {
+      createHref,
+      encodeLocation,
+      push(to) {
+        throw new Error(`You cannot use navigator.push() on the server because it is a stateless environment. This error was probably triggered when you did a \`navigate(${JSON.stringify(to)})\` somewhere in your app.`);
+      },
+      replace(to) {
+        throw new Error(`You cannot use navigator.replace() on the server because it is a stateless environment. This error was probably triggered when you did a \`navigate(${JSON.stringify(to)}, { replace: true })\` somewhere in your app.`);
+      },
+      go(delta) {
+        throw new Error(`You cannot use navigator.go() on the server because it is a stateless environment. This error was probably triggered when you did a \`navigate(${delta})\` somewhere in your app.`);
+      },
+      back() {
+        throw new Error(`You cannot use navigator.back() on the server because it is a stateless environment.`);
+      },
+      forward() {
+        throw new Error(`You cannot use navigator.forward() on the server because it is a stateless environment.`);
+      }
+    };
+  }
+  function createStaticHandler2(routes, opts) {
+    return createStaticHandler(routes, {
+      ...opts,
+      mapRouteProperties
+    });
+  }
+  function createStaticRouter(routes, context, opts = {}) {
+    let manifest = {};
+    let dataRoutes = convertRoutesToDataRoutes(routes, mapRouteProperties, undefined, manifest);
+    let matches = context.matches.map((match) => {
+      let route = manifest[match.route.id] || match.route;
+      return {
+        ...match,
+        route
+      };
+    });
+    let msg = (method) => `You cannot use router.${method}() on the server because it is a stateless environment`;
+    return {
+      get basename() {
+        return context.basename;
+      },
+      get future() {
+        return {
+          unstable_middleware: false,
+          ...opts?.future
+        };
+      },
+      get state() {
+        return {
+          historyAction: "POP",
+          location: context.location,
+          matches,
+          loaderData: context.loaderData,
+          actionData: context.actionData,
+          errors: context.errors,
+          initialized: true,
+          navigation: IDLE_NAVIGATION,
+          restoreScrollPosition: null,
+          preventScrollReset: false,
+          revalidation: "idle",
+          fetchers: /* @__PURE__ */ new Map,
+          blockers: /* @__PURE__ */ new Map
+        };
+      },
+      get routes() {
+        return dataRoutes;
+      },
+      get window() {
+        return;
+      },
+      initialize() {
+        throw msg("initialize");
+      },
+      subscribe() {
+        throw msg("subscribe");
+      },
+      enableScrollRestoration() {
+        throw msg("enableScrollRestoration");
+      },
+      navigate() {
+        throw msg("navigate");
+      },
+      fetch() {
+        throw msg("fetch");
+      },
+      revalidate() {
+        throw msg("revalidate");
+      },
+      createHref,
+      encodeLocation,
+      getFetcher() {
+        return IDLE_FETCHER;
+      },
+      deleteFetcher() {
+        throw msg("deleteFetcher");
+      },
+      dispose() {
+        throw msg("dispose");
+      },
+      getBlocker() {
+        return IDLE_BLOCKER;
+      },
+      deleteBlocker() {
+        throw msg("deleteBlocker");
+      },
+      patchRoutes() {
+        throw msg("patchRoutes");
+      },
+      _internalFetchControllers: /* @__PURE__ */ new Map,
+      _internalSetRoutes() {
+        throw msg("_internalSetRoutes");
+      }
+    };
+  }
+  function createHref(to) {
+    return typeof to === "string" ? to : createPath(to);
+  }
+  function encodeLocation(to) {
+    let href2 = typeof to === "string" ? to : createPath(to);
+    href2 = href2.replace(/ $/, "%20");
+    let encoded = ABSOLUTE_URL_REGEX3.test(href2) ? new URL(href2) : new URL(href2, "http://localhost");
+    return {
+      pathname: encoded.pathname,
+      search: encoded.search,
+      hash: encoded.hash
+    };
+  }
+  var ABSOLUTE_URL_REGEX3 = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
+  var ESCAPE_LOOKUP2 = {
+    "&": "\\u0026",
+    ">": "\\u003e",
+    "<": "\\u003c",
+    "\u2028": "\\u2028",
+    "\u2029": "\\u2029"
+  };
+  var ESCAPE_REGEX2 = /[&><\u2028\u2029]/g;
+  function htmlEscape(str) {
+    return str.replace(ESCAPE_REGEX2, (match) => ESCAPE_LOOKUP2[match]);
+  }
+  var React12 = __toESM2(react12);
+  function ServerRouter({
+    context,
+    url,
+    nonce
+  }) {
+    if (typeof url === "string") {
+      url = new URL(url);
+    }
+    let { manifest, routeModules, criticalCss, serverHandoffString } = context;
+    let routes = createServerRoutes(manifest.routes, routeModules, context.future, context.isSpaMode);
+    context.staticHandlerContext.loaderData = {
+      ...context.staticHandlerContext.loaderData
+    };
+    for (let match of context.staticHandlerContext.matches) {
+      let routeId = match.route.id;
+      let route = routeModules[routeId];
+      let manifestRoute = context.manifest.routes[routeId];
+      if (route && manifestRoute && shouldHydrateRouteLoader(routeId, route.clientLoader, manifestRoute.hasLoader, context.isSpaMode) && (route.HydrateFallback || !manifestRoute.hasLoader)) {
+        delete context.staticHandlerContext.loaderData[routeId];
+      }
+    }
+    let router = createStaticRouter(routes, context.staticHandlerContext);
+    return /* @__PURE__ */ React12.createElement(React12.Fragment, null, /* @__PURE__ */ React12.createElement(FrameworkContext.Provider, {
+      value: {
+        manifest,
+        routeModules,
+        criticalCss,
+        serverHandoffString,
+        future: context.future,
+        ssr: context.ssr,
+        isSpaMode: context.isSpaMode,
+        serializeError: context.serializeError,
+        renderMeta: context.renderMeta
+      }
+    }, /* @__PURE__ */ React12.createElement(RemixErrorBoundary, { location: router.state.location }, /* @__PURE__ */ React12.createElement(StaticRouterProvider, {
+      router,
+      context: context.staticHandlerContext,
+      hydrate: false
+    }))), context.serverHandoffStream ? /* @__PURE__ */ React12.createElement(React12.Suspense, null, /* @__PURE__ */ React12.createElement(StreamTransfer, {
+      context,
+      identifier: 0,
+      reader: context.serverHandoffStream.getReader(),
+      textDecoder: new TextDecoder,
+      nonce
+    })) : null);
+  }
+  var React13 = __toESM2(react13);
+  function createRoutesStub(routes, unstable_getContext) {
+    return function RoutesTestStub({
+      initialEntries,
+      initialIndex,
+      hydrationData,
+      future
+    }) {
+      let routerRef = React13.useRef();
+      let remixContextRef = React13.useRef();
+      if (routerRef.current == null) {
+        remixContextRef.current = {
+          future: {
+            unstable_subResourceIntegrity: future?.unstable_subResourceIntegrity === true,
+            unstable_middleware: future?.unstable_middleware === true
+          },
+          manifest: {
+            routes: {},
+            entry: { imports: [], module: "" },
+            url: "",
+            version: ""
+          },
+          routeModules: {},
+          ssr: false,
+          isSpaMode: false
+        };
+        let patched = processRoutes(convertRoutesToDataRoutes(routes, (r) => r), remixContextRef.current.manifest, remixContextRef.current.routeModules);
+        routerRef.current = createMemoryRouter(patched, {
+          unstable_getContext,
+          initialEntries,
+          initialIndex,
+          hydrationData
+        });
+      }
+      return /* @__PURE__ */ React13.createElement(FrameworkContext.Provider, { value: remixContextRef.current }, /* @__PURE__ */ React13.createElement(RouterProvider2, { router: routerRef.current }));
+    };
+  }
+  function processRoutes(routes, manifest, routeModules, parentId) {
+    return routes.map((route) => {
+      if (!route.id) {
+        throw new Error("Expected a route.id in @remix-run/testing processRoutes() function");
+      }
+      let newRoute = {
+        id: route.id,
+        path: route.path,
+        index: route.index,
+        Component: route.Component,
+        HydrateFallback: route.HydrateFallback,
+        ErrorBoundary: route.ErrorBoundary,
+        action: route.action,
+        loader: route.loader,
+        handle: route.handle,
+        shouldRevalidate: route.shouldRevalidate
+      };
+      let entryRoute = {
+        id: route.id,
+        path: route.path,
+        index: route.index,
+        parentId,
+        hasAction: route.action != null,
+        hasLoader: route.loader != null,
+        hasClientAction: false,
+        hasClientLoader: false,
+        hasClientMiddleware: false,
+        hasErrorBoundary: route.ErrorBoundary != null,
+        module: "build/stub-path-to-module.js",
+        clientActionModule: undefined,
+        clientLoaderModule: undefined,
+        clientMiddlewareModule: undefined,
+        hydrateFallbackModule: undefined
+      };
+      manifest.routes[newRoute.id] = entryRoute;
+      routeModules[route.id] = {
+        default: route.Component || Outlet,
+        ErrorBoundary: route.ErrorBoundary || undefined,
+        handle: route.handle,
+        links: route.links,
+        meta: route.meta,
+        shouldRevalidate: route.shouldRevalidate
+      };
+      if (route.children) {
+        newRoute.children = processRoutes(route.children, manifest, routeModules, newRoute.id);
+      }
+      return newRoute;
+    });
+  }
+  var import_cookie = require_dist();
+  var encoder = new TextEncoder;
+  var sign = async (value, secret) => {
+    let data2 = encoder.encode(value);
+    let key = await createKey2(secret, ["sign"]);
+    let signature = await crypto.subtle.sign("HMAC", key, data2);
+    let hash = btoa(String.fromCharCode(...new Uint8Array(signature))).replace(/=+$/, "");
+    return value + "." + hash;
+  };
+  var unsign = async (cookie, secret) => {
+    let index = cookie.lastIndexOf(".");
+    let value = cookie.slice(0, index);
+    let hash = cookie.slice(index + 1);
+    let data2 = encoder.encode(value);
+    let key = await createKey2(secret, ["verify"]);
+    let signature = byteStringToUint8Array(atob(hash));
+    let valid = await crypto.subtle.verify("HMAC", key, signature, data2);
+    return valid ? value : false;
+  };
+  var createKey2 = async (secret, usages) => crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, usages);
+  function byteStringToUint8Array(byteString) {
+    let array = new Uint8Array(byteString.length);
+    for (let i = 0;i < byteString.length; i++) {
+      array[i] = byteString.charCodeAt(i);
+    }
+    return array;
+  }
+  var createCookie = (name, cookieOptions = {}) => {
+    let { secrets = [], ...options } = {
+      path: "/",
+      sameSite: "lax",
+      ...cookieOptions
+    };
+    warnOnceAboutExpiresCookie(name, options.expires);
+    return {
+      get name() {
+        return name;
+      },
+      get isSigned() {
+        return secrets.length > 0;
+      },
+      get expires() {
+        return typeof options.maxAge !== "undefined" ? new Date(Date.now() + options.maxAge * 1000) : options.expires;
+      },
+      async parse(cookieHeader, parseOptions) {
+        if (!cookieHeader)
+          return null;
+        let cookies = (0, import_cookie.parse)(cookieHeader, { ...options, ...parseOptions });
+        if (name in cookies) {
+          let value = cookies[name];
+          if (typeof value === "string" && value !== "") {
+            let decoded = await decodeCookieValue(value, secrets);
+            return decoded;
+          } else {
+            return "";
+          }
+        } else {
+          return null;
+        }
+      },
+      async serialize(value, serializeOptions) {
+        return (0, import_cookie.serialize)(name, value === "" ? "" : await encodeCookieValue(value, secrets), {
+          ...options,
+          ...serializeOptions
+        });
+      }
+    };
+  };
+  var isCookie = (object) => {
+    return object != null && typeof object.name === "string" && typeof object.isSigned === "boolean" && typeof object.parse === "function" && typeof object.serialize === "function";
+  };
+  async function encodeCookieValue(value, secrets) {
+    let encoded = encodeData(value);
+    if (secrets.length > 0) {
+      encoded = await sign(encoded, secrets[0]);
+    }
+    return encoded;
+  }
+  async function decodeCookieValue(value, secrets) {
+    if (secrets.length > 0) {
+      for (let secret of secrets) {
+        let unsignedValue = await unsign(value, secret);
+        if (unsignedValue !== false) {
+          return decodeData(unsignedValue);
+        }
+      }
+      return null;
+    }
+    return decodeData(value);
+  }
+  function encodeData(value) {
+    return btoa(myUnescape(encodeURIComponent(JSON.stringify(value))));
+  }
+  function decodeData(value) {
+    try {
+      return JSON.parse(decodeURIComponent(myEscape(atob(value))));
+    } catch (error) {
+      return {};
+    }
+  }
+  function myEscape(value) {
+    let str = value.toString();
+    let result = "";
+    let index = 0;
+    let chr, code;
+    while (index < str.length) {
+      chr = str.charAt(index++);
+      if (/[\w*+\-./@]/.exec(chr)) {
+        result += chr;
+      } else {
+        code = chr.charCodeAt(0);
+        if (code < 256) {
+          result += "%" + hex(code, 2);
+        } else {
+          result += "%u" + hex(code, 4).toUpperCase();
+        }
+      }
+    }
+    return result;
+  }
+  function hex(code, length) {
+    let result = code.toString(16);
+    while (result.length < length)
+      result = "0" + result;
+    return result;
+  }
+  function myUnescape(value) {
+    let str = value.toString();
+    let result = "";
+    let index = 0;
+    let chr, part;
+    while (index < str.length) {
+      chr = str.charAt(index++);
+      if (chr === "%") {
+        if (str.charAt(index) === "u") {
+          part = str.slice(index + 1, index + 5);
+          if (/^[\da-f]{4}$/i.exec(part)) {
+            result += String.fromCharCode(parseInt(part, 16));
+            index += 5;
+            continue;
+          }
+        } else {
+          part = str.slice(index, index + 2);
+          if (/^[\da-f]{2}$/i.exec(part)) {
+            result += String.fromCharCode(parseInt(part, 16));
+            index += 2;
+            continue;
+          }
+        }
+      }
+      result += chr;
+    }
+    return result;
+  }
+  function warnOnceAboutExpiresCookie(name, expires) {
+    warnOnce(!expires, `The "${name}" cookie has an "expires" property set. This will cause the expires value to not be updated when the session is committed. Instead, you should set the expires value when serializing the cookie. You can use \`commitSession(session, { expires })\` if using a session storage object, or \`cookie.serialize("value", { expires })\` if you're using the cookie directly.`);
+  }
+  function createEntryRouteModules(manifest) {
+    return Object.keys(manifest).reduce((memo2, routeId) => {
+      let route = manifest[routeId];
+      if (route) {
+        memo2[routeId] = route.module;
+      }
+      return memo2;
+    }, {});
+  }
+  var ServerMode = /* @__PURE__ */ ((ServerMode2) => {
+    ServerMode2["Development"] = "development";
+    ServerMode2["Production"] = "production";
+    ServerMode2["Test"] = "test";
+    return ServerMode2;
+  })(ServerMode || {});
+  function isServerMode(value) {
+    return value === "development" || value === "production" || value === "test";
+  }
+  function sanitizeError(error, serverMode) {
+    if (error instanceof Error && serverMode !== "development") {
+      let sanitized = new Error("Unexpected Server Error");
+      sanitized.stack = undefined;
+      return sanitized;
+    }
+    return error;
+  }
+  function sanitizeErrors(errors, serverMode) {
+    return Object.entries(errors).reduce((acc, [routeId, error]) => {
+      return Object.assign(acc, { [routeId]: sanitizeError(error, serverMode) });
+    }, {});
+  }
+  function serializeError(error, serverMode) {
+    let sanitized = sanitizeError(error, serverMode);
+    return {
+      message: sanitized.message,
+      stack: sanitized.stack
+    };
+  }
+  function serializeErrors2(errors, serverMode) {
+    if (!errors)
+      return null;
+    let entries = Object.entries(errors);
+    let serialized = {};
+    for (let [key, val] of entries) {
+      if (isRouteErrorResponse(val)) {
+        serialized[key] = { ...val, __type: "RouteErrorResponse" };
+      } else if (val instanceof Error) {
+        let sanitized = sanitizeError(val, serverMode);
+        serialized[key] = {
+          message: sanitized.message,
+          stack: sanitized.stack,
+          __type: "Error",
+          ...sanitized.name !== "Error" ? {
+            __subType: sanitized.name
+          } : {}
+        };
+      } else {
+        serialized[key] = val;
+      }
+    }
+    return serialized;
+  }
+  function matchServerRoutes(routes, pathname, basename) {
+    let matches = matchRoutes(routes, pathname, basename);
+    if (!matches)
+      return null;
+    return matches.map((match) => ({
+      params: match.params,
+      pathname: match.pathname,
+      route: match.route
+    }));
+  }
+  async function callRouteHandler(handler, args) {
+    let result = await handler({
+      request: stripRoutesParam(stripIndexParam2(args.request)),
+      params: args.params,
+      context: args.context
+    });
+    if (isDataWithResponseInit(result) && result.init && result.init.status && isRedirectStatusCode(result.init.status)) {
+      throw new Response(null, result.init);
+    }
+    return result;
+  }
+  function stripIndexParam2(request) {
+    let url = new URL(request.url);
+    let indexValues = url.searchParams.getAll("index");
+    url.searchParams.delete("index");
+    let indexValuesToKeep = [];
+    for (let indexValue of indexValues) {
+      if (indexValue) {
+        indexValuesToKeep.push(indexValue);
+      }
+    }
+    for (let toKeep of indexValuesToKeep) {
+      url.searchParams.append("index", toKeep);
+    }
+    let init = {
+      method: request.method,
+      body: request.body,
+      headers: request.headers,
+      signal: request.signal
+    };
+    if (init.body) {
+      init.duplex = "half";
+    }
+    return new Request(url.href, init);
+  }
+  function stripRoutesParam(request) {
+    let url = new URL(request.url);
+    url.searchParams.delete("_routes");
+    let init = {
+      method: request.method,
+      body: request.body,
+      headers: request.headers,
+      signal: request.signal
+    };
+    if (init.body) {
+      init.duplex = "half";
+    }
+    return new Request(url.href, init);
+  }
+  function invariant3(value, message) {
+    if (value === false || value === null || typeof value === "undefined") {
+      console.error("The following error is a bug in React Router; please open an issue! https://github.com/remix-run/react-router/issues/new/choose");
+      throw new Error(message);
+    }
+  }
+  var globalDevServerHooksKey = "__reactRouterDevServerHooks";
+  function setDevServerHooks(devServerHooks) {
+    globalThis[globalDevServerHooksKey] = devServerHooks;
+  }
+  function getDevServerHooks() {
+    return globalThis[globalDevServerHooksKey];
+  }
+  function getBuildTimeHeader(request, headerName) {
+    if (typeof process !== "undefined") {
+      try {
+        if (process.env?.IS_RR_BUILD_REQUEST === "yes") {
+          return request.headers.get(headerName);
+        }
+      } catch (e) {
+      }
+    }
+    return null;
+  }
+  function groupRoutesByParentId2(manifest) {
+    let routes = {};
+    Object.values(manifest).forEach((route) => {
+      if (route) {
+        let parentId = route.parentId || "";
+        if (!routes[parentId]) {
+          routes[parentId] = [];
+        }
+        routes[parentId].push(route);
+      }
+    });
+    return routes;
+  }
+  function createRoutes(manifest, parentId = "", routesByParentId = groupRoutesByParentId2(manifest)) {
+    return (routesByParentId[parentId] || []).map((route) => ({
+      ...route,
+      children: createRoutes(manifest, route.id, routesByParentId)
+    }));
+  }
+  function createStaticHandlerDataRoutes(manifest, future, parentId = "", routesByParentId = groupRoutesByParentId2(manifest)) {
+    return (routesByParentId[parentId] || []).map((route) => {
+      let commonRoute = {
+        hasErrorBoundary: route.id === "root" || route.module.ErrorBoundary != null,
+        id: route.id,
+        path: route.path,
+        unstable_middleware: route.module.unstable_middleware,
+        loader: route.module.loader ? async (args) => {
+          let preRenderedData = getBuildTimeHeader(args.request, "X-React-Router-Prerender-Data");
+          if (preRenderedData != null) {
+            let encoded = preRenderedData ? decodeURI(preRenderedData) : preRenderedData;
+            invariant3(encoded, "Missing prerendered data for route");
+            let uint8array = new TextEncoder().encode(encoded);
+            let stream = new ReadableStream({
+              start(controller) {
+                controller.enqueue(uint8array);
+                controller.close();
+              }
+            });
+            let decoded = await decodeViaTurboStream(stream, global);
+            let data2 = decoded.value;
+            if (data2 && SingleFetchRedirectSymbol in data2) {
+              let result = data2[SingleFetchRedirectSymbol];
+              let init = { status: result.status };
+              if (result.reload) {
+                throw redirectDocument(result.redirect, init);
+              } else if (result.replace) {
+                throw replace(result.redirect, init);
+              } else {
+                throw redirect(result.redirect, init);
+              }
+            } else {
+              invariant3(data2 && route.id in data2, "Unable to decode prerendered data");
+              let result = data2[route.id];
+              invariant3("data" in result, "Unable to process prerendered data");
+              return result.data;
+            }
+          }
+          let val = await callRouteHandler(route.module.loader, args);
+          return val;
+        } : undefined,
+        action: route.module.action ? (args) => callRouteHandler(route.module.action, args) : undefined,
+        handle: route.module.handle
+      };
+      return route.index ? {
+        index: true,
+        ...commonRoute
+      } : {
+        caseSensitive: route.caseSensitive,
+        children: createStaticHandlerDataRoutes(manifest, future, route.id, routesByParentId),
+        ...commonRoute
+      };
+    });
+  }
+  var ESCAPE_LOOKUP3 = {
+    "&": "\\u0026",
+    ">": "\\u003e",
+    "<": "\\u003c",
+    "\u2028": "\\u2028",
+    "\u2029": "\\u2029"
+  };
+  var ESCAPE_REGEX3 = /[&><\u2028\u2029]/g;
+  function escapeHtml2(html) {
+    return html.replace(ESCAPE_REGEX3, (match) => ESCAPE_LOOKUP3[match]);
+  }
+  function createServerHandoffString(serverHandoff) {
+    return escapeHtml2(JSON.stringify(serverHandoff));
+  }
+  var import_turbo_stream2 = require_turbo_stream();
+  var import_set_cookie_parser = require_set_cookie();
+  function getDocumentHeaders(build, context) {
+    let boundaryIdx = context.errors ? context.matches.findIndex((m) => context.errors[m.route.id]) : -1;
+    let matches = boundaryIdx >= 0 ? context.matches.slice(0, boundaryIdx + 1) : context.matches;
+    let errorHeaders;
+    if (boundaryIdx >= 0) {
+      let { actionHeaders, actionData, loaderHeaders, loaderData } = context;
+      context.matches.slice(boundaryIdx).some((match) => {
+        let id = match.route.id;
+        if (actionHeaders[id] && (!actionData || !actionData.hasOwnProperty(id))) {
+          errorHeaders = actionHeaders[id];
+        } else if (loaderHeaders[id] && !loaderData.hasOwnProperty(id)) {
+          errorHeaders = loaderHeaders[id];
+        }
+        return errorHeaders != null;
+      });
+    }
+    return matches.reduce((parentHeaders, match, idx) => {
+      let { id } = match.route;
+      let route = build.routes[id];
+      invariant3(route, `Route with id "${id}" not found in build`);
+      let routeModule = route.module;
+      let loaderHeaders = context.loaderHeaders[id] || new Headers;
+      let actionHeaders = context.actionHeaders[id] || new Headers;
+      let includeErrorHeaders = errorHeaders != null && idx === matches.length - 1;
+      let includeErrorCookies = includeErrorHeaders && errorHeaders !== loaderHeaders && errorHeaders !== actionHeaders;
+      if (routeModule.headers == null) {
+        let headers2 = new Headers(parentHeaders);
+        if (includeErrorCookies) {
+          prependCookies(errorHeaders, headers2);
+        }
+        prependCookies(actionHeaders, headers2);
+        prependCookies(loaderHeaders, headers2);
+        return headers2;
+      }
+      let headers = new Headers(routeModule.headers ? typeof routeModule.headers === "function" ? routeModule.headers({
+        loaderHeaders,
+        parentHeaders,
+        actionHeaders,
+        errorHeaders: includeErrorHeaders ? errorHeaders : undefined
+      }) : routeModule.headers : undefined);
+      if (includeErrorCookies) {
+        prependCookies(errorHeaders, headers);
+      }
+      prependCookies(actionHeaders, headers);
+      prependCookies(loaderHeaders, headers);
+      prependCookies(parentHeaders, headers);
+      return headers;
+    }, new Headers);
+  }
+  function prependCookies(parentHeaders, childHeaders) {
+    let parentSetCookieString = parentHeaders.get("Set-Cookie");
+    if (parentSetCookieString) {
+      let cookies = (0, import_set_cookie_parser.splitCookiesString)(parentSetCookieString);
+      let childCookies = new Set(childHeaders.getSetCookie());
+      cookies.forEach((cookie) => {
+        if (!childCookies.has(cookie)) {
+          childHeaders.append("Set-Cookie", cookie);
+        }
+      });
+    }
+  }
+  var SERVER_NO_BODY_STATUS_CODES = /* @__PURE__ */ new Set([
+    ...NO_BODY_STATUS_CODES,
+    304
+  ]);
+  async function singleFetchAction(build, serverMode, staticHandler, request, handlerUrl, loadContext, handleError) {
+    try {
+      let respond2 = function(context) {
+        let headers = getDocumentHeaders(build, context);
+        if (isRedirectStatusCode(context.statusCode) && headers.has("Location")) {
+          return generateSingleFetchResponse(request, build, serverMode, {
+            result: getSingleFetchRedirect(context.statusCode, headers, build.basename),
+            headers,
+            status: SINGLE_FETCH_REDIRECT_STATUS
+          });
+        }
+        if (context.errors) {
+          Object.values(context.errors).forEach((err) => {
+            if (!isRouteErrorResponse(err) || err.error) {
+              handleError(err);
+            }
+          });
+          context.errors = sanitizeErrors(context.errors, serverMode);
+        }
+        let singleFetchResult;
+        if (context.errors) {
+          singleFetchResult = { error: Object.values(context.errors)[0] };
+        } else {
+          singleFetchResult = {
+            data: Object.values(context.actionData || {})[0]
+          };
+        }
+        return generateSingleFetchResponse(request, build, serverMode, {
+          result: singleFetchResult,
+          headers,
+          status: context.statusCode
+        });
+      };
+      var respond = respond2;
+      let handlerRequest = new Request(handlerUrl, {
+        method: request.method,
+        body: request.body,
+        headers: request.headers,
+        signal: request.signal,
+        ...request.body ? { duplex: "half" } : undefined
+      });
+      let result = await staticHandler.query(handlerRequest, {
+        requestContext: loadContext,
+        skipLoaderErrorBubbling: true,
+        skipRevalidation: true,
+        unstable_respond: respond2
+      });
+      if (!isResponse(result)) {
+        result = respond2(result);
+      }
+      if (isRedirectResponse(result)) {
+        return generateSingleFetchResponse(request, build, serverMode, {
+          result: getSingleFetchRedirect(result.status, result.headers, build.basename),
+          headers: result.headers,
+          status: SINGLE_FETCH_REDIRECT_STATUS
+        });
+      }
+      return result;
+    } catch (error) {
+      handleError(error);
+      return generateSingleFetchResponse(request, build, serverMode, {
+        result: { error },
+        headers: new Headers,
+        status: 500
+      });
+    }
+  }
+  async function singleFetchLoaders(build, serverMode, staticHandler, request, handlerUrl, loadContext, handleError) {
+    try {
+      let respond2 = function(context) {
+        let headers = getDocumentHeaders(build, context);
+        if (isRedirectStatusCode(context.statusCode) && headers.has("Location")) {
+          return generateSingleFetchResponse(request, build, serverMode, {
+            result: {
+              [SingleFetchRedirectSymbol]: getSingleFetchRedirect(context.statusCode, headers, build.basename)
+            },
+            headers,
+            status: SINGLE_FETCH_REDIRECT_STATUS
+          });
+        }
+        if (context.errors) {
+          Object.values(context.errors).forEach((err) => {
+            if (!isRouteErrorResponse(err) || err.error) {
+              handleError(err);
+            }
+          });
+          context.errors = sanitizeErrors(context.errors, serverMode);
+        }
+        let results = {};
+        let loadedMatches = new Set(context.matches.filter((m) => loadRouteIds ? loadRouteIds.has(m.route.id) : m.route.loader != null).map((m) => m.route.id));
+        if (context.errors) {
+          for (let [id, error] of Object.entries(context.errors)) {
+            results[id] = { error };
+          }
+        }
+        for (let [id, data2] of Object.entries(context.loaderData)) {
+          if (!(id in results) && loadedMatches.has(id)) {
+            results[id] = { data: data2 };
+          }
+        }
+        return generateSingleFetchResponse(request, build, serverMode, {
+          result: results,
+          headers,
+          status: context.statusCode
+        });
+      };
+      var respond = respond2;
+      let handlerRequest = new Request(handlerUrl, {
+        headers: request.headers,
+        signal: request.signal
+      });
+      let routesParam = new URL(request.url).searchParams.get("_routes");
+      let loadRouteIds = routesParam ? new Set(routesParam.split(",")) : null;
+      let result = await staticHandler.query(handlerRequest, {
+        requestContext: loadContext,
+        filterMatchesToLoad: (m) => !loadRouteIds || loadRouteIds.has(m.route.id),
+        skipLoaderErrorBubbling: true,
+        unstable_respond: respond2
+      });
+      if (!isResponse(result)) {
+        result = respond2(result);
+      }
+      if (isRedirectResponse(result)) {
+        return generateSingleFetchResponse(request, build, serverMode, {
+          result: {
+            [SingleFetchRedirectSymbol]: getSingleFetchRedirect(result.status, result.headers, build.basename)
+          },
+          headers: result.headers,
+          status: SINGLE_FETCH_REDIRECT_STATUS
+        });
+      }
+      return result;
+    } catch (error) {
+      handleError(error);
+      return generateSingleFetchResponse(request, build, serverMode, {
+        result: { root: { error } },
+        headers: new Headers,
+        status: 500
+      });
+    }
+  }
+  function generateSingleFetchResponse(request, build, serverMode, {
+    result,
+    headers,
+    status
+  }) {
+    let resultHeaders = new Headers(headers);
+    resultHeaders.set("X-Remix-Response", "yes");
+    if (SERVER_NO_BODY_STATUS_CODES.has(status)) {
+      return new Response(null, { status, headers: resultHeaders });
+    }
+    resultHeaders.set("Content-Type", "text/x-script");
+    return new Response(encodeViaTurboStream(result, request.signal, build.entry.module.streamTimeout, serverMode), {
+      status: status || 200,
+      headers: resultHeaders
+    });
+  }
+  function getSingleFetchRedirect(status, headers, basename) {
+    let redirect2 = headers.get("Location");
+    if (basename) {
+      redirect2 = stripBasename(redirect2, basename) || redirect2;
+    }
+    return {
+      redirect: redirect2,
+      status,
+      revalidate: headers.has("X-Remix-Revalidate") || headers.has("Set-Cookie"),
+      reload: headers.has("X-Remix-Reload-Document"),
+      replace: headers.has("X-Remix-Replace")
+    };
+  }
+  function encodeViaTurboStream(data2, requestSignal, streamTimeout, serverMode) {
+    let controller = new AbortController;
+    let timeoutId = setTimeout(() => controller.abort(new Error("Server Timeout")), typeof streamTimeout === "number" ? streamTimeout : 4950);
+    requestSignal.addEventListener("abort", () => clearTimeout(timeoutId));
+    return (0, import_turbo_stream2.encode)(data2, {
+      signal: controller.signal,
+      plugins: [
+        (value) => {
+          if (value instanceof Error) {
+            let { name, message, stack } = serverMode === "production" ? sanitizeError(value, serverMode) : value;
+            return ["SanitizedError", name, message, stack];
+          }
+          if (value instanceof ErrorResponseImpl) {
+            let { data: data3, status, statusText } = value;
+            return ["ErrorResponse", data3, status, statusText];
+          }
+          if (value && typeof value === "object" && SingleFetchRedirectSymbol in value) {
+            return ["SingleFetchRedirect", value[SingleFetchRedirectSymbol]];
+          }
+        }
+      ],
+      postPlugins: [
+        (value) => {
+          if (!value)
+            return;
+          if (typeof value !== "object")
+            return;
+          return [
+            "SingleFetchClassInstance",
+            Object.fromEntries(Object.entries(value))
+          ];
+        },
+        () => ["SingleFetchFallback"]
+      ]
+    });
+  }
+  function derive(build, mode) {
+    let routes = createRoutes(build.routes);
+    let dataRoutes = createStaticHandlerDataRoutes(build.routes, build.future);
+    let serverMode = isServerMode(mode) ? mode : "production";
+    let staticHandler = createStaticHandler(dataRoutes, {
+      basename: build.basename
+    });
+    let errorHandler = build.entry.module.handleError || ((error, { request }) => {
+      if (serverMode !== "test" && !request.signal.aborted) {
+        console.error(isRouteErrorResponse(error) && error.error ? error.error : error);
+      }
+    });
+    return {
+      routes,
+      dataRoutes,
+      serverMode,
+      staticHandler,
+      errorHandler
+    };
+  }
+  var createRequestHandler = (build, mode) => {
+    let _build;
+    let routes;
+    let serverMode;
+    let staticHandler;
+    let errorHandler;
+    return async function requestHandler(request, initialContext) {
+      _build = typeof build === "function" ? await build() : build;
+      if (typeof build === "function") {
+        let derived = derive(_build, mode);
+        routes = derived.routes;
+        serverMode = derived.serverMode;
+        staticHandler = derived.staticHandler;
+        errorHandler = derived.errorHandler;
+      } else if (!routes || !serverMode || !staticHandler || !errorHandler) {
+        let derived = derive(_build, mode);
+        routes = derived.routes;
+        serverMode = derived.serverMode;
+        staticHandler = derived.staticHandler;
+        errorHandler = derived.errorHandler;
+      }
+      let params = {};
+      let loadContext;
+      let handleError = (error) => {
+        if (mode === "development") {
+          getDevServerHooks()?.processRequestError?.(error);
+        }
+        errorHandler(error, {
+          context: loadContext,
+          params,
+          request
+        });
+      };
+      if (_build.future.unstable_middleware) {
+        if (initialContext == null) {
+          loadContext = new unstable_RouterContextProvider;
+        } else {
+          try {
+            loadContext = new unstable_RouterContextProvider(initialContext);
+          } catch (e) {
+            let error = new Error(`Unable to create initial \`unstable_RouterContextProvider\` instance. Please confirm you are returning an instance of \`Map<unstable_routerContext, unknown>\` from your \`getLoadContext\` function.
+
+Error: ${e instanceof Error ? e.toString() : e}`);
+            handleError(error);
+            return returnLastResortErrorResponse(error, serverMode);
+          }
+        }
+      } else {
+        loadContext = initialContext || {};
+      }
+      let url = new URL(request.url);
+      let normalizedBasename = _build.basename || "/";
+      let normalizedPath = url.pathname;
+      if (stripBasename(normalizedPath, normalizedBasename) === "/_root.data") {
+        normalizedPath = normalizedBasename;
+      } else if (normalizedPath.endsWith(".data")) {
+        normalizedPath = normalizedPath.replace(/\.data$/, "");
+      }
+      if (stripBasename(normalizedPath, normalizedBasename) !== "/" && normalizedPath.endsWith("/")) {
+        normalizedPath = normalizedPath.slice(0, -1);
+      }
+      let isSpaMode = getBuildTimeHeader(request, "X-React-Router-SPA-Mode") === "yes";
+      if (!_build.ssr) {
+        if (_build.prerender.length === 0) {
+          isSpaMode = true;
+        } else if (!_build.prerender.includes(normalizedPath) && !_build.prerender.includes(normalizedPath + "/")) {
+          if (url.pathname.endsWith(".data")) {
+            errorHandler(new ErrorResponseImpl(404, "Not Found", `Refusing to SSR the path \`${normalizedPath}\` because \`ssr:false\` is set and the path is not included in the \`prerender\` config, so in production the path will be a 404.`), {
+              context: loadContext,
+              params,
+              request
+            });
+            return new Response("Not Found", {
+              status: 404,
+              statusText: "Not Found"
+            });
+          } else {
+            isSpaMode = true;
+          }
+        }
+      }
+      let manifestUrl = `${normalizedBasename}/__manifest`.replace(/\/+/g, "/");
+      if (url.pathname === manifestUrl) {
+        try {
+          let res = await handleManifestRequest(_build, routes, url);
+          return res;
+        } catch (e) {
+          handleError(e);
+          return new Response("Unknown Server Error", { status: 500 });
+        }
+      }
+      let matches = matchServerRoutes(routes, url.pathname, _build.basename);
+      if (matches && matches.length > 0) {
+        Object.assign(params, matches[0].params);
+      }
+      let response;
+      if (url.pathname.endsWith(".data")) {
+        let handlerUrl = new URL(request.url);
+        handlerUrl.pathname = normalizedPath;
+        let singleFetchMatches = matchServerRoutes(routes, handlerUrl.pathname, _build.basename);
+        response = await handleSingleFetchRequest(serverMode, _build, staticHandler, request, handlerUrl, loadContext, handleError);
+        if (_build.entry.module.handleDataRequest) {
+          response = await _build.entry.module.handleDataRequest(response, {
+            context: loadContext,
+            params: singleFetchMatches ? singleFetchMatches[0].params : {},
+            request
+          });
+          if (isRedirectResponse(response)) {
+            let result = getSingleFetchRedirect(response.status, response.headers, _build.basename);
+            if (request.method === "GET") {
+              result = {
+                [SingleFetchRedirectSymbol]: result
+              };
+            }
+            let headers = new Headers(response.headers);
+            headers.set("Content-Type", "text/x-script");
+            return new Response(encodeViaTurboStream(result, request.signal, _build.entry.module.streamTimeout, serverMode), {
+              status: SINGLE_FETCH_REDIRECT_STATUS,
+              headers
+            });
+          }
+        }
+      } else if (!isSpaMode && matches && matches[matches.length - 1].route.module.default == null && matches[matches.length - 1].route.module.ErrorBoundary == null) {
+        response = await handleResourceRequest(serverMode, _build, staticHandler, matches.slice(-1)[0].route.id, request, loadContext, handleError);
+      } else {
+        let { pathname } = url;
+        let criticalCss = undefined;
+        if (_build.unstable_getCriticalCss) {
+          criticalCss = await _build.unstable_getCriticalCss({ pathname });
+        } else if (mode === "development" && getDevServerHooks()?.getCriticalCss) {
+          criticalCss = await getDevServerHooks()?.getCriticalCss?.(pathname);
+        }
+        response = await handleDocumentRequest(serverMode, _build, staticHandler, request, loadContext, handleError, isSpaMode, criticalCss);
+      }
+      if (request.method === "HEAD") {
+        return new Response(null, {
+          headers: response.headers,
+          status: response.status,
+          statusText: response.statusText
+        });
+      }
+      return response;
+    };
+  };
+  async function handleManifestRequest(build, routes, url) {
+    if (build.assets.version !== url.searchParams.get("version")) {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          "X-Remix-Reload-Document": "true"
+        }
+      });
+    }
+    let patches = {};
+    if (url.searchParams.has("p")) {
+      let paths = /* @__PURE__ */ new Set;
+      url.searchParams.getAll("p").forEach((path) => {
+        if (!path.startsWith("/")) {
+          path = `/${path}`;
+        }
+        let segments = path.split("/").slice(1);
+        segments.forEach((_, i) => {
+          let partialPath = segments.slice(0, i + 1).join("/");
+          paths.add(`/${partialPath}`);
+        });
+      });
+      for (let path of paths) {
+        let matches = matchServerRoutes(routes, path, build.basename);
+        if (matches) {
+          for (let match of matches) {
+            let routeId = match.route.id;
+            let route = build.assets.routes[routeId];
+            if (route) {
+              patches[routeId] = route;
+            }
+          }
+        }
+      }
+      return Response.json(patches, {
+        headers: {
+          "Cache-Control": "public, max-age=31536000, immutable"
+        }
+      });
+    }
+    return new Response("Invalid Request", { status: 400 });
+  }
+  async function handleSingleFetchRequest(serverMode, build, staticHandler, request, handlerUrl, loadContext, handleError) {
+    let response = request.method !== "GET" ? await singleFetchAction(build, serverMode, staticHandler, request, handlerUrl, loadContext, handleError) : await singleFetchLoaders(build, serverMode, staticHandler, request, handlerUrl, loadContext, handleError);
+    return response;
+  }
+  async function handleDocumentRequest(serverMode, build, staticHandler, request, loadContext, handleError, isSpaMode, criticalCss) {
+    try {
+      let response = await staticHandler.query(request, {
+        requestContext: loadContext,
+        unstable_respond: build.future.unstable_middleware ? (ctx) => renderHtml(ctx, isSpaMode) : undefined
+      });
+      return isResponse(response) ? response : renderHtml(response, isSpaMode);
+    } catch (error) {
+      handleError(error);
+      return new Response(null, { status: 500 });
+    }
+    async function renderHtml(context, isSpaMode2) {
+      if (isResponse(context)) {
+        return context;
+      }
+      let headers = getDocumentHeaders(build, context);
+      if (SERVER_NO_BODY_STATUS_CODES.has(context.statusCode)) {
+        return new Response(null, { status: context.statusCode, headers });
+      }
+      if (context.errors) {
+        Object.values(context.errors).forEach((err) => {
+          if (!isRouteErrorResponse(err) || err.error) {
+            handleError(err);
+          }
+        });
+        context.errors = sanitizeErrors(context.errors, serverMode);
+      }
+      let state = {
+        loaderData: context.loaderData,
+        actionData: context.actionData,
+        errors: serializeErrors2(context.errors, serverMode)
+      };
+      let entryContext = {
+        manifest: build.assets,
+        routeModules: createEntryRouteModules(build.routes),
+        staticHandlerContext: context,
+        criticalCss,
+        serverHandoffString: createServerHandoffString({
+          basename: build.basename,
+          criticalCss,
+          future: build.future,
+          ssr: build.ssr,
+          isSpaMode: isSpaMode2
+        }),
+        serverHandoffStream: encodeViaTurboStream(state, request.signal, build.entry.module.streamTimeout, serverMode),
+        renderMeta: {},
+        future: build.future,
+        ssr: build.ssr,
+        isSpaMode: isSpaMode2,
+        serializeError: (err) => serializeError(err, serverMode)
+      };
+      let handleDocumentRequestFunction = build.entry.module.default;
+      try {
+        return await handleDocumentRequestFunction(request, context.statusCode, headers, entryContext, loadContext);
+      } catch (error) {
+        handleError(error);
+        let errorForSecondRender = error;
+        if (isResponse(error)) {
+          try {
+            let data2 = await unwrapResponse(error);
+            errorForSecondRender = new ErrorResponseImpl(error.status, error.statusText, data2);
+          } catch (e) {
+          }
+        }
+        context = getStaticContextFromError(staticHandler.dataRoutes, context, errorForSecondRender);
+        if (context.errors) {
+          context.errors = sanitizeErrors(context.errors, serverMode);
+        }
+        let state2 = {
+          loaderData: context.loaderData,
+          actionData: context.actionData,
+          errors: serializeErrors2(context.errors, serverMode)
+        };
+        entryContext = {
+          ...entryContext,
+          staticHandlerContext: context,
+          serverHandoffString: createServerHandoffString({
+            basename: build.basename,
+            future: build.future,
+            ssr: build.ssr,
+            isSpaMode: isSpaMode2
+          }),
+          serverHandoffStream: encodeViaTurboStream(state2, request.signal, build.entry.module.streamTimeout, serverMode),
+          renderMeta: {}
+        };
+        try {
+          return await handleDocumentRequestFunction(request, context.statusCode, headers, entryContext, loadContext);
+        } catch (error2) {
+          handleError(error2);
+          return returnLastResortErrorResponse(error2, serverMode);
+        }
+      }
+    }
+  }
+  async function handleResourceRequest(serverMode, build, staticHandler, routeId, request, loadContext, handleError) {
+    try {
+      let response = await staticHandler.queryRoute(request, {
+        routeId,
+        requestContext: loadContext,
+        unstable_respond: build.future.unstable_middleware ? (ctx) => ctx : undefined
+      });
+      if (isResponse(response)) {
+        return response;
+      }
+      if (typeof response === "string") {
+        return new Response(response);
+      }
+      return Response.json(response);
+    } catch (error) {
+      if (isResponse(error)) {
+        error.headers.set("X-Remix-Catch", "yes");
+        return error;
+      }
+      if (isRouteErrorResponse(error)) {
+        if (error) {
+          handleError(error);
+        }
+        return errorResponseToJson(error, serverMode);
+      }
+      if (error instanceof Error && error.message === "Expected a response from queryRoute") {
+        let newError = new Error("Expected a Response to be returned from resource route handler");
+        handleError(newError);
+        return returnLastResortErrorResponse(newError, serverMode);
+      }
+      handleError(error);
+      return returnLastResortErrorResponse(error, serverMode);
+    }
+  }
+  function errorResponseToJson(errorResponse, serverMode) {
+    return Response.json(serializeError(errorResponse.error || new Error("Unexpected Server Error"), serverMode), {
+      status: errorResponse.status,
+      statusText: errorResponse.statusText,
+      headers: {
+        "X-Remix-Error": "yes"
+      }
+    });
+  }
+  function returnLastResortErrorResponse(error, serverMode) {
+    let message = "Unexpected Server Error";
+    if (serverMode !== "production") {
+      message += `
+
+${String(error)}`;
+    }
+    return new Response(message, {
+      status: 500,
+      headers: {
+        "Content-Type": "text/plain"
+      }
+    });
+  }
+  function unwrapResponse(response) {
+    let contentType = response.headers.get("Content-Type");
+    return contentType && /\bapplication\/json\b/.test(contentType) ? response.body == null ? null : response.json() : response.text();
+  }
+  function flash(name) {
+    return `__flash_${name}__`;
+  }
+  var createSession = (initialData = {}, id = "") => {
+    let map = new Map(Object.entries(initialData));
+    return {
+      get id() {
+        return id;
+      },
+      get data() {
+        return Object.fromEntries(map);
+      },
+      has(name) {
+        return map.has(name) || map.has(flash(name));
+      },
+      get(name) {
+        if (map.has(name))
+          return map.get(name);
+        let flashName = flash(name);
+        if (map.has(flashName)) {
+          let value = map.get(flashName);
+          map.delete(flashName);
+          return value;
+        }
+        return;
+      },
+      set(name, value) {
+        map.set(name, value);
+      },
+      flash(name, value) {
+        map.set(flash(name), value);
+      },
+      unset(name) {
+        map.delete(name);
+      }
+    };
+  };
+  var isSession = (object) => {
+    return object != null && typeof object.id === "string" && typeof object.data !== "undefined" && typeof object.has === "function" && typeof object.get === "function" && typeof object.set === "function" && typeof object.flash === "function" && typeof object.unset === "function";
+  };
+  function createSessionStorage({
+    cookie: cookieArg,
+    createData,
+    readData,
+    updateData,
+    deleteData
+  }) {
+    let cookie = isCookie(cookieArg) ? cookieArg : createCookie(cookieArg?.name || "__session", cookieArg);
+    warnOnceAboutSigningSessionCookie(cookie);
+    return {
+      async getSession(cookieHeader, options) {
+        let id = cookieHeader && await cookie.parse(cookieHeader, options);
+        let data2 = id && await readData(id);
+        return createSession(data2 || {}, id || "");
+      },
+      async commitSession(session, options) {
+        let { id, data: data2 } = session;
+        let expires = options?.maxAge != null ? new Date(Date.now() + options.maxAge * 1000) : options?.expires != null ? options.expires : cookie.expires;
+        if (id) {
+          await updateData(id, data2, expires);
+        } else {
+          id = await createData(data2, expires);
+        }
+        return cookie.serialize(id, options);
+      },
+      async destroySession(session, options) {
+        await deleteData(session.id);
+        return cookie.serialize("", {
+          ...options,
+          maxAge: undefined,
+          expires: /* @__PURE__ */ new Date(0)
+        });
+      }
+    };
+  }
+  function warnOnceAboutSigningSessionCookie(cookie) {
+    warnOnce(cookie.isSigned, `The "${cookie.name}" cookie is not signed, but session cookies should be signed to prevent tampering on the client before they are sent back to the server. See https://reactrouter.com/explanation/sessions-and-cookies#signing-cookies for more information.`);
+  }
+  function createCookieSessionStorage({ cookie: cookieArg } = {}) {
+    let cookie = isCookie(cookieArg) ? cookieArg : createCookie(cookieArg?.name || "__session", cookieArg);
+    warnOnceAboutSigningSessionCookie(cookie);
+    return {
+      async getSession(cookieHeader, options) {
+        return createSession(cookieHeader && await cookie.parse(cookieHeader, options) || {});
+      },
+      async commitSession(session, options) {
+        let serializedCookie = await cookie.serialize(session.data, options);
+        if (serializedCookie.length > 4096) {
+          throw new Error("Cookie length will exceed browser maximum. Length: " + serializedCookie.length);
+        }
+        return serializedCookie;
+      },
+      async destroySession(_session, options) {
+        return cookie.serialize("", {
+          ...options,
+          maxAge: undefined,
+          expires: /* @__PURE__ */ new Date(0)
+        });
+      }
+    };
+  }
+  function createMemorySessionStorage({ cookie } = {}) {
+    let map = /* @__PURE__ */ new Map;
+    return createSessionStorage({
+      cookie,
+      async createData(data2, expires) {
+        let id = Math.random().toString(36).substring(2, 10);
+        map.set(id, { data: data2, expires });
+        return id;
+      },
+      async readData(id) {
+        if (map.has(id)) {
+          let { data: data2, expires } = map.get(id);
+          if (!expires || expires > /* @__PURE__ */ new Date) {
+            return data2;
+          }
+          if (expires)
+            map.delete(id);
+        }
+        return null;
+      },
+      async updateData(id, data2, expires) {
+        map.set(id, { data: data2, expires });
+      },
+      async deleteData(id) {
+        map.delete(id);
+      }
+    });
+  }
+  function href(path, ...args) {
+    let params = args[0];
+    return path.split("/").map((segment) => {
+      const match = segment.match(/^:([\w-]+)(\?)?/);
+      if (!match)
+        return segment;
+      const param = match[1];
+      const value = params ? params[param] : undefined;
+      const isRequired = match[2] === undefined;
+      if (isRequired && value === undefined) {
+        throw Error(`Path '${path}' requires param '${param}' but it was not provided`);
+      }
+      return value;
+    }).filter((segment) => segment !== undefined).join("/");
+  }
+  function deserializeErrors2(errors) {
+    if (!errors)
+      return null;
+    let entries = Object.entries(errors);
+    let serialized = {};
+    for (let [key, val] of entries) {
+      if (val && val.__type === "RouteErrorResponse") {
+        serialized[key] = new ErrorResponseImpl(val.status, val.statusText, val.data, val.internal === true);
+      } else if (val && val.__type === "Error") {
+        if (val.__subType) {
+          let ErrorConstructor = window[val.__subType];
+          if (typeof ErrorConstructor === "function") {
+            try {
+              let error = new ErrorConstructor(val.message);
+              error.stack = val.stack;
+              serialized[key] = error;
+            } catch (e) {
+            }
+          }
+        }
+        if (serialized[key] == null) {
+          let error = new Error(val.message);
+          error.stack = val.stack;
+          serialized[key] = error;
+        }
+      } else {
+        serialized[key] = val;
+      }
+    }
+    return serialized;
+  }
+  function getHydrationData(state, routes, getRouteInfo, location2, basename, isSpaMode) {
+    let hydrationData = {
+      ...state,
+      loaderData: { ...state.loaderData }
+    };
+    let initialMatches = matchRoutes(routes, location2, basename);
+    if (initialMatches) {
+      for (let match of initialMatches) {
+        let routeId = match.route.id;
+        let routeInfo = getRouteInfo(routeId);
+        if (shouldHydrateRouteLoader(routeId, routeInfo.clientLoader, routeInfo.hasLoader, isSpaMode) && (routeInfo.hasHydrateFallback || !routeInfo.hasLoader)) {
+          delete hydrationData.loaderData[routeId];
+        } else if (!routeInfo.hasLoader) {
+          hydrationData.loaderData[routeId] = null;
+        }
+      }
+    }
+    return hydrationData;
+  }
+});
+
 // node_modules/react/cjs/react-jsx-runtime.development.js
 var require_react_jsx_runtime_development = __commonJS((exports) => {
-  var React14 = __toESM(require_react(), 1);
+  var React = __toESM(require_react(), 1);
   (function() {
     function getComponentNameFromType(type) {
       if (type == null)
@@ -16028,17 +25655,17 @@ React keys must be passed directly to JSX without using spread:
     }
     var REACT_ELEMENT_TYPE = Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = Symbol.for("react.profiler");
     Symbol.for("react.provider");
-    var REACT_CONSUMER_TYPE = Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = Symbol.for("react.memo"), REACT_LAZY_TYPE = Symbol.for("react.lazy"), REACT_ACTIVITY_TYPE = Symbol.for("react.activity"), REACT_CLIENT_REFERENCE = Symbol.for("react.client.reference"), ReactSharedInternals = React14.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, hasOwnProperty = Object.prototype.hasOwnProperty, isArrayImpl = Array.isArray, createTask = console.createTask ? console.createTask : function() {
+    var REACT_CONSUMER_TYPE = Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = Symbol.for("react.memo"), REACT_LAZY_TYPE = Symbol.for("react.lazy"), REACT_ACTIVITY_TYPE = Symbol.for("react.activity"), REACT_CLIENT_REFERENCE = Symbol.for("react.client.reference"), ReactSharedInternals = React.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, hasOwnProperty = Object.prototype.hasOwnProperty, isArrayImpl = Array.isArray, createTask = console.createTask ? console.createTask : function() {
       return null;
     };
-    React14 = {
+    React = {
       "react-stack-bottom-frame": function(callStackForError) {
         return callStackForError();
       }
     };
     var specialPropKeyWarningShown;
     var didWarnAboutElementRef = {};
-    var unknownOwnerDebugStack = React14["react-stack-bottom-frame"].bind(React14, UnknownOwner)();
+    var unknownOwnerDebugStack = React["react-stack-bottom-frame"].bind(React, UnknownOwner)();
     var unknownOwnerDebugTask = createTask(getTaskName(UnknownOwner));
     var didWarnAboutKeySpread = {};
     exports.Fragment = REACT_FRAGMENT_TYPE;
@@ -16061,1907 +25688,5155 @@ var require_jsx_runtime = __commonJS((exports, module) => {
   }
 });
 
-// src/react/index.tsx
-var import_react66 = __toESM(require_react(), 1);
-var import_client = __toESM(require_client(), 1);
-
-// node_modules/react-router/dist/development/chunk-AYJ5UCUI.mjs
-var React3 = __toESM(require_react(), 1);
-var React = __toESM(require_react(), 1);
-var React2 = __toESM(require_react(), 1);
-var React10 = __toESM(require_react(), 1);
-var React9 = __toESM(require_react(), 1);
-var React4 = __toESM(require_react(), 1);
-var React8 = __toESM(require_react(), 1);
-var React7 = __toESM(require_react(), 1);
-var React5 = __toESM(require_react(), 1);
-var React6 = __toESM(require_react(), 1);
-var React11 = __toESM(require_react(), 1);
-var React12 = __toESM(require_react(), 1);
-var React13 = __toESM(require_react(), 1);
-var import_cookie = __toESM(require_dist(), 1);
-var PopStateEventType = "popstate";
-function createBrowserHistory(options = {}) {
-  function createBrowserLocation(window2, globalHistory) {
-    let { pathname, search, hash } = window2.location;
-    return createLocation("", { pathname, search, hash }, globalHistory.state && globalHistory.state.usr || null, globalHistory.state && globalHistory.state.key || "default");
+// node_modules/react-router/dist/development/dom-export.js
+var require_dom_export = __commonJS((exports, module) => {
+  var react = __toESM(require_react(), 1);
+  var react_dom = __toESM(require_react_dom(), 1);
+  var react2 = __toESM(require_react(), 1);
+  var react3 = __toESM(require_react(), 1);
+  var react4 = __toESM(require_react(), 1);
+  var react5 = __toESM(require_react(), 1);
+  var react6 = __toESM(require_react(), 1);
+  var react7 = __toESM(require_react(), 1);
+  var react8 = __toESM(require_react(), 1);
+  var react9 = __toESM(require_react(), 1);
+  var react10 = __toESM(require_react(), 1);
+  var react11 = __toESM(require_react(), 1);
+  var __create2 = Object.create;
+  var __defProp2 = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames2 = Object.getOwnPropertyNames;
+  var __getProtoOf2 = Object.getPrototypeOf;
+  var __hasOwnProp2 = Object.prototype.hasOwnProperty;
+  var __typeError = (msg) => {
+    throw TypeError(msg);
+  };
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp2(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames2(from))
+        if (!__hasOwnProp2.call(to, key) && key !== except)
+          __defProp2(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toESM2 = (mod, isNodeMode, target) => (target = mod != null ? __create2(__getProtoOf2(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp2(target, "default", { value: mod, enumerable: true }) : target, mod));
+  var __toCommonJS = (mod) => __copyProps(__defProp2({}, "__esModule", { value: true }), mod);
+  var __accessCheck = (obj, member, msg) => member.has(obj) || __typeError("Cannot " + msg);
+  var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read from private field"), getter ? getter.call(obj) : member.get(obj));
+  var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
+  var dom_export_exports = {};
+  __export(dom_export_exports, {
+    HydratedRouter: () => HydratedRouter2,
+    RouterProvider: () => RouterProvider22
+  });
+  module.exports = __toCommonJS(dom_export_exports);
+  var React10 = __toESM2(react);
+  var ReactDOM = __toESM2(react_dom);
+  var PopStateEventType = "popstate";
+  function createBrowserHistory(options = {}) {
+    function createBrowserLocation(window2, globalHistory) {
+      let { pathname, search, hash } = window2.location;
+      return createLocation("", { pathname, search, hash }, globalHistory.state && globalHistory.state.usr || null, globalHistory.state && globalHistory.state.key || "default");
+    }
+    function createBrowserHref(window2, to) {
+      return typeof to === "string" ? to : createPath(to);
+    }
+    return getUrlBasedHistory(createBrowserLocation, createBrowserHref, null, options);
   }
-  function createBrowserHref(window2, to) {
-    return typeof to === "string" ? to : createPath(to);
-  }
-  return getUrlBasedHistory(createBrowserLocation, createBrowserHref, null, options);
-}
-function invariant(value, message) {
-  if (value === false || value === null || typeof value === "undefined") {
-    throw new Error(message);
-  }
-}
-function warning(cond, message) {
-  if (!cond) {
-    if (typeof console !== "undefined")
-      console.warn(message);
-    try {
+  function invariant(value, message) {
+    if (value === false || value === null || typeof value === "undefined") {
       throw new Error(message);
-    } catch (e) {
     }
   }
-}
-function createKey() {
-  return Math.random().toString(36).substring(2, 10);
-}
-function getHistoryState(location2, index) {
-  return {
-    usr: location2.state,
-    key: location2.key,
-    idx: index
-  };
-}
-function createLocation(current, to, state = null, key) {
-  let location2 = {
-    pathname: typeof current === "string" ? current : current.pathname,
-    search: "",
-    hash: "",
-    ...typeof to === "string" ? parsePath(to) : to,
-    state,
-    key: to && to.key || key || createKey()
-  };
-  return location2;
-}
-function createPath({
-  pathname = "/",
-  search = "",
-  hash = ""
-}) {
-  if (search && search !== "?")
-    pathname += search.charAt(0) === "?" ? search : "?" + search;
-  if (hash && hash !== "#")
-    pathname += hash.charAt(0) === "#" ? hash : "#" + hash;
-  return pathname;
-}
-function parsePath(path) {
-  let parsedPath = {};
-  if (path) {
-    let hashIndex = path.indexOf("#");
-    if (hashIndex >= 0) {
-      parsedPath.hash = path.substring(hashIndex);
-      path = path.substring(0, hashIndex);
-    }
-    let searchIndex = path.indexOf("?");
-    if (searchIndex >= 0) {
-      parsedPath.search = path.substring(searchIndex);
-      path = path.substring(0, searchIndex);
-    }
-    if (path) {
-      parsedPath.pathname = path;
-    }
-  }
-  return parsedPath;
-}
-function getUrlBasedHistory(getLocation, createHref2, validateLocation, options = {}) {
-  let { window: window2 = document.defaultView, v5Compat = false } = options;
-  let globalHistory = window2.history;
-  let action = "POP";
-  let listener = null;
-  let index = getIndex();
-  if (index == null) {
-    index = 0;
-    globalHistory.replaceState({ ...globalHistory.state, idx: index }, "");
-  }
-  function getIndex() {
-    let state = globalHistory.state || { idx: null };
-    return state.idx;
-  }
-  function handlePop() {
-    action = "POP";
-    let nextIndex = getIndex();
-    let delta = nextIndex == null ? null : nextIndex - index;
-    index = nextIndex;
-    if (listener) {
-      listener({ action, location: history.location, delta });
-    }
-  }
-  function push(to, state) {
-    action = "PUSH";
-    let location2 = createLocation(history.location, to, state);
-    if (validateLocation)
-      validateLocation(location2, to);
-    index = getIndex() + 1;
-    let historyState = getHistoryState(location2, index);
-    let url = history.createHref(location2);
-    try {
-      globalHistory.pushState(historyState, "", url);
-    } catch (error) {
-      if (error instanceof DOMException && error.name === "DataCloneError") {
-        throw error;
-      }
-      window2.location.assign(url);
-    }
-    if (v5Compat && listener) {
-      listener({ action, location: history.location, delta: 1 });
-    }
-  }
-  function replace2(to, state) {
-    action = "REPLACE";
-    let location2 = createLocation(history.location, to, state);
-    if (validateLocation)
-      validateLocation(location2, to);
-    index = getIndex();
-    let historyState = getHistoryState(location2, index);
-    let url = history.createHref(location2);
-    globalHistory.replaceState(historyState, "", url);
-    if (v5Compat && listener) {
-      listener({ action, location: history.location, delta: 0 });
-    }
-  }
-  function createURL(to) {
-    let base = window2.location.origin !== "null" ? window2.location.origin : window2.location.href;
-    let href2 = typeof to === "string" ? to : createPath(to);
-    href2 = href2.replace(/ $/, "%20");
-    invariant(base, `No window.location.(origin|href) available to create URL for href: ${href2}`);
-    return new URL(href2, base);
-  }
-  let history = {
-    get action() {
-      return action;
-    },
-    get location() {
-      return getLocation(window2, globalHistory);
-    },
-    listen(fn) {
-      if (listener) {
-        throw new Error("A history only accepts one active listener");
-      }
-      window2.addEventListener(PopStateEventType, handlePop);
-      listener = fn;
-      return () => {
-        window2.removeEventListener(PopStateEventType, handlePop);
-        listener = null;
-      };
-    },
-    createHref(to) {
-      return createHref2(window2, to);
-    },
-    createURL,
-    encodeLocation(to) {
-      let url = createURL(to);
-      return {
-        pathname: url.pathname,
-        search: url.search,
-        hash: url.hash
-      };
-    },
-    push,
-    replace: replace2,
-    go(n) {
-      return globalHistory.go(n);
-    }
-  };
-  return history;
-}
-var _map;
-_map = new WeakMap;
-function matchRoutes(routes, locationArg, basename = "/") {
-  return matchRoutesImpl(routes, locationArg, basename, false);
-}
-function matchRoutesImpl(routes, locationArg, basename, allowPartial) {
-  let location2 = typeof locationArg === "string" ? parsePath(locationArg) : locationArg;
-  let pathname = stripBasename(location2.pathname || "/", basename);
-  if (pathname == null) {
-    return null;
-  }
-  let branches = flattenRoutes(routes);
-  rankRouteBranches(branches);
-  let matches = null;
-  for (let i = 0;matches == null && i < branches.length; ++i) {
-    let decoded = decodePath(pathname);
-    matches = matchRouteBranch(branches[i], decoded, allowPartial);
-  }
-  return matches;
-}
-function convertRouteMatchToUiMatch(match, loaderData) {
-  let { route, pathname, params } = match;
-  return {
-    id: route.id,
-    pathname,
-    params,
-    data: loaderData[route.id],
-    handle: route.handle
-  };
-}
-function flattenRoutes(routes, branches = [], parentsMeta = [], parentPath = "") {
-  let flattenRoute = (route, index, relativePath) => {
-    let meta = {
-      relativePath: relativePath === undefined ? route.path || "" : relativePath,
-      caseSensitive: route.caseSensitive === true,
-      childrenIndex: index,
-      route
-    };
-    if (meta.relativePath.startsWith("/")) {
-      invariant(meta.relativePath.startsWith(parentPath), `Absolute route path "${meta.relativePath}" nested under path "${parentPath}" is not valid. An absolute child route path must start with the combined path of all its parent routes.`);
-      meta.relativePath = meta.relativePath.slice(parentPath.length);
-    }
-    let path = joinPaths([parentPath, meta.relativePath]);
-    let routesMeta = parentsMeta.concat(meta);
-    if (route.children && route.children.length > 0) {
-      invariant(route.index !== true, `Index routes must not have child routes. Please remove all child routes from route path "${path}".`);
-      flattenRoutes(route.children, branches, routesMeta, path);
-    }
-    if (route.path == null && !route.index) {
-      return;
-    }
-    branches.push({
-      path,
-      score: computeScore(path, route.index),
-      routesMeta
-    });
-  };
-  routes.forEach((route, index) => {
-    if (route.path === "" || !route.path?.includes("?")) {
-      flattenRoute(route, index);
-    } else {
-      for (let exploded of explodeOptionalSegments(route.path)) {
-        flattenRoute(route, index, exploded);
+  function warning(cond, message) {
+    if (!cond) {
+      if (typeof console !== "undefined")
+        console.warn(message);
+      try {
+        throw new Error(message);
+      } catch (e) {
       }
     }
-  });
-  return branches;
-}
-function explodeOptionalSegments(path) {
-  let segments = path.split("/");
-  if (segments.length === 0)
-    return [];
-  let [first, ...rest] = segments;
-  let isOptional = first.endsWith("?");
-  let required = first.replace(/\?$/, "");
-  if (rest.length === 0) {
-    return isOptional ? [required, ""] : [required];
   }
-  let restExploded = explodeOptionalSegments(rest.join("/"));
-  let result = [];
-  result.push(...restExploded.map((subpath) => subpath === "" ? required : [required, subpath].join("/")));
-  if (isOptional) {
-    result.push(...restExploded);
+  function createKey() {
+    return Math.random().toString(36).substring(2, 10);
   }
-  return result.map((exploded) => path.startsWith("/") && exploded === "" ? "/" : exploded);
-}
-function rankRouteBranches(branches) {
-  branches.sort((a, b) => a.score !== b.score ? b.score - a.score : compareIndexes(a.routesMeta.map((meta) => meta.childrenIndex), b.routesMeta.map((meta) => meta.childrenIndex)));
-}
-var paramRe = /^:[\w-]+$/;
-var dynamicSegmentValue = 3;
-var indexRouteValue = 2;
-var emptySegmentValue = 1;
-var staticSegmentValue = 10;
-var splatPenalty = -2;
-var isSplat = (s) => s === "*";
-function computeScore(path, index) {
-  let segments = path.split("/");
-  let initialScore = segments.length;
-  if (segments.some(isSplat)) {
-    initialScore += splatPenalty;
-  }
-  if (index) {
-    initialScore += indexRouteValue;
-  }
-  return segments.filter((s) => !isSplat(s)).reduce((score, segment) => score + (paramRe.test(segment) ? dynamicSegmentValue : segment === "" ? emptySegmentValue : staticSegmentValue), initialScore);
-}
-function compareIndexes(a, b) {
-  let siblings = a.length === b.length && a.slice(0, -1).every((n, i) => n === b[i]);
-  return siblings ? a[a.length - 1] - b[b.length - 1] : 0;
-}
-function matchRouteBranch(branch, pathname, allowPartial = false) {
-  let { routesMeta } = branch;
-  let matchedParams = {};
-  let matchedPathname = "/";
-  let matches = [];
-  for (let i = 0;i < routesMeta.length; ++i) {
-    let meta = routesMeta[i];
-    let end = i === routesMeta.length - 1;
-    let remainingPathname = matchedPathname === "/" ? pathname : pathname.slice(matchedPathname.length) || "/";
-    let match = matchPath({ path: meta.relativePath, caseSensitive: meta.caseSensitive, end }, remainingPathname);
-    let route = meta.route;
-    if (!match && end && allowPartial && !routesMeta[routesMeta.length - 1].route.index) {
-      match = matchPath({
-        path: meta.relativePath,
-        caseSensitive: meta.caseSensitive,
-        end: false
-      }, remainingPathname);
-    }
-    if (!match) {
-      return null;
-    }
-    Object.assign(matchedParams, match.params);
-    matches.push({
-      params: matchedParams,
-      pathname: joinPaths([matchedPathname, match.pathname]),
-      pathnameBase: normalizePathname(joinPaths([matchedPathname, match.pathnameBase])),
-      route
-    });
-    if (match.pathnameBase !== "/") {
-      matchedPathname = joinPaths([matchedPathname, match.pathnameBase]);
-    }
-  }
-  return matches;
-}
-function matchPath(pattern, pathname) {
-  if (typeof pattern === "string") {
-    pattern = { path: pattern, caseSensitive: false, end: true };
-  }
-  let [matcher, compiledParams] = compilePath(pattern.path, pattern.caseSensitive, pattern.end);
-  let match = pathname.match(matcher);
-  if (!match)
-    return null;
-  let matchedPathname = match[0];
-  let pathnameBase = matchedPathname.replace(/(.)\/+$/, "$1");
-  let captureGroups = match.slice(1);
-  let params = compiledParams.reduce((memo2, { paramName, isOptional }, index) => {
-    if (paramName === "*") {
-      let splatValue = captureGroups[index] || "";
-      pathnameBase = matchedPathname.slice(0, matchedPathname.length - splatValue.length).replace(/(.)\/+$/, "$1");
-    }
-    const value = captureGroups[index];
-    if (isOptional && !value) {
-      memo2[paramName] = undefined;
-    } else {
-      memo2[paramName] = (value || "").replace(/%2F/g, "/");
-    }
-    return memo2;
-  }, {});
-  return {
-    params,
-    pathname: matchedPathname,
-    pathnameBase,
-    pattern
-  };
-}
-function compilePath(path, caseSensitive = false, end = true) {
-  warning(path === "*" || !path.endsWith("*") || path.endsWith("/*"), `Route path "${path}" will be treated as if it were "${path.replace(/\*$/, "/*")}" because the \`*\` character must always follow a \`/\` in the pattern. To get rid of this warning, please change the route path to "${path.replace(/\*$/, "/*")}".`);
-  let params = [];
-  let regexpSource = "^" + path.replace(/\/*\*?$/, "").replace(/^\/*/, "/").replace(/[\\.*+^${}|()[\]]/g, "\\$&").replace(/\/:([\w-]+)(\?)?/g, (_, paramName, isOptional) => {
-    params.push({ paramName, isOptional: isOptional != null });
-    return isOptional ? "/?([^\\/]+)?" : "/([^\\/]+)";
-  });
-  if (path.endsWith("*")) {
-    params.push({ paramName: "*" });
-    regexpSource += path === "*" || path === "/*" ? "(.*)$" : "(?:\\/(.+)|\\/*)$";
-  } else if (end) {
-    regexpSource += "\\/*$";
-  } else if (path !== "" && path !== "/") {
-    regexpSource += "(?:(?=\\/|$))";
-  } else {
-  }
-  let matcher = new RegExp(regexpSource, caseSensitive ? undefined : "i");
-  return [matcher, params];
-}
-function decodePath(value) {
-  try {
-    return value.split("/").map((v) => decodeURIComponent(v).replace(/\//g, "%2F")).join("/");
-  } catch (error) {
-    warning(false, `The URL path "${value}" could not be decoded because it is a malformed URL segment. This is probably due to a bad percent encoding (${error}).`);
-    return value;
-  }
-}
-function stripBasename(pathname, basename) {
-  if (basename === "/")
-    return pathname;
-  if (!pathname.toLowerCase().startsWith(basename.toLowerCase())) {
-    return null;
-  }
-  let startIndex = basename.endsWith("/") ? basename.length - 1 : basename.length;
-  let nextChar = pathname.charAt(startIndex);
-  if (nextChar && nextChar !== "/") {
-    return null;
-  }
-  return pathname.slice(startIndex) || "/";
-}
-function resolvePath(to, fromPathname = "/") {
-  let {
-    pathname: toPathname,
-    search = "",
-    hash = ""
-  } = typeof to === "string" ? parsePath(to) : to;
-  let pathname = toPathname ? toPathname.startsWith("/") ? toPathname : resolvePathname(toPathname, fromPathname) : fromPathname;
-  return {
-    pathname,
-    search: normalizeSearch(search),
-    hash: normalizeHash(hash)
-  };
-}
-function resolvePathname(relativePath, fromPathname) {
-  let segments = fromPathname.replace(/\/+$/, "").split("/");
-  let relativeSegments = relativePath.split("/");
-  relativeSegments.forEach((segment) => {
-    if (segment === "..") {
-      if (segments.length > 1)
-        segments.pop();
-    } else if (segment !== ".") {
-      segments.push(segment);
-    }
-  });
-  return segments.length > 1 ? segments.join("/") : "/";
-}
-function getInvalidPathError(char, field, dest, path) {
-  return `Cannot include a '${char}' character in a manually specified \`to.${field}\` field [${JSON.stringify(path)}].  Please separate it out to the \`to.${dest}\` field. Alternatively you may provide the full path as a string in <Link to="..."> and the router will parse it for you.`;
-}
-function getPathContributingMatches(matches) {
-  return matches.filter((match, index) => index === 0 || match.route.path && match.route.path.length > 0);
-}
-function getResolveToMatches(matches) {
-  let pathMatches = getPathContributingMatches(matches);
-  return pathMatches.map((match, idx) => idx === pathMatches.length - 1 ? match.pathname : match.pathnameBase);
-}
-function resolveTo(toArg, routePathnames, locationPathname, isPathRelative = false) {
-  let to;
-  if (typeof toArg === "string") {
-    to = parsePath(toArg);
-  } else {
-    to = { ...toArg };
-    invariant(!to.pathname || !to.pathname.includes("?"), getInvalidPathError("?", "pathname", "search", to));
-    invariant(!to.pathname || !to.pathname.includes("#"), getInvalidPathError("#", "pathname", "hash", to));
-    invariant(!to.search || !to.search.includes("#"), getInvalidPathError("#", "search", "hash", to));
-  }
-  let isEmptyPath = toArg === "" || to.pathname === "";
-  let toPathname = isEmptyPath ? "/" : to.pathname;
-  let from;
-  if (toPathname == null) {
-    from = locationPathname;
-  } else {
-    let routePathnameIndex = routePathnames.length - 1;
-    if (!isPathRelative && toPathname.startsWith("..")) {
-      let toSegments = toPathname.split("/");
-      while (toSegments[0] === "..") {
-        toSegments.shift();
-        routePathnameIndex -= 1;
-      }
-      to.pathname = toSegments.join("/");
-    }
-    from = routePathnameIndex >= 0 ? routePathnames[routePathnameIndex] : "/";
-  }
-  let path = resolvePath(to, from);
-  let hasExplicitTrailingSlash = toPathname && toPathname !== "/" && toPathname.endsWith("/");
-  let hasCurrentTrailingSlash = (isEmptyPath || toPathname === ".") && locationPathname.endsWith("/");
-  if (!path.pathname.endsWith("/") && (hasExplicitTrailingSlash || hasCurrentTrailingSlash)) {
-    path.pathname += "/";
-  }
-  return path;
-}
-var joinPaths = (paths) => paths.join("/").replace(/\/\/+/g, "/");
-var normalizePathname = (pathname) => pathname.replace(/\/+$/, "").replace(/^\/*/, "/");
-var normalizeSearch = (search) => !search || search === "?" ? "" : search.startsWith("?") ? search : "?" + search;
-var normalizeHash = (hash) => !hash || hash === "#" ? "" : hash.startsWith("#") ? hash : "#" + hash;
-function isRouteErrorResponse(error) {
-  return error != null && typeof error.status === "number" && typeof error.statusText === "string" && typeof error.internal === "boolean" && "data" in error;
-}
-var validMutationMethodsArr = [
-  "POST",
-  "PUT",
-  "PATCH",
-  "DELETE"
-];
-var validMutationMethods = new Set(validMutationMethodsArr);
-var validRequestMethodsArr = [
-  "GET",
-  ...validMutationMethodsArr
-];
-var validRequestMethods = new Set(validRequestMethodsArr);
-var ResetLoaderDataSymbol = Symbol("ResetLoaderData");
-var DataRouterContext = React.createContext(null);
-DataRouterContext.displayName = "DataRouter";
-var DataRouterStateContext = React.createContext(null);
-DataRouterStateContext.displayName = "DataRouterState";
-var ViewTransitionContext = React.createContext({
-  isTransitioning: false
-});
-ViewTransitionContext.displayName = "ViewTransition";
-var FetchersContext = React.createContext(/* @__PURE__ */ new Map);
-FetchersContext.displayName = "Fetchers";
-var AwaitContext = React.createContext(null);
-AwaitContext.displayName = "Await";
-var NavigationContext = React.createContext(null);
-NavigationContext.displayName = "Navigation";
-var LocationContext = React.createContext(null);
-LocationContext.displayName = "Location";
-var RouteContext = React.createContext({
-  outlet: null,
-  matches: [],
-  isDataRoute: false
-});
-RouteContext.displayName = "Route";
-var RouteErrorContext = React.createContext(null);
-RouteErrorContext.displayName = "RouteError";
-var ENABLE_DEV_WARNINGS = true;
-function useHref(to, { relative } = {}) {
-  invariant(useInRouterContext(), `useHref() may be used only in the context of a <Router> component.`);
-  let { basename, navigator: navigator2 } = React2.useContext(NavigationContext);
-  let { hash, pathname, search } = useResolvedPath(to, { relative });
-  let joinedPathname = pathname;
-  if (basename !== "/") {
-    joinedPathname = pathname === "/" ? basename : joinPaths([basename, pathname]);
-  }
-  return navigator2.createHref({ pathname: joinedPathname, search, hash });
-}
-function useInRouterContext() {
-  return React2.useContext(LocationContext) != null;
-}
-function useLocation() {
-  invariant(useInRouterContext(), `useLocation() may be used only in the context of a <Router> component.`);
-  return React2.useContext(LocationContext).location;
-}
-var navigateEffectWarning = `You should call navigate() in a React.useEffect(), not when your component is first rendered.`;
-function useIsomorphicLayoutEffect(cb) {
-  let isStatic = React2.useContext(NavigationContext).static;
-  if (!isStatic) {
-    React2.useLayoutEffect(cb);
-  }
-}
-function useNavigate() {
-  let { isDataRoute } = React2.useContext(RouteContext);
-  return isDataRoute ? useNavigateStable() : useNavigateUnstable();
-}
-function useNavigateUnstable() {
-  invariant(useInRouterContext(), `useNavigate() may be used only in the context of a <Router> component.`);
-  let dataRouterContext = React2.useContext(DataRouterContext);
-  let { basename, navigator: navigator2 } = React2.useContext(NavigationContext);
-  let { matches } = React2.useContext(RouteContext);
-  let { pathname: locationPathname } = useLocation();
-  let routePathnamesJson = JSON.stringify(getResolveToMatches(matches));
-  let activeRef = React2.useRef(false);
-  useIsomorphicLayoutEffect(() => {
-    activeRef.current = true;
-  });
-  let navigate = React2.useCallback((to, options = {}) => {
-    warning(activeRef.current, navigateEffectWarning);
-    if (!activeRef.current)
-      return;
-    if (typeof to === "number") {
-      navigator2.go(to);
-      return;
-    }
-    let path = resolveTo(to, JSON.parse(routePathnamesJson), locationPathname, options.relative === "path");
-    if (dataRouterContext == null && basename !== "/") {
-      path.pathname = path.pathname === "/" ? basename : joinPaths([basename, path.pathname]);
-    }
-    (options.replace ? navigator2.replace : navigator2.push)(path, options.state, options);
-  }, [
-    basename,
-    navigator2,
-    routePathnamesJson,
-    locationPathname,
-    dataRouterContext
-  ]);
-  return navigate;
-}
-var OutletContext = React2.createContext(null);
-function useOutlet(context) {
-  let outlet = React2.useContext(RouteContext).outlet;
-  if (outlet) {
-    return /* @__PURE__ */ React2.createElement(OutletContext.Provider, { value: context }, outlet);
-  }
-  return outlet;
-}
-function useResolvedPath(to, { relative } = {}) {
-  let { matches } = React2.useContext(RouteContext);
-  let { pathname: locationPathname } = useLocation();
-  let routePathnamesJson = JSON.stringify(getResolveToMatches(matches));
-  return React2.useMemo(() => resolveTo(to, JSON.parse(routePathnamesJson), locationPathname, relative === "path"), [to, routePathnamesJson, locationPathname, relative]);
-}
-function useRoutes(routes, locationArg) {
-  return useRoutesImpl(routes, locationArg);
-}
-function useRoutesImpl(routes, locationArg, dataRouterState, future) {
-  invariant(useInRouterContext(), `useRoutes() may be used only in the context of a <Router> component.`);
-  let { navigator: navigator2, static: isStatic } = React2.useContext(NavigationContext);
-  let { matches: parentMatches } = React2.useContext(RouteContext);
-  let routeMatch = parentMatches[parentMatches.length - 1];
-  let parentParams = routeMatch ? routeMatch.params : {};
-  let parentPathname = routeMatch ? routeMatch.pathname : "/";
-  let parentPathnameBase = routeMatch ? routeMatch.pathnameBase : "/";
-  let parentRoute = routeMatch && routeMatch.route;
-  if (ENABLE_DEV_WARNINGS) {
-    let parentPath = parentRoute && parentRoute.path || "";
-    warningOnce(parentPathname, !parentRoute || parentPath.endsWith("*") || parentPath.endsWith("*?"), `You rendered descendant <Routes> (or called \`useRoutes()\`) at "${parentPathname}" (under <Route path="${parentPath}">) but the parent route path has no trailing "*". This means if you navigate deeper, the parent won't match anymore and therefore the child routes will never render.
-
-Please change the parent <Route path="${parentPath}"> to <Route path="${parentPath === "/" ? "*" : `${parentPath}/*`}">.`);
-  }
-  let locationFromContext = useLocation();
-  let location2;
-  if (locationArg) {
-    let parsedLocationArg = typeof locationArg === "string" ? parsePath(locationArg) : locationArg;
-    invariant(parentPathnameBase === "/" || parsedLocationArg.pathname?.startsWith(parentPathnameBase), `When overriding the location using \`<Routes location>\` or \`useRoutes(routes, location)\`, the location pathname must begin with the portion of the URL pathname that was matched by all parent routes. The current pathname base is "${parentPathnameBase}" but pathname "${parsedLocationArg.pathname}" was given in the \`location\` prop.`);
-    location2 = parsedLocationArg;
-  } else {
-    location2 = locationFromContext;
-  }
-  let pathname = location2.pathname || "/";
-  let remainingPathname = pathname;
-  if (parentPathnameBase !== "/") {
-    let parentSegments = parentPathnameBase.replace(/^\//, "").split("/");
-    let segments = pathname.replace(/^\//, "").split("/");
-    remainingPathname = "/" + segments.slice(parentSegments.length).join("/");
-  }
-  let matches = !isStatic && dataRouterState && dataRouterState.matches && dataRouterState.matches.length > 0 ? dataRouterState.matches : matchRoutes(routes, { pathname: remainingPathname });
-  if (ENABLE_DEV_WARNINGS) {
-    warning(parentRoute || matches != null, `No routes matched location "${location2.pathname}${location2.search}${location2.hash}" `);
-    warning(matches == null || matches[matches.length - 1].route.element !== undefined || matches[matches.length - 1].route.Component !== undefined || matches[matches.length - 1].route.lazy !== undefined, `Matched leaf route at location "${location2.pathname}${location2.search}${location2.hash}" does not have an element or Component. This means it will render an <Outlet /> with a null value by default resulting in an "empty" page.`);
-  }
-  let renderedMatches = _renderMatches(matches && matches.map((match) => Object.assign({}, match, {
-    params: Object.assign({}, parentParams, match.params),
-    pathname: joinPaths([
-      parentPathnameBase,
-      navigator2.encodeLocation ? navigator2.encodeLocation(match.pathname).pathname : match.pathname
-    ]),
-    pathnameBase: match.pathnameBase === "/" ? parentPathnameBase : joinPaths([
-      parentPathnameBase,
-      navigator2.encodeLocation ? navigator2.encodeLocation(match.pathnameBase).pathname : match.pathnameBase
-    ])
-  })), parentMatches, dataRouterState, future);
-  if (locationArg && renderedMatches) {
-    return /* @__PURE__ */ React2.createElement(LocationContext.Provider, {
-      value: {
-        location: {
-          pathname: "/",
-          search: "",
-          hash: "",
-          state: null,
-          key: "default",
-          ...location2
-        },
-        navigationType: "POP"
-      }
-    }, renderedMatches);
-  }
-  return renderedMatches;
-}
-function DefaultErrorComponent() {
-  let error = useRouteError();
-  let message = isRouteErrorResponse(error) ? `${error.status} ${error.statusText}` : error instanceof Error ? error.message : JSON.stringify(error);
-  let stack = error instanceof Error ? error.stack : null;
-  let lightgrey = "rgba(200,200,200, 0.5)";
-  let preStyles = { padding: "0.5rem", backgroundColor: lightgrey };
-  let codeStyles = { padding: "2px 4px", backgroundColor: lightgrey };
-  let devInfo = null;
-  if (ENABLE_DEV_WARNINGS) {
-    console.error("Error handled by React Router default ErrorBoundary:", error);
-    devInfo = /* @__PURE__ */ React2.createElement(React2.Fragment, null, /* @__PURE__ */ React2.createElement("p", null, "\uD83D\uDCBF Hey developer \uD83D\uDC4B"), /* @__PURE__ */ React2.createElement("p", null, "You can provide a way better UX than this when your app throws errors by providing your own ", /* @__PURE__ */ React2.createElement("code", { style: codeStyles }, "ErrorBoundary"), " or", " ", /* @__PURE__ */ React2.createElement("code", { style: codeStyles }, "errorElement"), " prop on your route."));
-  }
-  return /* @__PURE__ */ React2.createElement(React2.Fragment, null, /* @__PURE__ */ React2.createElement("h2", null, "Unexpected Application Error!"), /* @__PURE__ */ React2.createElement("h3", { style: { fontStyle: "italic" } }, message), stack ? /* @__PURE__ */ React2.createElement("pre", { style: preStyles }, stack) : null, devInfo);
-}
-var defaultErrorElement = /* @__PURE__ */ React2.createElement(DefaultErrorComponent, null);
-var RenderErrorBoundary = class extends React2.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      location: props.location,
-      revalidation: props.revalidation,
-      error: props.error
-    };
-  }
-  static getDerivedStateFromError(error) {
-    return { error };
-  }
-  static getDerivedStateFromProps(props, state) {
-    if (state.location !== props.location || state.revalidation !== "idle" && props.revalidation === "idle") {
-      return {
-        error: props.error,
-        location: props.location,
-        revalidation: props.revalidation
-      };
-    }
+  function getHistoryState(location2, index) {
     return {
-      error: props.error !== undefined ? props.error : state.error,
-      location: state.location,
-      revalidation: props.revalidation || state.revalidation
+      usr: location2.state,
+      key: location2.key,
+      idx: index
     };
   }
-  componentDidCatch(error, errorInfo) {
-    console.error("React Router caught the following error during render", error, errorInfo);
-  }
-  render() {
-    return this.state.error !== undefined ? /* @__PURE__ */ React2.createElement(RouteContext.Provider, { value: this.props.routeContext }, /* @__PURE__ */ React2.createElement(RouteErrorContext.Provider, {
-      value: this.state.error,
-      children: this.props.component
-    })) : this.props.children;
-  }
-};
-function RenderedRoute({ routeContext, match, children }) {
-  let dataRouterContext = React2.useContext(DataRouterContext);
-  if (dataRouterContext && dataRouterContext.static && dataRouterContext.staticContext && (match.route.errorElement || match.route.ErrorBoundary)) {
-    dataRouterContext.staticContext._deepestRenderedBoundaryId = match.route.id;
-  }
-  return /* @__PURE__ */ React2.createElement(RouteContext.Provider, { value: routeContext }, children);
-}
-function _renderMatches(matches, parentMatches = [], dataRouterState = null, future = null) {
-  if (matches == null) {
-    if (!dataRouterState) {
-      return null;
-    }
-    if (dataRouterState.errors) {
-      matches = dataRouterState.matches;
-    } else if (parentMatches.length === 0 && !dataRouterState.initialized && dataRouterState.matches.length > 0) {
-      matches = dataRouterState.matches;
-    } else {
-      return null;
-    }
-  }
-  let renderedMatches = matches;
-  let errors = dataRouterState?.errors;
-  if (errors != null) {
-    let errorIndex = renderedMatches.findIndex((m) => m.route.id && errors?.[m.route.id] !== undefined);
-    invariant(errorIndex >= 0, `Could not find a matching route for errors on route IDs: ${Object.keys(errors).join(",")}`);
-    renderedMatches = renderedMatches.slice(0, Math.min(renderedMatches.length, errorIndex + 1));
-  }
-  let renderFallback = false;
-  let fallbackIndex = -1;
-  if (dataRouterState) {
-    for (let i = 0;i < renderedMatches.length; i++) {
-      let match = renderedMatches[i];
-      if (match.route.HydrateFallback || match.route.hydrateFallbackElement) {
-        fallbackIndex = i;
-      }
-      if (match.route.id) {
-        let { loaderData, errors: errors2 } = dataRouterState;
-        let needsToRunLoader = match.route.loader && !loaderData.hasOwnProperty(match.route.id) && (!errors2 || errors2[match.route.id] === undefined);
-        if (match.route.lazy || needsToRunLoader) {
-          renderFallback = true;
-          if (fallbackIndex >= 0) {
-            renderedMatches = renderedMatches.slice(0, fallbackIndex + 1);
-          } else {
-            renderedMatches = [renderedMatches[0]];
-          }
-          break;
-        }
-      }
-    }
-  }
-  return renderedMatches.reduceRight((outlet, match, index) => {
-    let error;
-    let shouldRenderHydrateFallback = false;
-    let errorElement = null;
-    let hydrateFallbackElement = null;
-    if (dataRouterState) {
-      error = errors && match.route.id ? errors[match.route.id] : undefined;
-      errorElement = match.route.errorElement || defaultErrorElement;
-      if (renderFallback) {
-        if (fallbackIndex < 0 && index === 0) {
-          warningOnce("route-fallback", false, "No `HydrateFallback` element provided to render during initial hydration");
-          shouldRenderHydrateFallback = true;
-          hydrateFallbackElement = null;
-        } else if (fallbackIndex === index) {
-          shouldRenderHydrateFallback = true;
-          hydrateFallbackElement = match.route.hydrateFallbackElement || null;
-        }
-      }
-    }
-    let matches2 = parentMatches.concat(renderedMatches.slice(0, index + 1));
-    let getChildren = () => {
-      let children;
-      if (error) {
-        children = errorElement;
-      } else if (shouldRenderHydrateFallback) {
-        children = hydrateFallbackElement;
-      } else if (match.route.Component) {
-        children = /* @__PURE__ */ React2.createElement(match.route.Component, null);
-      } else if (match.route.element) {
-        children = match.route.element;
-      } else {
-        children = outlet;
-      }
-      return /* @__PURE__ */ React2.createElement(RenderedRoute, {
-        match,
-        routeContext: {
-          outlet,
-          matches: matches2,
-          isDataRoute: dataRouterState != null
-        },
-        children
-      });
+  function createLocation(current, to, state = null, key) {
+    let location2 = {
+      pathname: typeof current === "string" ? current : current.pathname,
+      search: "",
+      hash: "",
+      ...typeof to === "string" ? parsePath(to) : to,
+      state,
+      key: to && to.key || key || createKey()
     };
-    return dataRouterState && (match.route.ErrorBoundary || match.route.errorElement || index === 0) ? /* @__PURE__ */ React2.createElement(RenderErrorBoundary, {
-      location: dataRouterState.location,
-      revalidation: dataRouterState.revalidation,
-      component: errorElement,
-      error,
-      children: getChildren(),
-      routeContext: { outlet: null, matches: matches2, isDataRoute: true }
-    }) : getChildren();
-  }, null);
-}
-function getDataRouterConsoleError(hookName) {
-  return `${hookName} must be used within a data router.  See https://reactrouter.com/en/main/routers/picking-a-router.`;
-}
-function useDataRouterContext(hookName) {
-  let ctx = React2.useContext(DataRouterContext);
-  invariant(ctx, getDataRouterConsoleError(hookName));
-  return ctx;
-}
-function useDataRouterState(hookName) {
-  let state = React2.useContext(DataRouterStateContext);
-  invariant(state, getDataRouterConsoleError(hookName));
-  return state;
-}
-function useRouteContext(hookName) {
-  let route = React2.useContext(RouteContext);
-  invariant(route, getDataRouterConsoleError(hookName));
-  return route;
-}
-function useCurrentRouteId(hookName) {
-  let route = useRouteContext(hookName);
-  let thisRoute = route.matches[route.matches.length - 1];
-  invariant(thisRoute.route.id, `${hookName} can only be used on routes that contain a unique "id"`);
-  return thisRoute.route.id;
-}
-function useRouteId() {
-  return useCurrentRouteId("useRouteId");
-}
-function useNavigation() {
-  let state = useDataRouterState("useNavigation");
-  return state.navigation;
-}
-function useMatches() {
-  let { matches, loaderData } = useDataRouterState("useMatches");
-  return React2.useMemo(() => matches.map((m) => convertRouteMatchToUiMatch(m, loaderData)), [matches, loaderData]);
-}
-function useRouteError() {
-  let error = React2.useContext(RouteErrorContext);
-  let state = useDataRouterState("useRouteError");
-  let routeId = useCurrentRouteId("useRouteError");
-  if (error !== undefined) {
-    return error;
+    return location2;
   }
-  return state.errors?.[routeId];
-}
-function useNavigateStable() {
-  let { router } = useDataRouterContext("useNavigate");
-  let id = useCurrentRouteId("useNavigate");
-  let activeRef = React2.useRef(false);
-  useIsomorphicLayoutEffect(() => {
-    activeRef.current = true;
-  });
-  let navigate = React2.useCallback(async (to, options = {}) => {
-    warning(activeRef.current, navigateEffectWarning);
-    if (!activeRef.current)
-      return;
-    if (typeof to === "number") {
-      router.navigate(to);
-    } else {
-      await router.navigate(to, { fromRouteId: id, ...options });
-    }
-  }, [router, id]);
-  return navigate;
-}
-var alreadyWarned = {};
-function warningOnce(key, cond, message) {
-  if (!cond && !alreadyWarned[key]) {
-    alreadyWarned[key] = true;
-    warning(false, message);
-  }
-}
-var MemoizedDataRoutes = React3.memo(DataRoutes);
-function DataRoutes({
-  routes,
-  future,
-  state
-}) {
-  return useRoutesImpl(routes, undefined, state, future);
-}
-function Outlet(props) {
-  return useOutlet(props.context);
-}
-function Route(_props) {
-  invariant(false, `A <Route> is only ever to be used as the child of <Routes> element, never rendered directly. Please wrap your <Route> in a <Routes>.`);
-}
-function Router({
-  basename: basenameProp = "/",
-  children = null,
-  location: locationProp,
-  navigationType = "POP",
-  navigator: navigator2,
-  static: staticProp = false
-}) {
-  invariant(!useInRouterContext(), `You cannot render a <Router> inside another <Router>. You should never have more than one in your app.`);
-  let basename = basenameProp.replace(/^\/*/, "/");
-  let navigationContext = React3.useMemo(() => ({
-    basename,
-    navigator: navigator2,
-    static: staticProp,
-    future: {}
-  }), [basename, navigator2, staticProp]);
-  if (typeof locationProp === "string") {
-    locationProp = parsePath(locationProp);
-  }
-  let {
+  function createPath({
     pathname = "/",
     search = "",
-    hash = "",
-    state = null,
-    key = "default"
-  } = locationProp;
-  let locationContext = React3.useMemo(() => {
-    let trailingPathname = stripBasename(pathname, basename);
-    if (trailingPathname == null) {
-      return null;
-    }
-    return {
-      location: {
-        pathname: trailingPathname,
-        search,
-        hash,
-        state,
-        key
-      },
-      navigationType
-    };
-  }, [basename, pathname, search, hash, state, key, navigationType]);
-  warning(locationContext != null, `<Router basename="${basename}"> is not able to match the URL "${pathname}${search}${hash}" because it does not start with the basename, so the <Router> won't render anything.`);
-  if (locationContext == null) {
-    return null;
+    hash = ""
+  }) {
+    if (search && search !== "?")
+      pathname += search.charAt(0) === "?" ? search : "?" + search;
+    if (hash && hash !== "#")
+      pathname += hash.charAt(0) === "#" ? hash : "#" + hash;
+    return pathname;
   }
-  return /* @__PURE__ */ React3.createElement(NavigationContext.Provider, { value: navigationContext }, /* @__PURE__ */ React3.createElement(LocationContext.Provider, { children, value: locationContext }));
-}
-function Routes({
-  children,
-  location: location2
-}) {
-  return useRoutes(createRoutesFromChildren(children), location2);
-}
-function createRoutesFromChildren(children, parentPath = []) {
-  let routes = [];
-  React3.Children.forEach(children, (element, index) => {
-    if (!React3.isValidElement(element)) {
-      return;
-    }
-    let treePath = [...parentPath, index];
-    if (element.type === React3.Fragment) {
-      routes.push.apply(routes, createRoutesFromChildren(element.props.children, treePath));
-      return;
-    }
-    invariant(element.type === Route, `[${typeof element.type === "string" ? element.type : element.type.name}] is not a <Route> component. All component children of <Routes> must be a <Route> or <React.Fragment>`);
-    invariant(!element.props.index || !element.props.children, "An index route cannot have child routes.");
-    let route = {
-      id: element.props.id || treePath.join("-"),
-      caseSensitive: element.props.caseSensitive,
-      element: element.props.element,
-      Component: element.props.Component,
-      index: element.props.index,
-      path: element.props.path,
-      loader: element.props.loader,
-      action: element.props.action,
-      hydrateFallbackElement: element.props.hydrateFallbackElement,
-      HydrateFallback: element.props.HydrateFallback,
-      errorElement: element.props.errorElement,
-      ErrorBoundary: element.props.ErrorBoundary,
-      hasErrorBoundary: element.props.hasErrorBoundary === true || element.props.ErrorBoundary != null || element.props.errorElement != null,
-      shouldRevalidate: element.props.shouldRevalidate,
-      handle: element.props.handle,
-      lazy: element.props.lazy
-    };
-    if (element.props.children) {
-      route.children = createRoutesFromChildren(element.props.children, treePath);
-    }
-    routes.push(route);
-  });
-  return routes;
-}
-var defaultMethod = "get";
-var defaultEncType = "application/x-www-form-urlencoded";
-function isHtmlElement(object) {
-  return object != null && typeof object.tagName === "string";
-}
-function isButtonElement(object) {
-  return isHtmlElement(object) && object.tagName.toLowerCase() === "button";
-}
-function isFormElement(object) {
-  return isHtmlElement(object) && object.tagName.toLowerCase() === "form";
-}
-function isInputElement(object) {
-  return isHtmlElement(object) && object.tagName.toLowerCase() === "input";
-}
-function isModifiedEvent(event) {
-  return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
-}
-function shouldProcessLinkClick(event, target) {
-  return event.button === 0 && (!target || target === "_self") && !isModifiedEvent(event);
-}
-var _formDataSupportsSubmitter = null;
-function isFormDataSubmitterSupported() {
-  if (_formDataSupportsSubmitter === null) {
-    try {
-      new FormData(document.createElement("form"), 0);
-      _formDataSupportsSubmitter = false;
-    } catch (e) {
-      _formDataSupportsSubmitter = true;
-    }
-  }
-  return _formDataSupportsSubmitter;
-}
-var supportedFormEncTypes = /* @__PURE__ */ new Set([
-  "application/x-www-form-urlencoded",
-  "multipart/form-data",
-  "text/plain"
-]);
-function getFormEncType(encType) {
-  if (encType != null && !supportedFormEncTypes.has(encType)) {
-    warning(false, `"${encType}" is not a valid \`encType\` for \`<Form>\`/\`<fetcher.Form>\` and will default to "${defaultEncType}"`);
-    return null;
-  }
-  return encType;
-}
-function getFormSubmissionInfo(target, basename) {
-  let method;
-  let action;
-  let encType;
-  let formData;
-  let body;
-  if (isFormElement(target)) {
-    let attr = target.getAttribute("action");
-    action = attr ? stripBasename(attr, basename) : null;
-    method = target.getAttribute("method") || defaultMethod;
-    encType = getFormEncType(target.getAttribute("enctype")) || defaultEncType;
-    formData = new FormData(target);
-  } else if (isButtonElement(target) || isInputElement(target) && (target.type === "submit" || target.type === "image")) {
-    let form = target.form;
-    if (form == null) {
-      throw new Error(`Cannot submit a <button> or <input type="submit"> without a <form>`);
-    }
-    let attr = target.getAttribute("formaction") || form.getAttribute("action");
-    action = attr ? stripBasename(attr, basename) : null;
-    method = target.getAttribute("formmethod") || form.getAttribute("method") || defaultMethod;
-    encType = getFormEncType(target.getAttribute("formenctype")) || getFormEncType(form.getAttribute("enctype")) || defaultEncType;
-    formData = new FormData(form, target);
-    if (!isFormDataSubmitterSupported()) {
-      let { name, type, value } = target;
-      if (type === "image") {
-        let prefix = name ? `${name}.` : "";
-        formData.append(`${prefix}x`, "0");
-        formData.append(`${prefix}y`, "0");
-      } else if (name) {
-        formData.append(name, value);
+  function parsePath(path) {
+    let parsedPath = {};
+    if (path) {
+      let hashIndex = path.indexOf("#");
+      if (hashIndex >= 0) {
+        parsedPath.hash = path.substring(hashIndex);
+        path = path.substring(0, hashIndex);
+      }
+      let searchIndex = path.indexOf("?");
+      if (searchIndex >= 0) {
+        parsedPath.search = path.substring(searchIndex);
+        path = path.substring(0, searchIndex);
+      }
+      if (path) {
+        parsedPath.pathname = path;
       }
     }
-  } else if (isHtmlElement(target)) {
-    throw new Error(`Cannot submit element that is not <form>, <button>, or <input type="submit|image">`);
-  } else {
-    method = defaultMethod;
-    action = null;
-    encType = defaultEncType;
-    body = target;
+    return parsedPath;
   }
-  if (formData && encType === "text/plain") {
-    body = formData;
-    formData = undefined;
-  }
-  return { action, method: method.toLowerCase(), encType, formData, body };
-}
-function invariant2(value, message) {
-  if (value === false || value === null || typeof value === "undefined") {
-    throw new Error(message);
-  }
-}
-async function loadRouteModule(route, routeModulesCache) {
-  if (route.id in routeModulesCache) {
-    return routeModulesCache[route.id];
-  }
-  try {
-    let routeModule = await import(route.module);
-    routeModulesCache[route.id] = routeModule;
-    return routeModule;
-  } catch (error) {
-    console.error(`Error loading route module \`${route.module}\`, reloading page...`);
-    console.error(error);
-    if (window.__reactRouterContext && window.__reactRouterContext.isSpaMode && import.meta.hot) {
-      throw error;
+  function getUrlBasedHistory(getLocation, createHref, validateLocation, options = {}) {
+    let { window: window2 = document.defaultView, v5Compat = false } = options;
+    let globalHistory = window2.history;
+    let action = "POP";
+    let listener = null;
+    let index = getIndex();
+    if (index == null) {
+      index = 0;
+      globalHistory.replaceState({ ...globalHistory.state, idx: index }, "");
     }
-    window.location.reload();
-    return new Promise(() => {
+    function getIndex() {
+      let state = globalHistory.state || { idx: null };
+      return state.idx;
+    }
+    function handlePop() {
+      action = "POP";
+      let nextIndex = getIndex();
+      let delta = nextIndex == null ? null : nextIndex - index;
+      index = nextIndex;
+      if (listener) {
+        listener({ action, location: history.location, delta });
+      }
+    }
+    function push(to, state) {
+      action = "PUSH";
+      let location2 = createLocation(history.location, to, state);
+      if (validateLocation)
+        validateLocation(location2, to);
+      index = getIndex() + 1;
+      let historyState = getHistoryState(location2, index);
+      let url = history.createHref(location2);
+      try {
+        globalHistory.pushState(historyState, "", url);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "DataCloneError") {
+          throw error;
+        }
+        window2.location.assign(url);
+      }
+      if (v5Compat && listener) {
+        listener({ action, location: history.location, delta: 1 });
+      }
+    }
+    function replace(to, state) {
+      action = "REPLACE";
+      let location2 = createLocation(history.location, to, state);
+      if (validateLocation)
+        validateLocation(location2, to);
+      index = getIndex();
+      let historyState = getHistoryState(location2, index);
+      let url = history.createHref(location2);
+      globalHistory.replaceState(historyState, "", url);
+      if (v5Compat && listener) {
+        listener({ action, location: history.location, delta: 0 });
+      }
+    }
+    function createURL(to) {
+      let base = window2.location.origin !== "null" ? window2.location.origin : window2.location.href;
+      let href = typeof to === "string" ? to : createPath(to);
+      href = href.replace(/ $/, "%20");
+      invariant(base, `No window.location.(origin|href) available to create URL for href: ${href}`);
+      return new URL(href, base);
+    }
+    let history = {
+      get action() {
+        return action;
+      },
+      get location() {
+        return getLocation(window2, globalHistory);
+      },
+      listen(fn) {
+        if (listener) {
+          throw new Error("A history only accepts one active listener");
+        }
+        window2.addEventListener(PopStateEventType, handlePop);
+        listener = fn;
+        return () => {
+          window2.removeEventListener(PopStateEventType, handlePop);
+          listener = null;
+        };
+      },
+      createHref(to) {
+        return createHref(window2, to);
+      },
+      createURL,
+      encodeLocation(to) {
+        let url = createURL(to);
+        return {
+          pathname: url.pathname,
+          search: url.search,
+          hash: url.hash
+        };
+      },
+      push,
+      replace,
+      go(n) {
+        return globalHistory.go(n);
+      }
+    };
+    return history;
+  }
+  var _map;
+  var unstable_RouterContextProvider = class {
+    constructor(init) {
+      __privateAdd(this, _map, /* @__PURE__ */ new Map);
+      if (init) {
+        for (let [context, value] of init) {
+          this.set(context, value);
+        }
+      }
+    }
+    get(context) {
+      if (__privateGet(this, _map).has(context)) {
+        return __privateGet(this, _map).get(context);
+      }
+      if (context.defaultValue !== undefined) {
+        return context.defaultValue;
+      }
+      throw new Error("No value found for context");
+    }
+    set(context, value) {
+      __privateGet(this, _map).set(context, value);
+    }
+  };
+  _map = new WeakMap;
+  var unsupportedLazyRouteObjectKeys = /* @__PURE__ */ new Set([
+    "lazy",
+    "caseSensitive",
+    "path",
+    "id",
+    "index",
+    "children"
+  ]);
+  function isUnsupportedLazyRouteObjectKey(key) {
+    return unsupportedLazyRouteObjectKeys.has(key);
+  }
+  var unsupportedLazyRouteFunctionKeys = /* @__PURE__ */ new Set([
+    "lazy",
+    "caseSensitive",
+    "path",
+    "id",
+    "index",
+    "unstable_middleware",
+    "children"
+  ]);
+  function isUnsupportedLazyRouteFunctionKey(key) {
+    return unsupportedLazyRouteFunctionKeys.has(key);
+  }
+  function isIndexRoute(route) {
+    return route.index === true;
+  }
+  function convertRoutesToDataRoutes(routes, mapRouteProperties2, parentPath = [], manifest = {}) {
+    return routes.map((route, index) => {
+      let treePath = [...parentPath, String(index)];
+      let id = typeof route.id === "string" ? route.id : treePath.join("-");
+      invariant(route.index !== true || !route.children, `Cannot specify children on an index route`);
+      invariant(!manifest[id], `Found a route id collision on id "${id}".  Route id's must be globally unique within Data Router usages`);
+      if (isIndexRoute(route)) {
+        let indexRoute = {
+          ...route,
+          ...mapRouteProperties2(route),
+          id
+        };
+        manifest[id] = indexRoute;
+        return indexRoute;
+      } else {
+        let pathOrLayoutRoute = {
+          ...route,
+          ...mapRouteProperties2(route),
+          id,
+          children: undefined
+        };
+        manifest[id] = pathOrLayoutRoute;
+        if (route.children) {
+          pathOrLayoutRoute.children = convertRoutesToDataRoutes(route.children, mapRouteProperties2, treePath, manifest);
+        }
+        return pathOrLayoutRoute;
+      }
     });
   }
-}
-function isPageLinkDescriptor(object) {
-  return object != null && typeof object.page === "string";
-}
-function isHtmlLinkDescriptor(object) {
-  if (object == null) {
-    return false;
+  function matchRoutes(routes, locationArg, basename = "/") {
+    return matchRoutesImpl(routes, locationArg, basename, false);
   }
-  if (object.href == null) {
-    return object.rel === "preload" && typeof object.imageSrcSet === "string" && typeof object.imageSizes === "string";
-  }
-  return typeof object.rel === "string" && typeof object.href === "string";
-}
-async function getKeyedPrefetchLinks(matches, manifest, routeModules) {
-  let links = await Promise.all(matches.map(async (match) => {
-    let route = manifest.routes[match.route.id];
-    if (route) {
-      let mod = await loadRouteModule(route, routeModules);
-      return mod.links ? mod.links() : [];
+  function matchRoutesImpl(routes, locationArg, basename, allowPartial) {
+    let location2 = typeof locationArg === "string" ? parsePath(locationArg) : locationArg;
+    let pathname = stripBasename(location2.pathname || "/", basename);
+    if (pathname == null) {
+      return null;
     }
-    return [];
-  }));
-  return dedupeLinkDescriptors(links.flat(1).filter(isHtmlLinkDescriptor).filter((link) => link.rel === "stylesheet" || link.rel === "preload").map((link) => link.rel === "stylesheet" ? { ...link, rel: "prefetch", as: "style" } : { ...link, rel: "prefetch" }));
-}
-function getNewMatchesForLinks(page, nextMatches, currentMatches, manifest, location2, mode) {
-  let isNew = (match, index) => {
-    if (!currentMatches[index])
-      return true;
-    return match.route.id !== currentMatches[index].route.id;
-  };
-  let matchPathChanged = (match, index) => {
-    return currentMatches[index].pathname !== match.pathname || currentMatches[index].route.path?.endsWith("*") && currentMatches[index].params["*"] !== match.params["*"];
-  };
-  if (mode === "assets") {
-    return nextMatches.filter((match, index) => isNew(match, index) || matchPathChanged(match, index));
+    let branches = flattenRoutes(routes);
+    rankRouteBranches(branches);
+    let matches = null;
+    for (let i = 0;matches == null && i < branches.length; ++i) {
+      let decoded = decodePath(pathname);
+      matches = matchRouteBranch(branches[i], decoded, allowPartial);
+    }
+    return matches;
   }
-  if (mode === "data") {
-    return nextMatches.filter((match, index) => {
-      let manifestRoute = manifest.routes[match.route.id];
-      if (!manifestRoute || !manifestRoute.hasLoader) {
+  function convertRouteMatchToUiMatch(match, loaderData) {
+    let { route, pathname, params } = match;
+    return {
+      id: route.id,
+      pathname,
+      params,
+      data: loaderData[route.id],
+      handle: route.handle
+    };
+  }
+  function flattenRoutes(routes, branches = [], parentsMeta = [], parentPath = "") {
+    let flattenRoute = (route, index, relativePath) => {
+      let meta = {
+        relativePath: relativePath === undefined ? route.path || "" : relativePath,
+        caseSensitive: route.caseSensitive === true,
+        childrenIndex: index,
+        route
+      };
+      if (meta.relativePath.startsWith("/")) {
+        invariant(meta.relativePath.startsWith(parentPath), `Absolute route path "${meta.relativePath}" nested under path "${parentPath}" is not valid. An absolute child route path must start with the combined path of all its parent routes.`);
+        meta.relativePath = meta.relativePath.slice(parentPath.length);
+      }
+      let path = joinPaths([parentPath, meta.relativePath]);
+      let routesMeta = parentsMeta.concat(meta);
+      if (route.children && route.children.length > 0) {
+        invariant(route.index !== true, `Index routes must not have child routes. Please remove all child routes from route path "${path}".`);
+        flattenRoutes(route.children, branches, routesMeta, path);
+      }
+      if (route.path == null && !route.index) {
+        return;
+      }
+      branches.push({
+        path,
+        score: computeScore(path, route.index),
+        routesMeta
+      });
+    };
+    routes.forEach((route, index) => {
+      if (route.path === "" || !route.path?.includes("?")) {
+        flattenRoute(route, index);
+      } else {
+        for (let exploded of explodeOptionalSegments(route.path)) {
+          flattenRoute(route, index, exploded);
+        }
+      }
+    });
+    return branches;
+  }
+  function explodeOptionalSegments(path) {
+    let segments = path.split("/");
+    if (segments.length === 0)
+      return [];
+    let [first, ...rest] = segments;
+    let isOptional = first.endsWith("?");
+    let required = first.replace(/\?$/, "");
+    if (rest.length === 0) {
+      return isOptional ? [required, ""] : [required];
+    }
+    let restExploded = explodeOptionalSegments(rest.join("/"));
+    let result = [];
+    result.push(...restExploded.map((subpath) => subpath === "" ? required : [required, subpath].join("/")));
+    if (isOptional) {
+      result.push(...restExploded);
+    }
+    return result.map((exploded) => path.startsWith("/") && exploded === "" ? "/" : exploded);
+  }
+  function rankRouteBranches(branches) {
+    branches.sort((a, b) => a.score !== b.score ? b.score - a.score : compareIndexes(a.routesMeta.map((meta) => meta.childrenIndex), b.routesMeta.map((meta) => meta.childrenIndex)));
+  }
+  var paramRe = /^:[\w-]+$/;
+  var dynamicSegmentValue = 3;
+  var indexRouteValue = 2;
+  var emptySegmentValue = 1;
+  var staticSegmentValue = 10;
+  var splatPenalty = -2;
+  var isSplat = (s) => s === "*";
+  function computeScore(path, index) {
+    let segments = path.split("/");
+    let initialScore = segments.length;
+    if (segments.some(isSplat)) {
+      initialScore += splatPenalty;
+    }
+    if (index) {
+      initialScore += indexRouteValue;
+    }
+    return segments.filter((s) => !isSplat(s)).reduce((score, segment) => score + (paramRe.test(segment) ? dynamicSegmentValue : segment === "" ? emptySegmentValue : staticSegmentValue), initialScore);
+  }
+  function compareIndexes(a, b) {
+    let siblings = a.length === b.length && a.slice(0, -1).every((n, i) => n === b[i]);
+    return siblings ? a[a.length - 1] - b[b.length - 1] : 0;
+  }
+  function matchRouteBranch(branch, pathname, allowPartial = false) {
+    let { routesMeta } = branch;
+    let matchedParams = {};
+    let matchedPathname = "/";
+    let matches = [];
+    for (let i = 0;i < routesMeta.length; ++i) {
+      let meta = routesMeta[i];
+      let end = i === routesMeta.length - 1;
+      let remainingPathname = matchedPathname === "/" ? pathname : pathname.slice(matchedPathname.length) || "/";
+      let match = matchPath({ path: meta.relativePath, caseSensitive: meta.caseSensitive, end }, remainingPathname);
+      let route = meta.route;
+      if (!match && end && allowPartial && !routesMeta[routesMeta.length - 1].route.index) {
+        match = matchPath({
+          path: meta.relativePath,
+          caseSensitive: meta.caseSensitive,
+          end: false
+        }, remainingPathname);
+      }
+      if (!match) {
+        return null;
+      }
+      Object.assign(matchedParams, match.params);
+      matches.push({
+        params: matchedParams,
+        pathname: joinPaths([matchedPathname, match.pathname]),
+        pathnameBase: normalizePathname(joinPaths([matchedPathname, match.pathnameBase])),
+        route
+      });
+      if (match.pathnameBase !== "/") {
+        matchedPathname = joinPaths([matchedPathname, match.pathnameBase]);
+      }
+    }
+    return matches;
+  }
+  function matchPath(pattern, pathname) {
+    if (typeof pattern === "string") {
+      pattern = { path: pattern, caseSensitive: false, end: true };
+    }
+    let [matcher, compiledParams] = compilePath(pattern.path, pattern.caseSensitive, pattern.end);
+    let match = pathname.match(matcher);
+    if (!match)
+      return null;
+    let matchedPathname = match[0];
+    let pathnameBase = matchedPathname.replace(/(.)\/+$/, "$1");
+    let captureGroups = match.slice(1);
+    let params = compiledParams.reduce((memo2, { paramName, isOptional }, index) => {
+      if (paramName === "*") {
+        let splatValue = captureGroups[index] || "";
+        pathnameBase = matchedPathname.slice(0, matchedPathname.length - splatValue.length).replace(/(.)\/+$/, "$1");
+      }
+      const value = captureGroups[index];
+      if (isOptional && !value) {
+        memo2[paramName] = undefined;
+      } else {
+        memo2[paramName] = (value || "").replace(/%2F/g, "/");
+      }
+      return memo2;
+    }, {});
+    return {
+      params,
+      pathname: matchedPathname,
+      pathnameBase,
+      pattern
+    };
+  }
+  function compilePath(path, caseSensitive = false, end = true) {
+    warning(path === "*" || !path.endsWith("*") || path.endsWith("/*"), `Route path "${path}" will be treated as if it were "${path.replace(/\*$/, "/*")}" because the \`*\` character must always follow a \`/\` in the pattern. To get rid of this warning, please change the route path to "${path.replace(/\*$/, "/*")}".`);
+    let params = [];
+    let regexpSource = "^" + path.replace(/\/*\*?$/, "").replace(/^\/*/, "/").replace(/[\\.*+^${}|()[\]]/g, "\\$&").replace(/\/:([\w-]+)(\?)?/g, (_, paramName, isOptional) => {
+      params.push({ paramName, isOptional: isOptional != null });
+      return isOptional ? "/?([^\\/]+)?" : "/([^\\/]+)";
+    });
+    if (path.endsWith("*")) {
+      params.push({ paramName: "*" });
+      regexpSource += path === "*" || path === "/*" ? "(.*)$" : "(?:\\/(.+)|\\/*)$";
+    } else if (end) {
+      regexpSource += "\\/*$";
+    } else if (path !== "" && path !== "/") {
+      regexpSource += "(?:(?=\\/|$))";
+    } else {
+    }
+    let matcher = new RegExp(regexpSource, caseSensitive ? undefined : "i");
+    return [matcher, params];
+  }
+  function decodePath(value) {
+    try {
+      return value.split("/").map((v) => decodeURIComponent(v).replace(/\//g, "%2F")).join("/");
+    } catch (error) {
+      warning(false, `The URL path "${value}" could not be decoded because it is a malformed URL segment. This is probably due to a bad percent encoding (${error}).`);
+      return value;
+    }
+  }
+  function stripBasename(pathname, basename) {
+    if (basename === "/")
+      return pathname;
+    if (!pathname.toLowerCase().startsWith(basename.toLowerCase())) {
+      return null;
+    }
+    let startIndex = basename.endsWith("/") ? basename.length - 1 : basename.length;
+    let nextChar = pathname.charAt(startIndex);
+    if (nextChar && nextChar !== "/") {
+      return null;
+    }
+    return pathname.slice(startIndex) || "/";
+  }
+  function resolvePath(to, fromPathname = "/") {
+    let {
+      pathname: toPathname,
+      search = "",
+      hash = ""
+    } = typeof to === "string" ? parsePath(to) : to;
+    let pathname = toPathname ? toPathname.startsWith("/") ? toPathname : resolvePathname(toPathname, fromPathname) : fromPathname;
+    return {
+      pathname,
+      search: normalizeSearch(search),
+      hash: normalizeHash(hash)
+    };
+  }
+  function resolvePathname(relativePath, fromPathname) {
+    let segments = fromPathname.replace(/\/+$/, "").split("/");
+    let relativeSegments = relativePath.split("/");
+    relativeSegments.forEach((segment) => {
+      if (segment === "..") {
+        if (segments.length > 1)
+          segments.pop();
+      } else if (segment !== ".") {
+        segments.push(segment);
+      }
+    });
+    return segments.length > 1 ? segments.join("/") : "/";
+  }
+  function getInvalidPathError(char, field, dest, path) {
+    return `Cannot include a '${char}' character in a manually specified \`to.${field}\` field [${JSON.stringify(path)}].  Please separate it out to the \`to.${dest}\` field. Alternatively you may provide the full path as a string in <Link to="..."> and the router will parse it for you.`;
+  }
+  function getPathContributingMatches(matches) {
+    return matches.filter((match, index) => index === 0 || match.route.path && match.route.path.length > 0);
+  }
+  function getResolveToMatches(matches) {
+    let pathMatches = getPathContributingMatches(matches);
+    return pathMatches.map((match, idx) => idx === pathMatches.length - 1 ? match.pathname : match.pathnameBase);
+  }
+  function resolveTo(toArg, routePathnames, locationPathname, isPathRelative = false) {
+    let to;
+    if (typeof toArg === "string") {
+      to = parsePath(toArg);
+    } else {
+      to = { ...toArg };
+      invariant(!to.pathname || !to.pathname.includes("?"), getInvalidPathError("?", "pathname", "search", to));
+      invariant(!to.pathname || !to.pathname.includes("#"), getInvalidPathError("#", "pathname", "hash", to));
+      invariant(!to.search || !to.search.includes("#"), getInvalidPathError("#", "search", "hash", to));
+    }
+    let isEmptyPath = toArg === "" || to.pathname === "";
+    let toPathname = isEmptyPath ? "/" : to.pathname;
+    let from;
+    if (toPathname == null) {
+      from = locationPathname;
+    } else {
+      let routePathnameIndex = routePathnames.length - 1;
+      if (!isPathRelative && toPathname.startsWith("..")) {
+        let toSegments = toPathname.split("/");
+        while (toSegments[0] === "..") {
+          toSegments.shift();
+          routePathnameIndex -= 1;
+        }
+        to.pathname = toSegments.join("/");
+      }
+      from = routePathnameIndex >= 0 ? routePathnames[routePathnameIndex] : "/";
+    }
+    let path = resolvePath(to, from);
+    let hasExplicitTrailingSlash = toPathname && toPathname !== "/" && toPathname.endsWith("/");
+    let hasCurrentTrailingSlash = (isEmptyPath || toPathname === ".") && locationPathname.endsWith("/");
+    if (!path.pathname.endsWith("/") && (hasExplicitTrailingSlash || hasCurrentTrailingSlash)) {
+      path.pathname += "/";
+    }
+    return path;
+  }
+  var joinPaths = (paths) => paths.join("/").replace(/\/\/+/g, "/");
+  var normalizePathname = (pathname) => pathname.replace(/\/+$/, "").replace(/^\/*/, "/");
+  var normalizeSearch = (search) => !search || search === "?" ? "" : search.startsWith("?") ? search : "?" + search;
+  var normalizeHash = (hash) => !hash || hash === "#" ? "" : hash.startsWith("#") ? hash : "#" + hash;
+  var DataWithResponseInit = class {
+    constructor(data2, init) {
+      this.type = "DataWithResponseInit";
+      this.data = data2;
+      this.init = init || null;
+    }
+  };
+  function data(data2, init) {
+    return new DataWithResponseInit(data2, typeof init === "number" ? { status: init } : init);
+  }
+  var redirect = (url, init = 302) => {
+    let responseInit = init;
+    if (typeof responseInit === "number") {
+      responseInit = { status: responseInit };
+    } else if (typeof responseInit.status === "undefined") {
+      responseInit.status = 302;
+    }
+    let headers = new Headers(responseInit.headers);
+    headers.set("Location", url);
+    return new Response(null, { ...responseInit, headers });
+  };
+  var ErrorResponseImpl = class {
+    constructor(status, statusText, data2, internal = false) {
+      this.status = status;
+      this.statusText = statusText || "";
+      this.internal = internal;
+      if (data2 instanceof Error) {
+        this.data = data2.toString();
+        this.error = data2;
+      } else {
+        this.data = data2;
+      }
+    }
+  };
+  function isRouteErrorResponse(error) {
+    return error != null && typeof error.status === "number" && typeof error.statusText === "string" && typeof error.internal === "boolean" && "data" in error;
+  }
+  var validMutationMethodsArr = [
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE"
+  ];
+  var validMutationMethods = new Set(validMutationMethodsArr);
+  var validRequestMethodsArr = [
+    "GET",
+    ...validMutationMethodsArr
+  ];
+  var validRequestMethods = new Set(validRequestMethodsArr);
+  var redirectStatusCodes = /* @__PURE__ */ new Set([301, 302, 303, 307, 308]);
+  var redirectPreserveMethodStatusCodes = /* @__PURE__ */ new Set([307, 308]);
+  var IDLE_NAVIGATION = {
+    state: "idle",
+    location: undefined,
+    formMethod: undefined,
+    formAction: undefined,
+    formEncType: undefined,
+    formData: undefined,
+    json: undefined,
+    text: undefined
+  };
+  var IDLE_FETCHER = {
+    state: "idle",
+    data: undefined,
+    formMethod: undefined,
+    formAction: undefined,
+    formEncType: undefined,
+    formData: undefined,
+    json: undefined,
+    text: undefined
+  };
+  var IDLE_BLOCKER = {
+    state: "unblocked",
+    proceed: undefined,
+    reset: undefined,
+    location: undefined
+  };
+  var ABSOLUTE_URL_REGEX = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
+  var defaultMapRouteProperties = (route) => ({
+    hasErrorBoundary: Boolean(route.hasErrorBoundary)
+  });
+  var TRANSITIONS_STORAGE_KEY = "remix-router-transitions";
+  var ResetLoaderDataSymbol = Symbol("ResetLoaderData");
+  function createRouter(init) {
+    const routerWindow = init.window ? init.window : typeof window !== "undefined" ? window : undefined;
+    const isBrowser = typeof routerWindow !== "undefined" && typeof routerWindow.document !== "undefined" && typeof routerWindow.document.createElement !== "undefined";
+    invariant(init.routes.length > 0, "You must provide a non-empty routes array to createRouter");
+    let hydrationRouteProperties2 = init.hydrationRouteProperties || [];
+    let mapRouteProperties2 = init.mapRouteProperties || defaultMapRouteProperties;
+    let manifest = {};
+    let dataRoutes = convertRoutesToDataRoutes(init.routes, mapRouteProperties2, undefined, manifest);
+    let inFlightDataRoutes;
+    let basename = init.basename || "/";
+    let dataStrategyImpl = init.dataStrategy || defaultDataStrategyWithMiddleware;
+    let future = {
+      unstable_middleware: false,
+      ...init.future
+    };
+    let unlistenHistory = null;
+    let subscribers = /* @__PURE__ */ new Set;
+    let savedScrollPositions = null;
+    let getScrollRestorationKey = null;
+    let getScrollPosition = null;
+    let initialScrollRestored = init.hydrationData != null;
+    let initialMatches = matchRoutes(dataRoutes, init.history.location, basename);
+    let initialMatchesIsFOW = false;
+    let initialErrors = null;
+    if (initialMatches == null && !init.patchRoutesOnNavigation) {
+      let error = getInternalRouterError(404, {
+        pathname: init.history.location.pathname
+      });
+      let { matches, route } = getShortCircuitMatches(dataRoutes);
+      initialMatches = matches;
+      initialErrors = { [route.id]: error };
+    }
+    if (initialMatches && !init.hydrationData) {
+      let fogOfWar = checkFogOfWar(initialMatches, dataRoutes, init.history.location.pathname);
+      if (fogOfWar.active) {
+        initialMatches = null;
+      }
+    }
+    let initialized;
+    if (!initialMatches) {
+      initialized = false;
+      initialMatches = [];
+      let fogOfWar = checkFogOfWar(null, dataRoutes, init.history.location.pathname);
+      if (fogOfWar.active && fogOfWar.matches) {
+        initialMatchesIsFOW = true;
+        initialMatches = fogOfWar.matches;
+      }
+    } else if (initialMatches.some((m) => m.route.lazy)) {
+      initialized = false;
+    } else if (!initialMatches.some((m) => m.route.loader)) {
+      initialized = true;
+    } else {
+      let loaderData = init.hydrationData ? init.hydrationData.loaderData : null;
+      let errors = init.hydrationData ? init.hydrationData.errors : null;
+      if (errors) {
+        let idx = initialMatches.findIndex((m) => errors[m.route.id] !== undefined);
+        initialized = initialMatches.slice(0, idx + 1).every((m) => !shouldLoadRouteOnHydration(m.route, loaderData, errors));
+      } else {
+        initialized = initialMatches.every((m) => !shouldLoadRouteOnHydration(m.route, loaderData, errors));
+      }
+    }
+    let router2;
+    let state = {
+      historyAction: init.history.action,
+      location: init.history.location,
+      matches: initialMatches,
+      initialized,
+      navigation: IDLE_NAVIGATION,
+      restoreScrollPosition: init.hydrationData != null ? false : null,
+      preventScrollReset: false,
+      revalidation: "idle",
+      loaderData: init.hydrationData && init.hydrationData.loaderData || {},
+      actionData: init.hydrationData && init.hydrationData.actionData || null,
+      errors: init.hydrationData && init.hydrationData.errors || initialErrors,
+      fetchers: /* @__PURE__ */ new Map,
+      blockers: /* @__PURE__ */ new Map
+    };
+    let pendingAction = "POP";
+    let pendingPreventScrollReset = false;
+    let pendingNavigationController;
+    let pendingViewTransitionEnabled = false;
+    let appliedViewTransitions = /* @__PURE__ */ new Map;
+    let removePageHideEventListener = null;
+    let isUninterruptedRevalidation = false;
+    let isRevalidationRequired = false;
+    let cancelledFetcherLoads = /* @__PURE__ */ new Set;
+    let fetchControllers = /* @__PURE__ */ new Map;
+    let incrementingLoadId = 0;
+    let pendingNavigationLoadId = -1;
+    let fetchReloadIds = /* @__PURE__ */ new Map;
+    let fetchRedirectIds = /* @__PURE__ */ new Set;
+    let fetchLoadMatches = /* @__PURE__ */ new Map;
+    let activeFetchers = /* @__PURE__ */ new Map;
+    let fetchersQueuedForDeletion = /* @__PURE__ */ new Set;
+    let blockerFunctions = /* @__PURE__ */ new Map;
+    let unblockBlockerHistoryUpdate = undefined;
+    let pendingRevalidationDfd = null;
+    function initialize() {
+      unlistenHistory = init.history.listen(({ action: historyAction, location: location2, delta }) => {
+        if (unblockBlockerHistoryUpdate) {
+          unblockBlockerHistoryUpdate();
+          unblockBlockerHistoryUpdate = undefined;
+          return;
+        }
+        warning(blockerFunctions.size === 0 || delta != null, "You are trying to use a blocker on a POP navigation to a location that was not created by @remix-run/router. This will fail silently in production. This can happen if you are navigating outside the router via `window.history.pushState`/`window.location.hash` instead of using router navigation APIs.  This can also happen if you are using createHashRouter and the user manually changes the URL.");
+        let blockerKey = shouldBlockNavigation({
+          currentLocation: state.location,
+          nextLocation: location2,
+          historyAction
+        });
+        if (blockerKey && delta != null) {
+          let nextHistoryUpdatePromise = new Promise((resolve) => {
+            unblockBlockerHistoryUpdate = resolve;
+          });
+          init.history.go(delta * -1);
+          updateBlocker(blockerKey, {
+            state: "blocked",
+            location: location2,
+            proceed() {
+              updateBlocker(blockerKey, {
+                state: "proceeding",
+                proceed: undefined,
+                reset: undefined,
+                location: location2
+              });
+              nextHistoryUpdatePromise.then(() => init.history.go(delta));
+            },
+            reset() {
+              let blockers = new Map(state.blockers);
+              blockers.set(blockerKey, IDLE_BLOCKER);
+              updateState({ blockers });
+            }
+          });
+          return;
+        }
+        return startNavigation(historyAction, location2);
+      });
+      if (isBrowser) {
+        restoreAppliedTransitions(routerWindow, appliedViewTransitions);
+        let _saveAppliedTransitions = () => persistAppliedTransitions(routerWindow, appliedViewTransitions);
+        routerWindow.addEventListener("pagehide", _saveAppliedTransitions);
+        removePageHideEventListener = () => routerWindow.removeEventListener("pagehide", _saveAppliedTransitions);
+      }
+      if (!state.initialized) {
+        startNavigation("POP", state.location, {
+          initialHydration: true
+        });
+      }
+      return router2;
+    }
+    function dispose() {
+      if (unlistenHistory) {
+        unlistenHistory();
+      }
+      if (removePageHideEventListener) {
+        removePageHideEventListener();
+      }
+      subscribers.clear();
+      pendingNavigationController && pendingNavigationController.abort();
+      state.fetchers.forEach((_, key) => deleteFetcher(key));
+      state.blockers.forEach((_, key) => deleteBlocker(key));
+    }
+    function subscribe(fn) {
+      subscribers.add(fn);
+      return () => subscribers.delete(fn);
+    }
+    function updateState(newState, opts = {}) {
+      state = {
+        ...state,
+        ...newState
+      };
+      let unmountedFetchers = [];
+      let mountedFetchers = [];
+      state.fetchers.forEach((fetcher, key) => {
+        if (fetcher.state === "idle") {
+          if (fetchersQueuedForDeletion.has(key)) {
+            unmountedFetchers.push(key);
+          } else {
+            mountedFetchers.push(key);
+          }
+        }
+      });
+      fetchersQueuedForDeletion.forEach((key) => {
+        if (!state.fetchers.has(key) && !fetchControllers.has(key)) {
+          unmountedFetchers.push(key);
+        }
+      });
+      [...subscribers].forEach((subscriber) => subscriber(state, {
+        deletedFetchers: unmountedFetchers,
+        viewTransitionOpts: opts.viewTransitionOpts,
+        flushSync: opts.flushSync === true
+      }));
+      unmountedFetchers.forEach((key) => deleteFetcher(key));
+      mountedFetchers.forEach((key) => state.fetchers.delete(key));
+    }
+    function completeNavigation(location2, newState, { flushSync: flushSync2 } = {}) {
+      let isActionReload = state.actionData != null && state.navigation.formMethod != null && isMutationMethod(state.navigation.formMethod) && state.navigation.state === "loading" && location2.state?._isRedirect !== true;
+      let actionData;
+      if (newState.actionData) {
+        if (Object.keys(newState.actionData).length > 0) {
+          actionData = newState.actionData;
+        } else {
+          actionData = null;
+        }
+      } else if (isActionReload) {
+        actionData = state.actionData;
+      } else {
+        actionData = null;
+      }
+      let loaderData = newState.loaderData ? mergeLoaderData(state.loaderData, newState.loaderData, newState.matches || [], newState.errors) : state.loaderData;
+      let blockers = state.blockers;
+      if (blockers.size > 0) {
+        blockers = new Map(blockers);
+        blockers.forEach((_, k) => blockers.set(k, IDLE_BLOCKER));
+      }
+      let preventScrollReset = pendingPreventScrollReset === true || state.navigation.formMethod != null && isMutationMethod(state.navigation.formMethod) && location2.state?._isRedirect !== true;
+      if (inFlightDataRoutes) {
+        dataRoutes = inFlightDataRoutes;
+        inFlightDataRoutes = undefined;
+      }
+      if (isUninterruptedRevalidation) {
+      } else if (pendingAction === "POP") {
+      } else if (pendingAction === "PUSH") {
+        init.history.push(location2, location2.state);
+      } else if (pendingAction === "REPLACE") {
+        init.history.replace(location2, location2.state);
+      }
+      let viewTransitionOpts;
+      if (pendingAction === "POP") {
+        let priorPaths = appliedViewTransitions.get(state.location.pathname);
+        if (priorPaths && priorPaths.has(location2.pathname)) {
+          viewTransitionOpts = {
+            currentLocation: state.location,
+            nextLocation: location2
+          };
+        } else if (appliedViewTransitions.has(location2.pathname)) {
+          viewTransitionOpts = {
+            currentLocation: location2,
+            nextLocation: state.location
+          };
+        }
+      } else if (pendingViewTransitionEnabled) {
+        let toPaths = appliedViewTransitions.get(state.location.pathname);
+        if (toPaths) {
+          toPaths.add(location2.pathname);
+        } else {
+          toPaths = /* @__PURE__ */ new Set([location2.pathname]);
+          appliedViewTransitions.set(state.location.pathname, toPaths);
+        }
+        viewTransitionOpts = {
+          currentLocation: state.location,
+          nextLocation: location2
+        };
+      }
+      updateState({
+        ...newState,
+        actionData,
+        loaderData,
+        historyAction: pendingAction,
+        location: location2,
+        initialized: true,
+        navigation: IDLE_NAVIGATION,
+        revalidation: "idle",
+        restoreScrollPosition: getSavedScrollPosition(location2, newState.matches || state.matches),
+        preventScrollReset,
+        blockers
+      }, {
+        viewTransitionOpts,
+        flushSync: flushSync2 === true
+      });
+      pendingAction = "POP";
+      pendingPreventScrollReset = false;
+      pendingViewTransitionEnabled = false;
+      isUninterruptedRevalidation = false;
+      isRevalidationRequired = false;
+      pendingRevalidationDfd?.resolve();
+      pendingRevalidationDfd = null;
+    }
+    async function navigate(to, opts) {
+      if (typeof to === "number") {
+        init.history.go(to);
+        return;
+      }
+      let normalizedPath = normalizeTo(state.location, state.matches, basename, to, opts?.fromRouteId, opts?.relative);
+      let { path, submission, error } = normalizeNavigateOptions(false, normalizedPath, opts);
+      let currentLocation = state.location;
+      let nextLocation = createLocation(state.location, path, opts && opts.state);
+      nextLocation = {
+        ...nextLocation,
+        ...init.history.encodeLocation(nextLocation)
+      };
+      let userReplace = opts && opts.replace != null ? opts.replace : undefined;
+      let historyAction = "PUSH";
+      if (userReplace === true) {
+        historyAction = "REPLACE";
+      } else if (userReplace === false) {
+      } else if (submission != null && isMutationMethod(submission.formMethod) && submission.formAction === state.location.pathname + state.location.search) {
+        historyAction = "REPLACE";
+      }
+      let preventScrollReset = opts && "preventScrollReset" in opts ? opts.preventScrollReset === true : undefined;
+      let flushSync2 = (opts && opts.flushSync) === true;
+      let blockerKey = shouldBlockNavigation({
+        currentLocation,
+        nextLocation,
+        historyAction
+      });
+      if (blockerKey) {
+        updateBlocker(blockerKey, {
+          state: "blocked",
+          location: nextLocation,
+          proceed() {
+            updateBlocker(blockerKey, {
+              state: "proceeding",
+              proceed: undefined,
+              reset: undefined,
+              location: nextLocation
+            });
+            navigate(to, opts);
+          },
+          reset() {
+            let blockers = new Map(state.blockers);
+            blockers.set(blockerKey, IDLE_BLOCKER);
+            updateState({ blockers });
+          }
+        });
+        return;
+      }
+      await startNavigation(historyAction, nextLocation, {
+        submission,
+        pendingError: error,
+        preventScrollReset,
+        replace: opts && opts.replace,
+        enableViewTransition: opts && opts.viewTransition,
+        flushSync: flushSync2
+      });
+    }
+    function revalidate() {
+      if (!pendingRevalidationDfd) {
+        pendingRevalidationDfd = createDeferred();
+      }
+      interruptActiveLoads();
+      updateState({ revalidation: "loading" });
+      let promise = pendingRevalidationDfd.promise;
+      if (state.navigation.state === "submitting") {
+        return promise;
+      }
+      if (state.navigation.state === "idle") {
+        startNavigation(state.historyAction, state.location, {
+          startUninterruptedRevalidation: true
+        });
+        return promise;
+      }
+      startNavigation(pendingAction || state.historyAction, state.navigation.location, {
+        overrideNavigation: state.navigation,
+        enableViewTransition: pendingViewTransitionEnabled === true
+      });
+      return promise;
+    }
+    async function startNavigation(historyAction, location2, opts) {
+      pendingNavigationController && pendingNavigationController.abort();
+      pendingNavigationController = null;
+      pendingAction = historyAction;
+      isUninterruptedRevalidation = (opts && opts.startUninterruptedRevalidation) === true;
+      saveScrollPosition(state.location, state.matches);
+      pendingPreventScrollReset = (opts && opts.preventScrollReset) === true;
+      pendingViewTransitionEnabled = (opts && opts.enableViewTransition) === true;
+      let routesToUse = inFlightDataRoutes || dataRoutes;
+      let loadingNavigation = opts && opts.overrideNavigation;
+      let matches = opts?.initialHydration && state.matches && state.matches.length > 0 && !initialMatchesIsFOW ? state.matches : matchRoutes(routesToUse, location2, basename);
+      let flushSync2 = (opts && opts.flushSync) === true;
+      if (matches && state.initialized && !isRevalidationRequired && isHashChangeOnly(state.location, location2) && !(opts && opts.submission && isMutationMethod(opts.submission.formMethod))) {
+        completeNavigation(location2, { matches }, { flushSync: flushSync2 });
+        return;
+      }
+      let fogOfWar = checkFogOfWar(matches, routesToUse, location2.pathname);
+      if (fogOfWar.active && fogOfWar.matches) {
+        matches = fogOfWar.matches;
+      }
+      if (!matches) {
+        let { error, notFoundMatches, route } = handleNavigational404(location2.pathname);
+        completeNavigation(location2, {
+          matches: notFoundMatches,
+          loaderData: {},
+          errors: {
+            [route.id]: error
+          }
+        }, { flushSync: flushSync2 });
+        return;
+      }
+      pendingNavigationController = new AbortController;
+      let request = createClientSideRequest(init.history, location2, pendingNavigationController.signal, opts && opts.submission);
+      let scopedContext = new unstable_RouterContextProvider(init.unstable_getContext ? await init.unstable_getContext() : undefined);
+      let pendingActionResult;
+      if (opts && opts.pendingError) {
+        pendingActionResult = [
+          findNearestBoundary(matches).route.id,
+          { type: "error", error: opts.pendingError }
+        ];
+      } else if (opts && opts.submission && isMutationMethod(opts.submission.formMethod)) {
+        let actionResult = await handleAction(request, location2, opts.submission, matches, scopedContext, fogOfWar.active, opts && opts.initialHydration === true, { replace: opts.replace, flushSync: flushSync2 });
+        if (actionResult.shortCircuited) {
+          return;
+        }
+        if (actionResult.pendingActionResult) {
+          let [routeId, result] = actionResult.pendingActionResult;
+          if (isErrorResult(result) && isRouteErrorResponse(result.error) && result.error.status === 404) {
+            pendingNavigationController = null;
+            completeNavigation(location2, {
+              matches: actionResult.matches,
+              loaderData: {},
+              errors: {
+                [routeId]: result.error
+              }
+            });
+            return;
+          }
+        }
+        matches = actionResult.matches || matches;
+        pendingActionResult = actionResult.pendingActionResult;
+        loadingNavigation = getLoadingNavigation(location2, opts.submission);
+        flushSync2 = false;
+        fogOfWar.active = false;
+        request = createClientSideRequest(init.history, request.url, request.signal);
+      }
+      let {
+        shortCircuited,
+        matches: updatedMatches,
+        loaderData,
+        errors
+      } = await handleLoaders(request, location2, matches, scopedContext, fogOfWar.active, loadingNavigation, opts && opts.submission, opts && opts.fetcherSubmission, opts && opts.replace, opts && opts.initialHydration === true, flushSync2, pendingActionResult);
+      if (shortCircuited) {
+        return;
+      }
+      pendingNavigationController = null;
+      completeNavigation(location2, {
+        matches: updatedMatches || matches,
+        ...getActionDataForCommit(pendingActionResult),
+        loaderData,
+        errors
+      });
+    }
+    async function handleAction(request, location2, submission, matches, scopedContext, isFogOfWar, initialHydration, opts = {}) {
+      interruptActiveLoads();
+      let navigation = getSubmittingNavigation(location2, submission);
+      updateState({ navigation }, { flushSync: opts.flushSync === true });
+      if (isFogOfWar) {
+        let discoverResult = await discoverRoutes(matches, location2.pathname, request.signal);
+        if (discoverResult.type === "aborted") {
+          return { shortCircuited: true };
+        } else if (discoverResult.type === "error") {
+          let boundaryId = findNearestBoundary(discoverResult.partialMatches).route.id;
+          return {
+            matches: discoverResult.partialMatches,
+            pendingActionResult: [
+              boundaryId,
+              {
+                type: "error",
+                error: discoverResult.error
+              }
+            ]
+          };
+        } else if (!discoverResult.matches) {
+          let { notFoundMatches, error, route } = handleNavigational404(location2.pathname);
+          return {
+            matches: notFoundMatches,
+            pendingActionResult: [
+              route.id,
+              {
+                type: "error",
+                error
+              }
+            ]
+          };
+        } else {
+          matches = discoverResult.matches;
+        }
+      }
+      let result;
+      let actionMatch = getTargetMatch(matches, location2);
+      if (!actionMatch.route.action && !actionMatch.route.lazy) {
+        result = {
+          type: "error",
+          error: getInternalRouterError(405, {
+            method: request.method,
+            pathname: location2.pathname,
+            routeId: actionMatch.route.id
+          })
+        };
+      } else {
+        let dsMatches = getTargetedDataStrategyMatches(mapRouteProperties2, manifest, request, matches, actionMatch, initialHydration ? [] : hydrationRouteProperties2, scopedContext);
+        let results = await callDataStrategy(request, dsMatches, scopedContext, null);
+        result = results[actionMatch.route.id];
+        if (!result) {
+          for (let match of matches) {
+            if (results[match.route.id]) {
+              result = results[match.route.id];
+              break;
+            }
+          }
+        }
+        if (request.signal.aborted) {
+          return { shortCircuited: true };
+        }
+      }
+      if (isRedirectResult(result)) {
+        let replace;
+        if (opts && opts.replace != null) {
+          replace = opts.replace;
+        } else {
+          let location22 = normalizeRedirectLocation(result.response.headers.get("Location"), new URL(request.url), basename);
+          replace = location22 === state.location.pathname + state.location.search;
+        }
+        await startRedirectNavigation(request, result, true, {
+          submission,
+          replace
+        });
+        return { shortCircuited: true };
+      }
+      if (isErrorResult(result)) {
+        let boundaryMatch = findNearestBoundary(matches, actionMatch.route.id);
+        if ((opts && opts.replace) !== true) {
+          pendingAction = "PUSH";
+        }
+        return {
+          matches,
+          pendingActionResult: [
+            boundaryMatch.route.id,
+            result,
+            actionMatch.route.id
+          ]
+        };
+      }
+      return {
+        matches,
+        pendingActionResult: [actionMatch.route.id, result]
+      };
+    }
+    async function handleLoaders(request, location2, matches, scopedContext, isFogOfWar, overrideNavigation, submission, fetcherSubmission, replace, initialHydration, flushSync2, pendingActionResult) {
+      let loadingNavigation = overrideNavigation || getLoadingNavigation(location2, submission);
+      let activeSubmission = submission || fetcherSubmission || getSubmissionFromNavigation(loadingNavigation);
+      let shouldUpdateNavigationState = !isUninterruptedRevalidation && !initialHydration;
+      if (isFogOfWar) {
+        if (shouldUpdateNavigationState) {
+          let actionData = getUpdatedActionData(pendingActionResult);
+          updateState({
+            navigation: loadingNavigation,
+            ...actionData !== undefined ? { actionData } : {}
+          }, {
+            flushSync: flushSync2
+          });
+        }
+        let discoverResult = await discoverRoutes(matches, location2.pathname, request.signal);
+        if (discoverResult.type === "aborted") {
+          return { shortCircuited: true };
+        } else if (discoverResult.type === "error") {
+          let boundaryId = findNearestBoundary(discoverResult.partialMatches).route.id;
+          return {
+            matches: discoverResult.partialMatches,
+            loaderData: {},
+            errors: {
+              [boundaryId]: discoverResult.error
+            }
+          };
+        } else if (!discoverResult.matches) {
+          let { error, notFoundMatches, route } = handleNavigational404(location2.pathname);
+          return {
+            matches: notFoundMatches,
+            loaderData: {},
+            errors: {
+              [route.id]: error
+            }
+          };
+        } else {
+          matches = discoverResult.matches;
+        }
+      }
+      let routesToUse = inFlightDataRoutes || dataRoutes;
+      let { dsMatches, revalidatingFetchers } = getMatchesToLoad(request, scopedContext, mapRouteProperties2, manifest, init.history, state, matches, activeSubmission, location2, initialHydration ? [] : hydrationRouteProperties2, initialHydration === true, isRevalidationRequired, cancelledFetcherLoads, fetchersQueuedForDeletion, fetchLoadMatches, fetchRedirectIds, routesToUse, basename, pendingActionResult);
+      pendingNavigationLoadId = ++incrementingLoadId;
+      if (!init.dataStrategy && !dsMatches.some((m) => m.shouldLoad) && revalidatingFetchers.length === 0) {
+        let updatedFetchers2 = markFetchRedirectsDone();
+        completeNavigation(location2, {
+          matches,
+          loaderData: {},
+          errors: pendingActionResult && isErrorResult(pendingActionResult[1]) ? { [pendingActionResult[0]]: pendingActionResult[1].error } : null,
+          ...getActionDataForCommit(pendingActionResult),
+          ...updatedFetchers2 ? { fetchers: new Map(state.fetchers) } : {}
+        }, { flushSync: flushSync2 });
+        return { shortCircuited: true };
+      }
+      if (shouldUpdateNavigationState) {
+        let updates = {};
+        if (!isFogOfWar) {
+          updates.navigation = loadingNavigation;
+          let actionData = getUpdatedActionData(pendingActionResult);
+          if (actionData !== undefined) {
+            updates.actionData = actionData;
+          }
+        }
+        if (revalidatingFetchers.length > 0) {
+          updates.fetchers = getUpdatedRevalidatingFetchers(revalidatingFetchers);
+        }
+        updateState(updates, { flushSync: flushSync2 });
+      }
+      revalidatingFetchers.forEach((rf) => {
+        abortFetcher(rf.key);
+        if (rf.controller) {
+          fetchControllers.set(rf.key, rf.controller);
+        }
+      });
+      let abortPendingFetchRevalidations = () => revalidatingFetchers.forEach((f) => abortFetcher(f.key));
+      if (pendingNavigationController) {
+        pendingNavigationController.signal.addEventListener("abort", abortPendingFetchRevalidations);
+      }
+      let { loaderResults, fetcherResults } = await callLoadersAndMaybeResolveData(dsMatches, revalidatingFetchers, request, scopedContext);
+      if (request.signal.aborted) {
+        return { shortCircuited: true };
+      }
+      if (pendingNavigationController) {
+        pendingNavigationController.signal.removeEventListener("abort", abortPendingFetchRevalidations);
+      }
+      revalidatingFetchers.forEach((rf) => fetchControllers.delete(rf.key));
+      let redirect2 = findRedirect(loaderResults);
+      if (redirect2) {
+        await startRedirectNavigation(request, redirect2.result, true, {
+          replace
+        });
+        return { shortCircuited: true };
+      }
+      redirect2 = findRedirect(fetcherResults);
+      if (redirect2) {
+        fetchRedirectIds.add(redirect2.key);
+        await startRedirectNavigation(request, redirect2.result, true, {
+          replace
+        });
+        return { shortCircuited: true };
+      }
+      let { loaderData, errors } = processLoaderData(state, matches, loaderResults, pendingActionResult, revalidatingFetchers, fetcherResults);
+      if (initialHydration && state.errors) {
+        errors = { ...state.errors, ...errors };
+      }
+      let updatedFetchers = markFetchRedirectsDone();
+      let didAbortFetchLoads = abortStaleFetchLoads(pendingNavigationLoadId);
+      let shouldUpdateFetchers = updatedFetchers || didAbortFetchLoads || revalidatingFetchers.length > 0;
+      return {
+        matches,
+        loaderData,
+        errors,
+        ...shouldUpdateFetchers ? { fetchers: new Map(state.fetchers) } : {}
+      };
+    }
+    function getUpdatedActionData(pendingActionResult) {
+      if (pendingActionResult && !isErrorResult(pendingActionResult[1])) {
+        return {
+          [pendingActionResult[0]]: pendingActionResult[1].data
+        };
+      } else if (state.actionData) {
+        if (Object.keys(state.actionData).length === 0) {
+          return null;
+        } else {
+          return state.actionData;
+        }
+      }
+    }
+    function getUpdatedRevalidatingFetchers(revalidatingFetchers) {
+      revalidatingFetchers.forEach((rf) => {
+        let fetcher = state.fetchers.get(rf.key);
+        let revalidatingFetcher = getLoadingFetcher(undefined, fetcher ? fetcher.data : undefined);
+        state.fetchers.set(rf.key, revalidatingFetcher);
+      });
+      return new Map(state.fetchers);
+    }
+    async function fetch2(key, routeId, href, opts) {
+      abortFetcher(key);
+      let flushSync2 = (opts && opts.flushSync) === true;
+      let routesToUse = inFlightDataRoutes || dataRoutes;
+      let normalizedPath = normalizeTo(state.location, state.matches, basename, href, routeId, opts?.relative);
+      let matches = matchRoutes(routesToUse, normalizedPath, basename);
+      let fogOfWar = checkFogOfWar(matches, routesToUse, normalizedPath);
+      if (fogOfWar.active && fogOfWar.matches) {
+        matches = fogOfWar.matches;
+      }
+      if (!matches) {
+        setFetcherError(key, routeId, getInternalRouterError(404, { pathname: normalizedPath }), { flushSync: flushSync2 });
+        return;
+      }
+      let { path, submission, error } = normalizeNavigateOptions(true, normalizedPath, opts);
+      if (error) {
+        setFetcherError(key, routeId, error, { flushSync: flushSync2 });
+        return;
+      }
+      let match = getTargetMatch(matches, path);
+      let scopedContext = new unstable_RouterContextProvider(init.unstable_getContext ? await init.unstable_getContext() : undefined);
+      let preventScrollReset = (opts && opts.preventScrollReset) === true;
+      if (submission && isMutationMethod(submission.formMethod)) {
+        await handleFetcherAction(key, routeId, path, match, matches, scopedContext, fogOfWar.active, flushSync2, preventScrollReset, submission);
+        return;
+      }
+      fetchLoadMatches.set(key, { routeId, path });
+      await handleFetcherLoader(key, routeId, path, match, matches, scopedContext, fogOfWar.active, flushSync2, preventScrollReset, submission);
+    }
+    async function handleFetcherAction(key, routeId, path, match, requestMatches, scopedContext, isFogOfWar, flushSync2, preventScrollReset, submission) {
+      interruptActiveLoads();
+      fetchLoadMatches.delete(key);
+      function detectAndHandle405Error(m) {
+        if (!m.route.action && !m.route.lazy) {
+          let error = getInternalRouterError(405, {
+            method: submission.formMethod,
+            pathname: path,
+            routeId
+          });
+          setFetcherError(key, routeId, error, { flushSync: flushSync2 });
+          return true;
+        }
         return false;
       }
-      if (isNew(match, index) || matchPathChanged(match, index)) {
-        return true;
-      }
-      if (match.route.shouldRevalidate) {
-        let routeChoice = match.route.shouldRevalidate({
-          currentUrl: new URL(location2.pathname + location2.search + location2.hash, window.origin),
-          currentParams: currentMatches[0]?.params || {},
-          nextUrl: new URL(page, window.origin),
-          nextParams: match.params,
-          defaultShouldRevalidate: true
-        });
-        if (typeof routeChoice === "boolean") {
-          return routeChoice;
-        }
-      }
-      return true;
-    });
-  }
-  return [];
-}
-function getModuleLinkHrefs(matches, manifest, { includeHydrateFallback } = {}) {
-  return dedupeHrefs(matches.map((match) => {
-    let route = manifest.routes[match.route.id];
-    if (!route)
-      return [];
-    let hrefs = [route.module];
-    if (route.clientActionModule) {
-      hrefs = hrefs.concat(route.clientActionModule);
-    }
-    if (route.clientLoaderModule) {
-      hrefs = hrefs.concat(route.clientLoaderModule);
-    }
-    if (includeHydrateFallback && route.hydrateFallbackModule) {
-      hrefs = hrefs.concat(route.hydrateFallbackModule);
-    }
-    if (route.imports) {
-      hrefs = hrefs.concat(route.imports);
-    }
-    return hrefs;
-  }).flat(1));
-}
-function dedupeHrefs(hrefs) {
-  return [...new Set(hrefs)];
-}
-function sortKeys(obj) {
-  let sorted = {};
-  let keys = Object.keys(obj).sort();
-  for (let key of keys) {
-    sorted[key] = obj[key];
-  }
-  return sorted;
-}
-function dedupeLinkDescriptors(descriptors, preloads) {
-  let set = /* @__PURE__ */ new Set;
-  let preloadsSet = new Set(preloads);
-  return descriptors.reduce((deduped, descriptor) => {
-    let alreadyModulePreload = preloads && !isPageLinkDescriptor(descriptor) && descriptor.as === "script" && descriptor.href && preloadsSet.has(descriptor.href);
-    if (alreadyModulePreload) {
-      return deduped;
-    }
-    let key = JSON.stringify(sortKeys(descriptor));
-    if (!set.has(key)) {
-      set.add(key);
-      deduped.push({ key, link: descriptor });
-    }
-    return deduped;
-  }, []);
-}
-var SingleFetchRedirectSymbol = Symbol("SingleFetchRedirect");
-var NO_BODY_STATUS_CODES = /* @__PURE__ */ new Set([100, 101, 204, 205]);
-function singleFetchUrl(reqUrl, basename) {
-  let url = typeof reqUrl === "string" ? new URL(reqUrl, typeof window === "undefined" ? "server://singlefetch/" : window.location.origin) : reqUrl;
-  if (url.pathname === "/") {
-    url.pathname = "_root.data";
-  } else if (basename && stripBasename(url.pathname, basename) === "/") {
-    url.pathname = `${basename.replace(/\/$/, "")}/_root.data`;
-  } else {
-    url.pathname = `${url.pathname.replace(/\/$/, "")}.data`;
-  }
-  return url;
-}
-function useDataRouterContext2() {
-  let context = React9.useContext(DataRouterContext);
-  invariant2(context, "You must render this element inside a <DataRouterContext.Provider> element");
-  return context;
-}
-function useDataRouterStateContext() {
-  let context = React9.useContext(DataRouterStateContext);
-  invariant2(context, "You must render this element inside a <DataRouterStateContext.Provider> element");
-  return context;
-}
-var FrameworkContext = React9.createContext(undefined);
-FrameworkContext.displayName = "FrameworkContext";
-function useFrameworkContext() {
-  let context = React9.useContext(FrameworkContext);
-  invariant2(context, "You must render this element inside a <HydratedRouter> element");
-  return context;
-}
-function usePrefetchBehavior(prefetch, theirElementProps) {
-  let frameworkContext = React9.useContext(FrameworkContext);
-  let [maybePrefetch, setMaybePrefetch] = React9.useState(false);
-  let [shouldPrefetch, setShouldPrefetch] = React9.useState(false);
-  let { onFocus, onBlur, onMouseEnter, onMouseLeave, onTouchStart } = theirElementProps;
-  let ref = React9.useRef(null);
-  React9.useEffect(() => {
-    if (prefetch === "render") {
-      setShouldPrefetch(true);
-    }
-    if (prefetch === "viewport") {
-      let callback = (entries) => {
-        entries.forEach((entry) => {
-          setShouldPrefetch(entry.isIntersecting);
-        });
-      };
-      let observer = new IntersectionObserver(callback, { threshold: 0.5 });
-      if (ref.current)
-        observer.observe(ref.current);
-      return () => {
-        observer.disconnect();
-      };
-    }
-  }, [prefetch]);
-  React9.useEffect(() => {
-    if (maybePrefetch) {
-      let id = setTimeout(() => {
-        setShouldPrefetch(true);
-      }, 100);
-      return () => {
-        clearTimeout(id);
-      };
-    }
-  }, [maybePrefetch]);
-  let setIntent = () => {
-    setMaybePrefetch(true);
-  };
-  let cancelIntent = () => {
-    setMaybePrefetch(false);
-    setShouldPrefetch(false);
-  };
-  if (!frameworkContext) {
-    return [false, ref, {}];
-  }
-  if (prefetch !== "intent") {
-    return [shouldPrefetch, ref, {}];
-  }
-  return [
-    shouldPrefetch,
-    ref,
-    {
-      onFocus: composeEventHandlers(onFocus, setIntent),
-      onBlur: composeEventHandlers(onBlur, cancelIntent),
-      onMouseEnter: composeEventHandlers(onMouseEnter, setIntent),
-      onMouseLeave: composeEventHandlers(onMouseLeave, cancelIntent),
-      onTouchStart: composeEventHandlers(onTouchStart, setIntent)
-    }
-  ];
-}
-function composeEventHandlers(theirHandler, ourHandler) {
-  return (event) => {
-    theirHandler && theirHandler(event);
-    if (!event.defaultPrevented) {
-      ourHandler(event);
-    }
-  };
-}
-function PrefetchPageLinks({
-  page,
-  ...dataLinkProps
-}) {
-  let { router } = useDataRouterContext2();
-  let matches = React9.useMemo(() => matchRoutes(router.routes, page, router.basename), [router.routes, page, router.basename]);
-  if (!matches) {
-    return null;
-  }
-  return /* @__PURE__ */ React9.createElement(PrefetchPageLinksImpl, { page, matches, ...dataLinkProps });
-}
-function useKeyedPrefetchLinks(matches) {
-  let { manifest, routeModules } = useFrameworkContext();
-  let [keyedPrefetchLinks, setKeyedPrefetchLinks] = React9.useState([]);
-  React9.useEffect(() => {
-    let interrupted = false;
-    getKeyedPrefetchLinks(matches, manifest, routeModules).then((links) => {
-      if (!interrupted) {
-        setKeyedPrefetchLinks(links);
-      }
-    });
-    return () => {
-      interrupted = true;
-    };
-  }, [matches, manifest, routeModules]);
-  return keyedPrefetchLinks;
-}
-function PrefetchPageLinksImpl({
-  page,
-  matches: nextMatches,
-  ...linkProps
-}) {
-  let location2 = useLocation();
-  let { manifest, routeModules } = useFrameworkContext();
-  let { basename } = useDataRouterContext2();
-  let { loaderData, matches } = useDataRouterStateContext();
-  let newMatchesForData = React9.useMemo(() => getNewMatchesForLinks(page, nextMatches, matches, manifest, location2, "data"), [page, nextMatches, matches, manifest, location2]);
-  let newMatchesForAssets = React9.useMemo(() => getNewMatchesForLinks(page, nextMatches, matches, manifest, location2, "assets"), [page, nextMatches, matches, manifest, location2]);
-  let dataHrefs = React9.useMemo(() => {
-    if (page === location2.pathname + location2.search + location2.hash) {
-      return [];
-    }
-    let routesParams = /* @__PURE__ */ new Set;
-    let foundOptOutRoute = false;
-    nextMatches.forEach((m) => {
-      let manifestRoute = manifest.routes[m.route.id];
-      if (!manifestRoute || !manifestRoute.hasLoader) {
+      if (!isFogOfWar && detectAndHandle405Error(match)) {
         return;
       }
-      if (!newMatchesForData.some((m2) => m2.route.id === m.route.id) && m.route.id in loaderData && routeModules[m.route.id]?.shouldRevalidate) {
-        foundOptOutRoute = true;
-      } else if (manifestRoute.hasClientLoader) {
-        foundOptOutRoute = true;
-      } else {
-        routesParams.add(m.route.id);
-      }
-    });
-    if (routesParams.size === 0) {
-      return [];
-    }
-    let url = singleFetchUrl(page, basename);
-    if (foundOptOutRoute && routesParams.size > 0) {
-      url.searchParams.set("_routes", nextMatches.filter((m) => routesParams.has(m.route.id)).map((m) => m.route.id).join(","));
-    }
-    return [url.pathname + url.search];
-  }, [
-    basename,
-    loaderData,
-    location2,
-    manifest,
-    newMatchesForData,
-    nextMatches,
-    page,
-    routeModules
-  ]);
-  let moduleHrefs = React9.useMemo(() => getModuleLinkHrefs(newMatchesForAssets, manifest), [newMatchesForAssets, manifest]);
-  let keyedPrefetchLinks = useKeyedPrefetchLinks(newMatchesForAssets);
-  return /* @__PURE__ */ React9.createElement(React9.Fragment, null, dataHrefs.map((href2) => /* @__PURE__ */ React9.createElement("link", { key: href2, rel: "prefetch", as: "fetch", href: href2, ...linkProps })), moduleHrefs.map((href2) => /* @__PURE__ */ React9.createElement("link", { key: href2, rel: "modulepreload", href: href2, ...linkProps })), keyedPrefetchLinks.map(({ key, link }) => /* @__PURE__ */ React9.createElement("link", { key, ...link })));
-}
-function mergeRefs(...refs) {
-  return (value) => {
-    refs.forEach((ref) => {
-      if (typeof ref === "function") {
-        ref(value);
-      } else if (ref != null) {
-        ref.current = value;
-      }
-    });
-  };
-}
-var isBrowser = typeof window !== "undefined" && typeof window.document !== "undefined" && typeof window.document.createElement !== "undefined";
-try {
-  if (isBrowser) {
-    window.__reactRouterVersion = "7.5.3";
-  }
-} catch (e) {
-}
-function BrowserRouter({
-  basename,
-  children,
-  window: window2
-}) {
-  let historyRef = React10.useRef();
-  if (historyRef.current == null) {
-    historyRef.current = createBrowserHistory({ window: window2, v5Compat: true });
-  }
-  let history = historyRef.current;
-  let [state, setStateImpl] = React10.useState({
-    action: history.action,
-    location: history.location
-  });
-  let setState = React10.useCallback((newState) => {
-    React10.startTransition(() => setStateImpl(newState));
-  }, [setStateImpl]);
-  React10.useLayoutEffect(() => history.listen(setState), [history, setState]);
-  return /* @__PURE__ */ React10.createElement(Router, {
-    basename,
-    children,
-    location: state.location,
-    navigationType: state.action,
-    navigator: history
-  });
-}
-function HistoryRouter({
-  basename,
-  children,
-  history
-}) {
-  let [state, setStateImpl] = React10.useState({
-    action: history.action,
-    location: history.location
-  });
-  let setState = React10.useCallback((newState) => {
-    React10.startTransition(() => setStateImpl(newState));
-  }, [setStateImpl]);
-  React10.useLayoutEffect(() => history.listen(setState), [history, setState]);
-  return /* @__PURE__ */ React10.createElement(Router, {
-    basename,
-    children,
-    location: state.location,
-    navigationType: state.action,
-    navigator: history
-  });
-}
-HistoryRouter.displayName = "unstable_HistoryRouter";
-var ABSOLUTE_URL_REGEX2 = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
-var Link = React10.forwardRef(function LinkWithRef({
-  onClick,
-  discover = "render",
-  prefetch = "none",
-  relative,
-  reloadDocument,
-  replace: replace2,
-  state,
-  target,
-  to,
-  preventScrollReset,
-  viewTransition,
-  ...rest
-}, forwardedRef) {
-  let { basename } = React10.useContext(NavigationContext);
-  let isAbsolute = typeof to === "string" && ABSOLUTE_URL_REGEX2.test(to);
-  let absoluteHref;
-  let isExternal = false;
-  if (typeof to === "string" && isAbsolute) {
-    absoluteHref = to;
-    if (isBrowser) {
-      try {
-        let currentUrl = new URL(window.location.href);
-        let targetUrl = to.startsWith("//") ? new URL(currentUrl.protocol + to) : new URL(to);
-        let path = stripBasename(targetUrl.pathname, basename);
-        if (targetUrl.origin === currentUrl.origin && path != null) {
-          to = path + targetUrl.search + targetUrl.hash;
+      let existingFetcher = state.fetchers.get(key);
+      updateFetcherState(key, getSubmittingFetcher(submission, existingFetcher), {
+        flushSync: flushSync2
+      });
+      let abortController = new AbortController;
+      let fetchRequest = createClientSideRequest(init.history, path, abortController.signal, submission);
+      if (isFogOfWar) {
+        let discoverResult = await discoverRoutes(requestMatches, path, fetchRequest.signal, key);
+        if (discoverResult.type === "aborted") {
+          return;
+        } else if (discoverResult.type === "error") {
+          setFetcherError(key, routeId, discoverResult.error, { flushSync: flushSync2 });
+          return;
+        } else if (!discoverResult.matches) {
+          setFetcherError(key, routeId, getInternalRouterError(404, { pathname: path }), { flushSync: flushSync2 });
+          return;
         } else {
-          isExternal = true;
+          requestMatches = discoverResult.matches;
+          match = getTargetMatch(requestMatches, path);
+          if (detectAndHandle405Error(match)) {
+            return;
+          }
         }
-      } catch (e) {
-        warning(false, `<Link to="${to}"> contains an invalid URL which will probably break when clicked - please update to a valid URL path.`);
       }
-    }
-  }
-  let href2 = useHref(to, { relative });
-  let [shouldPrefetch, prefetchRef, prefetchHandlers] = usePrefetchBehavior(prefetch, rest);
-  let internalOnClick = useLinkClickHandler(to, {
-    replace: replace2,
-    state,
-    target,
-    preventScrollReset,
-    relative,
-    viewTransition
-  });
-  function handleClick(event) {
-    if (onClick)
-      onClick(event);
-    if (!event.defaultPrevented) {
-      internalOnClick(event);
-    }
-  }
-  let link = /* @__PURE__ */ React10.createElement("a", {
-    ...rest,
-    ...prefetchHandlers,
-    href: absoluteHref || href2,
-    onClick: isExternal || reloadDocument ? onClick : handleClick,
-    ref: mergeRefs(forwardedRef, prefetchRef),
-    target,
-    "data-discover": !isAbsolute && discover === "render" ? "true" : undefined
-  });
-  return shouldPrefetch && !isAbsolute ? /* @__PURE__ */ React10.createElement(React10.Fragment, null, link, /* @__PURE__ */ React10.createElement(PrefetchPageLinks, { page: href2 })) : link;
-});
-Link.displayName = "Link";
-var NavLink = React10.forwardRef(function NavLinkWithRef({
-  "aria-current": ariaCurrentProp = "page",
-  caseSensitive = false,
-  className: classNameProp = "",
-  end = false,
-  style: styleProp,
-  to,
-  viewTransition,
-  children,
-  ...rest
-}, ref) {
-  let path = useResolvedPath(to, { relative: rest.relative });
-  let location2 = useLocation();
-  let routerState = React10.useContext(DataRouterStateContext);
-  let { navigator: navigator2, basename } = React10.useContext(NavigationContext);
-  let isTransitioning = routerState != null && useViewTransitionState(path) && viewTransition === true;
-  let toPathname = navigator2.encodeLocation ? navigator2.encodeLocation(path).pathname : path.pathname;
-  let locationPathname = location2.pathname;
-  let nextLocationPathname = routerState && routerState.navigation && routerState.navigation.location ? routerState.navigation.location.pathname : null;
-  if (!caseSensitive) {
-    locationPathname = locationPathname.toLowerCase();
-    nextLocationPathname = nextLocationPathname ? nextLocationPathname.toLowerCase() : null;
-    toPathname = toPathname.toLowerCase();
-  }
-  if (nextLocationPathname && basename) {
-    nextLocationPathname = stripBasename(nextLocationPathname, basename) || nextLocationPathname;
-  }
-  const endSlashPosition = toPathname !== "/" && toPathname.endsWith("/") ? toPathname.length - 1 : toPathname.length;
-  let isActive = locationPathname === toPathname || !end && locationPathname.startsWith(toPathname) && locationPathname.charAt(endSlashPosition) === "/";
-  let isPending = nextLocationPathname != null && (nextLocationPathname === toPathname || !end && nextLocationPathname.startsWith(toPathname) && nextLocationPathname.charAt(toPathname.length) === "/");
-  let renderProps = {
-    isActive,
-    isPending,
-    isTransitioning
-  };
-  let ariaCurrent = isActive ? ariaCurrentProp : undefined;
-  let className;
-  if (typeof classNameProp === "function") {
-    className = classNameProp(renderProps);
-  } else {
-    className = [
-      classNameProp,
-      isActive ? "active" : null,
-      isPending ? "pending" : null,
-      isTransitioning ? "transitioning" : null
-    ].filter(Boolean).join(" ");
-  }
-  let style = typeof styleProp === "function" ? styleProp(renderProps) : styleProp;
-  return /* @__PURE__ */ React10.createElement(Link, {
-    ...rest,
-    "aria-current": ariaCurrent,
-    className,
-    ref,
-    style,
-    to,
-    viewTransition
-  }, typeof children === "function" ? children(renderProps) : children);
-});
-NavLink.displayName = "NavLink";
-var Form = React10.forwardRef(({
-  discover = "render",
-  fetcherKey,
-  navigate,
-  reloadDocument,
-  replace: replace2,
-  state,
-  method = defaultMethod,
-  action,
-  onSubmit,
-  relative,
-  preventScrollReset,
-  viewTransition,
-  ...props
-}, forwardedRef) => {
-  let submit = useSubmit();
-  let formAction = useFormAction(action, { relative });
-  let formMethod = method.toLowerCase() === "get" ? "get" : "post";
-  let isAbsolute = typeof action === "string" && ABSOLUTE_URL_REGEX2.test(action);
-  let submitHandler = (event) => {
-    onSubmit && onSubmit(event);
-    if (event.defaultPrevented)
-      return;
-    event.preventDefault();
-    let submitter = event.nativeEvent.submitter;
-    let submitMethod = submitter?.getAttribute("formmethod") || method;
-    submit(submitter || event.currentTarget, {
-      fetcherKey,
-      method: submitMethod,
-      navigate,
-      replace: replace2,
-      state,
-      relative,
-      preventScrollReset,
-      viewTransition
-    });
-  };
-  return /* @__PURE__ */ React10.createElement("form", {
-    ref: forwardedRef,
-    method: formMethod,
-    action: formAction,
-    onSubmit: reloadDocument ? onSubmit : submitHandler,
-    ...props,
-    "data-discover": !isAbsolute && discover === "render" ? "true" : undefined
-  });
-});
-Form.displayName = "Form";
-function ScrollRestoration({
-  getKey,
-  storageKey,
-  ...props
-}) {
-  let remixContext = React10.useContext(FrameworkContext);
-  let { basename } = React10.useContext(NavigationContext);
-  let location2 = useLocation();
-  let matches = useMatches();
-  useScrollRestoration({ getKey, storageKey });
-  let ssrKey = React10.useMemo(() => {
-    if (!remixContext || !getKey)
-      return null;
-    let userKey = getScrollRestorationKey(location2, matches, basename, getKey);
-    return userKey !== location2.key ? userKey : null;
-  }, []);
-  if (!remixContext || remixContext.isSpaMode) {
-    return null;
-  }
-  let restoreScroll = ((storageKey2, restoreKey) => {
-    if (!window.history.state || !window.history.state.key) {
-      let key = Math.random().toString(32).slice(2);
-      window.history.replaceState({ key }, "");
-    }
-    try {
-      let positions = JSON.parse(sessionStorage.getItem(storageKey2) || "{}");
-      let storedY = positions[restoreKey || window.history.state.key];
-      if (typeof storedY === "number") {
-        window.scrollTo(0, storedY);
-      }
-    } catch (error) {
-      console.error(error);
-      sessionStorage.removeItem(storageKey2);
-    }
-  }).toString();
-  return /* @__PURE__ */ React10.createElement("script", {
-    ...props,
-    suppressHydrationWarning: true,
-    dangerouslySetInnerHTML: {
-      __html: `(${restoreScroll})(${JSON.stringify(storageKey || SCROLL_RESTORATION_STORAGE_KEY)}, ${JSON.stringify(ssrKey)})`
-    }
-  });
-}
-ScrollRestoration.displayName = "ScrollRestoration";
-function getDataRouterConsoleError2(hookName) {
-  return `${hookName} must be used within a data router.  See https://reactrouter.com/en/main/routers/picking-a-router.`;
-}
-function useDataRouterContext3(hookName) {
-  let ctx = React10.useContext(DataRouterContext);
-  invariant(ctx, getDataRouterConsoleError2(hookName));
-  return ctx;
-}
-function useDataRouterState2(hookName) {
-  let state = React10.useContext(DataRouterStateContext);
-  invariant(state, getDataRouterConsoleError2(hookName));
-  return state;
-}
-function useLinkClickHandler(to, {
-  target,
-  replace: replaceProp,
-  state,
-  preventScrollReset,
-  relative,
-  viewTransition
-} = {}) {
-  let navigate = useNavigate();
-  let location2 = useLocation();
-  let path = useResolvedPath(to, { relative });
-  return React10.useCallback((event) => {
-    if (shouldProcessLinkClick(event, target)) {
-      event.preventDefault();
-      let replace2 = replaceProp !== undefined ? replaceProp : createPath(location2) === createPath(path);
-      navigate(to, {
-        replace: replace2,
-        state,
-        preventScrollReset,
-        relative,
-        viewTransition
-      });
-    }
-  }, [
-    location2,
-    navigate,
-    path,
-    replaceProp,
-    state,
-    target,
-    to,
-    preventScrollReset,
-    relative,
-    viewTransition
-  ]);
-}
-var fetcherId = 0;
-var getUniqueFetcherId = () => `__${String(++fetcherId)}__`;
-function useSubmit() {
-  let { router } = useDataRouterContext3("useSubmit");
-  let { basename } = React10.useContext(NavigationContext);
-  let currentRouteId = useRouteId();
-  return React10.useCallback(async (target, options = {}) => {
-    let { action, method, encType, formData, body } = getFormSubmissionInfo(target, basename);
-    if (options.navigate === false) {
-      let key = options.fetcherKey || getUniqueFetcherId();
-      await router.fetch(key, currentRouteId, options.action || action, {
-        preventScrollReset: options.preventScrollReset,
-        formData,
-        body,
-        formMethod: options.method || method,
-        formEncType: options.encType || encType,
-        flushSync: options.flushSync
-      });
-    } else {
-      await router.navigate(options.action || action, {
-        preventScrollReset: options.preventScrollReset,
-        formData,
-        body,
-        formMethod: options.method || method,
-        formEncType: options.encType || encType,
-        replace: options.replace,
-        state: options.state,
-        fromRouteId: currentRouteId,
-        flushSync: options.flushSync,
-        viewTransition: options.viewTransition
-      });
-    }
-  }, [router, basename, currentRouteId]);
-}
-function useFormAction(action, { relative } = {}) {
-  let { basename } = React10.useContext(NavigationContext);
-  let routeContext = React10.useContext(RouteContext);
-  invariant(routeContext, "useFormAction must be used inside a RouteContext");
-  let [match] = routeContext.matches.slice(-1);
-  let path = { ...useResolvedPath(action ? action : ".", { relative }) };
-  let location2 = useLocation();
-  if (action == null) {
-    path.search = location2.search;
-    let params = new URLSearchParams(path.search);
-    let indexValues = params.getAll("index");
-    let hasNakedIndexParam = indexValues.some((v) => v === "");
-    if (hasNakedIndexParam) {
-      params.delete("index");
-      indexValues.filter((v) => v).forEach((v) => params.append("index", v));
-      let qs = params.toString();
-      path.search = qs ? `?${qs}` : "";
-    }
-  }
-  if ((!action || action === ".") && match.route.index) {
-    path.search = path.search ? path.search.replace(/^\?/, "?index&") : "?index";
-  }
-  if (basename !== "/") {
-    path.pathname = path.pathname === "/" ? basename : joinPaths([basename, path.pathname]);
-  }
-  return createPath(path);
-}
-var SCROLL_RESTORATION_STORAGE_KEY = "react-router-scroll-positions";
-var savedScrollPositions = {};
-function getScrollRestorationKey(location2, matches, basename, getKey) {
-  let key = null;
-  if (getKey) {
-    if (basename !== "/") {
-      key = getKey({
-        ...location2,
-        pathname: stripBasename(location2.pathname, basename) || location2.pathname
-      }, matches);
-    } else {
-      key = getKey(location2, matches);
-    }
-  }
-  if (key == null) {
-    key = location2.key;
-  }
-  return key;
-}
-function useScrollRestoration({
-  getKey,
-  storageKey
-} = {}) {
-  let { router } = useDataRouterContext3("useScrollRestoration");
-  let { restoreScrollPosition, preventScrollReset } = useDataRouterState2("useScrollRestoration");
-  let { basename } = React10.useContext(NavigationContext);
-  let location2 = useLocation();
-  let matches = useMatches();
-  let navigation = useNavigation();
-  React10.useEffect(() => {
-    window.history.scrollRestoration = "manual";
-    return () => {
-      window.history.scrollRestoration = "auto";
-    };
-  }, []);
-  usePageHide(React10.useCallback(() => {
-    if (navigation.state === "idle") {
-      let key = getScrollRestorationKey(location2, matches, basename, getKey);
-      savedScrollPositions[key] = window.scrollY;
-    }
-    try {
-      sessionStorage.setItem(storageKey || SCROLL_RESTORATION_STORAGE_KEY, JSON.stringify(savedScrollPositions));
-    } catch (error) {
-      warning(false, `Failed to save scroll positions in sessionStorage, <ScrollRestoration /> will not work properly (${error}).`);
-    }
-    window.history.scrollRestoration = "auto";
-  }, [navigation.state, getKey, basename, location2, matches, storageKey]));
-  if (typeof document !== "undefined") {
-    React10.useLayoutEffect(() => {
-      try {
-        let sessionPositions = sessionStorage.getItem(storageKey || SCROLL_RESTORATION_STORAGE_KEY);
-        if (sessionPositions) {
-          savedScrollPositions = JSON.parse(sessionPositions);
+      fetchControllers.set(key, abortController);
+      let originatingLoadId = incrementingLoadId;
+      let fetchMatches = getTargetedDataStrategyMatches(mapRouteProperties2, manifest, fetchRequest, requestMatches, match, hydrationRouteProperties2, scopedContext);
+      let actionResults = await callDataStrategy(fetchRequest, fetchMatches, scopedContext, key);
+      let actionResult = actionResults[match.route.id];
+      if (fetchRequest.signal.aborted) {
+        if (fetchControllers.get(key) === abortController) {
+          fetchControllers.delete(key);
         }
-      } catch (e) {
-      }
-    }, [storageKey]);
-    React10.useLayoutEffect(() => {
-      let disableScrollRestoration = router?.enableScrollRestoration(savedScrollPositions, () => window.scrollY, getKey ? (location22, matches2) => getScrollRestorationKey(location22, matches2, basename, getKey) : undefined);
-      return () => disableScrollRestoration && disableScrollRestoration();
-    }, [router, basename, getKey]);
-    React10.useLayoutEffect(() => {
-      if (restoreScrollPosition === false) {
         return;
       }
-      if (typeof restoreScrollPosition === "number") {
-        window.scrollTo(0, restoreScrollPosition);
-        return;
-      }
-      if (location2.hash) {
-        let el = document.getElementById(decodeURIComponent(location2.hash.slice(1)));
-        if (el) {
-          el.scrollIntoView();
+      if (fetchersQueuedForDeletion.has(key)) {
+        if (isRedirectResult(actionResult) || isErrorResult(actionResult)) {
+          updateFetcherState(key, getDoneFetcher(undefined));
+          return;
+        }
+      } else {
+        if (isRedirectResult(actionResult)) {
+          fetchControllers.delete(key);
+          if (pendingNavigationLoadId > originatingLoadId) {
+            updateFetcherState(key, getDoneFetcher(undefined));
+            return;
+          } else {
+            fetchRedirectIds.add(key);
+            updateFetcherState(key, getLoadingFetcher(submission));
+            return startRedirectNavigation(fetchRequest, actionResult, false, {
+              fetcherSubmission: submission,
+              preventScrollReset
+            });
+          }
+        }
+        if (isErrorResult(actionResult)) {
+          setFetcherError(key, routeId, actionResult.error);
           return;
         }
       }
-      if (preventScrollReset === true) {
+      let nextLocation = state.navigation.location || state.location;
+      let revalidationRequest = createClientSideRequest(init.history, nextLocation, abortController.signal);
+      let routesToUse = inFlightDataRoutes || dataRoutes;
+      let matches = state.navigation.state !== "idle" ? matchRoutes(routesToUse, state.navigation.location, basename) : state.matches;
+      invariant(matches, "Didn't find any matches after fetcher action");
+      let loadId = ++incrementingLoadId;
+      fetchReloadIds.set(key, loadId);
+      let loadFetcher = getLoadingFetcher(submission, actionResult.data);
+      state.fetchers.set(key, loadFetcher);
+      let { dsMatches, revalidatingFetchers } = getMatchesToLoad(revalidationRequest, scopedContext, mapRouteProperties2, manifest, init.history, state, matches, submission, nextLocation, hydrationRouteProperties2, false, isRevalidationRequired, cancelledFetcherLoads, fetchersQueuedForDeletion, fetchLoadMatches, fetchRedirectIds, routesToUse, basename, [match.route.id, actionResult]);
+      revalidatingFetchers.filter((rf) => rf.key !== key).forEach((rf) => {
+        let staleKey = rf.key;
+        let existingFetcher2 = state.fetchers.get(staleKey);
+        let revalidatingFetcher = getLoadingFetcher(undefined, existingFetcher2 ? existingFetcher2.data : undefined);
+        state.fetchers.set(staleKey, revalidatingFetcher);
+        abortFetcher(staleKey);
+        if (rf.controller) {
+          fetchControllers.set(staleKey, rf.controller);
+        }
+      });
+      updateState({ fetchers: new Map(state.fetchers) });
+      let abortPendingFetchRevalidations = () => revalidatingFetchers.forEach((rf) => abortFetcher(rf.key));
+      abortController.signal.addEventListener("abort", abortPendingFetchRevalidations);
+      let { loaderResults, fetcherResults } = await callLoadersAndMaybeResolveData(dsMatches, revalidatingFetchers, revalidationRequest, scopedContext);
+      if (abortController.signal.aborted) {
         return;
       }
-      window.scrollTo(0, 0);
-    }, [location2, restoreScrollPosition, preventScrollReset]);
-  }
-}
-function usePageHide(callback, options) {
-  let { capture } = options || {};
-  React10.useEffect(() => {
-    let opts = capture != null ? { capture } : undefined;
-    window.addEventListener("pagehide", callback, opts);
-    return () => {
-      window.removeEventListener("pagehide", callback, opts);
+      abortController.signal.removeEventListener("abort", abortPendingFetchRevalidations);
+      fetchReloadIds.delete(key);
+      fetchControllers.delete(key);
+      revalidatingFetchers.forEach((r) => fetchControllers.delete(r.key));
+      let redirect2 = findRedirect(loaderResults);
+      if (redirect2) {
+        return startRedirectNavigation(revalidationRequest, redirect2.result, false, { preventScrollReset });
+      }
+      redirect2 = findRedirect(fetcherResults);
+      if (redirect2) {
+        fetchRedirectIds.add(redirect2.key);
+        return startRedirectNavigation(revalidationRequest, redirect2.result, false, { preventScrollReset });
+      }
+      let { loaderData, errors } = processLoaderData(state, matches, loaderResults, undefined, revalidatingFetchers, fetcherResults);
+      if (state.fetchers.has(key)) {
+        let doneFetcher = getDoneFetcher(actionResult.data);
+        state.fetchers.set(key, doneFetcher);
+      }
+      abortStaleFetchLoads(loadId);
+      if (state.navigation.state === "loading" && loadId > pendingNavigationLoadId) {
+        invariant(pendingAction, "Expected pending action");
+        pendingNavigationController && pendingNavigationController.abort();
+        completeNavigation(state.navigation.location, {
+          matches,
+          loaderData,
+          errors,
+          fetchers: new Map(state.fetchers)
+        });
+      } else {
+        updateState({
+          errors,
+          loaderData: mergeLoaderData(state.loaderData, loaderData, matches, errors),
+          fetchers: new Map(state.fetchers)
+        });
+        isRevalidationRequired = false;
+      }
+    }
+    async function handleFetcherLoader(key, routeId, path, match, matches, scopedContext, isFogOfWar, flushSync2, preventScrollReset, submission) {
+      let existingFetcher = state.fetchers.get(key);
+      updateFetcherState(key, getLoadingFetcher(submission, existingFetcher ? existingFetcher.data : undefined), { flushSync: flushSync2 });
+      let abortController = new AbortController;
+      let fetchRequest = createClientSideRequest(init.history, path, abortController.signal);
+      if (isFogOfWar) {
+        let discoverResult = await discoverRoutes(matches, path, fetchRequest.signal, key);
+        if (discoverResult.type === "aborted") {
+          return;
+        } else if (discoverResult.type === "error") {
+          setFetcherError(key, routeId, discoverResult.error, { flushSync: flushSync2 });
+          return;
+        } else if (!discoverResult.matches) {
+          setFetcherError(key, routeId, getInternalRouterError(404, { pathname: path }), { flushSync: flushSync2 });
+          return;
+        } else {
+          matches = discoverResult.matches;
+          match = getTargetMatch(matches, path);
+        }
+      }
+      fetchControllers.set(key, abortController);
+      let originatingLoadId = incrementingLoadId;
+      let dsMatches = getTargetedDataStrategyMatches(mapRouteProperties2, manifest, fetchRequest, matches, match, hydrationRouteProperties2, scopedContext);
+      let results = await callDataStrategy(fetchRequest, dsMatches, scopedContext, key);
+      let result = results[match.route.id];
+      if (fetchControllers.get(key) === abortController) {
+        fetchControllers.delete(key);
+      }
+      if (fetchRequest.signal.aborted) {
+        return;
+      }
+      if (fetchersQueuedForDeletion.has(key)) {
+        updateFetcherState(key, getDoneFetcher(undefined));
+        return;
+      }
+      if (isRedirectResult(result)) {
+        if (pendingNavigationLoadId > originatingLoadId) {
+          updateFetcherState(key, getDoneFetcher(undefined));
+          return;
+        } else {
+          fetchRedirectIds.add(key);
+          await startRedirectNavigation(fetchRequest, result, false, {
+            preventScrollReset
+          });
+          return;
+        }
+      }
+      if (isErrorResult(result)) {
+        setFetcherError(key, routeId, result.error);
+        return;
+      }
+      updateFetcherState(key, getDoneFetcher(result.data));
+    }
+    async function startRedirectNavigation(request, redirect2, isNavigation, {
+      submission,
+      fetcherSubmission,
+      preventScrollReset,
+      replace
+    } = {}) {
+      if (redirect2.response.headers.has("X-Remix-Revalidate")) {
+        isRevalidationRequired = true;
+      }
+      let location2 = redirect2.response.headers.get("Location");
+      invariant(location2, "Expected a Location header on the redirect Response");
+      location2 = normalizeRedirectLocation(location2, new URL(request.url), basename);
+      let redirectLocation = createLocation(state.location, location2, {
+        _isRedirect: true
+      });
+      if (isBrowser) {
+        let isDocumentReload = false;
+        if (redirect2.response.headers.has("X-Remix-Reload-Document")) {
+          isDocumentReload = true;
+        } else if (ABSOLUTE_URL_REGEX.test(location2)) {
+          const url = init.history.createURL(location2);
+          isDocumentReload = url.origin !== routerWindow.location.origin || stripBasename(url.pathname, basename) == null;
+        }
+        if (isDocumentReload) {
+          if (replace) {
+            routerWindow.location.replace(location2);
+          } else {
+            routerWindow.location.assign(location2);
+          }
+          return;
+        }
+      }
+      pendingNavigationController = null;
+      let redirectNavigationType = replace === true || redirect2.response.headers.has("X-Remix-Replace") ? "REPLACE" : "PUSH";
+      let { formMethod, formAction, formEncType } = state.navigation;
+      if (!submission && !fetcherSubmission && formMethod && formAction && formEncType) {
+        submission = getSubmissionFromNavigation(state.navigation);
+      }
+      let activeSubmission = submission || fetcherSubmission;
+      if (redirectPreserveMethodStatusCodes.has(redirect2.response.status) && activeSubmission && isMutationMethod(activeSubmission.formMethod)) {
+        await startNavigation(redirectNavigationType, redirectLocation, {
+          submission: {
+            ...activeSubmission,
+            formAction: location2
+          },
+          preventScrollReset: preventScrollReset || pendingPreventScrollReset,
+          enableViewTransition: isNavigation ? pendingViewTransitionEnabled : undefined
+        });
+      } else {
+        let overrideNavigation = getLoadingNavigation(redirectLocation, submission);
+        await startNavigation(redirectNavigationType, redirectLocation, {
+          overrideNavigation,
+          fetcherSubmission,
+          preventScrollReset: preventScrollReset || pendingPreventScrollReset,
+          enableViewTransition: isNavigation ? pendingViewTransitionEnabled : undefined
+        });
+      }
+    }
+    async function callDataStrategy(request, matches, scopedContext, fetcherKey) {
+      let results;
+      let dataResults = {};
+      try {
+        results = await callDataStrategyImpl(dataStrategyImpl, request, matches, fetcherKey, scopedContext, false);
+      } catch (e) {
+        matches.filter((m) => m.shouldLoad).forEach((m) => {
+          dataResults[m.route.id] = {
+            type: "error",
+            error: e
+          };
+        });
+        return dataResults;
+      }
+      for (let [routeId, result] of Object.entries(results)) {
+        if (isRedirectDataStrategyResult(result)) {
+          let response = result.result;
+          dataResults[routeId] = {
+            type: "redirect",
+            response: normalizeRelativeRoutingRedirectResponse(response, request, routeId, matches, basename)
+          };
+        } else {
+          dataResults[routeId] = await convertDataStrategyResultToDataResult(result);
+        }
+      }
+      return dataResults;
+    }
+    async function callLoadersAndMaybeResolveData(matches, fetchersToLoad, request, scopedContext) {
+      let loaderResultsPromise = callDataStrategy(request, matches, scopedContext, null);
+      let fetcherResultsPromise = Promise.all(fetchersToLoad.map(async (f) => {
+        if (f.matches && f.match && f.request && f.controller) {
+          let results = await callDataStrategy(f.request, f.matches, scopedContext, f.key);
+          let result = results[f.match.route.id];
+          return { [f.key]: result };
+        } else {
+          return Promise.resolve({
+            [f.key]: {
+              type: "error",
+              error: getInternalRouterError(404, {
+                pathname: f.path
+              })
+            }
+          });
+        }
+      }));
+      let loaderResults = await loaderResultsPromise;
+      let fetcherResults = (await fetcherResultsPromise).reduce((acc, r) => Object.assign(acc, r), {});
+      return {
+        loaderResults,
+        fetcherResults
+      };
+    }
+    function interruptActiveLoads() {
+      isRevalidationRequired = true;
+      fetchLoadMatches.forEach((_, key) => {
+        if (fetchControllers.has(key)) {
+          cancelledFetcherLoads.add(key);
+        }
+        abortFetcher(key);
+      });
+    }
+    function updateFetcherState(key, fetcher, opts = {}) {
+      state.fetchers.set(key, fetcher);
+      updateState({ fetchers: new Map(state.fetchers) }, { flushSync: (opts && opts.flushSync) === true });
+    }
+    function setFetcherError(key, routeId, error, opts = {}) {
+      let boundaryMatch = findNearestBoundary(state.matches, routeId);
+      deleteFetcher(key);
+      updateState({
+        errors: {
+          [boundaryMatch.route.id]: error
+        },
+        fetchers: new Map(state.fetchers)
+      }, { flushSync: (opts && opts.flushSync) === true });
+    }
+    function getFetcher(key) {
+      activeFetchers.set(key, (activeFetchers.get(key) || 0) + 1);
+      if (fetchersQueuedForDeletion.has(key)) {
+        fetchersQueuedForDeletion.delete(key);
+      }
+      return state.fetchers.get(key) || IDLE_FETCHER;
+    }
+    function deleteFetcher(key) {
+      let fetcher = state.fetchers.get(key);
+      if (fetchControllers.has(key) && !(fetcher && fetcher.state === "loading" && fetchReloadIds.has(key))) {
+        abortFetcher(key);
+      }
+      fetchLoadMatches.delete(key);
+      fetchReloadIds.delete(key);
+      fetchRedirectIds.delete(key);
+      fetchersQueuedForDeletion.delete(key);
+      cancelledFetcherLoads.delete(key);
+      state.fetchers.delete(key);
+    }
+    function queueFetcherForDeletion(key) {
+      let count = (activeFetchers.get(key) || 0) - 1;
+      if (count <= 0) {
+        activeFetchers.delete(key);
+        fetchersQueuedForDeletion.add(key);
+      } else {
+        activeFetchers.set(key, count);
+      }
+      updateState({ fetchers: new Map(state.fetchers) });
+    }
+    function abortFetcher(key) {
+      let controller = fetchControllers.get(key);
+      if (controller) {
+        controller.abort();
+        fetchControllers.delete(key);
+      }
+    }
+    function markFetchersDone(keys) {
+      for (let key of keys) {
+        let fetcher = getFetcher(key);
+        let doneFetcher = getDoneFetcher(fetcher.data);
+        state.fetchers.set(key, doneFetcher);
+      }
+    }
+    function markFetchRedirectsDone() {
+      let doneKeys = [];
+      let updatedFetchers = false;
+      for (let key of fetchRedirectIds) {
+        let fetcher = state.fetchers.get(key);
+        invariant(fetcher, `Expected fetcher: ${key}`);
+        if (fetcher.state === "loading") {
+          fetchRedirectIds.delete(key);
+          doneKeys.push(key);
+          updatedFetchers = true;
+        }
+      }
+      markFetchersDone(doneKeys);
+      return updatedFetchers;
+    }
+    function abortStaleFetchLoads(landedId) {
+      let yeetedKeys = [];
+      for (let [key, id] of fetchReloadIds) {
+        if (id < landedId) {
+          let fetcher = state.fetchers.get(key);
+          invariant(fetcher, `Expected fetcher: ${key}`);
+          if (fetcher.state === "loading") {
+            abortFetcher(key);
+            fetchReloadIds.delete(key);
+            yeetedKeys.push(key);
+          }
+        }
+      }
+      markFetchersDone(yeetedKeys);
+      return yeetedKeys.length > 0;
+    }
+    function getBlocker(key, fn) {
+      let blocker = state.blockers.get(key) || IDLE_BLOCKER;
+      if (blockerFunctions.get(key) !== fn) {
+        blockerFunctions.set(key, fn);
+      }
+      return blocker;
+    }
+    function deleteBlocker(key) {
+      state.blockers.delete(key);
+      blockerFunctions.delete(key);
+    }
+    function updateBlocker(key, newBlocker) {
+      let blocker = state.blockers.get(key) || IDLE_BLOCKER;
+      invariant(blocker.state === "unblocked" && newBlocker.state === "blocked" || blocker.state === "blocked" && newBlocker.state === "blocked" || blocker.state === "blocked" && newBlocker.state === "proceeding" || blocker.state === "blocked" && newBlocker.state === "unblocked" || blocker.state === "proceeding" && newBlocker.state === "unblocked", `Invalid blocker state transition: ${blocker.state} -> ${newBlocker.state}`);
+      let blockers = new Map(state.blockers);
+      blockers.set(key, newBlocker);
+      updateState({ blockers });
+    }
+    function shouldBlockNavigation({
+      currentLocation,
+      nextLocation,
+      historyAction
+    }) {
+      if (blockerFunctions.size === 0) {
+        return;
+      }
+      if (blockerFunctions.size > 1) {
+        warning(false, "A router only supports one blocker at a time");
+      }
+      let entries = Array.from(blockerFunctions.entries());
+      let [blockerKey, blockerFunction] = entries[entries.length - 1];
+      let blocker = state.blockers.get(blockerKey);
+      if (blocker && blocker.state === "proceeding") {
+        return;
+      }
+      if (blockerFunction({ currentLocation, nextLocation, historyAction })) {
+        return blockerKey;
+      }
+    }
+    function handleNavigational404(pathname) {
+      let error = getInternalRouterError(404, { pathname });
+      let routesToUse = inFlightDataRoutes || dataRoutes;
+      let { matches, route } = getShortCircuitMatches(routesToUse);
+      return { notFoundMatches: matches, route, error };
+    }
+    function enableScrollRestoration(positions, getPosition, getKey) {
+      savedScrollPositions = positions;
+      getScrollPosition = getPosition;
+      getScrollRestorationKey = getKey || null;
+      if (!initialScrollRestored && state.navigation === IDLE_NAVIGATION) {
+        initialScrollRestored = true;
+        let y = getSavedScrollPosition(state.location, state.matches);
+        if (y != null) {
+          updateState({ restoreScrollPosition: y });
+        }
+      }
+      return () => {
+        savedScrollPositions = null;
+        getScrollPosition = null;
+        getScrollRestorationKey = null;
+      };
+    }
+    function getScrollKey(location2, matches) {
+      if (getScrollRestorationKey) {
+        let key = getScrollRestorationKey(location2, matches.map((m) => convertRouteMatchToUiMatch(m, state.loaderData)));
+        return key || location2.key;
+      }
+      return location2.key;
+    }
+    function saveScrollPosition(location2, matches) {
+      if (savedScrollPositions && getScrollPosition) {
+        let key = getScrollKey(location2, matches);
+        savedScrollPositions[key] = getScrollPosition();
+      }
+    }
+    function getSavedScrollPosition(location2, matches) {
+      if (savedScrollPositions) {
+        let key = getScrollKey(location2, matches);
+        let y = savedScrollPositions[key];
+        if (typeof y === "number") {
+          return y;
+        }
+      }
+      return null;
+    }
+    function checkFogOfWar(matches, routesToUse, pathname) {
+      if (init.patchRoutesOnNavigation) {
+        if (!matches) {
+          let fogMatches = matchRoutesImpl(routesToUse, pathname, basename, true);
+          return { active: true, matches: fogMatches || [] };
+        } else {
+          if (Object.keys(matches[0].params).length > 0) {
+            let partialMatches = matchRoutesImpl(routesToUse, pathname, basename, true);
+            return { active: true, matches: partialMatches };
+          }
+        }
+      }
+      return { active: false, matches: null };
+    }
+    async function discoverRoutes(matches, pathname, signal, fetcherKey) {
+      if (!init.patchRoutesOnNavigation) {
+        return { type: "success", matches };
+      }
+      let partialMatches = matches;
+      while (true) {
+        let isNonHMR = inFlightDataRoutes == null;
+        let routesToUse = inFlightDataRoutes || dataRoutes;
+        let localManifest = manifest;
+        try {
+          await init.patchRoutesOnNavigation({
+            signal,
+            path: pathname,
+            matches: partialMatches,
+            fetcherKey,
+            patch: (routeId, children) => {
+              if (signal.aborted)
+                return;
+              patchRoutesImpl(routeId, children, routesToUse, localManifest, mapRouteProperties2);
+            }
+          });
+        } catch (e) {
+          return { type: "error", error: e, partialMatches };
+        } finally {
+          if (isNonHMR && !signal.aborted) {
+            dataRoutes = [...dataRoutes];
+          }
+        }
+        if (signal.aborted) {
+          return { type: "aborted" };
+        }
+        let newMatches = matchRoutes(routesToUse, pathname, basename);
+        if (newMatches) {
+          return { type: "success", matches: newMatches };
+        }
+        let newPartialMatches = matchRoutesImpl(routesToUse, pathname, basename, true);
+        if (!newPartialMatches || partialMatches.length === newPartialMatches.length && partialMatches.every((m, i) => m.route.id === newPartialMatches[i].route.id)) {
+          return { type: "success", matches: null };
+        }
+        partialMatches = newPartialMatches;
+      }
+    }
+    function _internalSetRoutes(newRoutes) {
+      manifest = {};
+      inFlightDataRoutes = convertRoutesToDataRoutes(newRoutes, mapRouteProperties2, undefined, manifest);
+    }
+    function patchRoutes(routeId, children) {
+      let isNonHMR = inFlightDataRoutes == null;
+      let routesToUse = inFlightDataRoutes || dataRoutes;
+      patchRoutesImpl(routeId, children, routesToUse, manifest, mapRouteProperties2);
+      if (isNonHMR) {
+        dataRoutes = [...dataRoutes];
+        updateState({});
+      }
+    }
+    router2 = {
+      get basename() {
+        return basename;
+      },
+      get future() {
+        return future;
+      },
+      get state() {
+        return state;
+      },
+      get routes() {
+        return dataRoutes;
+      },
+      get window() {
+        return routerWindow;
+      },
+      initialize,
+      subscribe,
+      enableScrollRestoration,
+      navigate,
+      fetch: fetch2,
+      revalidate,
+      createHref: (to) => init.history.createHref(to),
+      encodeLocation: (to) => init.history.encodeLocation(to),
+      getFetcher,
+      deleteFetcher: queueFetcherForDeletion,
+      dispose,
+      getBlocker,
+      deleteBlocker,
+      patchRoutes,
+      _internalFetchControllers: fetchControllers,
+      _internalSetRoutes
     };
-  }, [callback, capture]);
-}
-function useViewTransitionState(to, opts = {}) {
-  let vtContext = React10.useContext(ViewTransitionContext);
-  invariant(vtContext != null, "`useViewTransitionState` must be used within `react-router-dom`'s `RouterProvider`.  Did you accidentally import `RouterProvider` from `react-router`?");
-  let { basename } = useDataRouterContext3("useViewTransitionState");
-  let path = useResolvedPath(to, { relative: opts.relative });
-  if (!vtContext.isTransitioning) {
+    return router2;
+  }
+  function isSubmissionNavigation(opts) {
+    return opts != null && (("formData" in opts) && opts.formData != null || ("body" in opts) && opts.body !== undefined);
+  }
+  function normalizeTo(location2, matches, basename, to, fromRouteId, relative) {
+    let contextualMatches;
+    let activeRouteMatch;
+    if (fromRouteId) {
+      contextualMatches = [];
+      for (let match of matches) {
+        contextualMatches.push(match);
+        if (match.route.id === fromRouteId) {
+          activeRouteMatch = match;
+          break;
+        }
+      }
+    } else {
+      contextualMatches = matches;
+      activeRouteMatch = matches[matches.length - 1];
+    }
+    let path = resolveTo(to ? to : ".", getResolveToMatches(contextualMatches), stripBasename(location2.pathname, basename) || location2.pathname, relative === "path");
+    if (to == null) {
+      path.search = location2.search;
+      path.hash = location2.hash;
+    }
+    if ((to == null || to === "" || to === ".") && activeRouteMatch) {
+      let nakedIndex = hasNakedIndexQuery(path.search);
+      if (activeRouteMatch.route.index && !nakedIndex) {
+        path.search = path.search ? path.search.replace(/^\?/, "?index&") : "?index";
+      } else if (!activeRouteMatch.route.index && nakedIndex) {
+        let params = new URLSearchParams(path.search);
+        let indexValues = params.getAll("index");
+        params.delete("index");
+        indexValues.filter((v) => v).forEach((v) => params.append("index", v));
+        let qs = params.toString();
+        path.search = qs ? `?${qs}` : "";
+      }
+    }
+    if (basename !== "/") {
+      path.pathname = path.pathname === "/" ? basename : joinPaths([basename, path.pathname]);
+    }
+    return createPath(path);
+  }
+  function normalizeNavigateOptions(isFetcher, path, opts) {
+    if (!opts || !isSubmissionNavigation(opts)) {
+      return { path };
+    }
+    if (opts.formMethod && !isValidMethod(opts.formMethod)) {
+      return {
+        path,
+        error: getInternalRouterError(405, { method: opts.formMethod })
+      };
+    }
+    let getInvalidBodyError = () => ({
+      path,
+      error: getInternalRouterError(400, { type: "invalid-body" })
+    });
+    let rawFormMethod = opts.formMethod || "get";
+    let formMethod = rawFormMethod.toUpperCase();
+    let formAction = stripHashFromPath(path);
+    if (opts.body !== undefined) {
+      if (opts.formEncType === "text/plain") {
+        if (!isMutationMethod(formMethod)) {
+          return getInvalidBodyError();
+        }
+        let text = typeof opts.body === "string" ? opts.body : opts.body instanceof FormData || opts.body instanceof URLSearchParams ? Array.from(opts.body.entries()).reduce((acc, [name, value]) => `${acc}${name}=${value}
+`, "") : String(opts.body);
+        return {
+          path,
+          submission: {
+            formMethod,
+            formAction,
+            formEncType: opts.formEncType,
+            formData: undefined,
+            json: undefined,
+            text
+          }
+        };
+      } else if (opts.formEncType === "application/json") {
+        if (!isMutationMethod(formMethod)) {
+          return getInvalidBodyError();
+        }
+        try {
+          let json = typeof opts.body === "string" ? JSON.parse(opts.body) : opts.body;
+          return {
+            path,
+            submission: {
+              formMethod,
+              formAction,
+              formEncType: opts.formEncType,
+              formData: undefined,
+              json,
+              text: undefined
+            }
+          };
+        } catch (e) {
+          return getInvalidBodyError();
+        }
+      }
+    }
+    invariant(typeof FormData === "function", "FormData is not available in this environment");
+    let searchParams;
+    let formData;
+    if (opts.formData) {
+      searchParams = convertFormDataToSearchParams(opts.formData);
+      formData = opts.formData;
+    } else if (opts.body instanceof FormData) {
+      searchParams = convertFormDataToSearchParams(opts.body);
+      formData = opts.body;
+    } else if (opts.body instanceof URLSearchParams) {
+      searchParams = opts.body;
+      formData = convertSearchParamsToFormData(searchParams);
+    } else if (opts.body == null) {
+      searchParams = new URLSearchParams;
+      formData = new FormData;
+    } else {
+      try {
+        searchParams = new URLSearchParams(opts.body);
+        formData = convertSearchParamsToFormData(searchParams);
+      } catch (e) {
+        return getInvalidBodyError();
+      }
+    }
+    let submission = {
+      formMethod,
+      formAction,
+      formEncType: opts && opts.formEncType || "application/x-www-form-urlencoded",
+      formData,
+      json: undefined,
+      text: undefined
+    };
+    if (isMutationMethod(submission.formMethod)) {
+      return { path, submission };
+    }
+    let parsedPath = parsePath(path);
+    if (isFetcher && parsedPath.search && hasNakedIndexQuery(parsedPath.search)) {
+      searchParams.append("index", "");
+    }
+    parsedPath.search = `?${searchParams}`;
+    return { path: createPath(parsedPath), submission };
+  }
+  function getMatchesToLoad(request, scopedContext, mapRouteProperties2, manifest, history, state, matches, submission, location2, lazyRoutePropertiesToSkip, initialHydration, isRevalidationRequired, cancelledFetcherLoads, fetchersQueuedForDeletion, fetchLoadMatches, fetchRedirectIds, routesToUse, basename, pendingActionResult) {
+    let actionResult = pendingActionResult ? isErrorResult(pendingActionResult[1]) ? pendingActionResult[1].error : pendingActionResult[1].data : undefined;
+    let currentUrl = history.createURL(state.location);
+    let nextUrl = history.createURL(location2);
+    let maxIdx;
+    if (initialHydration && state.errors) {
+      let boundaryId = Object.keys(state.errors)[0];
+      maxIdx = matches.findIndex((m) => m.route.id === boundaryId);
+    } else if (pendingActionResult && isErrorResult(pendingActionResult[1])) {
+      let boundaryId = pendingActionResult[0];
+      maxIdx = matches.findIndex((m) => m.route.id === boundaryId) - 1;
+    }
+    let actionStatus = pendingActionResult ? pendingActionResult[1].statusCode : undefined;
+    let shouldSkipRevalidation = actionStatus && actionStatus >= 400;
+    let baseShouldRevalidateArgs = {
+      currentUrl,
+      currentParams: state.matches[0]?.params || {},
+      nextUrl,
+      nextParams: matches[0].params,
+      ...submission,
+      actionResult,
+      actionStatus
+    };
+    let dsMatches = matches.map((match, index) => {
+      let { route } = match;
+      let forceShouldLoad = null;
+      if (maxIdx != null && index > maxIdx) {
+        forceShouldLoad = false;
+      } else if (route.lazy) {
+        forceShouldLoad = true;
+      } else if (route.loader == null) {
+        forceShouldLoad = false;
+      } else if (initialHydration) {
+        forceShouldLoad = shouldLoadRouteOnHydration(route, state.loaderData, state.errors);
+      } else if (isNewLoader(state.loaderData, state.matches[index], match)) {
+        forceShouldLoad = true;
+      }
+      if (forceShouldLoad !== null) {
+        return getDataStrategyMatch(mapRouteProperties2, manifest, request, match, lazyRoutePropertiesToSkip, scopedContext, forceShouldLoad);
+      }
+      let defaultShouldRevalidate = shouldSkipRevalidation ? false : isRevalidationRequired || currentUrl.pathname + currentUrl.search === nextUrl.pathname + nextUrl.search || currentUrl.search !== nextUrl.search || isNewRouteInstance(state.matches[index], match);
+      let shouldRevalidateArgs = {
+        ...baseShouldRevalidateArgs,
+        defaultShouldRevalidate
+      };
+      let shouldLoad = shouldRevalidateLoader(match, shouldRevalidateArgs);
+      return getDataStrategyMatch(mapRouteProperties2, manifest, request, match, lazyRoutePropertiesToSkip, scopedContext, shouldLoad, shouldRevalidateArgs);
+    });
+    let revalidatingFetchers = [];
+    fetchLoadMatches.forEach((f, key) => {
+      if (initialHydration || !matches.some((m) => m.route.id === f.routeId) || fetchersQueuedForDeletion.has(key)) {
+        return;
+      }
+      let fetcherMatches = matchRoutes(routesToUse, f.path, basename);
+      if (!fetcherMatches) {
+        revalidatingFetchers.push({
+          key,
+          routeId: f.routeId,
+          path: f.path,
+          matches: null,
+          match: null,
+          request: null,
+          controller: null
+        });
+        return;
+      }
+      if (fetchRedirectIds.has(key)) {
+        return;
+      }
+      let fetcher = state.fetchers.get(key);
+      let fetcherMatch = getTargetMatch(fetcherMatches, f.path);
+      let fetchController = new AbortController;
+      let fetchRequest = createClientSideRequest(history, f.path, fetchController.signal);
+      let fetcherDsMatches = null;
+      if (cancelledFetcherLoads.has(key)) {
+        cancelledFetcherLoads.delete(key);
+        fetcherDsMatches = getTargetedDataStrategyMatches(mapRouteProperties2, manifest, fetchRequest, fetcherMatches, fetcherMatch, lazyRoutePropertiesToSkip, scopedContext);
+      } else if (fetcher && fetcher.state !== "idle" && fetcher.data === undefined) {
+        if (isRevalidationRequired) {
+          fetcherDsMatches = getTargetedDataStrategyMatches(mapRouteProperties2, manifest, fetchRequest, fetcherMatches, fetcherMatch, lazyRoutePropertiesToSkip, scopedContext);
+        }
+      } else {
+        let shouldRevalidateArgs = {
+          ...baseShouldRevalidateArgs,
+          defaultShouldRevalidate: shouldSkipRevalidation ? false : isRevalidationRequired
+        };
+        if (shouldRevalidateLoader(fetcherMatch, shouldRevalidateArgs)) {
+          fetcherDsMatches = getTargetedDataStrategyMatches(mapRouteProperties2, manifest, fetchRequest, fetcherMatches, fetcherMatch, lazyRoutePropertiesToSkip, scopedContext, shouldRevalidateArgs);
+        }
+      }
+      if (fetcherDsMatches) {
+        revalidatingFetchers.push({
+          key,
+          routeId: f.routeId,
+          path: f.path,
+          matches: fetcherDsMatches,
+          match: fetcherMatch,
+          request: fetchRequest,
+          controller: fetchController
+        });
+      }
+    });
+    return { dsMatches, revalidatingFetchers };
+  }
+  function shouldLoadRouteOnHydration(route, loaderData, errors) {
+    if (route.lazy) {
+      return true;
+    }
+    if (!route.loader) {
+      return false;
+    }
+    let hasData = loaderData != null && loaderData[route.id] !== undefined;
+    let hasError = errors != null && errors[route.id] !== undefined;
+    if (!hasData && hasError) {
+      return false;
+    }
+    if (typeof route.loader === "function" && route.loader.hydrate === true) {
+      return true;
+    }
+    return !hasData && !hasError;
+  }
+  function isNewLoader(currentLoaderData, currentMatch, match) {
+    let isNew = !currentMatch || match.route.id !== currentMatch.route.id;
+    let isMissingData = !currentLoaderData.hasOwnProperty(match.route.id);
+    return isNew || isMissingData;
+  }
+  function isNewRouteInstance(currentMatch, match) {
+    let currentPath = currentMatch.route.path;
+    return currentMatch.pathname !== match.pathname || currentPath != null && currentPath.endsWith("*") && currentMatch.params["*"] !== match.params["*"];
+  }
+  function shouldRevalidateLoader(loaderMatch, arg) {
+    if (loaderMatch.route.shouldRevalidate) {
+      let routeChoice = loaderMatch.route.shouldRevalidate(arg);
+      if (typeof routeChoice === "boolean") {
+        return routeChoice;
+      }
+    }
+    return arg.defaultShouldRevalidate;
+  }
+  function patchRoutesImpl(routeId, children, routesToUse, manifest, mapRouteProperties2) {
+    let childrenToPatch;
+    if (routeId) {
+      let route = manifest[routeId];
+      invariant(route, `No route found to patch children into: routeId = ${routeId}`);
+      if (!route.children) {
+        route.children = [];
+      }
+      childrenToPatch = route.children;
+    } else {
+      childrenToPatch = routesToUse;
+    }
+    let uniqueChildren = children.filter((newRoute) => !childrenToPatch.some((existingRoute) => isSameRoute(newRoute, existingRoute)));
+    let newRoutes = convertRoutesToDataRoutes(uniqueChildren, mapRouteProperties2, [routeId || "_", "patch", String(childrenToPatch?.length || "0")], manifest);
+    childrenToPatch.push(...newRoutes);
+  }
+  function isSameRoute(newRoute, existingRoute) {
+    if ("id" in newRoute && "id" in existingRoute && newRoute.id === existingRoute.id) {
+      return true;
+    }
+    if (!(newRoute.index === existingRoute.index && newRoute.path === existingRoute.path && newRoute.caseSensitive === existingRoute.caseSensitive)) {
+      return false;
+    }
+    if ((!newRoute.children || newRoute.children.length === 0) && (!existingRoute.children || existingRoute.children.length === 0)) {
+      return true;
+    }
+    return newRoute.children.every((aChild, i) => existingRoute.children?.some((bChild) => isSameRoute(aChild, bChild)));
+  }
+  var lazyRoutePropertyCache = /* @__PURE__ */ new WeakMap;
+  var loadLazyRouteProperty = ({
+    key,
+    route,
+    manifest,
+    mapRouteProperties: mapRouteProperties2
+  }) => {
+    let routeToUpdate = manifest[route.id];
+    invariant(routeToUpdate, "No route found in manifest");
+    if (!routeToUpdate.lazy || typeof routeToUpdate.lazy !== "object") {
+      return;
+    }
+    let lazyFn = routeToUpdate.lazy[key];
+    if (!lazyFn) {
+      return;
+    }
+    let cache = lazyRoutePropertyCache.get(routeToUpdate);
+    if (!cache) {
+      cache = {};
+      lazyRoutePropertyCache.set(routeToUpdate, cache);
+    }
+    let cachedPromise = cache[key];
+    if (cachedPromise) {
+      return cachedPromise;
+    }
+    let propertyPromise = (async () => {
+      let isUnsupported = isUnsupportedLazyRouteObjectKey(key);
+      let staticRouteValue = routeToUpdate[key];
+      let isStaticallyDefined = staticRouteValue !== undefined && key !== "hasErrorBoundary";
+      if (isUnsupported) {
+        warning(!isUnsupported, "Route property " + key + " is not a supported lazy route property. This property will be ignored.");
+        cache[key] = Promise.resolve();
+      } else if (isStaticallyDefined) {
+        warning(false, `Route "${routeToUpdate.id}" has a static property "${key}" defined. The lazy property will be ignored.`);
+      } else {
+        let value = await lazyFn();
+        if (value != null) {
+          Object.assign(routeToUpdate, { [key]: value });
+          Object.assign(routeToUpdate, mapRouteProperties2(routeToUpdate));
+        }
+      }
+      if (typeof routeToUpdate.lazy === "object") {
+        routeToUpdate.lazy[key] = undefined;
+        if (Object.values(routeToUpdate.lazy).every((value) => value === undefined)) {
+          routeToUpdate.lazy = undefined;
+        }
+      }
+    })();
+    cache[key] = propertyPromise;
+    return propertyPromise;
+  };
+  var lazyRouteFunctionCache = /* @__PURE__ */ new WeakMap;
+  function loadLazyRoute(route, type, manifest, mapRouteProperties2, lazyRoutePropertiesToSkip) {
+    let routeToUpdate = manifest[route.id];
+    invariant(routeToUpdate, "No route found in manifest");
+    if (!route.lazy) {
+      return {
+        lazyRoutePromise: undefined,
+        lazyHandlerPromise: undefined
+      };
+    }
+    if (typeof route.lazy === "function") {
+      let cachedPromise = lazyRouteFunctionCache.get(routeToUpdate);
+      if (cachedPromise) {
+        return {
+          lazyRoutePromise: cachedPromise,
+          lazyHandlerPromise: cachedPromise
+        };
+      }
+      let lazyRoutePromise2 = (async () => {
+        invariant(typeof route.lazy === "function", "No lazy route function found");
+        let lazyRoute = await route.lazy();
+        let routeUpdates = {};
+        for (let lazyRouteProperty in lazyRoute) {
+          let lazyValue = lazyRoute[lazyRouteProperty];
+          if (lazyValue === undefined) {
+            continue;
+          }
+          let isUnsupported = isUnsupportedLazyRouteFunctionKey(lazyRouteProperty);
+          let staticRouteValue = routeToUpdate[lazyRouteProperty];
+          let isStaticallyDefined = staticRouteValue !== undefined && lazyRouteProperty !== "hasErrorBoundary";
+          if (isUnsupported) {
+            warning(!isUnsupported, "Route property " + lazyRouteProperty + " is not a supported property to be returned from a lazy route function. This property will be ignored.");
+          } else if (isStaticallyDefined) {
+            warning(!isStaticallyDefined, `Route "${routeToUpdate.id}" has a static property "${lazyRouteProperty}" defined but its lazy function is also returning a value for this property. The lazy route property "${lazyRouteProperty}" will be ignored.`);
+          } else {
+            routeUpdates[lazyRouteProperty] = lazyValue;
+          }
+        }
+        Object.assign(routeToUpdate, routeUpdates);
+        Object.assign(routeToUpdate, {
+          ...mapRouteProperties2(routeToUpdate),
+          lazy: undefined
+        });
+      })();
+      lazyRouteFunctionCache.set(routeToUpdate, lazyRoutePromise2);
+      lazyRoutePromise2.catch(() => {
+      });
+      return {
+        lazyRoutePromise: lazyRoutePromise2,
+        lazyHandlerPromise: lazyRoutePromise2
+      };
+    }
+    let lazyKeys = Object.keys(route.lazy);
+    let lazyPropertyPromises = [];
+    let lazyHandlerPromise = undefined;
+    for (let key of lazyKeys) {
+      if (lazyRoutePropertiesToSkip && lazyRoutePropertiesToSkip.includes(key)) {
+        continue;
+      }
+      let promise = loadLazyRouteProperty({
+        key,
+        route,
+        manifest,
+        mapRouteProperties: mapRouteProperties2
+      });
+      if (promise) {
+        lazyPropertyPromises.push(promise);
+        if (key === type) {
+          lazyHandlerPromise = promise;
+        }
+      }
+    }
+    let lazyRoutePromise = lazyPropertyPromises.length > 0 ? Promise.all(lazyPropertyPromises).then(() => {
+    }) : undefined;
+    lazyRoutePromise?.catch(() => {
+    });
+    lazyHandlerPromise?.catch(() => {
+    });
+    return {
+      lazyRoutePromise,
+      lazyHandlerPromise
+    };
+  }
+  async function defaultDataStrategy(args) {
+    let matchesToLoad = args.matches.filter((m) => m.shouldLoad);
+    let keyedResults = {};
+    let results = await Promise.all(matchesToLoad.map((m) => m.resolve()));
+    results.forEach((result, i) => {
+      keyedResults[matchesToLoad[i].route.id] = result;
+    });
+    return keyedResults;
+  }
+  async function defaultDataStrategyWithMiddleware(args) {
+    if (!args.matches.some((m) => m.route.unstable_middleware)) {
+      return defaultDataStrategy(args);
+    }
+    return runMiddlewarePipeline(args, false, () => defaultDataStrategy(args), (error, routeId) => ({ [routeId]: { type: "error", result: error } }));
+  }
+  async function runMiddlewarePipeline(args, propagateResult, handler, errorHandler) {
+    let { matches, request, params, context } = args;
+    let middlewareState = {
+      handlerResult: undefined
+    };
+    try {
+      let tuples = matches.flatMap((m) => m.route.unstable_middleware ? m.route.unstable_middleware.map((fn) => [m.route.id, fn]) : []);
+      let result = await callRouteMiddleware({ request, params, context }, tuples, propagateResult, middlewareState, handler);
+      return propagateResult ? result : middlewareState.handlerResult;
+    } catch (e) {
+      if (!middlewareState.middlewareError) {
+        throw e;
+      }
+      let result = await errorHandler(middlewareState.middlewareError.error, middlewareState.middlewareError.routeId);
+      if (propagateResult || !middlewareState.handlerResult) {
+        return result;
+      }
+      return Object.assign(middlewareState.handlerResult, result);
+    }
+  }
+  async function callRouteMiddleware(args, middlewares, propagateResult, middlewareState, handler, idx = 0) {
+    let { request } = args;
+    if (request.signal.aborted) {
+      if (request.signal.reason) {
+        throw request.signal.reason;
+      }
+      throw new Error(`Request aborted without an \`AbortSignal.reason\`: ${request.method} ${request.url}`);
+    }
+    let tuple = middlewares[idx];
+    if (!tuple) {
+      middlewareState.handlerResult = await handler();
+      return middlewareState.handlerResult;
+    }
+    let [routeId, middleware] = tuple;
+    let nextCalled = false;
+    let nextResult = undefined;
+    let next = async () => {
+      if (nextCalled) {
+        throw new Error("You may only call `next()` once per middleware");
+      }
+      nextCalled = true;
+      let result = await callRouteMiddleware(args, middlewares, propagateResult, middlewareState, handler, idx + 1);
+      if (propagateResult) {
+        nextResult = result;
+        return nextResult;
+      }
+    };
+    try {
+      let result = await middleware({
+        request: args.request,
+        params: args.params,
+        context: args.context
+      }, next);
+      if (nextCalled) {
+        if (result === undefined) {
+          return nextResult;
+        } else {
+          return result;
+        }
+      } else {
+        return next();
+      }
+    } catch (error) {
+      if (!middlewareState.middlewareError) {
+        middlewareState.middlewareError = { routeId, error };
+      } else if (middlewareState.middlewareError.error !== error) {
+        middlewareState.middlewareError = { routeId, error };
+      }
+      throw error;
+    }
+  }
+  function getDataStrategyMatchLazyPromises(mapRouteProperties2, manifest, request, match, lazyRoutePropertiesToSkip) {
+    let lazyMiddlewarePromise = loadLazyRouteProperty({
+      key: "unstable_middleware",
+      route: match.route,
+      manifest,
+      mapRouteProperties: mapRouteProperties2
+    });
+    let lazyRoutePromises = loadLazyRoute(match.route, isMutationMethod(request.method) ? "action" : "loader", manifest, mapRouteProperties2, lazyRoutePropertiesToSkip);
+    return {
+      middleware: lazyMiddlewarePromise,
+      route: lazyRoutePromises.lazyRoutePromise,
+      handler: lazyRoutePromises.lazyHandlerPromise
+    };
+  }
+  function getDataStrategyMatch(mapRouteProperties2, manifest, request, match, lazyRoutePropertiesToSkip, scopedContext, shouldLoad, unstable_shouldRevalidateArgs = null) {
+    let isUsingNewApi = false;
+    let _lazyPromises = getDataStrategyMatchLazyPromises(mapRouteProperties2, manifest, request, match, lazyRoutePropertiesToSkip);
+    return {
+      ...match,
+      _lazyPromises,
+      shouldLoad,
+      unstable_shouldRevalidateArgs,
+      unstable_shouldCallHandler(defaultShouldRevalidate) {
+        isUsingNewApi = true;
+        if (!unstable_shouldRevalidateArgs) {
+          return shouldLoad;
+        }
+        if (typeof defaultShouldRevalidate === "boolean") {
+          return shouldRevalidateLoader(match, {
+            ...unstable_shouldRevalidateArgs,
+            defaultShouldRevalidate
+          });
+        }
+        return shouldRevalidateLoader(match, unstable_shouldRevalidateArgs);
+      },
+      resolve(handlerOverride) {
+        if (isUsingNewApi || shouldLoad || handlerOverride && request.method === "GET" && (match.route.lazy || match.route.loader)) {
+          return callLoaderOrAction({
+            request,
+            match,
+            lazyHandlerPromise: _lazyPromises?.handler,
+            lazyRoutePromise: _lazyPromises?.route,
+            handlerOverride,
+            scopedContext
+          });
+        }
+        return Promise.resolve({ type: "data", result: undefined });
+      }
+    };
+  }
+  function getTargetedDataStrategyMatches(mapRouteProperties2, manifest, request, matches, targetMatch, lazyRoutePropertiesToSkip, scopedContext, shouldRevalidateArgs = null) {
+    return matches.map((match) => {
+      if (match.route.id !== targetMatch.route.id) {
+        return {
+          ...match,
+          shouldLoad: false,
+          unstable_shouldRevalidateArgs: shouldRevalidateArgs,
+          unstable_shouldCallHandler: () => false,
+          _lazyPromises: getDataStrategyMatchLazyPromises(mapRouteProperties2, manifest, request, match, lazyRoutePropertiesToSkip),
+          resolve: () => Promise.resolve({ type: "data", result: undefined })
+        };
+      }
+      return getDataStrategyMatch(mapRouteProperties2, manifest, request, match, lazyRoutePropertiesToSkip, scopedContext, true, shouldRevalidateArgs);
+    });
+  }
+  async function callDataStrategyImpl(dataStrategyImpl, request, matches, fetcherKey, scopedContext, isStaticHandler) {
+    if (matches.some((m) => m._lazyPromises?.middleware)) {
+      await Promise.all(matches.map((m) => m._lazyPromises?.middleware));
+    }
+    let dataStrategyArgs = {
+      request,
+      params: matches[0].params,
+      context: scopedContext,
+      matches
+    };
+    let unstable_runClientMiddleware = isStaticHandler ? () => {
+      throw new Error("You cannot call `unstable_runClientMiddleware()` from a static handler `dataStrategy`. Middleware is run outside of `dataStrategy` during SSR in order to bubble up the Response.  You can enable middleware via the `respond` API in `query`/`queryRoute`");
+    } : (cb) => {
+      let typedDataStrategyArgs = dataStrategyArgs;
+      return runMiddlewarePipeline(typedDataStrategyArgs, false, () => cb({
+        ...typedDataStrategyArgs,
+        fetcherKey,
+        unstable_runClientMiddleware: () => {
+          throw new Error("Cannot call `unstable_runClientMiddleware()` from within an `unstable_runClientMiddleware` handler");
+        }
+      }), (error, routeId) => ({
+        [routeId]: { type: "error", result: error }
+      }));
+    };
+    let results = await dataStrategyImpl({
+      ...dataStrategyArgs,
+      fetcherKey,
+      unstable_runClientMiddleware
+    });
+    try {
+      await Promise.all(matches.flatMap((m) => [m._lazyPromises?.handler, m._lazyPromises?.route]));
+    } catch (e) {
+    }
+    return results;
+  }
+  async function callLoaderOrAction({
+    request,
+    match,
+    lazyHandlerPromise,
+    lazyRoutePromise,
+    handlerOverride,
+    scopedContext
+  }) {
+    let result;
+    let onReject;
+    let isAction = isMutationMethod(request.method);
+    let type = isAction ? "action" : "loader";
+    let runHandler = (handler) => {
+      let reject;
+      let abortPromise = new Promise((_, r) => reject = r);
+      onReject = () => reject();
+      request.signal.addEventListener("abort", onReject);
+      let actualHandler = (ctx) => {
+        if (typeof handler !== "function") {
+          return Promise.reject(new Error(`You cannot call the handler for a route which defines a boolean "${type}" [routeId: ${match.route.id}]`));
+        }
+        return handler({
+          request,
+          params: match.params,
+          context: scopedContext
+        }, ...ctx !== undefined ? [ctx] : []);
+      };
+      let handlerPromise = (async () => {
+        try {
+          let val = await (handlerOverride ? handlerOverride((ctx) => actualHandler(ctx)) : actualHandler());
+          return { type: "data", result: val };
+        } catch (e) {
+          return { type: "error", result: e };
+        }
+      })();
+      return Promise.race([handlerPromise, abortPromise]);
+    };
+    try {
+      let handler = isAction ? match.route.action : match.route.loader;
+      if (lazyHandlerPromise || lazyRoutePromise) {
+        if (handler) {
+          let handlerError;
+          let [value] = await Promise.all([
+            runHandler(handler).catch((e) => {
+              handlerError = e;
+            }),
+            lazyHandlerPromise,
+            lazyRoutePromise
+          ]);
+          if (handlerError !== undefined) {
+            throw handlerError;
+          }
+          result = value;
+        } else {
+          await lazyHandlerPromise;
+          let handler2 = isAction ? match.route.action : match.route.loader;
+          if (handler2) {
+            [result] = await Promise.all([runHandler(handler2), lazyRoutePromise]);
+          } else if (type === "action") {
+            let url = new URL(request.url);
+            let pathname = url.pathname + url.search;
+            throw getInternalRouterError(405, {
+              method: request.method,
+              pathname,
+              routeId: match.route.id
+            });
+          } else {
+            return { type: "data", result: undefined };
+          }
+        }
+      } else if (!handler) {
+        let url = new URL(request.url);
+        let pathname = url.pathname + url.search;
+        throw getInternalRouterError(404, {
+          pathname
+        });
+      } else {
+        result = await runHandler(handler);
+      }
+    } catch (e) {
+      return { type: "error", result: e };
+    } finally {
+      if (onReject) {
+        request.signal.removeEventListener("abort", onReject);
+      }
+    }
+    return result;
+  }
+  async function convertDataStrategyResultToDataResult(dataStrategyResult) {
+    let { result, type } = dataStrategyResult;
+    if (isResponse(result)) {
+      let data2;
+      try {
+        let contentType = result.headers.get("Content-Type");
+        if (contentType && /\bapplication\/json\b/.test(contentType)) {
+          if (result.body == null) {
+            data2 = null;
+          } else {
+            data2 = await result.json();
+          }
+        } else {
+          data2 = await result.text();
+        }
+      } catch (e) {
+        return { type: "error", error: e };
+      }
+      if (type === "error") {
+        return {
+          type: "error",
+          error: new ErrorResponseImpl(result.status, result.statusText, data2),
+          statusCode: result.status,
+          headers: result.headers
+        };
+      }
+      return {
+        type: "data",
+        data: data2,
+        statusCode: result.status,
+        headers: result.headers
+      };
+    }
+    if (type === "error") {
+      if (isDataWithResponseInit(result)) {
+        if (result.data instanceof Error) {
+          return {
+            type: "error",
+            error: result.data,
+            statusCode: result.init?.status,
+            headers: result.init?.headers ? new Headers(result.init.headers) : undefined
+          };
+        }
+        return {
+          type: "error",
+          error: new ErrorResponseImpl(result.init?.status || 500, undefined, result.data),
+          statusCode: isRouteErrorResponse(result) ? result.status : undefined,
+          headers: result.init?.headers ? new Headers(result.init.headers) : undefined
+        };
+      }
+      return {
+        type: "error",
+        error: result,
+        statusCode: isRouteErrorResponse(result) ? result.status : undefined
+      };
+    }
+    if (isDataWithResponseInit(result)) {
+      return {
+        type: "data",
+        data: result.data,
+        statusCode: result.init?.status,
+        headers: result.init?.headers ? new Headers(result.init.headers) : undefined
+      };
+    }
+    return { type: "data", data: result };
+  }
+  function normalizeRelativeRoutingRedirectResponse(response, request, routeId, matches, basename) {
+    let location2 = response.headers.get("Location");
+    invariant(location2, "Redirects returned/thrown from loaders/actions must have a Location header");
+    if (!ABSOLUTE_URL_REGEX.test(location2)) {
+      let trimmedMatches = matches.slice(0, matches.findIndex((m) => m.route.id === routeId) + 1);
+      location2 = normalizeTo(new URL(request.url), trimmedMatches, basename, location2);
+      response.headers.set("Location", location2);
+    }
+    return response;
+  }
+  function normalizeRedirectLocation(location2, currentUrl, basename) {
+    if (ABSOLUTE_URL_REGEX.test(location2)) {
+      let normalizedLocation = location2;
+      let url = normalizedLocation.startsWith("//") ? new URL(currentUrl.protocol + normalizedLocation) : new URL(normalizedLocation);
+      let isSameBasename = stripBasename(url.pathname, basename) != null;
+      if (url.origin === currentUrl.origin && isSameBasename) {
+        return url.pathname + url.search + url.hash;
+      }
+    }
+    return location2;
+  }
+  function createClientSideRequest(history, location2, signal, submission) {
+    let url = history.createURL(stripHashFromPath(location2)).toString();
+    let init = { signal };
+    if (submission && isMutationMethod(submission.formMethod)) {
+      let { formMethod, formEncType } = submission;
+      init.method = formMethod.toUpperCase();
+      if (formEncType === "application/json") {
+        init.headers = new Headers({ "Content-Type": formEncType });
+        init.body = JSON.stringify(submission.json);
+      } else if (formEncType === "text/plain") {
+        init.body = submission.text;
+      } else if (formEncType === "application/x-www-form-urlencoded" && submission.formData) {
+        init.body = convertFormDataToSearchParams(submission.formData);
+      } else {
+        init.body = submission.formData;
+      }
+    }
+    return new Request(url, init);
+  }
+  function convertFormDataToSearchParams(formData) {
+    let searchParams = new URLSearchParams;
+    for (let [key, value] of formData.entries()) {
+      searchParams.append(key, typeof value === "string" ? value : value.name);
+    }
+    return searchParams;
+  }
+  function convertSearchParamsToFormData(searchParams) {
+    let formData = new FormData;
+    for (let [key, value] of searchParams.entries()) {
+      formData.append(key, value);
+    }
+    return formData;
+  }
+  function processRouteLoaderData(matches, results, pendingActionResult, isStaticHandler = false, skipLoaderErrorBubbling = false) {
+    let loaderData = {};
+    let errors = null;
+    let statusCode;
+    let foundError = false;
+    let loaderHeaders = {};
+    let pendingError = pendingActionResult && isErrorResult(pendingActionResult[1]) ? pendingActionResult[1].error : undefined;
+    matches.forEach((match) => {
+      if (!(match.route.id in results)) {
+        return;
+      }
+      let id = match.route.id;
+      let result = results[id];
+      invariant(!isRedirectResult(result), "Cannot handle redirect results in processLoaderData");
+      if (isErrorResult(result)) {
+        let error = result.error;
+        if (pendingError !== undefined) {
+          error = pendingError;
+          pendingError = undefined;
+        }
+        errors = errors || {};
+        if (skipLoaderErrorBubbling) {
+          errors[id] = error;
+        } else {
+          let boundaryMatch = findNearestBoundary(matches, id);
+          if (errors[boundaryMatch.route.id] == null) {
+            errors[boundaryMatch.route.id] = error;
+          }
+        }
+        if (!isStaticHandler) {
+          loaderData[id] = ResetLoaderDataSymbol;
+        }
+        if (!foundError) {
+          foundError = true;
+          statusCode = isRouteErrorResponse(result.error) ? result.error.status : 500;
+        }
+        if (result.headers) {
+          loaderHeaders[id] = result.headers;
+        }
+      } else {
+        loaderData[id] = result.data;
+        if (result.statusCode && result.statusCode !== 200 && !foundError) {
+          statusCode = result.statusCode;
+        }
+        if (result.headers) {
+          loaderHeaders[id] = result.headers;
+        }
+      }
+    });
+    if (pendingError !== undefined && pendingActionResult) {
+      errors = { [pendingActionResult[0]]: pendingError };
+      if (pendingActionResult[2]) {
+        loaderData[pendingActionResult[2]] = undefined;
+      }
+    }
+    return {
+      loaderData,
+      errors,
+      statusCode: statusCode || 200,
+      loaderHeaders
+    };
+  }
+  function processLoaderData(state, matches, results, pendingActionResult, revalidatingFetchers, fetcherResults) {
+    let { loaderData, errors } = processRouteLoaderData(matches, results, pendingActionResult);
+    revalidatingFetchers.filter((f) => !f.matches || f.matches.some((m) => m.shouldLoad)).forEach((rf) => {
+      let { key, match, controller } = rf;
+      let result = fetcherResults[key];
+      invariant(result, "Did not find corresponding fetcher result");
+      if (controller && controller.signal.aborted) {
+        return;
+      } else if (isErrorResult(result)) {
+        let boundaryMatch = findNearestBoundary(state.matches, match?.route.id);
+        if (!(errors && errors[boundaryMatch.route.id])) {
+          errors = {
+            ...errors,
+            [boundaryMatch.route.id]: result.error
+          };
+        }
+        state.fetchers.delete(key);
+      } else if (isRedirectResult(result)) {
+        invariant(false, "Unhandled fetcher revalidation redirect");
+      } else {
+        let doneFetcher = getDoneFetcher(result.data);
+        state.fetchers.set(key, doneFetcher);
+      }
+    });
+    return { loaderData, errors };
+  }
+  function mergeLoaderData(loaderData, newLoaderData, matches, errors) {
+    let mergedLoaderData = Object.entries(newLoaderData).filter(([, v]) => v !== ResetLoaderDataSymbol).reduce((merged, [k, v]) => {
+      merged[k] = v;
+      return merged;
+    }, {});
+    for (let match of matches) {
+      let id = match.route.id;
+      if (!newLoaderData.hasOwnProperty(id) && loaderData.hasOwnProperty(id) && match.route.loader) {
+        mergedLoaderData[id] = loaderData[id];
+      }
+      if (errors && errors.hasOwnProperty(id)) {
+        break;
+      }
+    }
+    return mergedLoaderData;
+  }
+  function getActionDataForCommit(pendingActionResult) {
+    if (!pendingActionResult) {
+      return {};
+    }
+    return isErrorResult(pendingActionResult[1]) ? {
+      actionData: {}
+    } : {
+      actionData: {
+        [pendingActionResult[0]]: pendingActionResult[1].data
+      }
+    };
+  }
+  function findNearestBoundary(matches, routeId) {
+    let eligibleMatches = routeId ? matches.slice(0, matches.findIndex((m) => m.route.id === routeId) + 1) : [...matches];
+    return eligibleMatches.reverse().find((m) => m.route.hasErrorBoundary === true) || matches[0];
+  }
+  function getShortCircuitMatches(routes) {
+    let route = routes.length === 1 ? routes[0] : routes.find((r) => r.index || !r.path || r.path === "/") || {
+      id: `__shim-error-route__`
+    };
+    return {
+      matches: [
+        {
+          params: {},
+          pathname: "",
+          pathnameBase: "",
+          route
+        }
+      ],
+      route
+    };
+  }
+  function getInternalRouterError(status, {
+    pathname,
+    routeId,
+    method,
+    type,
+    message
+  } = {}) {
+    let statusText = "Unknown Server Error";
+    let errorMessage = "Unknown @remix-run/router error";
+    if (status === 400) {
+      statusText = "Bad Request";
+      if (method && pathname && routeId) {
+        errorMessage = `You made a ${method} request to "${pathname}" but did not provide a \`loader\` for route "${routeId}", so there is no way to handle the request.`;
+      } else if (type === "invalid-body") {
+        errorMessage = "Unable to encode submission body";
+      }
+    } else if (status === 403) {
+      statusText = "Forbidden";
+      errorMessage = `Route "${routeId}" does not match URL "${pathname}"`;
+    } else if (status === 404) {
+      statusText = "Not Found";
+      errorMessage = `No route matches URL "${pathname}"`;
+    } else if (status === 405) {
+      statusText = "Method Not Allowed";
+      if (method && pathname && routeId) {
+        errorMessage = `You made a ${method.toUpperCase()} request to "${pathname}" but did not provide an \`action\` for route "${routeId}", so there is no way to handle the request.`;
+      } else if (method) {
+        errorMessage = `Invalid request method "${method.toUpperCase()}"`;
+      }
+    }
+    return new ErrorResponseImpl(status || 500, statusText, new Error(errorMessage), true);
+  }
+  function findRedirect(results) {
+    let entries = Object.entries(results);
+    for (let i = entries.length - 1;i >= 0; i--) {
+      let [key, result] = entries[i];
+      if (isRedirectResult(result)) {
+        return { key, result };
+      }
+    }
+  }
+  function stripHashFromPath(path) {
+    let parsedPath = typeof path === "string" ? parsePath(path) : path;
+    return createPath({ ...parsedPath, hash: "" });
+  }
+  function isHashChangeOnly(a, b) {
+    if (a.pathname !== b.pathname || a.search !== b.search) {
+      return false;
+    }
+    if (a.hash === "") {
+      return b.hash !== "";
+    } else if (a.hash === b.hash) {
+      return true;
+    } else if (b.hash !== "") {
+      return true;
+    }
     return false;
   }
-  let currentPath = stripBasename(vtContext.currentLocation.pathname, basename) || vtContext.currentLocation.pathname;
-  let nextPath = stripBasename(vtContext.nextLocation.pathname, basename) || vtContext.nextLocation.pathname;
-  return matchPath(path.pathname, nextPath) != null || matchPath(path.pathname, currentPath) != null;
-}
-var encoder = new TextEncoder;
-var SERVER_NO_BODY_STATUS_CODES = /* @__PURE__ */ new Set([
-  ...NO_BODY_STATUS_CODES,
-  304
-]);
+  function isRedirectDataStrategyResult(result) {
+    return isResponse(result.result) && redirectStatusCodes.has(result.result.status);
+  }
+  function isErrorResult(result) {
+    return result.type === "error";
+  }
+  function isRedirectResult(result) {
+    return (result && result.type) === "redirect";
+  }
+  function isDataWithResponseInit(value) {
+    return typeof value === "object" && value != null && "type" in value && "data" in value && "init" in value && value.type === "DataWithResponseInit";
+  }
+  function isResponse(value) {
+    return value != null && typeof value.status === "number" && typeof value.statusText === "string" && typeof value.headers === "object" && typeof value.body !== "undefined";
+  }
+  function isValidMethod(method) {
+    return validRequestMethods.has(method.toUpperCase());
+  }
+  function isMutationMethod(method) {
+    return validMutationMethods.has(method.toUpperCase());
+  }
+  function hasNakedIndexQuery(search) {
+    return new URLSearchParams(search).getAll("index").some((v) => v === "");
+  }
+  function getTargetMatch(matches, location2) {
+    let search = typeof location2 === "string" ? parsePath(location2).search : location2.search;
+    if (matches[matches.length - 1].route.index && hasNakedIndexQuery(search || "")) {
+      return matches[matches.length - 1];
+    }
+    let pathMatches = getPathContributingMatches(matches);
+    return pathMatches[pathMatches.length - 1];
+  }
+  function getSubmissionFromNavigation(navigation) {
+    let { formMethod, formAction, formEncType, text, formData, json } = navigation;
+    if (!formMethod || !formAction || !formEncType) {
+      return;
+    }
+    if (text != null) {
+      return {
+        formMethod,
+        formAction,
+        formEncType,
+        formData: undefined,
+        json: undefined,
+        text
+      };
+    } else if (formData != null) {
+      return {
+        formMethod,
+        formAction,
+        formEncType,
+        formData,
+        json: undefined,
+        text: undefined
+      };
+    } else if (json !== undefined) {
+      return {
+        formMethod,
+        formAction,
+        formEncType,
+        formData: undefined,
+        json,
+        text: undefined
+      };
+    }
+  }
+  function getLoadingNavigation(location2, submission) {
+    if (submission) {
+      let navigation = {
+        state: "loading",
+        location: location2,
+        formMethod: submission.formMethod,
+        formAction: submission.formAction,
+        formEncType: submission.formEncType,
+        formData: submission.formData,
+        json: submission.json,
+        text: submission.text
+      };
+      return navigation;
+    } else {
+      let navigation = {
+        state: "loading",
+        location: location2,
+        formMethod: undefined,
+        formAction: undefined,
+        formEncType: undefined,
+        formData: undefined,
+        json: undefined,
+        text: undefined
+      };
+      return navigation;
+    }
+  }
+  function getSubmittingNavigation(location2, submission) {
+    let navigation = {
+      state: "submitting",
+      location: location2,
+      formMethod: submission.formMethod,
+      formAction: submission.formAction,
+      formEncType: submission.formEncType,
+      formData: submission.formData,
+      json: submission.json,
+      text: submission.text
+    };
+    return navigation;
+  }
+  function getLoadingFetcher(submission, data2) {
+    if (submission) {
+      let fetcher = {
+        state: "loading",
+        formMethod: submission.formMethod,
+        formAction: submission.formAction,
+        formEncType: submission.formEncType,
+        formData: submission.formData,
+        json: submission.json,
+        text: submission.text,
+        data: data2
+      };
+      return fetcher;
+    } else {
+      let fetcher = {
+        state: "loading",
+        formMethod: undefined,
+        formAction: undefined,
+        formEncType: undefined,
+        formData: undefined,
+        json: undefined,
+        text: undefined,
+        data: data2
+      };
+      return fetcher;
+    }
+  }
+  function getSubmittingFetcher(submission, existingFetcher) {
+    let fetcher = {
+      state: "submitting",
+      formMethod: submission.formMethod,
+      formAction: submission.formAction,
+      formEncType: submission.formEncType,
+      formData: submission.formData,
+      json: submission.json,
+      text: submission.text,
+      data: existingFetcher ? existingFetcher.data : undefined
+    };
+    return fetcher;
+  }
+  function getDoneFetcher(data2) {
+    let fetcher = {
+      state: "idle",
+      formMethod: undefined,
+      formAction: undefined,
+      formEncType: undefined,
+      formData: undefined,
+      json: undefined,
+      text: undefined,
+      data: data2
+    };
+    return fetcher;
+  }
+  function restoreAppliedTransitions(_window, transitions) {
+    try {
+      let sessionPositions = _window.sessionStorage.getItem(TRANSITIONS_STORAGE_KEY);
+      if (sessionPositions) {
+        let json = JSON.parse(sessionPositions);
+        for (let [k, v] of Object.entries(json || {})) {
+          if (v && Array.isArray(v)) {
+            transitions.set(k, new Set(v || []));
+          }
+        }
+      }
+    } catch (e) {
+    }
+  }
+  function persistAppliedTransitions(_window, transitions) {
+    if (transitions.size > 0) {
+      let json = {};
+      for (let [k, v] of transitions) {
+        json[k] = [...v];
+      }
+      try {
+        _window.sessionStorage.setItem(TRANSITIONS_STORAGE_KEY, JSON.stringify(json));
+      } catch (error) {
+        warning(false, `Failed to save applied view transitions in sessionStorage (${error}).`);
+      }
+    }
+  }
+  function createDeferred() {
+    let resolve;
+    let reject;
+    let promise = new Promise((res, rej) => {
+      resolve = async (val) => {
+        res(val);
+        try {
+          await promise;
+        } catch (e) {
+        }
+      };
+      reject = async (error) => {
+        rej(error);
+        try {
+          await promise;
+        } catch (e) {
+        }
+      };
+    });
+    return {
+      promise,
+      resolve,
+      reject
+    };
+  }
+  var React32 = __toESM2(react2);
+  var React8 = __toESM2(react3);
+  var DataRouterContext = React8.createContext(null);
+  DataRouterContext.displayName = "DataRouter";
+  var DataRouterStateContext = React8.createContext(null);
+  DataRouterStateContext.displayName = "DataRouterState";
+  var ViewTransitionContext = React8.createContext({
+    isTransitioning: false
+  });
+  ViewTransitionContext.displayName = "ViewTransition";
+  var FetchersContext = React8.createContext(/* @__PURE__ */ new Map);
+  FetchersContext.displayName = "Fetchers";
+  var AwaitContext = React8.createContext(null);
+  AwaitContext.displayName = "Await";
+  var NavigationContext = React8.createContext(null);
+  NavigationContext.displayName = "Navigation";
+  var LocationContext = React8.createContext(null);
+  LocationContext.displayName = "Location";
+  var RouteContext = React8.createContext({
+    outlet: null,
+    matches: [],
+    isDataRoute: false
+  });
+  RouteContext.displayName = "Route";
+  var RouteErrorContext = React8.createContext(null);
+  RouteErrorContext.displayName = "RouteError";
+  var React22 = __toESM2(react4);
+  var ENABLE_DEV_WARNINGS = true;
+  function useInRouterContext() {
+    return React22.useContext(LocationContext) != null;
+  }
+  function useLocation() {
+    invariant(useInRouterContext(), `useLocation() may be used only in the context of a <Router> component.`);
+    return React22.useContext(LocationContext).location;
+  }
+  var OutletContext = React22.createContext(null);
+  function useRoutesImpl(routes, locationArg, dataRouterState, future) {
+    invariant(useInRouterContext(), `useRoutes() may be used only in the context of a <Router> component.`);
+    let { navigator: navigator2, static: isStatic } = React22.useContext(NavigationContext);
+    let { matches: parentMatches } = React22.useContext(RouteContext);
+    let routeMatch = parentMatches[parentMatches.length - 1];
+    let parentParams = routeMatch ? routeMatch.params : {};
+    let parentPathname = routeMatch ? routeMatch.pathname : "/";
+    let parentPathnameBase = routeMatch ? routeMatch.pathnameBase : "/";
+    let parentRoute = routeMatch && routeMatch.route;
+    if (ENABLE_DEV_WARNINGS) {
+      let parentPath = parentRoute && parentRoute.path || "";
+      warningOnce(parentPathname, !parentRoute || parentPath.endsWith("*") || parentPath.endsWith("*?"), `You rendered descendant <Routes> (or called \`useRoutes()\`) at "${parentPathname}" (under <Route path="${parentPath}">) but the parent route path has no trailing "*". This means if you navigate deeper, the parent won't match anymore and therefore the child routes will never render.
+
+Please change the parent <Route path="${parentPath}"> to <Route path="${parentPath === "/" ? "*" : `${parentPath}/*`}">.`);
+    }
+    let locationFromContext = useLocation();
+    let location2;
+    if (locationArg) {
+      let parsedLocationArg = typeof locationArg === "string" ? parsePath(locationArg) : locationArg;
+      invariant(parentPathnameBase === "/" || parsedLocationArg.pathname?.startsWith(parentPathnameBase), `When overriding the location using \`<Routes location>\` or \`useRoutes(routes, location)\`, the location pathname must begin with the portion of the URL pathname that was matched by all parent routes. The current pathname base is "${parentPathnameBase}" but pathname "${parsedLocationArg.pathname}" was given in the \`location\` prop.`);
+      location2 = parsedLocationArg;
+    } else {
+      location2 = locationFromContext;
+    }
+    let pathname = location2.pathname || "/";
+    let remainingPathname = pathname;
+    if (parentPathnameBase !== "/") {
+      let parentSegments = parentPathnameBase.replace(/^\//, "").split("/");
+      let segments = pathname.replace(/^\//, "").split("/");
+      remainingPathname = "/" + segments.slice(parentSegments.length).join("/");
+    }
+    let matches = !isStatic && dataRouterState && dataRouterState.matches && dataRouterState.matches.length > 0 ? dataRouterState.matches : matchRoutes(routes, { pathname: remainingPathname });
+    if (ENABLE_DEV_WARNINGS) {
+      warning(parentRoute || matches != null, `No routes matched location "${location2.pathname}${location2.search}${location2.hash}" `);
+      warning(matches == null || matches[matches.length - 1].route.element !== undefined || matches[matches.length - 1].route.Component !== undefined || matches[matches.length - 1].route.lazy !== undefined, `Matched leaf route at location "${location2.pathname}${location2.search}${location2.hash}" does not have an element or Component. This means it will render an <Outlet /> with a null value by default resulting in an "empty" page.`);
+    }
+    let renderedMatches = _renderMatches(matches && matches.map((match) => Object.assign({}, match, {
+      params: Object.assign({}, parentParams, match.params),
+      pathname: joinPaths([
+        parentPathnameBase,
+        navigator2.encodeLocation ? navigator2.encodeLocation(match.pathname).pathname : match.pathname
+      ]),
+      pathnameBase: match.pathnameBase === "/" ? parentPathnameBase : joinPaths([
+        parentPathnameBase,
+        navigator2.encodeLocation ? navigator2.encodeLocation(match.pathnameBase).pathname : match.pathnameBase
+      ])
+    })), parentMatches, dataRouterState, future);
+    if (locationArg && renderedMatches) {
+      return /* @__PURE__ */ React22.createElement(LocationContext.Provider, {
+        value: {
+          location: {
+            pathname: "/",
+            search: "",
+            hash: "",
+            state: null,
+            key: "default",
+            ...location2
+          },
+          navigationType: "POP"
+        }
+      }, renderedMatches);
+    }
+    return renderedMatches;
+  }
+  function DefaultErrorComponent() {
+    let error = useRouteError();
+    let message = isRouteErrorResponse(error) ? `${error.status} ${error.statusText}` : error instanceof Error ? error.message : JSON.stringify(error);
+    let stack = error instanceof Error ? error.stack : null;
+    let lightgrey = "rgba(200,200,200, 0.5)";
+    let preStyles = { padding: "0.5rem", backgroundColor: lightgrey };
+    let codeStyles = { padding: "2px 4px", backgroundColor: lightgrey };
+    let devInfo = null;
+    if (ENABLE_DEV_WARNINGS) {
+      console.error("Error handled by React Router default ErrorBoundary:", error);
+      devInfo = /* @__PURE__ */ React22.createElement(React22.Fragment, null, /* @__PURE__ */ React22.createElement("p", null, "\uD83D\uDCBF Hey developer \uD83D\uDC4B"), /* @__PURE__ */ React22.createElement("p", null, "You can provide a way better UX than this when your app throws errors by providing your own ", /* @__PURE__ */ React22.createElement("code", { style: codeStyles }, "ErrorBoundary"), " or", " ", /* @__PURE__ */ React22.createElement("code", { style: codeStyles }, "errorElement"), " prop on your route."));
+    }
+    return /* @__PURE__ */ React22.createElement(React22.Fragment, null, /* @__PURE__ */ React22.createElement("h2", null, "Unexpected Application Error!"), /* @__PURE__ */ React22.createElement("h3", { style: { fontStyle: "italic" } }, message), stack ? /* @__PURE__ */ React22.createElement("pre", { style: preStyles }, stack) : null, devInfo);
+  }
+  var defaultErrorElement = /* @__PURE__ */ React22.createElement(DefaultErrorComponent, null);
+  var RenderErrorBoundary = class extends React22.Component {
+    constructor(props) {
+      super(props);
+      this.state = {
+        location: props.location,
+        revalidation: props.revalidation,
+        error: props.error
+      };
+    }
+    static getDerivedStateFromError(error) {
+      return { error };
+    }
+    static getDerivedStateFromProps(props, state) {
+      if (state.location !== props.location || state.revalidation !== "idle" && props.revalidation === "idle") {
+        return {
+          error: props.error,
+          location: props.location,
+          revalidation: props.revalidation
+        };
+      }
+      return {
+        error: props.error !== undefined ? props.error : state.error,
+        location: state.location,
+        revalidation: props.revalidation || state.revalidation
+      };
+    }
+    componentDidCatch(error, errorInfo) {
+      console.error("React Router caught the following error during render", error, errorInfo);
+    }
+    render() {
+      return this.state.error !== undefined ? /* @__PURE__ */ React22.createElement(RouteContext.Provider, { value: this.props.routeContext }, /* @__PURE__ */ React22.createElement(RouteErrorContext.Provider, {
+        value: this.state.error,
+        children: this.props.component
+      })) : this.props.children;
+    }
+  };
+  function RenderedRoute({ routeContext, match, children }) {
+    let dataRouterContext = React22.useContext(DataRouterContext);
+    if (dataRouterContext && dataRouterContext.static && dataRouterContext.staticContext && (match.route.errorElement || match.route.ErrorBoundary)) {
+      dataRouterContext.staticContext._deepestRenderedBoundaryId = match.route.id;
+    }
+    return /* @__PURE__ */ React22.createElement(RouteContext.Provider, { value: routeContext }, children);
+  }
+  function _renderMatches(matches, parentMatches = [], dataRouterState = null, future = null) {
+    if (matches == null) {
+      if (!dataRouterState) {
+        return null;
+      }
+      if (dataRouterState.errors) {
+        matches = dataRouterState.matches;
+      } else if (parentMatches.length === 0 && !dataRouterState.initialized && dataRouterState.matches.length > 0) {
+        matches = dataRouterState.matches;
+      } else {
+        return null;
+      }
+    }
+    let renderedMatches = matches;
+    let errors = dataRouterState?.errors;
+    if (errors != null) {
+      let errorIndex = renderedMatches.findIndex((m) => m.route.id && errors?.[m.route.id] !== undefined);
+      invariant(errorIndex >= 0, `Could not find a matching route for errors on route IDs: ${Object.keys(errors).join(",")}`);
+      renderedMatches = renderedMatches.slice(0, Math.min(renderedMatches.length, errorIndex + 1));
+    }
+    let renderFallback = false;
+    let fallbackIndex = -1;
+    if (dataRouterState) {
+      for (let i = 0;i < renderedMatches.length; i++) {
+        let match = renderedMatches[i];
+        if (match.route.HydrateFallback || match.route.hydrateFallbackElement) {
+          fallbackIndex = i;
+        }
+        if (match.route.id) {
+          let { loaderData, errors: errors2 } = dataRouterState;
+          let needsToRunLoader = match.route.loader && !loaderData.hasOwnProperty(match.route.id) && (!errors2 || errors2[match.route.id] === undefined);
+          if (match.route.lazy || needsToRunLoader) {
+            renderFallback = true;
+            if (fallbackIndex >= 0) {
+              renderedMatches = renderedMatches.slice(0, fallbackIndex + 1);
+            } else {
+              renderedMatches = [renderedMatches[0]];
+            }
+            break;
+          }
+        }
+      }
+    }
+    return renderedMatches.reduceRight((outlet, match, index) => {
+      let error;
+      let shouldRenderHydrateFallback = false;
+      let errorElement = null;
+      let hydrateFallbackElement = null;
+      if (dataRouterState) {
+        error = errors && match.route.id ? errors[match.route.id] : undefined;
+        errorElement = match.route.errorElement || defaultErrorElement;
+        if (renderFallback) {
+          if (fallbackIndex < 0 && index === 0) {
+            warningOnce("route-fallback", false, "No `HydrateFallback` element provided to render during initial hydration");
+            shouldRenderHydrateFallback = true;
+            hydrateFallbackElement = null;
+          } else if (fallbackIndex === index) {
+            shouldRenderHydrateFallback = true;
+            hydrateFallbackElement = match.route.hydrateFallbackElement || null;
+          }
+        }
+      }
+      let matches2 = parentMatches.concat(renderedMatches.slice(0, index + 1));
+      let getChildren = () => {
+        let children;
+        if (error) {
+          children = errorElement;
+        } else if (shouldRenderHydrateFallback) {
+          children = hydrateFallbackElement;
+        } else if (match.route.Component) {
+          children = /* @__PURE__ */ React22.createElement(match.route.Component, null);
+        } else if (match.route.element) {
+          children = match.route.element;
+        } else {
+          children = outlet;
+        }
+        return /* @__PURE__ */ React22.createElement(RenderedRoute, {
+          match,
+          routeContext: {
+            outlet,
+            matches: matches2,
+            isDataRoute: dataRouterState != null
+          },
+          children
+        });
+      };
+      return dataRouterState && (match.route.ErrorBoundary || match.route.errorElement || index === 0) ? /* @__PURE__ */ React22.createElement(RenderErrorBoundary, {
+        location: dataRouterState.location,
+        revalidation: dataRouterState.revalidation,
+        component: errorElement,
+        error,
+        children: getChildren(),
+        routeContext: { outlet: null, matches: matches2, isDataRoute: true }
+      }) : getChildren();
+    }, null);
+  }
+  function getDataRouterConsoleError(hookName) {
+    return `${hookName} must be used within a data router.  See https://reactrouter.com/en/main/routers/picking-a-router.`;
+  }
+  function useDataRouterState(hookName) {
+    let state = React22.useContext(DataRouterStateContext);
+    invariant(state, getDataRouterConsoleError(hookName));
+    return state;
+  }
+  function useRouteContext(hookName) {
+    let route = React22.useContext(RouteContext);
+    invariant(route, getDataRouterConsoleError(hookName));
+    return route;
+  }
+  function useCurrentRouteId(hookName) {
+    let route = useRouteContext(hookName);
+    let thisRoute = route.matches[route.matches.length - 1];
+    invariant(thisRoute.route.id, `${hookName} can only be used on routes that contain a unique "id"`);
+    return thisRoute.route.id;
+  }
+  function useRouteError() {
+    let error = React22.useContext(RouteErrorContext);
+    let state = useDataRouterState("useRouteError");
+    let routeId = useCurrentRouteId("useRouteError");
+    if (error !== undefined) {
+      return error;
+    }
+    return state.errors?.[routeId];
+  }
+  var alreadyWarned = {};
+  function warningOnce(key, cond, message) {
+    if (!cond && !alreadyWarned[key]) {
+      alreadyWarned[key] = true;
+      warning(false, message);
+    }
+  }
+  var alreadyWarned2 = {};
+  function warnOnce(condition, message) {
+    if (!condition && !alreadyWarned2[message]) {
+      alreadyWarned2[message] = true;
+      console.warn(message);
+    }
+  }
+  var ENABLE_DEV_WARNINGS2 = true;
+  function mapRouteProperties(route) {
+    let updates = {
+      hasErrorBoundary: route.hasErrorBoundary || route.ErrorBoundary != null || route.errorElement != null
+    };
+    if (route.Component) {
+      if (ENABLE_DEV_WARNINGS2) {
+        if (route.element) {
+          warning(false, "You should not include both `Component` and `element` on your route - `Component` will be used.");
+        }
+      }
+      Object.assign(updates, {
+        element: React32.createElement(route.Component),
+        Component: undefined
+      });
+    }
+    if (route.HydrateFallback) {
+      if (ENABLE_DEV_WARNINGS2) {
+        if (route.hydrateFallbackElement) {
+          warning(false, "You should not include both `HydrateFallback` and `hydrateFallbackElement` on your route - `HydrateFallback` will be used.");
+        }
+      }
+      Object.assign(updates, {
+        hydrateFallbackElement: React32.createElement(route.HydrateFallback),
+        HydrateFallback: undefined
+      });
+    }
+    if (route.ErrorBoundary) {
+      if (ENABLE_DEV_WARNINGS2) {
+        if (route.errorElement) {
+          warning(false, "You should not include both `ErrorBoundary` and `errorElement` on your route - `ErrorBoundary` will be used.");
+        }
+      }
+      Object.assign(updates, {
+        errorElement: React32.createElement(route.ErrorBoundary),
+        ErrorBoundary: undefined
+      });
+    }
+    return updates;
+  }
+  var hydrationRouteProperties = [
+    "HydrateFallback",
+    "hydrateFallbackElement"
+  ];
+  var Deferred = class {
+    constructor() {
+      this.status = "pending";
+      this.promise = new Promise((resolve, reject) => {
+        this.resolve = (value) => {
+          if (this.status === "pending") {
+            this.status = "resolved";
+            resolve(value);
+          }
+        };
+        this.reject = (reason) => {
+          if (this.status === "pending") {
+            this.status = "rejected";
+            reject(reason);
+          }
+        };
+      });
+    }
+  };
+  function RouterProvider2({
+    router: router2,
+    flushSync: reactDomFlushSyncImpl
+  }) {
+    let [state, setStateImpl] = React32.useState(router2.state);
+    let [pendingState, setPendingState] = React32.useState();
+    let [vtContext, setVtContext] = React32.useState({
+      isTransitioning: false
+    });
+    let [renderDfd, setRenderDfd] = React32.useState();
+    let [transition, setTransition] = React32.useState();
+    let [interruption, setInterruption] = React32.useState();
+    let fetcherData = React32.useRef(/* @__PURE__ */ new Map);
+    let setState = React32.useCallback((newState, { deletedFetchers, flushSync: flushSync2, viewTransitionOpts }) => {
+      newState.fetchers.forEach((fetcher, key) => {
+        if (fetcher.data !== undefined) {
+          fetcherData.current.set(key, fetcher.data);
+        }
+      });
+      deletedFetchers.forEach((key) => fetcherData.current.delete(key));
+      warnOnce(flushSync2 === false || reactDomFlushSyncImpl != null, 'You provided the `flushSync` option to a router update, but you are not using the `<RouterProvider>` from `react-router/dom` so `ReactDOM.flushSync()` is unavailable.  Please update your app to `import { RouterProvider } from "react-router/dom"` and ensure you have `react-dom` installed as a dependency to use the `flushSync` option.');
+      let isViewTransitionAvailable = router2.window != null && router2.window.document != null && typeof router2.window.document.startViewTransition === "function";
+      warnOnce(viewTransitionOpts == null || isViewTransitionAvailable, "You provided the `viewTransition` option to a router update, but you do not appear to be running in a DOM environment as `window.startViewTransition` is not available.");
+      if (!viewTransitionOpts || !isViewTransitionAvailable) {
+        if (reactDomFlushSyncImpl && flushSync2) {
+          reactDomFlushSyncImpl(() => setStateImpl(newState));
+        } else {
+          React32.startTransition(() => setStateImpl(newState));
+        }
+        return;
+      }
+      if (reactDomFlushSyncImpl && flushSync2) {
+        reactDomFlushSyncImpl(() => {
+          if (transition) {
+            renderDfd && renderDfd.resolve();
+            transition.skipTransition();
+          }
+          setVtContext({
+            isTransitioning: true,
+            flushSync: true,
+            currentLocation: viewTransitionOpts.currentLocation,
+            nextLocation: viewTransitionOpts.nextLocation
+          });
+        });
+        let t = router2.window.document.startViewTransition(() => {
+          reactDomFlushSyncImpl(() => setStateImpl(newState));
+        });
+        t.finished.finally(() => {
+          reactDomFlushSyncImpl(() => {
+            setRenderDfd(undefined);
+            setTransition(undefined);
+            setPendingState(undefined);
+            setVtContext({ isTransitioning: false });
+          });
+        });
+        reactDomFlushSyncImpl(() => setTransition(t));
+        return;
+      }
+      if (transition) {
+        renderDfd && renderDfd.resolve();
+        transition.skipTransition();
+        setInterruption({
+          state: newState,
+          currentLocation: viewTransitionOpts.currentLocation,
+          nextLocation: viewTransitionOpts.nextLocation
+        });
+      } else {
+        setPendingState(newState);
+        setVtContext({
+          isTransitioning: true,
+          flushSync: false,
+          currentLocation: viewTransitionOpts.currentLocation,
+          nextLocation: viewTransitionOpts.nextLocation
+        });
+      }
+    }, [router2.window, reactDomFlushSyncImpl, transition, renderDfd]);
+    React32.useLayoutEffect(() => router2.subscribe(setState), [router2, setState]);
+    React32.useEffect(() => {
+      if (vtContext.isTransitioning && !vtContext.flushSync) {
+        setRenderDfd(new Deferred);
+      }
+    }, [vtContext]);
+    React32.useEffect(() => {
+      if (renderDfd && pendingState && router2.window) {
+        let newState = pendingState;
+        let renderPromise = renderDfd.promise;
+        let transition2 = router2.window.document.startViewTransition(async () => {
+          React32.startTransition(() => setStateImpl(newState));
+          await renderPromise;
+        });
+        transition2.finished.finally(() => {
+          setRenderDfd(undefined);
+          setTransition(undefined);
+          setPendingState(undefined);
+          setVtContext({ isTransitioning: false });
+        });
+        setTransition(transition2);
+      }
+    }, [pendingState, renderDfd, router2.window]);
+    React32.useEffect(() => {
+      if (renderDfd && pendingState && state.location.key === pendingState.location.key) {
+        renderDfd.resolve();
+      }
+    }, [renderDfd, transition, state.location, pendingState]);
+    React32.useEffect(() => {
+      if (!vtContext.isTransitioning && interruption) {
+        setPendingState(interruption.state);
+        setVtContext({
+          isTransitioning: true,
+          flushSync: false,
+          currentLocation: interruption.currentLocation,
+          nextLocation: interruption.nextLocation
+        });
+        setInterruption(undefined);
+      }
+    }, [vtContext.isTransitioning, interruption]);
+    let navigator2 = React32.useMemo(() => {
+      return {
+        createHref: router2.createHref,
+        encodeLocation: router2.encodeLocation,
+        go: (n) => router2.navigate(n),
+        push: (to, state2, opts) => router2.navigate(to, {
+          state: state2,
+          preventScrollReset: opts?.preventScrollReset
+        }),
+        replace: (to, state2, opts) => router2.navigate(to, {
+          replace: true,
+          state: state2,
+          preventScrollReset: opts?.preventScrollReset
+        })
+      };
+    }, [router2]);
+    let basename = router2.basename || "/";
+    let dataRouterContext = React32.useMemo(() => ({
+      router: router2,
+      navigator: navigator2,
+      static: false,
+      basename
+    }), [router2, navigator2, basename]);
+    return /* @__PURE__ */ React32.createElement(React32.Fragment, null, /* @__PURE__ */ React32.createElement(DataRouterContext.Provider, { value: dataRouterContext }, /* @__PURE__ */ React32.createElement(DataRouterStateContext.Provider, { value: state }, /* @__PURE__ */ React32.createElement(FetchersContext.Provider, { value: fetcherData.current }, /* @__PURE__ */ React32.createElement(ViewTransitionContext.Provider, { value: vtContext }, /* @__PURE__ */ React32.createElement(Router, {
+      basename,
+      location: state.location,
+      navigationType: state.historyAction,
+      navigator: navigator2
+    }, /* @__PURE__ */ React32.createElement(MemoizedDataRoutes, {
+      routes: router2.routes,
+      future: router2.future,
+      state
+    })))))), null);
+  }
+  var MemoizedDataRoutes = React32.memo(DataRoutes);
+  function DataRoutes({
+    routes,
+    future,
+    state
+  }) {
+    return useRoutesImpl(routes, undefined, state, future);
+  }
+  function Router({
+    basename: basenameProp = "/",
+    children = null,
+    location: locationProp,
+    navigationType = "POP",
+    navigator: navigator2,
+    static: staticProp = false
+  }) {
+    invariant(!useInRouterContext(), `You cannot render a <Router> inside another <Router>. You should never have more than one in your app.`);
+    let basename = basenameProp.replace(/^\/*/, "/");
+    let navigationContext = React32.useMemo(() => ({
+      basename,
+      navigator: navigator2,
+      static: staticProp,
+      future: {}
+    }), [basename, navigator2, staticProp]);
+    if (typeof locationProp === "string") {
+      locationProp = parsePath(locationProp);
+    }
+    let {
+      pathname = "/",
+      search = "",
+      hash = "",
+      state = null,
+      key = "default"
+    } = locationProp;
+    let locationContext = React32.useMemo(() => {
+      let trailingPathname = stripBasename(pathname, basename);
+      if (trailingPathname == null) {
+        return null;
+      }
+      return {
+        location: {
+          pathname: trailingPathname,
+          search,
+          hash,
+          state,
+          key
+        },
+        navigationType
+      };
+    }, [basename, pathname, search, hash, state, key, navigationType]);
+    warning(locationContext != null, `<Router basename="${basename}"> is not able to match the URL "${pathname}${search}${hash}" because it does not start with the basename, so the <Router> won't render anything.`);
+    if (locationContext == null) {
+      return null;
+    }
+    return /* @__PURE__ */ React32.createElement(NavigationContext.Provider, { value: navigationContext }, /* @__PURE__ */ React32.createElement(LocationContext.Provider, { children, value: locationContext }));
+  }
+  var React9 = __toESM2(react5);
+  function invariant2(value, message) {
+    if (value === false || value === null || typeof value === "undefined") {
+      throw new Error(message);
+    }
+  }
+  async function loadRouteModule(route, routeModulesCache) {
+    if (route.id in routeModulesCache) {
+      return routeModulesCache[route.id];
+    }
+    try {
+      let routeModule = await import(route.module);
+      routeModulesCache[route.id] = routeModule;
+      return routeModule;
+    } catch (error) {
+      console.error(`Error loading route module \`${route.module}\`, reloading page...`);
+      console.error(error);
+      if (window.__reactRouterContext && window.__reactRouterContext.isSpaMode && undefined) {
+      }
+      window.location.reload();
+      return new Promise(() => {
+      });
+    }
+  }
+  function getRouteCssDescriptors(route) {
+    if (!route.css)
+      return [];
+    return route.css.map((href) => ({ rel: "stylesheet", href }));
+  }
+  async function prefetchRouteCss(route) {
+    if (!route.css)
+      return;
+    let descriptors = getRouteCssDescriptors(route);
+    await Promise.all(descriptors.map(prefetchStyleLink));
+  }
+  async function prefetchStyleLinks(route, routeModule) {
+    if (!route.css && !routeModule.links || !isPreloadSupported())
+      return;
+    let descriptors = [];
+    if (route.css) {
+      descriptors.push(...getRouteCssDescriptors(route));
+    }
+    if (routeModule.links) {
+      descriptors.push(...routeModule.links());
+    }
+    if (descriptors.length === 0)
+      return;
+    let styleLinks = [];
+    for (let descriptor of descriptors) {
+      if (!isPageLinkDescriptor(descriptor) && descriptor.rel === "stylesheet") {
+        styleLinks.push({
+          ...descriptor,
+          rel: "preload",
+          as: "style"
+        });
+      }
+    }
+    await Promise.all(styleLinks.map(prefetchStyleLink));
+  }
+  async function prefetchStyleLink(descriptor) {
+    return new Promise((resolve) => {
+      if (descriptor.media && !window.matchMedia(descriptor.media).matches || document.querySelector(`link[rel="stylesheet"][href="${descriptor.href}"]`)) {
+        return resolve();
+      }
+      let link = document.createElement("link");
+      Object.assign(link, descriptor);
+      function removeLink() {
+        if (document.head.contains(link)) {
+          document.head.removeChild(link);
+        }
+      }
+      link.onload = () => {
+        removeLink();
+        resolve();
+      };
+      link.onerror = () => {
+        removeLink();
+        resolve();
+      };
+      document.head.appendChild(link);
+    });
+  }
+  function isPageLinkDescriptor(object) {
+    return object != null && typeof object.page === "string";
+  }
+  function getModuleLinkHrefs(matches, manifest, { includeHydrateFallback } = {}) {
+    return dedupeHrefs(matches.map((match) => {
+      let route = manifest.routes[match.route.id];
+      if (!route)
+        return [];
+      let hrefs = [route.module];
+      if (route.clientActionModule) {
+        hrefs = hrefs.concat(route.clientActionModule);
+      }
+      if (route.clientLoaderModule) {
+        hrefs = hrefs.concat(route.clientLoaderModule);
+      }
+      if (includeHydrateFallback && route.hydrateFallbackModule) {
+        hrefs = hrefs.concat(route.hydrateFallbackModule);
+      }
+      if (route.imports) {
+        hrefs = hrefs.concat(route.imports);
+      }
+      return hrefs;
+    }).flat(1));
+  }
+  function dedupeHrefs(hrefs) {
+    return [...new Set(hrefs)];
+  }
+  var _isPreloadSupported;
+  function isPreloadSupported() {
+    if (_isPreloadSupported !== undefined) {
+      return _isPreloadSupported;
+    }
+    let el = document.createElement("link");
+    _isPreloadSupported = el.relList.supports("preload");
+    el = null;
+    return _isPreloadSupported;
+  }
+  function createHtml(html) {
+    return { __html: html };
+  }
+  var React42 = __toESM2(react6);
+  var import_turbo_stream = require_turbo_stream();
+  async function createRequestInit(request) {
+    let init = { signal: request.signal };
+    if (request.method !== "GET") {
+      init.method = request.method;
+      let contentType = request.headers.get("Content-Type");
+      if (contentType && /\bapplication\/json\b/.test(contentType)) {
+        init.headers = { "Content-Type": contentType };
+        init.body = JSON.stringify(await request.json());
+      } else if (contentType && /\btext\/plain\b/.test(contentType)) {
+        init.headers = { "Content-Type": contentType };
+        init.body = await request.text();
+      } else if (contentType && /\bapplication\/x-www-form-urlencoded\b/.test(contentType)) {
+        init.body = new URLSearchParams(await request.text());
+      } else {
+        init.body = await request.formData();
+      }
+    }
+    return init;
+  }
+  var SingleFetchRedirectSymbol = Symbol("SingleFetchRedirect");
+  var SINGLE_FETCH_REDIRECT_STATUS = 202;
+  var NO_BODY_STATUS_CODES = /* @__PURE__ */ new Set([100, 101, 204, 205]);
+  function getTurboStreamSingleFetchDataStrategy(getRouter, manifest, routeModules, ssr, basename) {
+    let dataStrategy = getSingleFetchDataStrategyImpl(getRouter, (match) => {
+      let manifestRoute = manifest.routes[match.route.id];
+      invariant2(manifestRoute, "Route not found in manifest");
+      let routeModule = routeModules[match.route.id];
+      return {
+        hasLoader: manifestRoute.hasLoader,
+        hasClientLoader: manifestRoute.hasClientLoader,
+        hasShouldRevalidate: Boolean(routeModule?.shouldRevalidate)
+      };
+    }, fetchAndDecodeViaTurboStream, ssr, basename);
+    return async (args) => args.unstable_runClientMiddleware(dataStrategy);
+  }
+  function getSingleFetchDataStrategyImpl(getRouter, getRouteInfo, fetchAndDecode, ssr, basename) {
+    return async (args) => {
+      let { request, matches, fetcherKey } = args;
+      let router2 = getRouter();
+      if (request.method !== "GET") {
+        return singleFetchActionStrategy(args, fetchAndDecode, basename);
+      }
+      let foundRevalidatingServerLoader = matches.some((m) => {
+        let { hasLoader, hasClientLoader } = getRouteInfo(m);
+        return m.unstable_shouldCallHandler() && hasLoader && !hasClientLoader;
+      });
+      if (!ssr && !foundRevalidatingServerLoader) {
+        return nonSsrStrategy(args, getRouteInfo, fetchAndDecode, basename);
+      }
+      if (fetcherKey) {
+        return singleFetchLoaderFetcherStrategy(args, fetchAndDecode, basename);
+      }
+      return singleFetchLoaderNavigationStrategy(args, router2, getRouteInfo, fetchAndDecode, ssr, basename);
+    };
+  }
+  async function singleFetchActionStrategy(args, fetchAndDecode, basename) {
+    let actionMatch = args.matches.find((m) => m.unstable_shouldCallHandler());
+    invariant2(actionMatch, "No action match found");
+    let actionStatus = undefined;
+    let result = await actionMatch.resolve(async (handler) => {
+      let result2 = await handler(async () => {
+        let { data: data2, status } = await fetchAndDecode(args, basename, [
+          actionMatch.route.id
+        ]);
+        actionStatus = status;
+        return unwrapSingleFetchResult(data2, actionMatch.route.id);
+      });
+      return result2;
+    });
+    if (isResponse(result.result) || isRouteErrorResponse(result.result)) {
+      return { [actionMatch.route.id]: result };
+    }
+    return {
+      [actionMatch.route.id]: {
+        type: result.type,
+        result: data(result.result, actionStatus)
+      }
+    };
+  }
+  async function nonSsrStrategy(args, getRouteInfo, fetchAndDecode, basename) {
+    let matchesToLoad = args.matches.filter((m) => m.unstable_shouldCallHandler());
+    let results = {};
+    await Promise.all(matchesToLoad.map((m) => m.resolve(async (handler) => {
+      try {
+        let { hasClientLoader } = getRouteInfo(m);
+        let routeId = m.route.id;
+        let result = hasClientLoader ? await handler(async () => {
+          let { data: data2 } = await fetchAndDecode(args, basename, [routeId]);
+          return unwrapSingleFetchResult(data2, routeId);
+        }) : await handler();
+        results[m.route.id] = { type: "data", result };
+      } catch (e) {
+        results[m.route.id] = { type: "error", result: e };
+      }
+    })));
+    return results;
+  }
+  async function singleFetchLoaderNavigationStrategy(args, router2, getRouteInfo, fetchAndDecode, ssr, basename) {
+    let routesParams = /* @__PURE__ */ new Set;
+    let foundOptOutRoute = false;
+    let routeDfds = args.matches.map(() => createDeferred2());
+    let singleFetchDfd = createDeferred2();
+    let results = {};
+    let resolvePromise = Promise.all(args.matches.map(async (m, i) => m.resolve(async (handler) => {
+      routeDfds[i].resolve();
+      let routeId = m.route.id;
+      let { hasLoader, hasClientLoader, hasShouldRevalidate } = getRouteInfo(m);
+      let defaultShouldRevalidate = !m.unstable_shouldRevalidateArgs || m.unstable_shouldRevalidateArgs.actionStatus == null || m.unstable_shouldRevalidateArgs.actionStatus < 400;
+      let shouldCall = m.unstable_shouldCallHandler(defaultShouldRevalidate);
+      if (!shouldCall) {
+        foundOptOutRoute || (foundOptOutRoute = m.unstable_shouldRevalidateArgs != null && hasLoader && hasShouldRevalidate === true);
+        return;
+      }
+      if (hasClientLoader) {
+        if (hasLoader) {
+          foundOptOutRoute = true;
+        }
+        try {
+          let result = await handler(async () => {
+            let { data: data2 } = await fetchAndDecode(args, basename, [routeId]);
+            return unwrapSingleFetchResult(data2, routeId);
+          });
+          results[routeId] = { type: "data", result };
+        } catch (e) {
+          results[routeId] = { type: "error", result: e };
+        }
+        return;
+      }
+      if (hasLoader) {
+        routesParams.add(routeId);
+      }
+      try {
+        let result = await handler(async () => {
+          let data2 = await singleFetchDfd.promise;
+          return unwrapSingleFetchResult(data2, routeId);
+        });
+        results[routeId] = { type: "data", result };
+      } catch (e) {
+        results[routeId] = { type: "error", result: e };
+      }
+    })));
+    await Promise.all(routeDfds.map((d) => d.promise));
+    let isInitialLoad = !router2.state.initialized && router2.state.navigation.state === "idle";
+    if ((isInitialLoad || routesParams.size === 0) && !window.__reactRouterHdrActive) {
+      singleFetchDfd.resolve({ routes: {} });
+    } else {
+      let targetRoutes = ssr && foundOptOutRoute && routesParams.size > 0 ? [...routesParams.keys()] : undefined;
+      try {
+        let data2 = await fetchAndDecode(args, basename, targetRoutes);
+        singleFetchDfd.resolve(data2.data);
+      } catch (e) {
+        singleFetchDfd.reject(e);
+      }
+    }
+    await resolvePromise;
+    return results;
+  }
+  async function singleFetchLoaderFetcherStrategy(args, fetchAndDecode, basename) {
+    let fetcherMatch = args.matches.find((m) => m.unstable_shouldCallHandler());
+    invariant2(fetcherMatch, "No fetcher match found");
+    let routeId = fetcherMatch.route.id;
+    let result = await fetcherMatch.resolve(async (handler) => handler(async () => {
+      let { data: data2 } = await fetchAndDecode(args, basename, [routeId]);
+      return unwrapSingleFetchResult(data2, routeId);
+    }));
+    return { [fetcherMatch.route.id]: result };
+  }
+  function stripIndexParam(url) {
+    let indexValues = url.searchParams.getAll("index");
+    url.searchParams.delete("index");
+    let indexValuesToKeep = [];
+    for (let indexValue of indexValues) {
+      if (indexValue) {
+        indexValuesToKeep.push(indexValue);
+      }
+    }
+    for (let toKeep of indexValuesToKeep) {
+      url.searchParams.append("index", toKeep);
+    }
+    return url;
+  }
+  function singleFetchUrl(reqUrl, basename) {
+    let url = typeof reqUrl === "string" ? new URL(reqUrl, typeof window === "undefined" ? "server://singlefetch/" : window.location.origin) : reqUrl;
+    if (url.pathname === "/") {
+      url.pathname = "_root.data";
+    } else if (basename && stripBasename(url.pathname, basename) === "/") {
+      url.pathname = `${basename.replace(/\/$/, "")}/_root.data`;
+    } else {
+      url.pathname = `${url.pathname.replace(/\/$/, "")}.data`;
+    }
+    return url;
+  }
+  async function fetchAndDecodeViaTurboStream(args, basename, targetRoutes) {
+    let { request } = args;
+    let url = singleFetchUrl(request.url, basename);
+    if (request.method === "GET") {
+      url = stripIndexParam(url);
+      if (targetRoutes) {
+        url.searchParams.set("_routes", targetRoutes.join(","));
+      }
+    }
+    let res = await fetch(url, await createRequestInit(request));
+    if (res.status === 404 && !res.headers.has("X-Remix-Response")) {
+      throw new ErrorResponseImpl(404, "Not Found", true);
+    }
+    if (res.status === 204 && res.headers.has("X-Remix-Redirect")) {
+      return {
+        status: SINGLE_FETCH_REDIRECT_STATUS,
+        data: {
+          redirect: {
+            redirect: res.headers.get("X-Remix-Redirect"),
+            status: Number(res.headers.get("X-Remix-Status") || "302"),
+            revalidate: res.headers.get("X-Remix-Revalidate") === "true",
+            reload: res.headers.get("X-Remix-Reload-Document") === "true",
+            replace: res.headers.get("X-Remix-Replace") === "true"
+          }
+        }
+      };
+    }
+    if (NO_BODY_STATUS_CODES.has(res.status)) {
+      let routes = {};
+      if (targetRoutes && request.method !== "GET") {
+        routes[targetRoutes[0]] = { data: undefined };
+      }
+      return {
+        status: res.status,
+        data: { routes }
+      };
+    }
+    invariant2(res.body, "No response body to decode");
+    try {
+      let decoded = await decodeViaTurboStream(res.body, window);
+      let data2;
+      if (request.method === "GET") {
+        let typed = decoded.value;
+        if (SingleFetchRedirectSymbol in typed) {
+          data2 = { redirect: typed[SingleFetchRedirectSymbol] };
+        } else {
+          data2 = { routes: typed };
+        }
+      } else {
+        let typed = decoded.value;
+        let routeId = targetRoutes?.[0];
+        invariant2(routeId, "No routeId found for single fetch call decoding");
+        if ("redirect" in typed) {
+          data2 = { redirect: typed };
+        } else {
+          data2 = { routes: { [routeId]: typed } };
+        }
+      }
+      return { status: res.status, data: data2 };
+    } catch (e) {
+      throw new Error("Unable to decode turbo-stream response");
+    }
+  }
+  function decodeViaTurboStream(body, global2) {
+    return (0, import_turbo_stream.decode)(body, {
+      plugins: [
+        (type, ...rest) => {
+          if (type === "SanitizedError") {
+            let [name, message, stack] = rest;
+            let Constructor = Error;
+            if (name && name in global2 && typeof global2[name] === "function") {
+              Constructor = global2[name];
+            }
+            let error = new Constructor(message);
+            error.stack = stack;
+            return { value: error };
+          }
+          if (type === "ErrorResponse") {
+            let [data2, status, statusText] = rest;
+            return {
+              value: new ErrorResponseImpl(status, statusText, data2)
+            };
+          }
+          if (type === "SingleFetchRedirect") {
+            return { value: { [SingleFetchRedirectSymbol]: rest[0] } };
+          }
+          if (type === "SingleFetchClassInstance") {
+            return { value: rest[0] };
+          }
+          if (type === "SingleFetchFallback") {
+            return { value: undefined };
+          }
+        }
+      ]
+    });
+  }
+  function unwrapSingleFetchResult(result, routeId) {
+    if ("redirect" in result) {
+      let {
+        redirect: location2,
+        revalidate,
+        reload,
+        replace,
+        status
+      } = result.redirect;
+      throw redirect(location2, {
+        status,
+        headers: {
+          ...revalidate ? { "X-Remix-Revalidate": "yes" } : null,
+          ...reload ? { "X-Remix-Reload-Document": "yes" } : null,
+          ...replace ? { "X-Remix-Replace": "yes" } : null
+        }
+      });
+    }
+    let routeResult = result.routes[routeId];
+    if ("error" in routeResult) {
+      throw routeResult.error;
+    } else if ("data" in routeResult) {
+      return routeResult.data;
+    } else {
+      throw new Error(`No response found for routeId "${routeId}"`);
+    }
+  }
+  function createDeferred2() {
+    let resolve;
+    let reject;
+    let promise = new Promise((res, rej) => {
+      resolve = async (val) => {
+        res(val);
+        try {
+          await promise;
+        } catch (e) {
+        }
+      };
+      reject = async (error) => {
+        rej(error);
+        try {
+          await promise;
+        } catch (e) {
+        }
+      };
+    });
+    return {
+      promise,
+      resolve,
+      reject
+    };
+  }
+  var React82 = __toESM2(react7);
+  var React72 = __toESM2(react8);
+  var React52 = __toESM2(react9);
+  var RemixErrorBoundary = class extends React52.Component {
+    constructor(props) {
+      super(props);
+      this.state = { error: props.error || null, location: props.location };
+    }
+    static getDerivedStateFromError(error) {
+      return { error };
+    }
+    static getDerivedStateFromProps(props, state) {
+      if (state.location !== props.location) {
+        return { error: props.error || null, location: props.location };
+      }
+      return { error: props.error || state.error, location: state.location };
+    }
+    render() {
+      if (this.state.error) {
+        return /* @__PURE__ */ React52.createElement(RemixRootDefaultErrorBoundary, {
+          error: this.state.error,
+          isOutsideRemixApp: true
+        });
+      } else {
+        return this.props.children;
+      }
+    }
+  };
+  function RemixRootDefaultErrorBoundary({
+    error,
+    isOutsideRemixApp
+  }) {
+    console.error(error);
+    let heyDeveloper = /* @__PURE__ */ React52.createElement("script", {
+      dangerouslySetInnerHTML: {
+        __html: `
+        console.log(
+          "\uD83D\uDCBF Hey developer \uD83D\uDC4B. You can provide a way better UX than this when your app throws errors. Check out https://remix.run/guides/errors for more information."
+        );
+      `
+      }
+    });
+    if (isRouteErrorResponse(error)) {
+      return /* @__PURE__ */ React52.createElement(BoundaryShell, { title: "Unhandled Thrown Response!" }, /* @__PURE__ */ React52.createElement("h1", { style: { fontSize: "24px" } }, error.status, " ", error.statusText), heyDeveloper);
+    }
+    let errorInstance;
+    if (error instanceof Error) {
+      errorInstance = error;
+    } else {
+      let errorString = error == null ? "Unknown Error" : typeof error === "object" && ("toString" in error) ? error.toString() : JSON.stringify(error);
+      errorInstance = new Error(errorString);
+    }
+    return /* @__PURE__ */ React52.createElement(BoundaryShell, {
+      title: "Application Error!",
+      isOutsideRemixApp
+    }, /* @__PURE__ */ React52.createElement("h1", { style: { fontSize: "24px" } }, "Application Error"), /* @__PURE__ */ React52.createElement("pre", {
+      style: {
+        padding: "2rem",
+        background: "hsla(10, 50%, 50%, 0.1)",
+        color: "red",
+        overflow: "auto"
+      }
+    }, errorInstance.stack), heyDeveloper);
+  }
+  function BoundaryShell({
+    title,
+    renderScripts,
+    isOutsideRemixApp,
+    children
+  }) {
+    let { routeModules } = useFrameworkContext();
+    if (routeModules.root?.Layout && !isOutsideRemixApp) {
+      return children;
+    }
+    return /* @__PURE__ */ React52.createElement("html", { lang: "en" }, /* @__PURE__ */ React52.createElement("head", null, /* @__PURE__ */ React52.createElement("meta", { charSet: "utf-8" }), /* @__PURE__ */ React52.createElement("meta", {
+      name: "viewport",
+      content: "width=device-width,initial-scale=1,viewport-fit=cover"
+    }), /* @__PURE__ */ React52.createElement("title", null, title)), /* @__PURE__ */ React52.createElement("body", null, /* @__PURE__ */ React52.createElement("main", { style: { fontFamily: "system-ui, sans-serif", padding: "2rem" } }, children, renderScripts ? /* @__PURE__ */ React52.createElement(Scripts, null) : null)));
+  }
+  var React62 = __toESM2(react10);
+  function RemixRootDefaultHydrateFallback() {
+    return /* @__PURE__ */ React62.createElement(BoundaryShell, { title: "Loading...", renderScripts: true }, /* @__PURE__ */ React62.createElement("script", {
+      dangerouslySetInnerHTML: {
+        __html: `
+              console.log(
+                "\uD83D\uDCBF Hey developer \uD83D\uDC4B. You can provide a way better UX than this " +
+                "when your app is loading JS modules and/or running \`clientLoader\` " +
+                "functions. Check out https://remix.run/route/hydrate-fallback " +
+                "for more information."
+              );
+            `
+      }
+    }));
+  }
+  function groupRoutesByParentId(manifest) {
+    let routes = {};
+    Object.values(manifest).forEach((route) => {
+      if (route) {
+        let parentId = route.parentId || "";
+        if (!routes[parentId]) {
+          routes[parentId] = [];
+        }
+        routes[parentId].push(route);
+      }
+    });
+    return routes;
+  }
+  function getRouteComponents(route, routeModule, isSpaMode) {
+    let Component4 = getRouteModuleComponent(routeModule);
+    let HydrateFallback = routeModule.HydrateFallback && (!isSpaMode || route.id === "root") ? routeModule.HydrateFallback : route.id === "root" ? RemixRootDefaultHydrateFallback : undefined;
+    let ErrorBoundary = routeModule.ErrorBoundary ? routeModule.ErrorBoundary : route.id === "root" ? () => /* @__PURE__ */ React72.createElement(RemixRootDefaultErrorBoundary, { error: useRouteError() }) : undefined;
+    if (route.id === "root" && routeModule.Layout) {
+      return {
+        ...Component4 ? {
+          element: /* @__PURE__ */ React72.createElement(routeModule.Layout, null, /* @__PURE__ */ React72.createElement(Component4, null))
+        } : { Component: Component4 },
+        ...ErrorBoundary ? {
+          errorElement: /* @__PURE__ */ React72.createElement(routeModule.Layout, null, /* @__PURE__ */ React72.createElement(ErrorBoundary, null))
+        } : { ErrorBoundary },
+        ...HydrateFallback ? {
+          hydrateFallbackElement: /* @__PURE__ */ React72.createElement(routeModule.Layout, null, /* @__PURE__ */ React72.createElement(HydrateFallback, null))
+        } : { HydrateFallback }
+      };
+    }
+    return { Component: Component4, ErrorBoundary, HydrateFallback };
+  }
+  function createClientRoutesWithHMRRevalidationOptOut(needsRevalidation, manifest, routeModulesCache, initialState, ssr, isSpaMode) {
+    return createClientRoutes(manifest, routeModulesCache, initialState, ssr, isSpaMode, "", groupRoutesByParentId(manifest), needsRevalidation);
+  }
+  function preventInvalidServerHandlerCall(type, route) {
+    if (type === "loader" && !route.hasLoader || type === "action" && !route.hasAction) {
+      let fn = type === "action" ? "serverAction()" : "serverLoader()";
+      let msg = `You are trying to call ${fn} on a route that does not have a server ${type} (routeId: "${route.id}")`;
+      console.error(msg);
+      throw new ErrorResponseImpl(400, "Bad Request", new Error(msg), true);
+    }
+  }
+  function noActionDefinedError(type, routeId) {
+    let article = type === "clientAction" ? "a" : "an";
+    let msg = `Route "${routeId}" does not have ${article} ${type}, but you are trying to submit to it. To fix this, please add ${article} \`${type}\` function to the route`;
+    console.error(msg);
+    throw new ErrorResponseImpl(405, "Method Not Allowed", new Error(msg), true);
+  }
+  function createClientRoutes(manifest, routeModulesCache, initialState, ssr, isSpaMode, parentId = "", routesByParentId = groupRoutesByParentId(manifest), needsRevalidation) {
+    return (routesByParentId[parentId] || []).map((route) => {
+      let routeModule = routeModulesCache[route.id];
+      function fetchServerHandler(singleFetch) {
+        invariant2(typeof singleFetch === "function", "No single fetch function available for route handler");
+        return singleFetch();
+      }
+      function fetchServerLoader(singleFetch) {
+        if (!route.hasLoader)
+          return Promise.resolve(null);
+        return fetchServerHandler(singleFetch);
+      }
+      function fetchServerAction(singleFetch) {
+        if (!route.hasAction) {
+          throw noActionDefinedError("action", route.id);
+        }
+        return fetchServerHandler(singleFetch);
+      }
+      function prefetchModule(modulePath) {
+        import(modulePath);
+      }
+      function prefetchRouteModuleChunks(route2) {
+        if (route2.clientActionModule) {
+          prefetchModule(route2.clientActionModule);
+        }
+        if (route2.clientLoaderModule) {
+          prefetchModule(route2.clientLoaderModule);
+        }
+      }
+      async function prefetchStylesAndCallHandler(handler) {
+        let cachedModule = routeModulesCache[route.id];
+        let linkPrefetchPromise = cachedModule ? prefetchStyleLinks(route, cachedModule) : Promise.resolve();
+        try {
+          return handler();
+        } finally {
+          await linkPrefetchPromise;
+        }
+      }
+      let dataRoute = {
+        id: route.id,
+        index: route.index,
+        path: route.path
+      };
+      if (routeModule) {
+        Object.assign(dataRoute, {
+          ...dataRoute,
+          ...getRouteComponents(route, routeModule, isSpaMode),
+          unstable_middleware: routeModule.unstable_clientMiddleware,
+          handle: routeModule.handle,
+          shouldRevalidate: getShouldRevalidateFunction(dataRoute.path, routeModule, route, ssr, needsRevalidation)
+        });
+        let hasInitialData = initialState && initialState.loaderData && route.id in initialState.loaderData;
+        let initialData = hasInitialData ? initialState?.loaderData?.[route.id] : undefined;
+        let hasInitialError = initialState && initialState.errors && route.id in initialState.errors;
+        let initialError = hasInitialError ? initialState?.errors?.[route.id] : undefined;
+        let isHydrationRequest = needsRevalidation == null && (routeModule.clientLoader?.hydrate === true || !route.hasLoader);
+        dataRoute.loader = async ({ request, params, context }, singleFetch) => {
+          try {
+            let result = await prefetchStylesAndCallHandler(async () => {
+              invariant2(routeModule, "No `routeModule` available for critical-route loader");
+              if (!routeModule.clientLoader) {
+                return fetchServerLoader(singleFetch);
+              }
+              return routeModule.clientLoader({
+                request,
+                params,
+                context,
+                async serverLoader() {
+                  preventInvalidServerHandlerCall("loader", route);
+                  if (isHydrationRequest) {
+                    if (hasInitialData) {
+                      return initialData;
+                    }
+                    if (hasInitialError) {
+                      throw initialError;
+                    }
+                  }
+                  return fetchServerLoader(singleFetch);
+                }
+              });
+            });
+            return result;
+          } finally {
+            isHydrationRequest = false;
+          }
+        };
+        dataRoute.loader.hydrate = shouldHydrateRouteLoader(route.id, routeModule.clientLoader, route.hasLoader, isSpaMode);
+        dataRoute.action = ({ request, params, context }, singleFetch) => {
+          return prefetchStylesAndCallHandler(async () => {
+            invariant2(routeModule, "No `routeModule` available for critical-route action");
+            if (!routeModule.clientAction) {
+              if (isSpaMode) {
+                throw noActionDefinedError("clientAction", route.id);
+              }
+              return fetchServerAction(singleFetch);
+            }
+            return routeModule.clientAction({
+              request,
+              params,
+              context,
+              async serverAction() {
+                preventInvalidServerHandlerCall("action", route);
+                return fetchServerAction(singleFetch);
+              }
+            });
+          });
+        };
+      } else {
+        if (!route.hasClientLoader) {
+          dataRoute.loader = (_, singleFetch) => prefetchStylesAndCallHandler(() => {
+            return fetchServerLoader(singleFetch);
+          });
+        }
+        if (!route.hasClientAction) {
+          dataRoute.action = (_, singleFetch) => prefetchStylesAndCallHandler(() => {
+            if (isSpaMode) {
+              throw noActionDefinedError("clientAction", route.id);
+            }
+            return fetchServerAction(singleFetch);
+          });
+        }
+        let lazyRoutePromise;
+        async function getLazyRoute() {
+          if (lazyRoutePromise) {
+            return await lazyRoutePromise;
+          }
+          lazyRoutePromise = (async () => {
+            if (route.clientLoaderModule || route.clientActionModule) {
+              await new Promise((resolve) => setTimeout(resolve, 0));
+            }
+            let routeModulePromise = loadRouteModuleWithBlockingLinks(route, routeModulesCache);
+            prefetchRouteModuleChunks(route);
+            return await routeModulePromise;
+          })();
+          return await lazyRoutePromise;
+        }
+        dataRoute.lazy = {
+          loader: route.hasClientLoader ? async () => {
+            let { clientLoader } = route.clientLoaderModule ? await import(route.clientLoaderModule) : await getLazyRoute();
+            invariant2(clientLoader, "No `clientLoader` export found");
+            return (args, singleFetch) => clientLoader({
+              ...args,
+              async serverLoader() {
+                preventInvalidServerHandlerCall("loader", route);
+                return fetchServerLoader(singleFetch);
+              }
+            });
+          } : undefined,
+          action: route.hasClientAction ? async () => {
+            let clientActionPromise = route.clientActionModule ? import(route.clientActionModule) : getLazyRoute();
+            prefetchRouteModuleChunks(route);
+            let { clientAction } = await clientActionPromise;
+            invariant2(clientAction, "No `clientAction` export found");
+            return (args, singleFetch) => clientAction({
+              ...args,
+              async serverAction() {
+                preventInvalidServerHandlerCall("action", route);
+                return fetchServerAction(singleFetch);
+              }
+            });
+          } : undefined,
+          unstable_middleware: route.hasClientMiddleware ? async () => {
+            let { unstable_clientMiddleware } = route.clientMiddlewareModule ? await import(route.clientMiddlewareModule) : await getLazyRoute();
+            invariant2(unstable_clientMiddleware, "No `unstable_clientMiddleware` export found");
+            return unstable_clientMiddleware;
+          } : undefined,
+          shouldRevalidate: async () => {
+            let lazyRoute = await getLazyRoute();
+            return getShouldRevalidateFunction(dataRoute.path, lazyRoute, route, ssr, needsRevalidation);
+          },
+          handle: async () => (await getLazyRoute()).handle,
+          Component: async () => (await getLazyRoute()).Component,
+          ErrorBoundary: route.hasErrorBoundary ? async () => (await getLazyRoute()).ErrorBoundary : undefined
+        };
+      }
+      let children = createClientRoutes(manifest, routeModulesCache, initialState, ssr, isSpaMode, route.id, routesByParentId, needsRevalidation);
+      if (children.length > 0)
+        dataRoute.children = children;
+      return dataRoute;
+    });
+  }
+  function getShouldRevalidateFunction(path, route, manifestRoute, ssr, needsRevalidation) {
+    if (needsRevalidation) {
+      return wrapShouldRevalidateForHdr(manifestRoute.id, route.shouldRevalidate, needsRevalidation);
+    }
+    if (!ssr && manifestRoute.hasLoader && !manifestRoute.hasClientLoader) {
+      let myParams = path ? compilePath(path)[1].map((p) => p.paramName) : [];
+      const didParamsChange = (opts) => myParams.some((p) => opts.currentParams[p] !== opts.nextParams[p]);
+      if (route.shouldRevalidate) {
+        let fn = route.shouldRevalidate;
+        return (opts) => fn({
+          ...opts,
+          defaultShouldRevalidate: didParamsChange(opts)
+        });
+      } else {
+        return (opts) => didParamsChange(opts);
+      }
+    }
+    if (ssr && route.shouldRevalidate) {
+      let fn = route.shouldRevalidate;
+      return (opts) => fn({ ...opts, defaultShouldRevalidate: true });
+    }
+    return route.shouldRevalidate;
+  }
+  function wrapShouldRevalidateForHdr(routeId, routeShouldRevalidate, needsRevalidation) {
+    let handledRevalidation = false;
+    return (arg) => {
+      if (!handledRevalidation) {
+        handledRevalidation = true;
+        return needsRevalidation.has(routeId);
+      }
+      return routeShouldRevalidate ? routeShouldRevalidate(arg) : arg.defaultShouldRevalidate;
+    };
+  }
+  async function loadRouteModuleWithBlockingLinks(route, routeModules) {
+    let routeModulePromise = loadRouteModule(route, routeModules);
+    let prefetchRouteCssPromise = prefetchRouteCss(route);
+    let routeModule = await routeModulePromise;
+    await Promise.all([
+      prefetchRouteCssPromise,
+      prefetchStyleLinks(route, routeModule)
+    ]);
+    return {
+      Component: getRouteModuleComponent(routeModule),
+      ErrorBoundary: routeModule.ErrorBoundary,
+      unstable_clientMiddleware: routeModule.unstable_clientMiddleware,
+      clientAction: routeModule.clientAction,
+      clientLoader: routeModule.clientLoader,
+      handle: routeModule.handle,
+      links: routeModule.links,
+      meta: routeModule.meta,
+      shouldRevalidate: routeModule.shouldRevalidate
+    };
+  }
+  function getRouteModuleComponent(routeModule) {
+    if (routeModule.default == null)
+      return;
+    let isEmptyObject = typeof routeModule.default === "object" && Object.keys(routeModule.default).length === 0;
+    if (!isEmptyObject) {
+      return routeModule.default;
+    }
+  }
+  function shouldHydrateRouteLoader(routeId, clientLoader, hasLoader, isSpaMode) {
+    return isSpaMode && routeId !== "root" || clientLoader != null && (clientLoader.hydrate === true || hasLoader !== true);
+  }
+  var nextPaths = /* @__PURE__ */ new Set;
+  var discoveredPathsMaxSize = 1000;
+  var discoveredPaths = /* @__PURE__ */ new Set;
+  var URL_LIMIT = 7680;
+  function isFogOfWarEnabled(ssr) {
+    return ssr === true;
+  }
+  function getPartialManifest({ sri, ...manifest }, router2) {
+    let routeIds = new Set(router2.state.matches.map((m) => m.route.id));
+    let segments = router2.state.location.pathname.split("/").filter(Boolean);
+    let paths = ["/"];
+    segments.pop();
+    while (segments.length > 0) {
+      paths.push(`/${segments.join("/")}`);
+      segments.pop();
+    }
+    paths.forEach((path) => {
+      let matches = matchRoutes(router2.routes, path, router2.basename);
+      if (matches) {
+        matches.forEach((m) => routeIds.add(m.route.id));
+      }
+    });
+    let initialRoutes = [...routeIds].reduce((acc, id) => Object.assign(acc, { [id]: manifest.routes[id] }), {});
+    return {
+      ...manifest,
+      routes: initialRoutes,
+      sri: sri ? true : undefined
+    };
+  }
+  function getPatchRoutesOnNavigationFunction(manifest, routeModules, ssr, isSpaMode, basename) {
+    if (!isFogOfWarEnabled(ssr)) {
+      return;
+    }
+    return async ({ path, patch, signal, fetcherKey }) => {
+      if (discoveredPaths.has(path)) {
+        return;
+      }
+      await fetchAndApplyManifestPatches([path], fetcherKey ? window.location.href : path, manifest, routeModules, ssr, isSpaMode, basename, patch, signal);
+    };
+  }
+  function useFogOFWarDiscovery(router2, manifest, routeModules, ssr, isSpaMode) {
+    React82.useEffect(() => {
+      if (!isFogOfWarEnabled(ssr) || navigator.connection?.saveData === true) {
+        return;
+      }
+      function registerElement(el) {
+        let path = el.tagName === "FORM" ? el.getAttribute("action") : el.getAttribute("href");
+        if (!path) {
+          return;
+        }
+        let pathname = el.tagName === "A" ? el.pathname : new URL(path, window.location.origin).pathname;
+        if (!discoveredPaths.has(pathname)) {
+          nextPaths.add(pathname);
+        }
+      }
+      async function fetchPatches() {
+        document.querySelectorAll("a[data-discover], form[data-discover]").forEach(registerElement);
+        let lazyPaths = Array.from(nextPaths.keys()).filter((path) => {
+          if (discoveredPaths.has(path)) {
+            nextPaths.delete(path);
+            return false;
+          }
+          return true;
+        });
+        if (lazyPaths.length === 0) {
+          return;
+        }
+        try {
+          await fetchAndApplyManifestPatches(lazyPaths, null, manifest, routeModules, ssr, isSpaMode, router2.basename, router2.patchRoutes);
+        } catch (e) {
+          console.error("Failed to fetch manifest patches", e);
+        }
+      }
+      let debouncedFetchPatches = debounce(fetchPatches, 100);
+      fetchPatches();
+      let observer = new MutationObserver(() => debouncedFetchPatches());
+      observer.observe(document.documentElement, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: ["data-discover", "href", "action"]
+      });
+      return () => observer.disconnect();
+    }, [ssr, isSpaMode, manifest, routeModules, router2]);
+  }
+  var MANIFEST_VERSION_STORAGE_KEY = "react-router-manifest-version";
+  async function fetchAndApplyManifestPatches(paths, errorReloadPath, manifest, routeModules, ssr, isSpaMode, basename, patchRoutes, signal) {
+    let manifestPath = `${basename != null ? basename : "/"}/__manifest`.replace(/\/+/g, "/");
+    let url = new URL(manifestPath, window.location.origin);
+    paths.sort().forEach((path) => url.searchParams.append("p", path));
+    url.searchParams.set("version", manifest.version);
+    if (url.toString().length > URL_LIMIT) {
+      nextPaths.clear();
+      return;
+    }
+    let serverPatches;
+    try {
+      let res = await fetch(url, { signal });
+      if (!res.ok) {
+        throw new Error(`${res.status} ${res.statusText}`);
+      } else if (res.status === 204 && res.headers.has("X-Remix-Reload-Document")) {
+        if (!errorReloadPath) {
+          console.warn("Detected a manifest version mismatch during eager route discovery. The next navigation/fetch to an undiscovered route will result in a new document navigation to sync up with the latest manifest.");
+          return;
+        }
+        if (sessionStorage.getItem(MANIFEST_VERSION_STORAGE_KEY) === manifest.version) {
+          console.error("Unable to discover routes due to manifest version mismatch.");
+          return;
+        }
+        sessionStorage.setItem(MANIFEST_VERSION_STORAGE_KEY, manifest.version);
+        window.location.href = errorReloadPath;
+        throw new Error("Detected manifest version mismatch, reloading...");
+      } else if (res.status >= 400) {
+        throw new Error(await res.text());
+      }
+      sessionStorage.removeItem(MANIFEST_VERSION_STORAGE_KEY);
+      serverPatches = await res.json();
+    } catch (e) {
+      if (signal?.aborted)
+        return;
+      throw e;
+    }
+    let knownRoutes = new Set(Object.keys(manifest.routes));
+    let patches = Object.values(serverPatches).reduce((acc, route) => {
+      if (route && !knownRoutes.has(route.id)) {
+        acc[route.id] = route;
+      }
+      return acc;
+    }, {});
+    Object.assign(manifest.routes, patches);
+    paths.forEach((p) => addToFifoQueue(p, discoveredPaths));
+    let parentIds = /* @__PURE__ */ new Set;
+    Object.values(patches).forEach((patch) => {
+      if (patch && (!patch.parentId || !patches[patch.parentId])) {
+        parentIds.add(patch.parentId);
+      }
+    });
+    parentIds.forEach((parentId) => patchRoutes(parentId || null, createClientRoutes(patches, routeModules, null, ssr, isSpaMode, parentId)));
+  }
+  function addToFifoQueue(path, queue) {
+    if (queue.size >= discoveredPathsMaxSize) {
+      let first = queue.values().next().value;
+      queue.delete(first);
+    }
+    queue.add(path);
+  }
+  function debounce(callback, wait) {
+    let timeoutId;
+    return (...args) => {
+      window.clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(() => callback(...args), wait);
+    };
+  }
+  function useDataRouterContext() {
+    let context = React9.useContext(DataRouterContext);
+    invariant2(context, "You must render this element inside a <DataRouterContext.Provider> element");
+    return context;
+  }
+  function useDataRouterStateContext() {
+    let context = React9.useContext(DataRouterStateContext);
+    invariant2(context, "You must render this element inside a <DataRouterStateContext.Provider> element");
+    return context;
+  }
+  var FrameworkContext = React9.createContext(undefined);
+  FrameworkContext.displayName = "FrameworkContext";
+  function useFrameworkContext() {
+    let context = React9.useContext(FrameworkContext);
+    invariant2(context, "You must render this element inside a <HydratedRouter> element");
+    return context;
+  }
+  function getActiveMatches(matches, errors, isSpaMode) {
+    if (isSpaMode && !isHydrated) {
+      return [matches[0]];
+    }
+    if (errors) {
+      let errorIdx = matches.findIndex((m) => errors[m.route.id] !== undefined);
+      return matches.slice(0, errorIdx + 1);
+    }
+    return matches;
+  }
+  var isHydrated = false;
+  function Scripts(props) {
+    let { manifest, serverHandoffString, isSpaMode, ssr, renderMeta } = useFrameworkContext();
+    let { router: router2, static: isStatic, staticContext } = useDataRouterContext();
+    let { matches: routerMatches } = useDataRouterStateContext();
+    let enableFogOfWar = isFogOfWarEnabled(ssr);
+    if (renderMeta) {
+      renderMeta.didRenderScripts = true;
+    }
+    let matches = getActiveMatches(routerMatches, null, isSpaMode);
+    React9.useEffect(() => {
+      isHydrated = true;
+    }, []);
+    let initialScripts = React9.useMemo(() => {
+      let streamScript = "window.__reactRouterContext.stream = new ReadableStream({start(controller){window.__reactRouterContext.streamController = controller;}}).pipeThrough(new TextEncoderStream());";
+      let contextScript = staticContext ? `window.__reactRouterContext = ${serverHandoffString};${streamScript}` : " ";
+      let routeModulesScript = !isStatic ? " " : `${manifest.hmr?.runtime ? `import ${JSON.stringify(manifest.hmr.runtime)};` : ""}${!enableFogOfWar ? `import ${JSON.stringify(manifest.url)}` : ""};
+${matches.map((match, routeIndex) => {
+        let routeVarName = `route${routeIndex}`;
+        let manifestEntry = manifest.routes[match.route.id];
+        invariant2(manifestEntry, `Route ${match.route.id} not found in manifest`);
+        let {
+          clientActionModule,
+          clientLoaderModule,
+          clientMiddlewareModule,
+          hydrateFallbackModule,
+          module: module2
+        } = manifestEntry;
+        let chunks = [
+          ...clientActionModule ? [
+            {
+              module: clientActionModule,
+              varName: `${routeVarName}_clientAction`
+            }
+          ] : [],
+          ...clientLoaderModule ? [
+            {
+              module: clientLoaderModule,
+              varName: `${routeVarName}_clientLoader`
+            }
+          ] : [],
+          ...clientMiddlewareModule ? [
+            {
+              module: clientMiddlewareModule,
+              varName: `${routeVarName}_clientMiddleware`
+            }
+          ] : [],
+          ...hydrateFallbackModule ? [
+            {
+              module: hydrateFallbackModule,
+              varName: `${routeVarName}_HydrateFallback`
+            }
+          ] : [],
+          { module: module2, varName: `${routeVarName}_main` }
+        ];
+        if (chunks.length === 1) {
+          return `import * as ${routeVarName} from ${JSON.stringify(module2)};`;
+        }
+        let chunkImportsSnippet = chunks.map((chunk) => `import * as ${chunk.varName} from "${chunk.module}";`).join(`
+`);
+        let mergedChunksSnippet = `const ${routeVarName} = {${chunks.map((chunk) => `...${chunk.varName}`).join(",")}};`;
+        return [chunkImportsSnippet, mergedChunksSnippet].join(`
+`);
+      }).join(`
+`)}
+  ${enableFogOfWar ? `window.__reactRouterManifest = ${JSON.stringify(getPartialManifest(manifest, router2), null, 2)};` : ""}
+  window.__reactRouterRouteModules = {${matches.map((match, index) => `${JSON.stringify(match.route.id)}:route${index}`).join(",")}};
+
+import(${JSON.stringify(manifest.entry.module)});`;
+      return /* @__PURE__ */ React9.createElement(React9.Fragment, null, /* @__PURE__ */ React9.createElement("script", {
+        ...props,
+        suppressHydrationWarning: true,
+        dangerouslySetInnerHTML: createHtml(contextScript),
+        type: undefined
+      }), /* @__PURE__ */ React9.createElement("script", {
+        ...props,
+        suppressHydrationWarning: true,
+        dangerouslySetInnerHTML: createHtml(routeModulesScript),
+        type: "module",
+        async: true
+      }));
+    }, []);
+    let preloads = isHydrated ? [] : dedupe(manifest.entry.imports.concat(getModuleLinkHrefs(matches, manifest, {
+      includeHydrateFallback: true
+    })));
+    let sri = typeof manifest.sri === "object" ? manifest.sri : {};
+    return isHydrated ? null : /* @__PURE__ */ React9.createElement(React9.Fragment, null, typeof manifest.sri === "object" ? /* @__PURE__ */ React9.createElement("script", {
+      "rr-importmap": "",
+      type: "importmap",
+      suppressHydrationWarning: true,
+      dangerouslySetInnerHTML: {
+        __html: JSON.stringify({
+          integrity: sri
+        })
+      }
+    }) : null, !enableFogOfWar ? /* @__PURE__ */ React9.createElement("link", {
+      rel: "modulepreload",
+      href: manifest.url,
+      crossOrigin: props.crossOrigin,
+      integrity: sri[manifest.url],
+      suppressHydrationWarning: true
+    }) : null, /* @__PURE__ */ React9.createElement("link", {
+      rel: "modulepreload",
+      href: manifest.entry.module,
+      crossOrigin: props.crossOrigin,
+      integrity: sri[manifest.entry.module],
+      suppressHydrationWarning: true
+    }), preloads.map((path) => /* @__PURE__ */ React9.createElement("link", {
+      key: path,
+      rel: "modulepreload",
+      href: path,
+      crossOrigin: props.crossOrigin,
+      integrity: sri[path],
+      suppressHydrationWarning: true
+    })), initialScripts);
+  }
+  function dedupe(array) {
+    return [...new Set(array)];
+  }
+  function deserializeErrors(errors) {
+    if (!errors)
+      return null;
+    let entries = Object.entries(errors);
+    let serialized = {};
+    for (let [key, val] of entries) {
+      if (val && val.__type === "RouteErrorResponse") {
+        serialized[key] = new ErrorResponseImpl(val.status, val.statusText, val.data, val.internal === true);
+      } else if (val && val.__type === "Error") {
+        if (val.__subType) {
+          let ErrorConstructor = window[val.__subType];
+          if (typeof ErrorConstructor === "function") {
+            try {
+              let error = new ErrorConstructor(val.message);
+              error.stack = val.stack;
+              serialized[key] = error;
+            } catch (e) {
+            }
+          }
+        }
+        if (serialized[key] == null) {
+          let error = new Error(val.message);
+          error.stack = val.stack;
+          serialized[key] = error;
+        }
+      } else {
+        serialized[key] = val;
+      }
+    }
+    return serialized;
+  }
+  function getHydrationData(state, routes, getRouteInfo, location2, basename, isSpaMode) {
+    let hydrationData = {
+      ...state,
+      loaderData: { ...state.loaderData }
+    };
+    let initialMatches = matchRoutes(routes, location2, basename);
+    if (initialMatches) {
+      for (let match of initialMatches) {
+        let routeId = match.route.id;
+        let routeInfo = getRouteInfo(routeId);
+        if (shouldHydrateRouteLoader(routeId, routeInfo.clientLoader, routeInfo.hasLoader, isSpaMode) && (routeInfo.hasHydrateFallback || !routeInfo.hasLoader)) {
+          delete hydrationData.loaderData[routeId];
+        } else if (!routeInfo.hasLoader) {
+          hydrationData.loaderData[routeId] = null;
+        }
+      }
+    }
+    return hydrationData;
+  }
+  function RouterProvider22(props) {
+    return /* @__PURE__ */ React10.createElement(RouterProvider2, { flushSync: ReactDOM.flushSync, ...props });
+  }
+  var React11 = __toESM2(react11);
+  var ssrInfo = null;
+  var router = null;
+  function initSsrInfo() {
+    if (!ssrInfo && window.__reactRouterContext && window.__reactRouterManifest && window.__reactRouterRouteModules) {
+      if (window.__reactRouterManifest.sri === true) {
+        const importMap = document.querySelector("script[rr-importmap]");
+        if (importMap?.textContent) {
+          try {
+            window.__reactRouterManifest.sri = JSON.parse(importMap.textContent).integrity;
+          } catch (err) {
+            console.error("Failed to parse import map", err);
+          }
+        }
+      }
+      ssrInfo = {
+        context: window.__reactRouterContext,
+        manifest: window.__reactRouterManifest,
+        routeModules: window.__reactRouterRouteModules,
+        stateDecodingPromise: undefined,
+        router: undefined,
+        routerInitialized: false
+      };
+    }
+  }
+  function createHydratedRouter({
+    unstable_getContext
+  }) {
+    initSsrInfo();
+    if (!ssrInfo) {
+      throw new Error("You must be using the SSR features of React Router in order to skip passing a `router` prop to `<RouterProvider>`");
+    }
+    let localSsrInfo = ssrInfo;
+    if (!ssrInfo.stateDecodingPromise) {
+      let stream = ssrInfo.context.stream;
+      invariant(stream, "No stream found for single fetch decoding");
+      ssrInfo.context.stream = undefined;
+      ssrInfo.stateDecodingPromise = decodeViaTurboStream(stream, window).then((value) => {
+        ssrInfo.context.state = value.value;
+        localSsrInfo.stateDecodingPromise.value = true;
+      }).catch((e) => {
+        localSsrInfo.stateDecodingPromise.error = e;
+      });
+    }
+    if (ssrInfo.stateDecodingPromise.error) {
+      throw ssrInfo.stateDecodingPromise.error;
+    }
+    if (!ssrInfo.stateDecodingPromise.value) {
+      throw ssrInfo.stateDecodingPromise;
+    }
+    let routes = createClientRoutes(ssrInfo.manifest.routes, ssrInfo.routeModules, ssrInfo.context.state, ssrInfo.context.ssr, ssrInfo.context.isSpaMode);
+    let hydrationData = undefined;
+    if (ssrInfo.context.isSpaMode) {
+      let { loaderData } = ssrInfo.context.state;
+      if (ssrInfo.manifest.routes.root?.hasLoader && loaderData && "root" in loaderData) {
+        hydrationData = {
+          loaderData: {
+            root: loaderData.root
+          }
+        };
+      }
+    } else {
+      hydrationData = getHydrationData(ssrInfo.context.state, routes, (routeId) => ({
+        clientLoader: ssrInfo.routeModules[routeId]?.clientLoader,
+        hasLoader: ssrInfo.manifest.routes[routeId]?.hasLoader === true,
+        hasHydrateFallback: ssrInfo.routeModules[routeId]?.HydrateFallback != null
+      }), window.location, window.__reactRouterContext?.basename, ssrInfo.context.isSpaMode);
+      if (hydrationData && hydrationData.errors) {
+        hydrationData.errors = deserializeErrors(hydrationData.errors);
+      }
+    }
+    let router2 = createRouter({
+      routes,
+      history: createBrowserHistory(),
+      basename: ssrInfo.context.basename,
+      unstable_getContext,
+      hydrationData,
+      hydrationRouteProperties,
+      mapRouteProperties,
+      future: {
+        unstable_middleware: ssrInfo.context.future.unstable_middleware
+      },
+      dataStrategy: getTurboStreamSingleFetchDataStrategy(() => router2, ssrInfo.manifest, ssrInfo.routeModules, ssrInfo.context.ssr, ssrInfo.context.basename),
+      patchRoutesOnNavigation: getPatchRoutesOnNavigationFunction(ssrInfo.manifest, ssrInfo.routeModules, ssrInfo.context.ssr, ssrInfo.context.isSpaMode, ssrInfo.context.basename)
+    });
+    ssrInfo.router = router2;
+    if (router2.state.initialized) {
+      ssrInfo.routerInitialized = true;
+      router2.initialize();
+    }
+    router2.createRoutesForHMR = createClientRoutesWithHMRRevalidationOptOut;
+    window.__reactRouterDataRouter = router2;
+    return router2;
+  }
+  function HydratedRouter2(props) {
+    if (!router) {
+      router = createHydratedRouter({
+        unstable_getContext: props.unstable_getContext
+      });
+    }
+    let [criticalCss, setCriticalCss] = React11.useState(ssrInfo?.context.criticalCss);
+    if (true) {
+      if (ssrInfo) {
+        window.__reactRouterClearCriticalCss = () => setCriticalCss(undefined);
+      }
+    }
+    let [location2, setLocation] = React11.useState(router.state.location);
+    React11.useLayoutEffect(() => {
+      if (ssrInfo && ssrInfo.router && !ssrInfo.routerInitialized) {
+        ssrInfo.routerInitialized = true;
+        ssrInfo.router.initialize();
+      }
+    }, []);
+    React11.useLayoutEffect(() => {
+      if (ssrInfo && ssrInfo.router) {
+        return ssrInfo.router.subscribe((newState) => {
+          if (newState.location !== location2) {
+            setLocation(newState.location);
+          }
+        });
+      }
+    }, [location2]);
+    invariant(ssrInfo, "ssrInfo unavailable for HydratedRouter");
+    useFogOFWarDiscovery(router, ssrInfo.manifest, ssrInfo.routeModules, ssrInfo.context.ssr, ssrInfo.context.isSpaMode);
+    return /* @__PURE__ */ React11.createElement(React11.Fragment, null, /* @__PURE__ */ React11.createElement(FrameworkContext.Provider, {
+      value: {
+        manifest: ssrInfo.manifest,
+        routeModules: ssrInfo.routeModules,
+        future: ssrInfo.context.future,
+        criticalCss,
+        ssr: ssrInfo.context.ssr,
+        isSpaMode: ssrInfo.context.isSpaMode
+      }
+    }, /* @__PURE__ */ React11.createElement(RemixErrorBoundary, { location: location2 }, /* @__PURE__ */ React11.createElement(RouterProvider22, { router }))), /* @__PURE__ */ React11.createElement(React11.Fragment, null));
+  }
+});
+
+// node_modules/react-router-dom/dist/index.js
+var require_dist2 = __commonJS((exports, module) => {
+  var __defProp2 = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames2 = Object.getOwnPropertyNames;
+  var __hasOwnProp2 = Object.prototype.hasOwnProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp2(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames2(from))
+        if (!__hasOwnProp2.call(to, key) && key !== except)
+          __defProp2(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __reExport = (target, mod, secondTarget) => (__copyProps(target, mod, "default"), secondTarget && __copyProps(secondTarget, mod, "default"));
+  var __toCommonJS = (mod) => __copyProps(__defProp2({}, "__esModule", { value: true }), mod);
+  var react_router_dom_exports = {};
+  __export(react_router_dom_exports, {
+    HydratedRouter: () => import_dom.HydratedRouter,
+    RouterProvider: () => import_dom.RouterProvider
+  });
+  module.exports = __toCommonJS(react_router_dom_exports);
+  var import_dom = require_dom_export();
+  __reExport(react_router_dom_exports, require_development(), module.exports);
+});
+
+// src/react/index.tsx
+var import_react73 = __toESM(require_react(), 1);
+var import_client = __toESM(require_client(), 1);
+var import_react_router2 = __toESM(require_development(), 1);
 
 // node_modules/@tanstack/query-core/build/modern/subscribable.js
 var Subscribable = class {
@@ -18157,21 +31032,21 @@ function sleep(timeout) {
     setTimeout(resolve, timeout);
   });
 }
-function replaceData(prevData, data2, options) {
+function replaceData(prevData, data, options) {
   if (typeof options.structuralSharing === "function") {
-    return options.structuralSharing(prevData, data2);
+    return options.structuralSharing(prevData, data);
   } else if (options.structuralSharing !== false) {
     if (true) {
       try {
-        return replaceEqualDeep(prevData, data2);
+        return replaceEqualDeep(prevData, data);
       } catch (error) {
         console.error(`Structural sharing requires data to be JSON serializable. To fix this, turn off structuralSharing or return JSON-serializable data from your queryFn. [${options.queryHash}]: ${error}`);
         throw error;
       }
     }
-    return replaceEqualDeep(prevData, data2);
+    return replaceEqualDeep(prevData, data);
   }
-  return data2;
+  return data;
 }
 function addToEnd(items, item, max = 0) {
   const newItems = [...items, item];
@@ -18322,8 +31197,8 @@ function pendingThenable() {
   thenable.status = "pending";
   thenable.catch(() => {
   });
-  function finalize(data2) {
-    Object.assign(thenable, data2);
+  function finalize(data) {
+    Object.assign(thenable, data);
     delete thenable.resolve;
     delete thenable.reject;
   }
@@ -18602,14 +31477,14 @@ var Query = class extends Removable {
     }
   }
   setData(newData, options) {
-    const data2 = replaceData(this.state.data, newData, this.options);
+    const data = replaceData(this.state.data, newData, this.options);
     this.#dispatch({
-      data: data2,
+      data,
       type: "success",
       dataUpdatedAt: options?.updatedAt,
       manual: options?.manual
     });
-    return data2;
+    return data;
   }
   setState(state, setStateOptions) {
     this.#dispatch({ type: "setState", state, setStateOptions });
@@ -18767,8 +31642,8 @@ var Query = class extends Removable {
       initialPromise: fetchOptions?.initialPromise,
       fn: context.fetchFn,
       abort: abortController.abort.bind(abortController),
-      onSuccess: (data2) => {
-        if (data2 === undefined) {
+      onSuccess: (data) => {
+        if (data === undefined) {
           if (true) {
             console.error(`Query data cannot be undefined. Please make sure to return a value other than undefined from your query function. Affected query key: ${this.queryHash}`);
           }
@@ -18776,13 +31651,13 @@ var Query = class extends Removable {
           return;
         }
         try {
-          this.setData(data2);
+          this.setData(data);
         } catch (error) {
           onError(error);
           return;
         }
-        this.#cache.config.onSuccess?.(data2, this);
-        this.#cache.config.onSettled?.(data2, this.state.error, this);
+        this.#cache.config.onSuccess?.(data, this);
+        this.#cache.config.onSettled?.(data, this.state.error, this);
         this.scheduleGc();
       },
       onError,
@@ -18878,23 +31753,23 @@ var Query = class extends Removable {
     });
   }
 };
-function fetchState(data2, options) {
+function fetchState(data, options) {
   return {
     fetchFailureCount: 0,
     fetchFailureReason: null,
     fetchStatus: canFetch(options.networkMode) ? "fetching" : "paused",
-    ...data2 === undefined && {
+    ...data === undefined && {
       error: null,
       status: "pending"
     }
   };
 }
 function getDefaultState(options) {
-  const data2 = typeof options.initialData === "function" ? options.initialData() : options.initialData;
-  const hasData = data2 !== undefined;
+  const data = typeof options.initialData === "function" ? options.initialData() : options.initialData;
+  const hasData = data !== undefined;
   const initialDataUpdatedAt = hasData ? typeof options.initialDataUpdatedAt === "function" ? options.initialDataUpdatedAt() : options.initialDataUpdatedAt : 0;
   return {
-    data: data2,
+    data,
     dataUpdateCount: 0,
     dataUpdatedAt: hasData ? initialDataUpdatedAt ?? Date.now() : 0,
     error: null,
@@ -19091,13 +31966,13 @@ var Mutation = class extends Removable {
           });
         }
       }
-      const data2 = await this.#retryer.start();
-      await this.#mutationCache.config.onSuccess?.(data2, variables, this.state.context, this);
-      await this.options.onSuccess?.(data2, variables, this.state.context);
-      await this.#mutationCache.config.onSettled?.(data2, null, this.state.variables, this.state.context, this);
-      await this.options.onSettled?.(data2, null, variables, this.state.context);
-      this.#dispatch({ type: "success", data: data2 });
-      return data2;
+      const data = await this.#retryer.start();
+      await this.#mutationCache.config.onSuccess?.(data, variables, this.state.context, this);
+      await this.options.onSuccess?.(data, variables, this.state.context);
+      await this.#mutationCache.config.onSettled?.(data, null, this.state.variables, this.state.context, this);
+      await this.options.onSettled?.(data, null, variables, this.state.context);
+      this.#dispatch({ type: "success", data });
+      return data;
     } catch (error) {
       try {
         await this.#mutationCache.config.onError?.(error, variables, this.state.context, this);
@@ -19329,12 +32204,12 @@ function infiniteQueryBehavior(pages) {
           });
         };
         const queryFn = ensureQueryFn(context.options, context.fetchOptions);
-        const fetchPage = async (data2, param, previous) => {
+        const fetchPage = async (data, param, previous) => {
           if (cancelled) {
             return Promise.reject();
           }
-          if (param == null && data2.pages.length) {
-            return Promise.resolve(data2);
+          if (param == null && data.pages.length) {
+            return Promise.resolve(data);
           }
           const queryFnContext = {
             client: context.client,
@@ -19348,8 +32223,8 @@ function infiniteQueryBehavior(pages) {
           const { maxPages } = context.options;
           const addTo = previous ? addToStart : addToEnd;
           return {
-            pages: addTo(data2.pages, page, maxPages),
-            pageParams: addTo(data2.pageParams, param, maxPages)
+            pages: addTo(data.pages, page, maxPages),
+            pageParams: addTo(data.pageParams, param, maxPages)
           };
         };
         if (direction && oldPages.length) {
@@ -19465,19 +32340,19 @@ var QueryClient = class {
   }
   getQueriesData(filters) {
     return this.#queryCache.findAll(filters).map(({ queryKey, state }) => {
-      const data2 = state.data;
-      return [queryKey, data2];
+      const data = state.data;
+      return [queryKey, data];
     });
   }
   setQueryData(queryKey, updater, options) {
     const defaultedOptions = this.defaultQueryOptions({ queryKey });
     const query = this.#queryCache.get(defaultedOptions.queryHash);
     const prevData = query?.state.data;
-    const data2 = functionalUpdate(updater, prevData);
-    if (data2 === undefined) {
+    const data = functionalUpdate(updater, prevData);
+    if (data === undefined) {
       return;
     }
-    return this.#queryCache.build(this, defaultedOptions).setData(data2, { ...options, manual: true });
+    return this.#queryCache.build(this, defaultedOptions).setData(data, { ...options, manual: true });
   }
   setQueriesData(filters, updater, options) {
     return notifyManager.batch(() => this.#queryCache.findAll(filters).map(({ queryKey }) => [
@@ -19858,7 +32733,7 @@ var QueryObserver = class extends Subscribable {
     const { state } = query;
     let newState = { ...state };
     let isPlaceholderData = false;
-    let data2;
+    let data;
     if (options._optimisticResults) {
       const mounted = this.hasListeners();
       const fetchOnMount = !mounted && shouldFetchOnMount(query, options);
@@ -19874,9 +32749,9 @@ var QueryObserver = class extends Subscribable {
       }
     }
     let { error, errorUpdatedAt, status } = newState;
-    data2 = newState.data;
+    data = newState.data;
     let skipSelect = false;
-    if (options.placeholderData !== undefined && data2 === undefined && status === "pending") {
+    if (options.placeholderData !== undefined && data === undefined && status === "pending") {
       let placeholderData;
       if (prevResult?.isPlaceholderData && options.placeholderData === prevResultOptions?.placeholderData) {
         placeholderData = prevResult.data;
@@ -19886,19 +32761,19 @@ var QueryObserver = class extends Subscribable {
       }
       if (placeholderData !== undefined) {
         status = "success";
-        data2 = replaceData(prevResult?.data, placeholderData, options);
+        data = replaceData(prevResult?.data, placeholderData, options);
         isPlaceholderData = true;
       }
     }
-    if (options.select && data2 !== undefined && !skipSelect) {
-      if (prevResult && data2 === prevResultState?.data && options.select === this.#selectFn) {
-        data2 = this.#selectResult;
+    if (options.select && data !== undefined && !skipSelect) {
+      if (prevResult && data === prevResultState?.data && options.select === this.#selectFn) {
+        data = this.#selectResult;
       } else {
         try {
           this.#selectFn = options.select;
-          data2 = options.select(data2);
-          data2 = replaceData(prevResult?.data, data2, options);
-          this.#selectResult = data2;
+          data = options.select(data);
+          data = replaceData(prevResult?.data, data, options);
+          this.#selectResult = data;
           this.#selectError = null;
         } catch (selectError) {
           this.#selectError = selectError;
@@ -19907,7 +32782,7 @@ var QueryObserver = class extends Subscribable {
     }
     if (this.#selectError) {
       error = this.#selectError;
-      data2 = this.#selectResult;
+      data = this.#selectResult;
       errorUpdatedAt = Date.now();
       status = "error";
     }
@@ -19915,7 +32790,7 @@ var QueryObserver = class extends Subscribable {
     const isPending = status === "pending";
     const isError = status === "error";
     const isLoading = isPending && isFetching;
-    const hasData = data2 !== undefined;
+    const hasData = data !== undefined;
     const result = {
       status,
       fetchStatus: newState.fetchStatus,
@@ -19924,7 +32799,7 @@ var QueryObserver = class extends Subscribable {
       isError,
       isInitialLoading: isLoading,
       isLoading,
-      data: data2,
+      data,
       dataUpdatedAt: newState.dataUpdatedAt,
       error,
       errorUpdatedAt,
@@ -20160,8 +33035,8 @@ var MutationObserver2 = class extends Subscribable {
 };
 
 // node_modules/@tanstack/query-core/build/modern/hydration.js
-function defaultTransformerFn(data2) {
-  return data2;
+function defaultTransformerFn(data) {
+  return data;
 }
 function hydrate(client, dehydratedState, options) {
   if (typeof dehydratedState !== "object" || dehydratedState === null) {
@@ -20181,13 +33056,13 @@ function hydrate(client, dehydratedState, options) {
   });
   queries.forEach(({ queryKey, state, queryHash, meta, promise }) => {
     let query = queryCache.get(queryHash);
-    const data2 = state.data === undefined ? state.data : deserializeData(state.data);
+    const data = state.data === undefined ? state.data : deserializeData(state.data);
     if (query) {
       if (query.state.dataUpdatedAt < state.dataUpdatedAt) {
         const { fetchStatus: _ignored, ...serializedState } = state;
         query.setState({
           ...serializedState,
-          data: data2
+          data
         });
       }
     } else {
@@ -20199,7 +33074,7 @@ function hydrate(client, dehydratedState, options) {
         meta
       }, {
         ...state,
-        data: data2,
+        data,
         fetchStatus: "idle"
       });
     }
@@ -20210,12 +33085,12 @@ function hydrate(client, dehydratedState, options) {
   });
 }
 // node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js
-var React14 = __toESM(require_react(), 1);
+var React = __toESM(require_react(), 1);
 var import_jsx_runtime = __toESM(require_jsx_runtime(), 1);
 "use client";
-var QueryClientContext = React14.createContext(undefined);
+var QueryClientContext = React.createContext(undefined);
 var useQueryClient = (queryClient) => {
-  const client = React14.useContext(QueryClientContext);
+  const client = React.useContext(QueryClientContext);
   if (queryClient) {
     return queryClient;
   }
@@ -20228,7 +33103,7 @@ var QueryClientProvider = ({
   client,
   children
 }) => {
-  React14.useEffect(() => {
+  React.useEffect(() => {
     client.mount();
     return () => {
       client.unmount();
@@ -20238,14 +33113,14 @@ var QueryClientProvider = ({
 };
 
 // node_modules/@tanstack/react-query/build/modern/isRestoring.js
-var React16 = __toESM(require_react(), 1);
+var React2 = __toESM(require_react(), 1);
 "use client";
-var IsRestoringContext = React16.createContext(false);
-var useIsRestoring = () => React16.useContext(IsRestoringContext);
+var IsRestoringContext = React2.createContext(false);
+var useIsRestoring = () => React2.useContext(IsRestoringContext);
 var IsRestoringProvider = IsRestoringContext.Provider;
 
 // node_modules/@tanstack/react-query/build/modern/QueryErrorResetBoundary.js
-var React17 = __toESM(require_react(), 1);
+var React3 = __toESM(require_react(), 1);
 var import_jsx_runtime2 = __toESM(require_jsx_runtime(), 1);
 "use client";
 function createValue() {
@@ -20262,11 +33137,11 @@ function createValue() {
     }
   };
 }
-var QueryErrorResetBoundaryContext = React17.createContext(createValue());
-var useQueryErrorResetBoundary = () => React17.useContext(QueryErrorResetBoundaryContext);
+var QueryErrorResetBoundaryContext = React3.createContext(createValue());
+var useQueryErrorResetBoundary = () => React3.useContext(QueryErrorResetBoundaryContext);
 
 // node_modules/@tanstack/react-query/build/modern/errorBoundaryUtils.js
-var React18 = __toESM(require_react(), 1);
+var React4 = __toESM(require_react(), 1);
 
 // node_modules/@tanstack/react-query/build/modern/utils.js
 function shouldThrowError(throwError, params) {
@@ -20288,7 +33163,7 @@ var ensurePreventErrorBoundaryRetry = (options, errorResetBoundary) => {
   }
 };
 var useClearResetErrorBoundary = (errorResetBoundary) => {
-  React18.useEffect(() => {
+  React4.useEffect(() => {
     errorResetBoundary.clearReset();
   }, [errorResetBoundary]);
 };
@@ -20319,7 +33194,7 @@ var fetchOptimistic = (defaultedOptions, observer, errorResetBoundary) => observ
 });
 
 // node_modules/@tanstack/react-query/build/modern/useBaseQuery.js
-var React19 = __toESM(require_react(), 1);
+var React5 = __toESM(require_react(), 1);
 "use client";
 function useBaseQuery(options, Observer, queryClient) {
   if (true) {
@@ -20342,15 +33217,15 @@ function useBaseQuery(options, Observer, queryClient) {
   ensurePreventErrorBoundaryRetry(defaultedOptions, errorResetBoundary);
   useClearResetErrorBoundary(errorResetBoundary);
   const isNewCacheEntry = !client.getQueryCache().get(defaultedOptions.queryHash);
-  const [observer] = React19.useState(() => new Observer(client, defaultedOptions));
+  const [observer] = React5.useState(() => new Observer(client, defaultedOptions));
   const result = observer.getOptimisticResult(defaultedOptions);
   const shouldSubscribe = !isRestoring && options.subscribed !== false;
-  React19.useSyncExternalStore(React19.useCallback((onStoreChange) => {
+  React5.useSyncExternalStore(React5.useCallback((onStoreChange) => {
     const unsubscribe = shouldSubscribe ? observer.subscribe(notifyManager.batchCalls(onStoreChange)) : noop2;
     observer.updateResult();
     return unsubscribe;
   }, [observer, shouldSubscribe]), () => observer.getCurrentResult(), () => observer.getCurrentResult());
-  React19.useEffect(() => {
+  React5.useEffect(() => {
     observer.setOptions(defaultedOptions);
   }, [defaultedOptions, observer]);
   if (shouldSuspend(defaultedOptions, result)) {
@@ -20382,7 +33257,7 @@ function useQuery(options, queryClient) {
 }
 
 // node_modules/@tanstack/react-query/build/modern/HydrationBoundary.js
-var React20 = __toESM(require_react(), 1);
+var React6 = __toESM(require_react(), 1);
 "use client";
 var hasProperty = (obj, key) => {
   return typeof obj === "object" && obj !== null && key in obj;
@@ -20394,10 +33269,10 @@ var HydrationBoundary = ({
   queryClient
 }) => {
   const client = useQueryClient(queryClient);
-  const [hydrationQueue, setHydrationQueue] = React20.useState();
-  const optionsRef = React20.useRef(options);
+  const [hydrationQueue, setHydrationQueue] = React6.useState();
+  const optionsRef = React6.useRef(options);
   optionsRef.current = options;
-  React20.useMemo(() => {
+  React6.useMemo(() => {
     if (state) {
       if (typeof state !== "object") {
         return;
@@ -20426,7 +33301,7 @@ var HydrationBoundary = ({
       }
     }
   }, [client, hydrationQueue, state]);
-  React20.useEffect(() => {
+  React6.useEffect(() => {
     if (hydrationQueue) {
       hydrate(client, { queries: hydrationQueue }, optionsRef.current);
       setHydrationQueue(undefined);
@@ -20436,16 +33311,16 @@ var HydrationBoundary = ({
 };
 
 // node_modules/@tanstack/react-query/build/modern/useMutation.js
-var React21 = __toESM(require_react(), 1);
+var React7 = __toESM(require_react(), 1);
 "use client";
 function useMutation(options, queryClient) {
   const client = useQueryClient(queryClient);
-  const [observer] = React21.useState(() => new MutationObserver2(client, options));
-  React21.useEffect(() => {
+  const [observer] = React7.useState(() => new MutationObserver2(client, options));
+  React7.useEffect(() => {
     observer.setOptions(options);
   }, [observer, options]);
-  const result = React21.useSyncExternalStore(React21.useCallback((onStoreChange) => observer.subscribe(notifyManager.batchCalls(onStoreChange)), [observer]), () => observer.getCurrentResult(), () => observer.getCurrentResult());
-  const mutate = React21.useCallback((variables, mutateOptions) => {
+  const result = React7.useSyncExternalStore(React7.useCallback((onStoreChange) => observer.subscribe(notifyManager.batchCalls(onStoreChange)), [observer]), () => observer.getCurrentResult(), () => observer.getCurrentResult());
+  const mutate = React7.useCallback((variables, mutateOptions) => {
     observer.mutate(variables, mutateOptions).catch(noop2);
   }, [observer]);
   if (result.error && shouldThrowError(observer.options.throwOnError, [result.error])) {
@@ -20455,7 +33330,386 @@ function useMutation(options, queryClient) {
 }
 
 // src/react/App.tsx
-var import_react65 = __toESM(require_react(), 1);
+var import_react72 = __toESM(require_react(), 1);
+var import_react_router_dom2 = __toESM(require_dist2(), 1);
+
+// src/lib/components/Alerts/hooks/useAlerts.ts
+var import_react = __toESM(require_react(), 1);
+var useAlerts = (eventListenerName) => {
+  const [alerts, setAlerts] = import_react.useState([]);
+  const handleAdd = (event) => {
+    setAlerts((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), ...event.detail }
+    ]);
+  };
+  const onRemove = (id) => {
+    setAlerts(alerts.filter((e) => e.id !== id));
+  };
+  import_react.useEffect(() => {
+    document.addEventListener(eventListenerName, handleAdd);
+    return () => {
+      document.removeEventListener(eventListenerName, handleAdd);
+    };
+  }, [eventListenerName]);
+  return {
+    alerts,
+    onRemove
+  };
+};
+// src/lib/components/Alerts/Messages/MessageBars.tsx
+var import_react3 = __toESM(require_react(), 1);
+
+// src/lib/services/AlertService.ts
+var emitEvent = (eventListenerName, detail) => {
+  document.dispatchEvent(new CustomEvent(eventListenerName, {
+    detail,
+    bubbles: true,
+    cancelable: false
+  }));
+};
+var messageBarEventListenerName = "message-bar-event-listener";
+var showMessage = (detail) => {
+  emitEvent(messageBarEventListenerName, detail);
+};
+var toastEventListenerName = "toast-event-listener";
+var showToast = (detail) => {
+  emitEvent(toastEventListenerName, detail);
+};
+var showApiError = (apiError) => {
+  emitEvent(messageBarEventListenerName, {
+    message: `(${apiError.status}) ${apiError.statusText} - ${apiError.message}`,
+    type: "error"
+  });
+};
+// node_modules/http-status-codes/build/es/legacy.js
+var ACCEPTED = 202;
+var BAD_GATEWAY = 502;
+var BAD_REQUEST = 400;
+var CONFLICT = 409;
+var CONTINUE = 100;
+var CREATED = 201;
+var EXPECTATION_FAILED = 417;
+var FORBIDDEN = 403;
+var GATEWAY_TIMEOUT = 504;
+var GONE = 410;
+var HTTP_VERSION_NOT_SUPPORTED = 505;
+var IM_A_TEAPOT = 418;
+var INSUFFICIENT_SPACE_ON_RESOURCE = 419;
+var INSUFFICIENT_STORAGE = 507;
+var INTERNAL_SERVER_ERROR = 500;
+var LENGTH_REQUIRED = 411;
+var LOCKED = 423;
+var METHOD_FAILURE = 420;
+var METHOD_NOT_ALLOWED = 405;
+var MOVED_PERMANENTLY = 301;
+var MOVED_TEMPORARILY = 302;
+var MULTI_STATUS = 207;
+var MULTIPLE_CHOICES = 300;
+var NETWORK_AUTHENTICATION_REQUIRED = 511;
+var NO_CONTENT = 204;
+var NON_AUTHORITATIVE_INFORMATION = 203;
+var NOT_ACCEPTABLE = 406;
+var NOT_FOUND = 404;
+var NOT_IMPLEMENTED = 501;
+var NOT_MODIFIED = 304;
+var OK = 200;
+var PARTIAL_CONTENT = 206;
+var PAYMENT_REQUIRED = 402;
+var PERMANENT_REDIRECT = 308;
+var PRECONDITION_FAILED = 412;
+var PRECONDITION_REQUIRED = 428;
+var PROCESSING = 102;
+var PROXY_AUTHENTICATION_REQUIRED = 407;
+var REQUEST_HEADER_FIELDS_TOO_LARGE = 431;
+var REQUEST_TIMEOUT = 408;
+var REQUEST_TOO_LONG = 413;
+var REQUEST_URI_TOO_LONG = 414;
+var REQUESTED_RANGE_NOT_SATISFIABLE = 416;
+var RESET_CONTENT = 205;
+var SEE_OTHER = 303;
+var SERVICE_UNAVAILABLE = 503;
+var SWITCHING_PROTOCOLS = 101;
+var TEMPORARY_REDIRECT = 307;
+var TOO_MANY_REQUESTS = 429;
+var UNAUTHORIZED = 401;
+var UNPROCESSABLE_ENTITY = 422;
+var UNSUPPORTED_MEDIA_TYPE = 415;
+var USE_PROXY = 305;
+var legacy_default = {
+  ACCEPTED,
+  BAD_GATEWAY,
+  BAD_REQUEST,
+  CONFLICT,
+  CONTINUE,
+  CREATED,
+  EXPECTATION_FAILED,
+  FORBIDDEN,
+  GATEWAY_TIMEOUT,
+  GONE,
+  HTTP_VERSION_NOT_SUPPORTED,
+  IM_A_TEAPOT,
+  INSUFFICIENT_SPACE_ON_RESOURCE,
+  INSUFFICIENT_STORAGE,
+  INTERNAL_SERVER_ERROR,
+  LENGTH_REQUIRED,
+  LOCKED,
+  METHOD_FAILURE,
+  METHOD_NOT_ALLOWED,
+  MOVED_PERMANENTLY,
+  MOVED_TEMPORARILY,
+  MULTI_STATUS,
+  MULTIPLE_CHOICES,
+  NETWORK_AUTHENTICATION_REQUIRED,
+  NO_CONTENT,
+  NON_AUTHORITATIVE_INFORMATION,
+  NOT_ACCEPTABLE,
+  NOT_FOUND,
+  NOT_IMPLEMENTED,
+  NOT_MODIFIED,
+  OK,
+  PARTIAL_CONTENT,
+  PAYMENT_REQUIRED,
+  PERMANENT_REDIRECT,
+  PRECONDITION_FAILED,
+  PRECONDITION_REQUIRED,
+  PROCESSING,
+  PROXY_AUTHENTICATION_REQUIRED,
+  REQUEST_HEADER_FIELDS_TOO_LARGE,
+  REQUEST_TIMEOUT,
+  REQUEST_TOO_LONG,
+  REQUEST_URI_TOO_LONG,
+  REQUESTED_RANGE_NOT_SATISFIABLE,
+  RESET_CONTENT,
+  SEE_OTHER,
+  SERVICE_UNAVAILABLE,
+  SWITCHING_PROTOCOLS,
+  TEMPORARY_REDIRECT,
+  TOO_MANY_REQUESTS,
+  UNAUTHORIZED,
+  UNPROCESSABLE_ENTITY,
+  UNSUPPORTED_MEDIA_TYPE,
+  USE_PROXY
+};
+
+// node_modules/http-status-codes/build/es/utils.js
+var statusCodeToReasonPhrase = {
+  "202": "Accepted",
+  "502": "Bad Gateway",
+  "400": "Bad Request",
+  "409": "Conflict",
+  "100": "Continue",
+  "201": "Created",
+  "417": "Expectation Failed",
+  "424": "Failed Dependency",
+  "403": "Forbidden",
+  "504": "Gateway Timeout",
+  "410": "Gone",
+  "505": "HTTP Version Not Supported",
+  "418": "I'm a teapot",
+  "419": "Insufficient Space on Resource",
+  "507": "Insufficient Storage",
+  "500": "Internal Server Error",
+  "411": "Length Required",
+  "423": "Locked",
+  "420": "Method Failure",
+  "405": "Method Not Allowed",
+  "301": "Moved Permanently",
+  "302": "Moved Temporarily",
+  "207": "Multi-Status",
+  "300": "Multiple Choices",
+  "511": "Network Authentication Required",
+  "204": "No Content",
+  "203": "Non Authoritative Information",
+  "406": "Not Acceptable",
+  "404": "Not Found",
+  "501": "Not Implemented",
+  "304": "Not Modified",
+  "200": "OK",
+  "206": "Partial Content",
+  "402": "Payment Required",
+  "308": "Permanent Redirect",
+  "412": "Precondition Failed",
+  "428": "Precondition Required",
+  "102": "Processing",
+  "103": "Early Hints",
+  "426": "Upgrade Required",
+  "407": "Proxy Authentication Required",
+  "431": "Request Header Fields Too Large",
+  "408": "Request Timeout",
+  "413": "Request Entity Too Large",
+  "414": "Request-URI Too Long",
+  "416": "Requested Range Not Satisfiable",
+  "205": "Reset Content",
+  "303": "See Other",
+  "503": "Service Unavailable",
+  "101": "Switching Protocols",
+  "307": "Temporary Redirect",
+  "429": "Too Many Requests",
+  "401": "Unauthorized",
+  "451": "Unavailable For Legal Reasons",
+  "422": "Unprocessable Entity",
+  "415": "Unsupported Media Type",
+  "305": "Use Proxy",
+  "421": "Misdirected Request"
+};
+var reasonPhraseToStatusCode = {
+  Accepted: 202,
+  "Bad Gateway": 502,
+  "Bad Request": 400,
+  Conflict: 409,
+  Continue: 100,
+  Created: 201,
+  "Expectation Failed": 417,
+  "Failed Dependency": 424,
+  Forbidden: 403,
+  "Gateway Timeout": 504,
+  Gone: 410,
+  "HTTP Version Not Supported": 505,
+  "I'm a teapot": 418,
+  "Insufficient Space on Resource": 419,
+  "Insufficient Storage": 507,
+  "Internal Server Error": 500,
+  "Length Required": 411,
+  Locked: 423,
+  "Method Failure": 420,
+  "Method Not Allowed": 405,
+  "Moved Permanently": 301,
+  "Moved Temporarily": 302,
+  "Multi-Status": 207,
+  "Multiple Choices": 300,
+  "Network Authentication Required": 511,
+  "No Content": 204,
+  "Non Authoritative Information": 203,
+  "Not Acceptable": 406,
+  "Not Found": 404,
+  "Not Implemented": 501,
+  "Not Modified": 304,
+  OK: 200,
+  "Partial Content": 206,
+  "Payment Required": 402,
+  "Permanent Redirect": 308,
+  "Precondition Failed": 412,
+  "Precondition Required": 428,
+  Processing: 102,
+  "Early Hints": 103,
+  "Upgrade Required": 426,
+  "Proxy Authentication Required": 407,
+  "Request Header Fields Too Large": 431,
+  "Request Timeout": 408,
+  "Request Entity Too Large": 413,
+  "Request-URI Too Long": 414,
+  "Requested Range Not Satisfiable": 416,
+  "Reset Content": 205,
+  "See Other": 303,
+  "Service Unavailable": 503,
+  "Switching Protocols": 101,
+  "Temporary Redirect": 307,
+  "Too Many Requests": 429,
+  Unauthorized: 401,
+  "Unavailable For Legal Reasons": 451,
+  "Unprocessable Entity": 422,
+  "Unsupported Media Type": 415,
+  "Use Proxy": 305,
+  "Misdirected Request": 421
+};
+
+// node_modules/http-status-codes/build/es/utils-functions.js
+function getReasonPhrase(statusCode) {
+  var result = statusCodeToReasonPhrase[statusCode.toString()];
+  if (!result) {
+    throw new Error("Status code does not exist: " + statusCode);
+  }
+  return result;
+}
+function getStatusCode(reasonPhrase) {
+  var result = reasonPhraseToStatusCode[reasonPhrase];
+  if (!result) {
+    throw new Error("Reason phrase does not exist: " + reasonPhrase);
+  }
+  return result;
+}
+var getStatusText = getReasonPhrase;
+
+// node_modules/http-status-codes/build/es/status-codes.js
+var StatusCodes;
+(function(StatusCodes2) {
+  StatusCodes2[StatusCodes2["CONTINUE"] = 100] = "CONTINUE";
+  StatusCodes2[StatusCodes2["SWITCHING_PROTOCOLS"] = 101] = "SWITCHING_PROTOCOLS";
+  StatusCodes2[StatusCodes2["PROCESSING"] = 102] = "PROCESSING";
+  StatusCodes2[StatusCodes2["EARLY_HINTS"] = 103] = "EARLY_HINTS";
+  StatusCodes2[StatusCodes2["OK"] = 200] = "OK";
+  StatusCodes2[StatusCodes2["CREATED"] = 201] = "CREATED";
+  StatusCodes2[StatusCodes2["ACCEPTED"] = 202] = "ACCEPTED";
+  StatusCodes2[StatusCodes2["NON_AUTHORITATIVE_INFORMATION"] = 203] = "NON_AUTHORITATIVE_INFORMATION";
+  StatusCodes2[StatusCodes2["NO_CONTENT"] = 204] = "NO_CONTENT";
+  StatusCodes2[StatusCodes2["RESET_CONTENT"] = 205] = "RESET_CONTENT";
+  StatusCodes2[StatusCodes2["PARTIAL_CONTENT"] = 206] = "PARTIAL_CONTENT";
+  StatusCodes2[StatusCodes2["MULTI_STATUS"] = 207] = "MULTI_STATUS";
+  StatusCodes2[StatusCodes2["MULTIPLE_CHOICES"] = 300] = "MULTIPLE_CHOICES";
+  StatusCodes2[StatusCodes2["MOVED_PERMANENTLY"] = 301] = "MOVED_PERMANENTLY";
+  StatusCodes2[StatusCodes2["MOVED_TEMPORARILY"] = 302] = "MOVED_TEMPORARILY";
+  StatusCodes2[StatusCodes2["SEE_OTHER"] = 303] = "SEE_OTHER";
+  StatusCodes2[StatusCodes2["NOT_MODIFIED"] = 304] = "NOT_MODIFIED";
+  StatusCodes2[StatusCodes2["USE_PROXY"] = 305] = "USE_PROXY";
+  StatusCodes2[StatusCodes2["TEMPORARY_REDIRECT"] = 307] = "TEMPORARY_REDIRECT";
+  StatusCodes2[StatusCodes2["PERMANENT_REDIRECT"] = 308] = "PERMANENT_REDIRECT";
+  StatusCodes2[StatusCodes2["BAD_REQUEST"] = 400] = "BAD_REQUEST";
+  StatusCodes2[StatusCodes2["UNAUTHORIZED"] = 401] = "UNAUTHORIZED";
+  StatusCodes2[StatusCodes2["PAYMENT_REQUIRED"] = 402] = "PAYMENT_REQUIRED";
+  StatusCodes2[StatusCodes2["FORBIDDEN"] = 403] = "FORBIDDEN";
+  StatusCodes2[StatusCodes2["NOT_FOUND"] = 404] = "NOT_FOUND";
+  StatusCodes2[StatusCodes2["METHOD_NOT_ALLOWED"] = 405] = "METHOD_NOT_ALLOWED";
+  StatusCodes2[StatusCodes2["NOT_ACCEPTABLE"] = 406] = "NOT_ACCEPTABLE";
+  StatusCodes2[StatusCodes2["PROXY_AUTHENTICATION_REQUIRED"] = 407] = "PROXY_AUTHENTICATION_REQUIRED";
+  StatusCodes2[StatusCodes2["REQUEST_TIMEOUT"] = 408] = "REQUEST_TIMEOUT";
+  StatusCodes2[StatusCodes2["CONFLICT"] = 409] = "CONFLICT";
+  StatusCodes2[StatusCodes2["GONE"] = 410] = "GONE";
+  StatusCodes2[StatusCodes2["LENGTH_REQUIRED"] = 411] = "LENGTH_REQUIRED";
+  StatusCodes2[StatusCodes2["PRECONDITION_FAILED"] = 412] = "PRECONDITION_FAILED";
+  StatusCodes2[StatusCodes2["REQUEST_TOO_LONG"] = 413] = "REQUEST_TOO_LONG";
+  StatusCodes2[StatusCodes2["REQUEST_URI_TOO_LONG"] = 414] = "REQUEST_URI_TOO_LONG";
+  StatusCodes2[StatusCodes2["UNSUPPORTED_MEDIA_TYPE"] = 415] = "UNSUPPORTED_MEDIA_TYPE";
+  StatusCodes2[StatusCodes2["REQUESTED_RANGE_NOT_SATISFIABLE"] = 416] = "REQUESTED_RANGE_NOT_SATISFIABLE";
+  StatusCodes2[StatusCodes2["EXPECTATION_FAILED"] = 417] = "EXPECTATION_FAILED";
+  StatusCodes2[StatusCodes2["IM_A_TEAPOT"] = 418] = "IM_A_TEAPOT";
+  StatusCodes2[StatusCodes2["INSUFFICIENT_SPACE_ON_RESOURCE"] = 419] = "INSUFFICIENT_SPACE_ON_RESOURCE";
+  StatusCodes2[StatusCodes2["METHOD_FAILURE"] = 420] = "METHOD_FAILURE";
+  StatusCodes2[StatusCodes2["MISDIRECTED_REQUEST"] = 421] = "MISDIRECTED_REQUEST";
+  StatusCodes2[StatusCodes2["UNPROCESSABLE_ENTITY"] = 422] = "UNPROCESSABLE_ENTITY";
+  StatusCodes2[StatusCodes2["LOCKED"] = 423] = "LOCKED";
+  StatusCodes2[StatusCodes2["FAILED_DEPENDENCY"] = 424] = "FAILED_DEPENDENCY";
+  StatusCodes2[StatusCodes2["UPGRADE_REQUIRED"] = 426] = "UPGRADE_REQUIRED";
+  StatusCodes2[StatusCodes2["PRECONDITION_REQUIRED"] = 428] = "PRECONDITION_REQUIRED";
+  StatusCodes2[StatusCodes2["TOO_MANY_REQUESTS"] = 429] = "TOO_MANY_REQUESTS";
+  StatusCodes2[StatusCodes2["REQUEST_HEADER_FIELDS_TOO_LARGE"] = 431] = "REQUEST_HEADER_FIELDS_TOO_LARGE";
+  StatusCodes2[StatusCodes2["UNAVAILABLE_FOR_LEGAL_REASONS"] = 451] = "UNAVAILABLE_FOR_LEGAL_REASONS";
+  StatusCodes2[StatusCodes2["INTERNAL_SERVER_ERROR"] = 500] = "INTERNAL_SERVER_ERROR";
+  StatusCodes2[StatusCodes2["NOT_IMPLEMENTED"] = 501] = "NOT_IMPLEMENTED";
+  StatusCodes2[StatusCodes2["BAD_GATEWAY"] = 502] = "BAD_GATEWAY";
+  StatusCodes2[StatusCodes2["SERVICE_UNAVAILABLE"] = 503] = "SERVICE_UNAVAILABLE";
+  StatusCodes2[StatusCodes2["GATEWAY_TIMEOUT"] = 504] = "GATEWAY_TIMEOUT";
+  StatusCodes2[StatusCodes2["HTTP_VERSION_NOT_SUPPORTED"] = 505] = "HTTP_VERSION_NOT_SUPPORTED";
+  StatusCodes2[StatusCodes2["INSUFFICIENT_STORAGE"] = 507] = "INSUFFICIENT_STORAGE";
+  StatusCodes2[StatusCodes2["NETWORK_AUTHENTICATION_REQUIRED"] = 511] = "NETWORK_AUTHENTICATION_REQUIRED";
+})(StatusCodes || (StatusCodes = {}));
+// node_modules/http-status-codes/build/es/index.js
+var __assign = function() {
+  __assign = Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length;i < n; i++) {
+      s = arguments[i];
+      for (var p in s)
+        if (Object.prototype.hasOwnProperty.call(s, p))
+          t[p] = s[p];
+    }
+    return t;
+  };
+  return __assign.apply(this, arguments);
+};
+var es_default = __assign(__assign({}, legacy_default), {
+  getStatusCode,
+  getStatusText
+});
 
 // src/lib/constants.ts
 var apiPrefix = "api";
@@ -20472,109 +33726,236 @@ var refreshRoute = "refresh";
 var ACCESS_TOKEN_EXP = 60 * 60;
 var REFRESH_TOKEN_EXP = 7 * 86400;
 
-// src/react/pages/Forbidden/ForbiddenPage.tsx
-var import_react = __toESM(require_react(), 1);
-var ForbiddenPage = () => {
-  return /* @__PURE__ */ import_react.default.createElement("div", {
-    className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react.default.createElement("div", {
-    className: "text-center"
-  }, /* @__PURE__ */ import_react.default.createElement("h1", {
-    className: "mb-4 text-4xl font-bold text-gray-800"
-  }, "403 Forbidden"), /* @__PURE__ */ import_react.default.createElement("p", {
-    className: "mb-8 text-lg text-gray-600"
-  }, "You must be logged in to access this page!"), /* @__PURE__ */ import_react.default.createElement("a", {
-    href: `/${loginRoute}`,
-    className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
-  }, "Login to begin")));
+// src/lib/types/ApiError.ts
+class ApiError extends Error {
+  status;
+  statusText;
+  validation;
+  constructor({ status, statusText, message, validation }) {
+    super(message);
+    this.status = status;
+    this.statusText = statusText ?? "An Error Occured";
+    this.message = message ?? "Failed request, please try again later.";
+    this.validation = validation;
+    message && showApiError(this);
+  }
+}
+// src/lib/services/ApiService.ts
+class ApiService {
+  get = async (url) => {
+    return await apiFetch(url);
+  };
+  post = async (url, request) => {
+    return await apiFetch(url, {
+      method: "POST",
+      body: JSON.stringify(request)
+    });
+  };
+  put = async (url, request) => {
+    return await apiFetch(url, {
+      method: "PUT",
+      body: JSON.stringify(request)
+    });
+  };
+  delete = async (url, request) => {
+    return await apiFetch(url, {
+      method: "DELETE",
+      body: JSON.stringify(request)
+    });
+  };
+}
+var apiFetch = async (url, options = {}) => {
+  let response = await fetch(url, options);
+  if (response.status === StatusCodes.UNAUTHORIZED && response.url.endsWith(checkRoute)) {
+    await refreshToken();
+    response = await fetch(url, options);
+  }
+  if (!response.ok) {
+    let errorData;
+    try {
+      errorData = await response.json();
+    } catch {
+      throw new ApiError({
+        status: response.status,
+        statusText: response.statusText,
+        message: "could not parse error"
+      });
+    }
+    console.error(errorData);
+    throw new ApiError(errorData);
+  }
+  if (options.method === "POST" || options.method === "DELETE")
+    return response;
+  return await response.json();
 };
-// src/react/pages/Home/HomePage.tsx
+var refreshToken = async () => {
+  const response = await fetch(`${apiPrefix}/${authPrefix}/${refreshRoute}`, {
+    method: "POST"
+  });
+  if (!response.ok) {
+    throw new ApiError({
+      status: response.status,
+      statusText: response.statusText,
+      message: "Failed to refresh token"
+    });
+  }
+};
+// src/lib/components/Alerts/Messages/MessageBar/MessageBar.tsx
 var import_react2 = __toESM(require_react(), 1);
-var HomePage = () => {
+var MessageBar = ({
+  id,
+  message,
+  type = "info",
+  onClose
+}) => {
   return /* @__PURE__ */ import_react2.default.createElement("div", {
-    className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react2.default.createElement("div", {
-    className: "text-center"
-  }, /* @__PURE__ */ import_react2.default.createElement("h1", {
-    className: "mb-4 text-4xl font-bold text-gray-800"
-  }, "Welcome!"), /* @__PURE__ */ import_react2.default.createElement("p", {
-    className: "mb-8 text-lg text-gray-600"
-  }, "A Todo app built with Bun, Elysia, and React Server Components"), /* @__PURE__ */ import_react2.default.createElement("a", {
-    href: `/${loginRoute}`,
-    className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
-  }, "Login to begin")));
+    className: `m-2 flex w-full items-center justify-between rounded-md p-3 ${getTheme(type)}`
+  }, /* @__PURE__ */ import_react2.default.createElement("p", {
+    className: "font-semibold"
+  }, message), onClose && /* @__PURE__ */ import_react2.default.createElement(CloseButton, {
+    onClick: () => onClose(id)
+  }));
 };
-// src/react/pages/Login/LoginPage.tsx
-var import_react58 = __toESM(require_react(), 1);
-
-// src/react/components/Alerts/Alerts.tsx
-var import_react4 = __toESM(require_react(), 1);
-
-// src/react/components/Alerts/AlertBar/AlertBar.tsx
-var import_react3 = __toESM(require_react(), 1);
-var AlertBar = ({ id, message, onRemove }) => {
+// src/lib/components/Alerts/Messages/MessageBars.tsx
+var MessageBars = () => {
+  const { alerts, onRemove } = useAlerts(messageBarEventListenerName);
   return /* @__PURE__ */ import_react3.default.createElement("div", {
-    className: "left-0 top-0 z-50 flex w-full items-center justify-between bg-red-800 p-4 text-white"
-  }, /* @__PURE__ */ import_react3.default.createElement("p", null, message), /* @__PURE__ */ import_react3.default.createElement(CloseButton, {
-    color: "white",
-    onClick: () => onRemove(id)
-  }));
-};
-// src/react/components/Alerts/Alerts.tsx
-var eventListenerName = "alert-event-listener";
-var emitAlert = (apiError) => {
-  let detail = {
-    id: crypto.randomUUID(),
-    message: `(${apiError.status}) ${apiError.statusText} - ${apiError.message}`
-  };
-  document.dispatchEvent(new CustomEvent(eventListenerName, {
-    detail,
-    bubbles: true,
-    cancelable: false
-  }));
-};
-var Alerts = () => {
-  const [alerts, setAlerts] = import_react4.useState([]);
-  const handleAdd = (event) => {
-    setAlerts((prev) => [...prev, { ...event.detail }]);
-  };
-  const handleRemove = (id) => {
-    setAlerts(alerts.filter((e) => e.id !== id));
-  };
-  import_react4.useEffect(() => {
-    document.addEventListener(eventListenerName, handleAdd);
-    return () => {
-      document.removeEventListener(eventListenerName, handleAdd);
-    };
-  }, []);
-  return /* @__PURE__ */ import_react4.default.createElement(import_react4.default.Fragment, null, alerts.map((alert2) => {
-    return /* @__PURE__ */ import_react4.default.createElement(AlertBar, {
+    className: "z-99 w-99/100 pointer-events-auto fixed"
+  }, alerts.map((alert2) => {
+    return /* @__PURE__ */ import_react3.default.createElement(MessageBar, {
       key: alert2.id,
+      ...alert2,
       id: alert2.id,
-      message: alert2.message,
-      onRemove: handleRemove
+      onClose: onRemove
     });
   }));
 };
-// src/react/components/Buttons/Button.tsx
-var import_react29 = __toESM(require_react(), 1);
+// src/lib/components/Alerts/Toasts/Toasts.tsx
+var import_react5 = __toESM(require_react(), 1);
 
-// src/react/components/Buttons/RippleButton.tsx
-var import_react28 = __toESM(require_react(), 1);
+// src/lib/components/Alerts/Toasts/Toast/Toast.tsx
+var import_react4 = __toESM(require_react(), 1);
+var Toast = ({
+  id,
+  message,
+  type = "info",
+  duration = 10 * 1000,
+  onClose
+}) => {
+  const [isVisible, setIsVisible] = import_react4.default.useState(true);
+  import_react4.default.useEffect(() => {
+    if (duration && duration > 0) {
+      const timer = setTimeout(() => {
+        setIsVisible(false);
+        onClose?.(id);
+      }, duration);
+      return () => clearTimeout(timer);
+    }
+  }, [duration, id, onClose]);
+  if (!isVisible) {
+    return null;
+  }
+  return /* @__PURE__ */ import_react4.default.createElement("div", {
+    className: `mb-2 flex items-center justify-between rounded-md p-3 shadow-lg ${getTheme(type)}`
+  }, /* @__PURE__ */ import_react4.default.createElement("p", {
+    className: "mr-2 font-semibold"
+  }, message), onClose && /* @__PURE__ */ import_react4.default.createElement(CloseButton, {
+    onClick: () => onClose(id)
+  }));
+};
+// src/lib/components/Alerts/Toasts/Toasts.tsx
+var Toasts = () => {
+  const { alerts, onRemove } = useAlerts(toastEventListenerName);
+  const positionedMap = new Map;
+  const setFilteredAlerts = (toastPosition) => {
+    positionedMap.set(toastPosition, alerts.filter((x) => x.position === toastPosition));
+  };
+  setFilteredAlerts("top-left");
+  setFilteredAlerts("top-center");
+  setFilteredAlerts("top-right");
+  setFilteredAlerts("bottom-left");
+  setFilteredAlerts("bottom-center");
+  setFilteredAlerts("bottom-right");
+  const getPosition = (toastPosition) => {
+    let positionClasses = "";
+    switch (toastPosition) {
+      case "top-left":
+        positionClasses = "top-4 left-4";
+        break;
+      case "top-center":
+        positionClasses = "top-4 left-1/2 transform -translate-x-1/2";
+        break;
+      case "top-right":
+        positionClasses = "top-4 right-4";
+        break;
+      case "bottom-left":
+        positionClasses = "bottom-4 left-4";
+        break;
+      case "bottom-center":
+        positionClasses = "bottom-4 left-1/2 transform -translate-x-1/2";
+        break;
+      case "bottom-right":
+      default:
+        positionClasses = "bottom-4 right-4";
+        break;
+    }
+    return positionClasses;
+  };
+  const components = [];
+  positionedMap.forEach((alerts2, toastPosition) => {
+    components.push(/* @__PURE__ */ import_react5.default.createElement("div", {
+      key: crypto.randomUUID(),
+      className: `pointer-events-auto fixed z-50 flex flex-col ${getPosition(toastPosition)}`
+    }, alerts2.map((alert2) => {
+      return /* @__PURE__ */ import_react5.default.createElement(Toast, {
+        key: alert2.id,
+        ...alert2,
+        id: alert2.id,
+        onClose: onRemove
+      });
+    })));
+  });
+  return /* @__PURE__ */ import_react5.default.createElement(import_react5.default.Fragment, null, components);
+};
+// src/lib/components/Alerts/index.tsx
+var getTheme = (type) => {
+  let theme = "";
+  switch (type) {
+    case "success":
+      theme = "bg-green-200 text-green-800 border-1 border-green-800";
+      break;
+    case "error":
+      theme = "bg-red-200 text-red-800 border-1 border-red-800";
+      break;
+    case "warning":
+      theme = "bg-yellow-200 text-yellow-800 border-1 border-yellow-800";
+      break;
+    case "info":
+    default:
+      theme = "bg-gray-200 text-gray-800 border-1 border-gray-800";
+      break;
+  }
+  return theme;
+};
+// src/lib/components/Buttons/Button.tsx
+var import_react30 = __toESM(require_react(), 1);
+
+// src/lib/components/Buttons/RippleButton.tsx
+var import_react29 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/components/AnimatePresence/index.mjs
 var import_jsx_runtime5 = __toESM(require_jsx_runtime(), 1);
-var import_react14 = __toESM(require_react(), 1);
+var import_react15 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/context/LayoutGroupContext.mjs
-var import_react5 = __toESM(require_react(), 1);
+var import_react6 = __toESM(require_react(), 1);
 "use client";
-var LayoutGroupContext = import_react5.createContext({});
+var LayoutGroupContext = import_react6.createContext({});
 
 // node_modules/framer-motion/dist/es/utils/use-constant.mjs
-var import_react6 = __toESM(require_react(), 1);
+var import_react7 = __toESM(require_react(), 1);
 function useConstant(init) {
-  const ref = import_react6.useRef(null);
+  const ref = import_react7.useRef(null);
   if (ref.current === null) {
     ref.current = init();
   }
@@ -20582,33 +33963,33 @@ function useConstant(init) {
 }
 
 // node_modules/framer-motion/dist/es/utils/use-isomorphic-effect.mjs
-var import_react7 = __toESM(require_react(), 1);
+var import_react8 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/utils/is-browser.mjs
-var isBrowser2 = typeof window !== "undefined";
+var isBrowser = typeof window !== "undefined";
 
 // node_modules/framer-motion/dist/es/utils/use-isomorphic-effect.mjs
-var useIsomorphicLayoutEffect2 = isBrowser2 ? import_react7.useLayoutEffect : import_react7.useEffect;
+var useIsomorphicLayoutEffect = isBrowser ? import_react8.useLayoutEffect : import_react8.useEffect;
 
 // node_modules/framer-motion/dist/es/components/AnimatePresence/PresenceChild.mjs
 var import_jsx_runtime4 = __toESM(require_jsx_runtime(), 1);
-var React27 = __toESM(require_react(), 1);
-var import_react11 = __toESM(require_react(), 1);
+var React13 = __toESM(require_react(), 1);
+var import_react12 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/context/PresenceContext.mjs
-var import_react8 = __toESM(require_react(), 1);
+var import_react9 = __toESM(require_react(), 1);
 "use client";
-var PresenceContext = /* @__PURE__ */ import_react8.createContext(null);
+var PresenceContext = /* @__PURE__ */ import_react9.createContext(null);
 
 // node_modules/framer-motion/dist/es/components/AnimatePresence/PopChild.mjs
 var import_jsx_runtime3 = __toESM(require_jsx_runtime(), 1);
-var React26 = __toESM(require_react(), 1);
-var import_react10 = __toESM(require_react(), 1);
+var React12 = __toESM(require_react(), 1);
+var import_react11 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/context/MotionConfigContext.mjs
-var import_react9 = __toESM(require_react(), 1);
+var import_react10 = __toESM(require_react(), 1);
 "use client";
-var MotionConfigContext = import_react9.createContext({
+var MotionConfigContext = import_react10.createContext({
   transformPagePoint: (p) => p,
   isStatic: false,
   reducedMotion: "never"
@@ -20617,7 +33998,7 @@ var MotionConfigContext = import_react9.createContext({
 // node_modules/framer-motion/dist/es/components/AnimatePresence/PopChild.mjs
 "use client";
 
-class PopChildMeasure extends React26.Component {
+class PopChildMeasure extends React12.Component {
   getSnapshotBeforeUpdate(prevProps) {
     const element = this.props.childRef.current;
     if (element && prevProps.isPresent && !this.props.isPresent) {
@@ -20639,17 +34020,17 @@ class PopChildMeasure extends React26.Component {
   }
 }
 function PopChild({ children, isPresent, anchorX }) {
-  const id = import_react10.useId();
-  const ref = import_react10.useRef(null);
-  const size = import_react10.useRef({
+  const id = import_react11.useId();
+  const ref = import_react11.useRef(null);
+  const size = import_react11.useRef({
     width: 0,
     height: 0,
     top: 0,
     left: 0,
     right: 0
   });
-  const { nonce } = import_react10.useContext(MotionConfigContext);
-  import_react10.useInsertionEffect(() => {
+  const { nonce } = import_react11.useContext(MotionConfigContext);
+  import_react11.useInsertionEffect(() => {
     const { width, height, top, left, right } = size.current;
     if (isPresent || !ref.current || !width || !height)
       return;
@@ -20674,16 +34055,16 @@ function PopChild({ children, isPresent, anchorX }) {
       document.head.removeChild(style);
     };
   }, [isPresent]);
-  return import_jsx_runtime3.jsx(PopChildMeasure, { isPresent, childRef: ref, sizeRef: size, children: React26.cloneElement(children, { ref }) });
+  return import_jsx_runtime3.jsx(PopChildMeasure, { isPresent, childRef: ref, sizeRef: size, children: React12.cloneElement(children, { ref }) });
 }
 
 // node_modules/framer-motion/dist/es/components/AnimatePresence/PresenceChild.mjs
 "use client";
 var PresenceChild = ({ children, initial, isPresent, onExitComplete, custom, presenceAffectsLayout, mode, anchorX }) => {
   const presenceChildren = useConstant(newChildrenMap);
-  const id = import_react11.useId();
+  const id = import_react12.useId();
   let isReusedContext = true;
-  let context = import_react11.useMemo(() => {
+  let context = import_react12.useMemo(() => {
     isReusedContext = false;
     return {
       id,
@@ -20707,10 +34088,10 @@ var PresenceChild = ({ children, initial, isPresent, onExitComplete, custom, pre
   if (presenceAffectsLayout && isReusedContext) {
     context = { ...context };
   }
-  import_react11.useMemo(() => {
+  import_react12.useMemo(() => {
     presenceChildren.forEach((_, key) => presenceChildren.set(key, false));
   }, [isPresent]);
-  React27.useEffect(() => {
+  React13.useEffect(() => {
     !isPresent && !presenceChildren.size && onExitComplete && onExitComplete();
   }, [isPresent]);
   if (mode === "popLayout") {
@@ -20723,29 +34104,29 @@ function newChildrenMap() {
 }
 
 // node_modules/framer-motion/dist/es/components/AnimatePresence/use-presence.mjs
-var import_react12 = __toESM(require_react(), 1);
+var import_react13 = __toESM(require_react(), 1);
 function usePresence(subscribe = true) {
-  const context = import_react12.useContext(PresenceContext);
+  const context = import_react13.useContext(PresenceContext);
   if (context === null)
     return [true, null];
   const { isPresent, onExitComplete, register } = context;
-  const id = import_react12.useId();
-  import_react12.useEffect(() => {
+  const id = import_react13.useId();
+  import_react13.useEffect(() => {
     if (subscribe) {
       return register(id);
     }
   }, [subscribe]);
-  const safeToRemove = import_react12.useCallback(() => subscribe && onExitComplete && onExitComplete(id), [id, onExitComplete, subscribe]);
+  const safeToRemove = import_react13.useCallback(() => subscribe && onExitComplete && onExitComplete(id), [id, onExitComplete, subscribe]);
   return !isPresent && onExitComplete ? [false, safeToRemove] : [true];
 }
 
 // node_modules/framer-motion/dist/es/components/AnimatePresence/utils.mjs
-var import_react13 = __toESM(require_react(), 1);
+var import_react14 = __toESM(require_react(), 1);
 var getChildKey = (child) => child.key || "";
 function onlyElements(children) {
   const filtered = [];
-  import_react13.Children.forEach(children, (child) => {
-    if (import_react13.isValidElement(child))
+  import_react14.Children.forEach(children, (child) => {
+    if (import_react14.isValidElement(child))
       filtered.push(child);
   });
   return filtered;
@@ -20755,14 +34136,14 @@ function onlyElements(children) {
 "use client";
 var AnimatePresence = ({ children, custom, initial = true, onExitComplete, presenceAffectsLayout = true, mode = "sync", propagate = false, anchorX = "left" }) => {
   const [isParentPresent, safeToRemove] = usePresence(propagate);
-  const presentChildren = import_react14.useMemo(() => onlyElements(children), [children]);
+  const presentChildren = import_react15.useMemo(() => onlyElements(children), [children]);
   const presentKeys = propagate && !isParentPresent ? [] : presentChildren.map(getChildKey);
-  const isInitialRender = import_react14.useRef(true);
-  const pendingPresentChildren = import_react14.useRef(presentChildren);
+  const isInitialRender = import_react15.useRef(true);
+  const pendingPresentChildren = import_react15.useRef(presentChildren);
   const exitComplete = useConstant(() => new Map);
-  const [diffedChildren, setDiffedChildren] = import_react14.useState(presentChildren);
-  const [renderedChildren, setRenderedChildren] = import_react14.useState(presentChildren);
-  useIsomorphicLayoutEffect2(() => {
+  const [diffedChildren, setDiffedChildren] = import_react15.useState(presentChildren);
+  const [renderedChildren, setRenderedChildren] = import_react15.useState(presentChildren);
+  useIsomorphicLayoutEffect(() => {
     isInitialRender.current = false;
     pendingPresentChildren.current = presentChildren;
     for (let i = 0;i < renderedChildren.length; i++) {
@@ -20797,7 +34178,7 @@ var AnimatePresence = ({ children, custom, initial = true, onExitComplete, prese
   if (mode === "wait" && renderedChildren.length > 1) {
     console.warn(`You're attempting to animate multiple children within AnimatePresence, but its mode is set to "wait". This will lead to odd visual behaviour.`);
   }
-  const { forceRender } = import_react14.useContext(LayoutGroupContext);
+  const { forceRender } = import_react15.useContext(LayoutGroupContext);
   return import_jsx_runtime5.jsx(import_jsx_runtime5.Fragment, { children: renderedChildren.map((child) => {
     const key = getChildKey(child);
     const isPresent = propagate && !isParentPresent ? false : presentChildren === renderedChildren || presentKeys.includes(key);
@@ -20841,17 +34222,17 @@ var clamp = (min, max, v) => {
   return v;
 };
 // node_modules/motion-utils/dist/es/errors.mjs
-var warning2 = () => {
+var warning = () => {
 };
-var invariant3 = () => {
+var invariant = () => {
 };
 if (true) {
-  warning2 = (check, message) => {
+  warning = (check, message) => {
     if (!check && typeof console !== "undefined") {
       console.warn(message);
     }
   };
-  invariant3 = (check, message) => {
+  invariant = (check, message) => {
     if (!check) {
       throw new Error(message);
     }
@@ -20864,7 +34245,7 @@ var isNumericalString = (v) => /^-?(?:\d+(?:\.\d+)?|\.\d+)$/u.test(v);
 // node_modules/motion-utils/dist/es/is-zero-value-string.mjs
 var isZeroValueString = (v) => /^0[^.\s]+$/u.test(v);
 // node_modules/motion-utils/dist/es/memo.mjs
-function memo2(callback) {
+function memo(callback) {
   let result;
   return () => {
     if (result === undefined)
@@ -21001,11 +34382,11 @@ var isValidEasing = (easing) => {
 };
 var easingDefinitionToFunction = (definition) => {
   if (isBezierDefinition(definition)) {
-    invariant3(definition.length === 4, `Cubic bezier arrays must contain four numerical values.`);
+    invariant(definition.length === 4, `Cubic bezier arrays must contain four numerical values.`);
     const [x1, y1, x2, y2] = definition;
     return cubicBezier(x1, y1, x2, y2);
   } else if (isValidEasing(definition)) {
-    invariant3(easingLookup[definition] !== undefined, `Invalid easing type '${definition}'`);
+    invariant(easingLookup[definition] !== undefined, `Invalid easing type '${definition}'`);
     return easingLookup[definition];
   }
   return definition;
@@ -21461,7 +34842,7 @@ var colorTypes = [hex, rgba, hsla];
 var getColorType = (v) => colorTypes.find((type) => type.test(v));
 function asRGBA(color2) {
   const type = getColorType(color2);
-  warning2(Boolean(type), `'${color2}' is not an animatable color. Use the equivalent color code instead.`);
+  warning(Boolean(type), `'${color2}' is not an animatable color. Use the equivalent color code instead.`);
   if (!Boolean(type))
     return false;
   let model = type.parse(color2);
@@ -21561,7 +34942,7 @@ var mixComplex = (origin, target) => {
     }
     return pipe(mixArray(matchOrder(originStats, targetStats), targetStats.values), template);
   } else {
-    warning2(true, `Complex values '${origin}' and '${target}' too different to mix. Ensure all colors are of the same type, and that each contains the same quantity of number and color values. Falling back to instant transition.`);
+    warning(true, `Complex values '${origin}' and '${target}' too different to mix. Ensure all colors are of the same type, and that each contains the same quantity of number and color values. Falling back to instant transition.`);
     return mixImmediate(origin, target);
   }
 };
@@ -21656,7 +35037,7 @@ var safeMin = 0.001;
 function findSpring({ duration = springDefaults.duration, bounce = springDefaults.bounce, velocity = springDefaults.velocity, mass = springDefaults.mass }) {
   let envelope;
   let derivative;
-  warning2(duration <= secondsToMilliseconds(springDefaults.maxDuration), "Spring duration must be 10 seconds or less");
+  warning(duration <= secondsToMilliseconds(springDefaults.maxDuration), "Spring duration must be 10 seconds or less");
   let dampingRatio = 1 - bounce;
   dampingRatio = clamp(springDefaults.minDamping, springDefaults.maxDamping, dampingRatio);
   duration = clamp(springDefaults.minDuration, springDefaults.maxDuration, millisecondsToSeconds(duration));
@@ -21914,7 +35295,7 @@ function createMixers(output, ease, customMixer) {
 }
 function interpolate(input, output, { clamp: isClamp = true, ease, mixer } = {}) {
   const inputLength = input.length;
-  invariant3(inputLength === output.length, "Both input and output ranges must be the same length");
+  invariant(inputLength === output.length, "Both input and output ranges must be the same length");
   if (inputLength === 1)
     return () => output[0];
   if (inputLength === 2 && output[0] === output[1])
@@ -22071,7 +35452,7 @@ class JSAnimation extends WithPromise {
     let { keyframes: keyframes$1 } = options;
     const generatorFactory = type || keyframes;
     if (generatorFactory !== keyframes) {
-      invariant3(keyframes$1.length <= 2, `Only two keyframes currently supported with spring and inertia animations. Trying to animate ${keyframes$1}`);
+      invariant(keyframes$1.length <= 2, `Only two keyframes currently supported with spring and inertia animations. Trying to animate ${keyframes$1}`);
     }
     if (generatorFactory !== keyframes && typeof keyframes$1[0] !== "number") {
       this.mixKeyframes = pipe(percentToProgress, mix(keyframes$1[0], keyframes$1[1]));
@@ -22545,14 +35926,14 @@ function setStyle(element, name, value) {
 }
 
 // node_modules/motion-dom/dist/es/utils/supports/scroll-timeline.mjs
-var supportsScrollTimeline = /* @__PURE__ */ memo2(() => window.ScrollTimeline !== undefined);
+var supportsScrollTimeline = /* @__PURE__ */ memo(() => window.ScrollTimeline !== undefined);
 
 // node_modules/motion-dom/dist/es/utils/supports/flags.mjs
 var supportsFlags = {};
 
 // node_modules/motion-dom/dist/es/utils/supports/memo.mjs
 function memoSupports(callback, supportsFlag) {
-  const memoized = memo2(callback);
+  const memoized = memo(callback);
   return () => supportsFlags[supportsFlag] ?? memoized();
 }
 
@@ -22657,7 +36038,7 @@ class NativeAnimation extends WithPromise {
     this.isPseudoElement = Boolean(pseudoElement);
     this.allowFlatten = allowFlatten;
     this.options = options;
-    invariant3(typeof options.type !== "string", `animateMini doesn't support "type" as a string. Did you mean to import { spring } from "motion"?`);
+    invariant(typeof options.type !== "string", `animateMini doesn't support "type" as a string. Did you mean to import { spring } from "motion"?`);
     const transition = applyGeneratorOptions(options);
     this.animation = startWaapiAnimation(element, name, keyframes2, transition, pseudoElement);
     if (transition.autoplay === false) {
@@ -22839,7 +36220,7 @@ function canAnimate(keyframes2, name, type, velocity) {
   const targetKeyframe = keyframes2[keyframes2.length - 1];
   const isOriginAnimatable = isAnimatable(originKeyframe, name);
   const isTargetAnimatable = isAnimatable(targetKeyframe, name);
-  warning2(isOriginAnimatable === isTargetAnimatable, `You are trying to animate ${name} from "${originKeyframe}" to "${targetKeyframe}". ${originKeyframe} is not an animatable value - to enable this animation set ${originKeyframe} to a value animatable to ${targetKeyframe} via the \`style\` property.`);
+  warning(isOriginAnimatable === isTargetAnimatable, `You are trying to animate ${name} from "${originKeyframe}" to "${targetKeyframe}". ${originKeyframe} is not an animatable value - to enable this animation set ${originKeyframe} to a value animatable to ${targetKeyframe} via the \`style\` property.`);
   if (!isOriginAnimatable || !isTargetAnimatable) {
     return false;
   }
@@ -22853,7 +36234,7 @@ var acceleratedValues = new Set([
   "filter",
   "transform"
 ]);
-var supportsWaapi = /* @__PURE__ */ memo2(() => Object.hasOwnProperty.call(Element.prototype, "animate"));
+var supportsWaapi = /* @__PURE__ */ memo(() => Object.hasOwnProperty.call(Element.prototype, "animate"));
 function supportsBrowserAnimation(options) {
   const { motionValue, name, repeatDelay, repeatType, damping, type } = options;
   if (!motionValue || !motionValue.owner || !(motionValue.owner.current instanceof HTMLElement)) {
@@ -22994,7 +36375,7 @@ function parseCSSVariable(current) {
 }
 var maxDepth = 4;
 function getVariableValue(current, element, depth = 1) {
-  invariant3(depth <= maxDepth, `Max CSS variable fallback depth detected in property "${current}". This may indicate a circular fallback dependency.`);
+  invariant(depth <= maxDepth, `Max CSS variable fallback depth detected in property "${current}". This may indicate a circular fallback dependency.`);
   const [token, fallback] = parseCSSVariable(current);
   if (!token)
     return;
@@ -23638,9 +37019,9 @@ var getValueAsType = (value, type) => {
   return type && typeof value === "number" ? type.transform(value) : value;
 };
 // node_modules/framer-motion/dist/es/context/LazyContext.mjs
-var import_react15 = __toESM(require_react(), 1);
+var import_react16 = __toESM(require_react(), 1);
 "use client";
-var LazyContext = import_react15.createContext({ strict: false });
+var LazyContext = import_react16.createContext({ strict: false });
 
 // node_modules/framer-motion/dist/es/motion/features/definitions.mjs
 var featureProps = {
@@ -23766,15 +37147,15 @@ function createDOMMotionComponentProxy(componentFactory) {
 
 // node_modules/framer-motion/dist/es/motion/index.mjs
 var import_jsx_runtime6 = __toESM(require_jsx_runtime(), 1);
-var import_react21 = __toESM(require_react(), 1);
+var import_react22 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/context/MotionContext/index.mjs
-var import_react16 = __toESM(require_react(), 1);
+var import_react17 = __toESM(require_react(), 1);
 "use client";
-var MotionContext = /* @__PURE__ */ import_react16.createContext({});
+var MotionContext = /* @__PURE__ */ import_react17.createContext({});
 
 // node_modules/framer-motion/dist/es/context/MotionContext/create.mjs
-var import_react17 = __toESM(require_react(), 1);
+var import_react18 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/animation/utils/is-animation-controls.mjs
 function isAnimationControls(v) {
@@ -23820,8 +37201,8 @@ function getCurrentTreeVariants(props, context) {
 
 // node_modules/framer-motion/dist/es/context/MotionContext/create.mjs
 function useCreateMotionContext(props) {
-  const { initial, animate } = getCurrentTreeVariants(props, import_react17.useContext(MotionContext));
-  return import_react17.useMemo(() => ({ initial, animate }), [variantLabelsAsDependency(initial), variantLabelsAsDependency(animate)]);
+  const { initial, animate } = getCurrentTreeVariants(props, import_react18.useContext(MotionContext));
+  return import_react18.useMemo(() => ({ initial, animate }), [variantLabelsAsDependency(initial), variantLabelsAsDependency(animate)]);
 }
 function variantLabelsAsDependency(prop) {
   return Array.isArray(prop) ? prop.join(" ") : prop;
@@ -23831,7 +37212,7 @@ function variantLabelsAsDependency(prop) {
 var motionComponentSymbol = Symbol.for("motionComponentSymbol");
 
 // node_modules/framer-motion/dist/es/motion/utils/use-motion-ref.mjs
-var import_react18 = __toESM(require_react(), 1);
+var import_react19 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/utils/is-ref-object.mjs
 function isRefObject(ref) {
@@ -23840,7 +37221,7 @@ function isRefObject(ref) {
 
 // node_modules/framer-motion/dist/es/motion/utils/use-motion-ref.mjs
 function useMotionRef(visualState, visualElement, externalRef) {
-  return import_react18.useCallback((instance) => {
+  return import_react19.useCallback((instance) => {
     if (instance) {
       visualState.onMount && visualState.onMount(instance);
     }
@@ -23862,7 +37243,7 @@ function useMotionRef(visualState, visualElement, externalRef) {
 }
 
 // node_modules/framer-motion/dist/es/motion/utils/use-visual-element.mjs
-var import_react20 = __toESM(require_react(), 1);
+var import_react21 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/render/dom/utils/camel-to-dash.mjs
 var camelToDash = (str) => str.replace(/([a-z])([A-Z])/gu, "$1-$2").toLowerCase();
@@ -23872,20 +37253,20 @@ var optimizedAppearDataId = "framerAppearId";
 var optimizedAppearDataAttribute = "data-" + camelToDash(optimizedAppearDataId);
 
 // node_modules/framer-motion/dist/es/context/SwitchLayoutGroupContext.mjs
-var import_react19 = __toESM(require_react(), 1);
+var import_react20 = __toESM(require_react(), 1);
 "use client";
-var SwitchLayoutGroupContext = import_react19.createContext({});
+var SwitchLayoutGroupContext = import_react20.createContext({});
 
 // node_modules/framer-motion/dist/es/motion/utils/use-visual-element.mjs
-function useVisualElement(Component5, visualState, props, createVisualElement, ProjectionNodeConstructor) {
-  const { visualElement: parent } = import_react20.useContext(MotionContext);
-  const lazyContext = import_react20.useContext(LazyContext);
-  const presenceContext = import_react20.useContext(PresenceContext);
-  const reducedMotionConfig = import_react20.useContext(MotionConfigContext).reducedMotion;
-  const visualElementRef = import_react20.useRef(null);
+function useVisualElement(Component2, visualState, props, createVisualElement, ProjectionNodeConstructor) {
+  const { visualElement: parent } = import_react21.useContext(MotionContext);
+  const lazyContext = import_react21.useContext(LazyContext);
+  const presenceContext = import_react21.useContext(PresenceContext);
+  const reducedMotionConfig = import_react21.useContext(MotionConfigContext).reducedMotion;
+  const visualElementRef = import_react21.useRef(null);
   createVisualElement = createVisualElement || lazyContext.renderer;
   if (!visualElementRef.current && createVisualElement) {
-    visualElementRef.current = createVisualElement(Component5, {
+    visualElementRef.current = createVisualElement(Component2, {
       visualState,
       parent,
       props,
@@ -23895,19 +37276,19 @@ function useVisualElement(Component5, visualState, props, createVisualElement, P
     });
   }
   const visualElement = visualElementRef.current;
-  const initialLayoutGroupConfig = import_react20.useContext(SwitchLayoutGroupContext);
+  const initialLayoutGroupConfig = import_react21.useContext(SwitchLayoutGroupContext);
   if (visualElement && !visualElement.projection && ProjectionNodeConstructor && (visualElement.type === "html" || visualElement.type === "svg")) {
     createProjectionNode(visualElementRef.current, props, ProjectionNodeConstructor, initialLayoutGroupConfig);
   }
-  const isMounted = import_react20.useRef(false);
-  import_react20.useInsertionEffect(() => {
+  const isMounted = import_react21.useRef(false);
+  import_react21.useInsertionEffect(() => {
     if (visualElement && isMounted.current) {
       visualElement.update(props, presenceContext);
     }
   });
   const optimisedAppearId = props[optimizedAppearDataAttribute];
-  const wantsHandoff = import_react20.useRef(Boolean(optimisedAppearId) && !window.MotionHandoffIsComplete?.(optimisedAppearId) && window.MotionHasOptimisedAnimation?.(optimisedAppearId));
-  useIsomorphicLayoutEffect2(() => {
+  const wantsHandoff = import_react21.useRef(Boolean(optimisedAppearId) && !window.MotionHandoffIsComplete?.(optimisedAppearId) && window.MotionHasOptimisedAnimation?.(optimisedAppearId));
+  useIsomorphicLayoutEffect(() => {
     if (!visualElement)
       return;
     isMounted.current = true;
@@ -23918,7 +37299,7 @@ function useVisualElement(Component5, visualState, props, createVisualElement, P
       visualElement.animationState.animateChanges();
     }
   });
-  import_react20.useEffect(() => {
+  import_react21.useEffect(() => {
     if (!visualElement)
       return;
     if (!wantsHandoff.current && visualElement.animationState) {
@@ -23956,40 +37337,40 @@ function getClosestProjectingNode(visualElement) {
 
 // node_modules/framer-motion/dist/es/motion/index.mjs
 "use client";
-function createRendererMotionComponent({ preloadedFeatures, createVisualElement, useRender, useVisualState, Component: Component5 }) {
+function createRendererMotionComponent({ preloadedFeatures, createVisualElement, useRender, useVisualState, Component: Component2 }) {
   preloadedFeatures && loadFeatures(preloadedFeatures);
   function MotionComponent(props, externalRef) {
     let MeasureLayout;
     const configAndProps = {
-      ...import_react21.useContext(MotionConfigContext),
+      ...import_react22.useContext(MotionConfigContext),
       ...props,
       layoutId: useLayoutId(props)
     };
     const { isStatic } = configAndProps;
     const context = useCreateMotionContext(props);
     const visualState = useVisualState(props, isStatic);
-    if (!isStatic && isBrowser2) {
+    if (!isStatic && isBrowser) {
       useStrictMode(configAndProps, preloadedFeatures);
       const layoutProjection = getProjectionFunctionality(configAndProps);
       MeasureLayout = layoutProjection.MeasureLayout;
-      context.visualElement = useVisualElement(Component5, visualState, configAndProps, createVisualElement, layoutProjection.ProjectionNode);
+      context.visualElement = useVisualElement(Component2, visualState, configAndProps, createVisualElement, layoutProjection.ProjectionNode);
     }
-    return import_jsx_runtime6.jsxs(MotionContext.Provider, { value: context, children: [MeasureLayout && context.visualElement ? import_jsx_runtime6.jsx(MeasureLayout, { visualElement: context.visualElement, ...configAndProps }) : null, useRender(Component5, props, useMotionRef(visualState, context.visualElement, externalRef), visualState, isStatic, context.visualElement)] });
+    return import_jsx_runtime6.jsxs(MotionContext.Provider, { value: context, children: [MeasureLayout && context.visualElement ? import_jsx_runtime6.jsx(MeasureLayout, { visualElement: context.visualElement, ...configAndProps }) : null, useRender(Component2, props, useMotionRef(visualState, context.visualElement, externalRef), visualState, isStatic, context.visualElement)] });
   }
-  MotionComponent.displayName = `motion.${typeof Component5 === "string" ? Component5 : `create(${Component5.displayName ?? Component5.name ?? ""})`}`;
-  const ForwardRefMotionComponent = import_react21.forwardRef(MotionComponent);
-  ForwardRefMotionComponent[motionComponentSymbol] = Component5;
+  MotionComponent.displayName = `motion.${typeof Component2 === "string" ? Component2 : `create(${Component2.displayName ?? Component2.name ?? ""})`}`;
+  const ForwardRefMotionComponent = import_react22.forwardRef(MotionComponent);
+  ForwardRefMotionComponent[motionComponentSymbol] = Component2;
   return ForwardRefMotionComponent;
 }
 function useLayoutId({ layoutId }) {
-  const layoutGroupId = import_react21.useContext(LayoutGroupContext).id;
+  const layoutGroupId = import_react22.useContext(LayoutGroupContext).id;
   return layoutGroupId && layoutId !== undefined ? layoutGroupId + "-" + layoutId : layoutId;
 }
 function useStrictMode(configAndProps, preloadedFeatures) {
-  const isStrict = import_react21.useContext(LazyContext).strict;
+  const isStrict = import_react22.useContext(LazyContext).strict;
   if (preloadedFeatures && isStrict) {
     const strictMessage = "You have rendered a `motion` component within a `LazyMotion` component. This will break tree shaking. Import and render a `m` component instead.";
-    configAndProps.ignoreStrict ? warning2(false, strictMessage) : invariant3(false, strictMessage);
+    configAndProps.ignoreStrict ? warning(false, strictMessage) : invariant(false, strictMessage);
   }
 }
 function getProjectionFunctionality(props) {
@@ -24004,10 +37385,10 @@ function getProjectionFunctionality(props) {
 }
 
 // node_modules/framer-motion/dist/es/render/dom/use-render.mjs
-var import_react24 = __toESM(require_react(), 1);
+var import_react25 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/render/html/use-props.mjs
-var import_react22 = __toESM(require_react(), 1);
+var import_react23 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/projection/styles/scale-correction.mjs
 var scaleCorrectors = {};
@@ -24124,7 +37505,7 @@ function copyRawValuesOnly(target, source, props) {
   }
 }
 function useInitialMotionValues({ transformTemplate }, visualState) {
-  return import_react22.useMemo(() => {
+  return import_react23.useMemo(() => {
     const state = createHtmlRenderState();
     buildHTMLStyles(state, visualState, transformTemplate);
     return Object.assign({}, state.vars, state.style);
@@ -24182,17 +37563,17 @@ var lowercaseSVGElements = [
 ];
 
 // node_modules/framer-motion/dist/es/render/dom/utils/is-svg-component.mjs
-function isSVGComponent(Component5) {
-  if (typeof Component5 !== "string" || Component5.includes("-")) {
+function isSVGComponent(Component2) {
+  if (typeof Component2 !== "string" || Component2.includes("-")) {
     return false;
-  } else if (lowercaseSVGElements.indexOf(Component5) > -1 || /[A-Z]/u.test(Component5)) {
+  } else if (lowercaseSVGElements.indexOf(Component2) > -1 || /[A-Z]/u.test(Component2)) {
     return true;
   }
   return false;
 }
 
 // node_modules/framer-motion/dist/es/render/svg/use-props.mjs
-var import_react23 = __toESM(require_react(), 1);
+var import_react24 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/render/svg/utils/path.mjs
 var dashKeys = {
@@ -24265,10 +37646,10 @@ var createSvgRenderState = () => ({
 var isSVGTag = (tag) => typeof tag === "string" && tag.toLowerCase() === "svg";
 
 // node_modules/framer-motion/dist/es/render/svg/use-props.mjs
-function useSVGProps(props, visualState, _isStatic, Component5) {
-  const visualProps = import_react23.useMemo(() => {
+function useSVGProps(props, visualState, _isStatic, Component2) {
+  const visualProps = import_react24.useMemo(() => {
     const state = createSvgRenderState();
-    buildSVGAttrs(state, visualState, isSVGTag(Component5), props.transformTemplate);
+    buildSVGAttrs(state, visualState, isSVGTag(Component2), props.transformTemplate);
     return {
       ...state.attrs,
       style: { ...state.style }
@@ -24284,14 +37665,14 @@ function useSVGProps(props, visualState, _isStatic, Component5) {
 
 // node_modules/framer-motion/dist/es/render/dom/use-render.mjs
 function createUseRender(forwardMotionProps = false) {
-  const useRender = (Component5, props, ref, { latestValues }, isStatic) => {
-    const useVisualProps = isSVGComponent(Component5) ? useSVGProps : useHTMLProps;
-    const visualProps = useVisualProps(props, latestValues, isStatic, Component5);
-    const filteredProps = filterProps(props, typeof Component5 === "string", forwardMotionProps);
-    const elementProps = Component5 !== import_react24.Fragment ? { ...filteredProps, ...visualProps, ref } : {};
+  const useRender = (Component2, props, ref, { latestValues }, isStatic) => {
+    const useVisualProps = isSVGComponent(Component2) ? useSVGProps : useHTMLProps;
+    const visualProps = useVisualProps(props, latestValues, isStatic, Component2);
+    const filteredProps = filterProps(props, typeof Component2 === "string", forwardMotionProps);
+    const elementProps = Component2 !== import_react25.Fragment ? { ...filteredProps, ...visualProps, ref } : {};
     const { children } = props;
-    const renderedChildren = import_react24.useMemo(() => isMotionValue(children) ? children.get() : children, [children]);
-    return import_react24.createElement(Component5, {
+    const renderedChildren = import_react25.useMemo(() => isMotionValue(children) ? children.get() : children, [children]);
+    return import_react25.createElement(Component2, {
       ...elementProps,
       children: renderedChildren
     });
@@ -24300,7 +37681,7 @@ function createUseRender(forwardMotionProps = false) {
 }
 
 // node_modules/framer-motion/dist/es/motion/utils/use-visual-state.mjs
-var import_react25 = __toESM(require_react(), 1);
+var import_react26 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/render/utils/resolve-variants.mjs
 function getValueState(visualElement) {
@@ -24340,8 +37721,8 @@ function makeState({ scrapeMotionValuesFromProps, createRenderState }, props, co
   return state;
 }
 var makeUseVisualState = (config) => (props, isStatic) => {
-  const context = import_react25.useContext(MotionContext);
-  const presenceContext = import_react25.useContext(PresenceContext);
+  const context = import_react26.useContext(MotionContext);
+  const presenceContext = import_react26.useContext(PresenceContext);
   const make = () => makeState(config, props, context, presenceContext);
   return isStatic ? make() : useConstant(make);
 };
@@ -24430,14 +37811,14 @@ var svgMotionConfig = {
 
 // node_modules/framer-motion/dist/es/render/components/create-factory.mjs
 function createMotionComponentFactory(preloadedFeatures, createVisualElement) {
-  return function createMotionComponent(Component5, { forwardMotionProps } = { forwardMotionProps: false }) {
-    const baseConfig = isSVGComponent(Component5) ? svgMotionConfig : htmlMotionConfig;
+  return function createMotionComponent(Component2, { forwardMotionProps } = { forwardMotionProps: false }) {
+    const baseConfig = isSVGComponent(Component2) ? svgMotionConfig : htmlMotionConfig;
     const config = {
       ...baseConfig,
       preloadedFeatures,
       useRender: createUseRender(forwardMotionProps),
       createVisualElement,
-      Component: Component5
+      Component: Component2
     };
     return createRendererMotionComponent(config);
   };
@@ -25600,7 +38981,7 @@ class VisualElementDragControls {
     if (!constraints || !isRefObject(constraints))
       return false;
     const constraintsElement = constraints.current;
-    invariant3(constraintsElement !== null, "If `dragConstraints` is set as a React ref, that ref must be passed to another component's `ref` prop.");
+    invariant(constraintsElement !== null, "If `dragConstraints` is set as a React ref, that ref must be passed to another component's `ref` prop.");
     const { projection } = this.visualElement;
     if (!projection || !projection.layout)
       return false;
@@ -25840,7 +39221,7 @@ class PanGesture extends Feature {
 
 // node_modules/framer-motion/dist/es/motion/features/layout/MeasureLayout.mjs
 var import_jsx_runtime7 = __toESM(require_jsx_runtime(), 1);
-var import_react26 = __toESM(require_react(), 1);
+var import_react27 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/projection/node/state.mjs
 var globalProjectionState = {
@@ -25896,7 +39277,7 @@ var correctBoxShadow = {
 // node_modules/framer-motion/dist/es/motion/features/layout/MeasureLayout.mjs
 "use client";
 
-class MeasureLayoutWithContext extends import_react26.Component {
+class MeasureLayoutWithContext extends import_react27.Component {
   componentDidMount() {
     const { visualElement, layoutGroup, switchLayoutGroup, layoutId } = this.props;
     const { projection } = visualElement;
@@ -25975,8 +39356,8 @@ class MeasureLayoutWithContext extends import_react26.Component {
 }
 function MeasureLayout(props) {
   const [isPresent, safeToRemove] = usePresence();
-  const layoutGroup = import_react26.useContext(LayoutGroupContext);
-  return import_jsx_runtime7.jsx(MeasureLayoutWithContext, { ...props, layoutGroup, switchLayoutGroup: import_react26.useContext(SwitchLayoutGroupContext), isPresent, safeToRemove });
+  const layoutGroup = import_react27.useContext(LayoutGroupContext);
+  return import_jsx_runtime7.jsx(MeasureLayoutWithContext, { ...props, layoutGroup, switchLayoutGroup: import_react27.useContext(SwitchLayoutGroupContext), isPresent, safeToRemove });
 }
 var defaultScaleCorrectors = {
   borderRadius: {
@@ -27584,7 +40965,7 @@ var layout = {
 };
 
 // node_modules/framer-motion/dist/es/render/dom/create-visual-element.mjs
-var import_react27 = __toESM(require_react(), 1);
+var import_react28 = __toESM(require_react(), 1);
 
 // node_modules/framer-motion/dist/es/utils/reduced-motion/state.mjs
 var prefersReducedMotion = { current: null };
@@ -27593,7 +40974,7 @@ var hasReducedMotionListener = { current: false };
 // node_modules/framer-motion/dist/es/utils/reduced-motion/index.mjs
 function initPrefersReducedMotion() {
   hasReducedMotionListener.current = true;
-  if (!isBrowser2)
+  if (!isBrowser)
     return;
   if (window.matchMedia) {
     const motionMediaQuery = window.matchMedia("(prefers-reduced-motion)");
@@ -28084,9 +41465,9 @@ class SVGVisualElement extends DOMVisualElement {
 }
 
 // node_modules/framer-motion/dist/es/render/dom/create-visual-element.mjs
-var createDomVisualElement = (Component6, options) => {
-  return isSVGComponent(Component6) ? new SVGVisualElement(options) : new HTMLVisualElement(options, {
-    allowProjection: Component6 !== import_react27.Fragment
+var createDomVisualElement = (Component3, options) => {
+  return isSVGComponent(Component3) ? new SVGVisualElement(options) : new HTMLVisualElement(options, {
+    allowProjection: Component3 !== import_react28.Fragment
   });
 };
 
@@ -28103,7 +41484,7 @@ var motion = /* @__PURE__ */ createDOMMotionComponentProxy(createMotionComponent
 // node_modules/framer-motion/dist/es/index.mjs
 "use client";
 
-// src/react/components/Buttons/RippleButton.tsx
+// src/lib/components/Buttons/RippleButton.tsx
 var RippleButton = ({
   type = "button",
   capitalize = true,
@@ -28113,10 +41494,10 @@ var RippleButton = ({
   className,
   rippleColor
 }) => {
-  const [ripples, setRipples] = import_react28.useState([]);
-  const nextRippleId = import_react28.useRef(0);
-  const containerRef = import_react28.useRef(null);
-  const handleRipple = import_react28.useCallback((event) => {
+  const [ripples, setRipples] = import_react29.useState([]);
+  const nextRippleId = import_react29.useRef(0);
+  const containerRef = import_react29.useRef(null);
+  const handleRipple = import_react29.useCallback((event) => {
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect)
       return;
@@ -28132,7 +41513,7 @@ var RippleButton = ({
   const removeRipple = (id3) => {
     setRipples((prevRipples) => prevRipples.filter((ripple) => ripple.id !== id3));
   };
-  import_react28.useEffect(() => {
+  import_react29.useEffect(() => {
     if (containerRef.current) {
       const button = containerRef.current.querySelector("button");
       if (button) {
@@ -28142,15 +41523,15 @@ var RippleButton = ({
     }
   }, []);
   let defaultRippleColor = "rgba(255, 255, 255, 1)";
-  return /* @__PURE__ */ import_react28.default.createElement("div", {
+  return /* @__PURE__ */ import_react29.default.createElement("div", {
     className: `relative overflow-hidden rounded-md ${className}`,
     ref: containerRef
-  }, /* @__PURE__ */ import_react28.default.createElement("button", {
+  }, /* @__PURE__ */ import_react29.default.createElement("button", {
     type,
     disabled,
     onClick: handleRipple,
     className: `relative z-10 h-full w-full ${!disabled && "cursor-pointer"} border-none bg-transparent px-4 py-2`
-  }, typeof children === "string" && capitalize ? children.toString().toUpperCase() : children), /* @__PURE__ */ import_react28.default.createElement(AnimatePresence, null, ripples.map((ripple) => /* @__PURE__ */ import_react28.default.createElement(motion.span, {
+  }, typeof children === "string" && capitalize ? children.toString().toUpperCase() : children), /* @__PURE__ */ import_react29.default.createElement(AnimatePresence, null, ripples.map((ripple) => /* @__PURE__ */ import_react29.default.createElement(motion.span, {
     key: ripple.id,
     initial: { scale: 0, opacity: 0.5 },
     animate: { scale: 4, opacity: 0 },
@@ -28170,7 +41551,7 @@ var RippleButton = ({
   }))));
 };
 
-// src/react/components/Buttons/Button.tsx
+// src/lib/components/Buttons/Button.tsx
 var Button = ({
   capitalize = true,
   disabled = false,
@@ -28203,7 +41584,7 @@ var Button = ({
       rippleColor = "rgba(30, 41, 59, 1)";
       break;
   }
-  return /* @__PURE__ */ import_react29.default.createElement(RippleButton, {
+  return /* @__PURE__ */ import_react30.default.createElement(RippleButton, {
     type,
     capitalize,
     disabled,
@@ -28212,85 +41593,332 @@ var Button = ({
     onClick
   }, children);
 };
-// src/react/components/Buttons/CloseButton.tsx
-var import_react30 = __toESM(require_react(), 1);
+// src/lib/components/Buttons/CloseButton.tsx
+var import_react31 = __toESM(require_react(), 1);
 var CloseButton = ({
   color: color2 = "gray",
   className,
   onClick
-}) => /* @__PURE__ */ import_react30.default.createElement("button", {
+}) => /* @__PURE__ */ import_react31.default.createElement("button", {
   className: `${className} right-2 top-2 text-${color2}-500 hover:text-${color2}-700 cursor-pointer focus:outline-none`,
   onClick
-}, /* @__PURE__ */ import_react30.default.createElement(CloseIcon, null));
-// src/react/components/Buttons/DeleteButton.tsx
-var import_react31 = __toESM(require_react(), 1);
-var DeleteButton = ({ onClick }) => {
-  return /* @__PURE__ */ import_react31.default.createElement("button", {
-    onClick,
-    className: "cursor-pointer text-red-500 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-  }, /* @__PURE__ */ import_react31.default.createElement(TrashIcon, null));
-};
-// src/react/components/Buttons/EditButton.tsx
+}, /* @__PURE__ */ import_react31.default.createElement(CloseIcon, null));
+// src/lib/components/Buttons/DeleteButton.tsx
 var import_react32 = __toESM(require_react(), 1);
-var EditButton = ({ onClick }) => {
+var DeleteButton = ({ onClick }) => {
   return /* @__PURE__ */ import_react32.default.createElement("button", {
     onClick,
-    className: "cursor-pointer text-gray-500 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500"
-  }, /* @__PURE__ */ import_react32.default.createElement(EditIcon, null));
+    className: "cursor-pointer text-red-500 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+  }, /* @__PURE__ */ import_react32.default.createElement(TrashIcon, null));
 };
-// src/react/components/Buttons/LinkButton.tsx
+// src/lib/components/Buttons/EditButton.tsx
 var import_react33 = __toESM(require_react(), 1);
-var LinkButton = ({ to, children }) => /* @__PURE__ */ import_react33.default.createElement(Link, {
+var EditButton = ({ onClick }) => {
+  return /* @__PURE__ */ import_react33.default.createElement("button", {
+    onClick,
+    className: "cursor-pointer text-gray-500 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500"
+  }, /* @__PURE__ */ import_react33.default.createElement(EditIcon, null));
+};
+// src/lib/components/Buttons/LinkButton.tsx
+var import_react34 = __toESM(require_react(), 1);
+var import_react_router_dom = __toESM(require_dist2(), 1);
+var LinkButton = ({ to, children }) => /* @__PURE__ */ import_react34.default.createElement(import_react_router_dom.Link, {
   to,
   className: "inline-block align-baseline text-sm font-semibold text-gray-500 hover:text-gray-800"
 }, children);
-// src/react/components/Cards/CardBase.tsx
-var import_react34 = __toESM(require_react(), 1);
-var CardBase = ({ children }) => {
-  return /* @__PURE__ */ import_react34.default.createElement("div", {
-    className: "rounded-md bg-white px-4 py-3 shadow-md hover:border hover:border-gray-400"
-  }, children);
-};
-// src/react/components/Cards/CardGrid.tsx
+// src/lib/components/ErrorMessage/ErrorMessage.tsx
 var import_react35 = __toESM(require_react(), 1);
-var CardGrid = ({ children }) => {
-  return /* @__PURE__ */ import_react35.default.createElement("div", {
-    className: "grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
-  }, children);
-};
-// src/react/components/CustomErrorBoundary/CustomErrorBoundary.tsx
-var import_react36 = __toESM(require_react(), 1);
-
-class CustomErrorBoundary extends import_react36.default.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error };
-  }
-  componentDidCatch(error, errorInfo) {
-    console.error("Caught an error:", error, errorInfo);
-  }
-  render() {
-    if (this.state.hasError) {
-      return this.props.fallback;
-    }
-    return this.props.children;
-  }
-}
-// src/react/components/ErrorMessage/ErrorMessage.tsx
-var import_react37 = __toESM(require_react(), 1);
 var ErrorMessage = ({
   children
 }) => {
-  return /* @__PURE__ */ import_react37.default.createElement(import_react37.default.Fragment, null, children && /* @__PURE__ */ import_react37.default.createElement("div", {
+  return /* @__PURE__ */ import_react35.default.createElement(import_react35.default.Fragment, null, children && /* @__PURE__ */ import_react35.default.createElement("div", {
     className: "mt-2 flex items-center text-sm text-red-600"
-  }, /* @__PURE__ */ import_react37.default.createElement("span", null, children)));
+  }, /* @__PURE__ */ import_react35.default.createElement("span", null, children)));
 };
-// src/react/components/Form/Form.tsx
+// src/lib/components/Icons/CloseIcon.tsx
+var import_react36 = __toESM(require_react(), 1);
+var CloseIcon = () => /* @__PURE__ */ import_react36.default.createElement("svg", {
+  className: "h-6 w-6 fill-current",
+  viewBox: "0 0 20 20"
+}, /* @__PURE__ */ import_react36.default.createElement("path", {
+  fillRule: "evenodd",
+  d: "M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z",
+  clipRule: "evenodd"
+}));
+// src/lib/components/Icons/EditIcon.tsx
+var import_react37 = __toESM(require_react(), 1);
+var EditIcon = () => /* @__PURE__ */ import_react37.default.createElement("svg", {
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: "2",
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+  className: "feather feather-pencil h-5 w-5"
+}, /* @__PURE__ */ import_react37.default.createElement("path", {
+  d: "M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+}), /* @__PURE__ */ import_react37.default.createElement("path", {
+  d: "M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+}));
+// src/lib/components/Icons/TrashIcon.tsx
+var import_react38 = __toESM(require_react(), 1);
+var TrashIcon = () => /* @__PURE__ */ import_react38.default.createElement("svg", {
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: "2",
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+  className: "h-5 w-5"
+}, /* @__PURE__ */ import_react38.default.createElement("polyline", {
+  points: "3 6 5 6 21 6"
+}), /* @__PURE__ */ import_react38.default.createElement("path", {
+  d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+}), /* @__PURE__ */ import_react38.default.createElement("line", {
+  x1: "10",
+  y1: "11",
+  x2: "10",
+  y2: "17"
+}), /* @__PURE__ */ import_react38.default.createElement("line", {
+  x1: "14",
+  y1: "11",
+  x2: "14",
+  y2: "17"
+}));
+// src/lib/components/Inputs/DropDownInput.tsx
+var import_react39 = __toESM(require_react(), 1);
+var DropDownInput = ({
+  label,
+  name,
+  options,
+  value,
+  errors,
+  onChange,
+  placeholder
+}) => {
+  const error = errors?.map((e) => /* @__PURE__ */ import_react39.default.createElement("p", {
+    key: e
+  }, e));
+  const [isOpen, setIsOpen] = import_react39.useState(false);
+  const selectRef = import_react39.useRef(null);
+  const [highlightedIndex, setHighlightedIndex] = import_react39.useState(null);
+  const controlledValue = value ?? undefined;
+  import_react39.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (selectRef.current && !selectRef.current.contains(event.target)) {
+        setIsOpen(false);
+        setHighlightedIndex(null);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+  const handleOptionClick = import_react39.useCallback((optionValue) => {
+    onChange?.(optionValue);
+    setIsOpen(false);
+    setHighlightedIndex(null);
+  }, [onChange]);
+  const handleKeyDown = (event) => {
+    if (!isOpen)
+      return;
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setHighlightedIndex((prevIndex) => {
+        if (prevIndex === null || prevIndex >= options.length - 1) {
+          return 0;
+        }
+        return prevIndex + 1;
+      });
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setHighlightedIndex((prevIndex) => {
+        if (prevIndex === null || prevIndex <= 0) {
+          return options.length - 1;
+        }
+        return prevIndex - 1;
+      });
+    } else if (event.key === "Enter" && highlightedIndex !== null) {
+      event.preventDefault();
+      handleOptionClick(options[highlightedIndex].value);
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      setIsOpen(false);
+      setHighlightedIndex(null);
+    }
+  };
+  return /* @__PURE__ */ import_react39.default.createElement("div", {
+    ref: selectRef,
+    className: "relative w-full"
+  }, label && /* @__PURE__ */ import_react39.default.createElement(Label, {
+    htmlFor: name,
+    hasError: !!error
+  }, label), /* @__PURE__ */ import_react39.default.createElement("div", {
+    className: "relative w-full"
+  }, /* @__PURE__ */ import_react39.default.createElement("button", {
+    type: "button",
+    className: `flex w-full items-center justify-between rounded-md border px-4 py-2 shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-gray-800 ${error ? "border-red-500 focus:ring-red-500" : "border-gray-300 hover:border-gray-500"}`,
+    onClick: () => setIsOpen(!isOpen),
+    onKeyDown: handleKeyDown,
+    "aria-haspopup": "listbox",
+    "aria-expanded": isOpen,
+    id: `dropdown-button-${name}`
+  }, /* @__PURE__ */ import_react39.default.createElement("span", {
+    className: "truncate"
+  }, options.find((opt) => opt.value === controlledValue)?.label || placeholder || "Select an option"), isOpen ? /* @__PURE__ */ import_react39.default.createElement("svg", {
+    xmlns: "http://www.w3.org/2000/svg",
+    viewBox: "0 0 20 20",
+    fill: "currentColor",
+    className: "h-5 w-5 text-gray-400"
+  }, /* @__PURE__ */ import_react39.default.createElement("path", {
+    fillRule: "evenodd",
+    d: "M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z",
+    clipRule: "evenodd"
+  })) : /* @__PURE__ */ import_react39.default.createElement("svg", {
+    xmlns: "http://www.w3.org/2000/svg",
+    viewBox: "0 0 20 20",
+    fill: "currentColor",
+    className: "h-5 w-5 text-gray-400"
+  }, /* @__PURE__ */ import_react39.default.createElement("path", {
+    fillRule: "evenodd",
+    d: "M14.77 7.79a.75.75 0 01-1.06-.02L10 3.832 6.35 7.77a.75.75 0 01-1.08-1.04l4.25-4.5a.75.75 0 011.08 0l4.25 4.5a.75.75 0 01.02 1.06z",
+    clipRule: "evenodd"
+  }))), isOpen && /* @__PURE__ */ import_react39.default.createElement("ul", {
+    className: "absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white shadow-lg",
+    role: "listbox",
+    "aria-labelledby": `dropdown-button-${name}`
+  }, options.map((option, index) => /* @__PURE__ */ import_react39.default.createElement("li", {
+    key: `${option.value}-${index}`,
+    className: `cursor-pointer px-4 py-2 hover:bg-gray-100 ${index === highlightedIndex && "bg-blue-100"}`,
+    onClick: () => handleOptionClick(option.value),
+    role: "option",
+    "aria-selected": controlledValue === option.value
+  }, option.label)))), !!error && /* @__PURE__ */ import_react39.default.createElement(ErrorMessage, null, error));
+};
+// src/lib/components/Inputs/HiddenInput.tsx
+var import_react40 = __toESM(require_react(), 1);
+var HiddenInput = ({ name, type, value }) => {
+  return /* @__PURE__ */ import_react40.default.createElement("input", {
+    type,
+    id: name,
+    name,
+    value: value ?? ""
+  });
+};
+// src/lib/components/Inputs/Label.tsx
+var import_react41 = __toESM(require_react(), 1);
+var Label = ({ htmlFor, hasError, children }) => /* @__PURE__ */ import_react41.default.createElement("label", {
+  htmlFor,
+  className: `mb-2 block text-sm font-bold text-${hasError ? "red" : "gray"}-600`
+}, children);
+// src/lib/components/Inputs/TextArea.tsx
 var import_react42 = __toESM(require_react(), 1);
+var TextArea = ({
+  label,
+  name,
+  placeholder,
+  value,
+  className,
+  errors,
+  onChange
+}) => {
+  const error = errors?.map((e) => /* @__PURE__ */ import_react42.default.createElement("p", {
+    key: e
+  }, e));
+  const normalClassName = "w-full rounded-md border px-4 py-2 shadow-sm border-gray-300 hover:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-800";
+  const errorClassName = "w-full rounded-md border px-4 py-2 shadow-sm border-red-500 focus:outline-none focus:ring-1 focus:ring-red-800";
+  const finalClassName = `${className ? className + " " : ""}${error ? errorClassName : normalClassName}${value ? " pr-8" : ""}`;
+  return /* @__PURE__ */ import_react42.default.createElement(import_react42.default.Fragment, null, label && /* @__PURE__ */ import_react42.default.createElement(Label, {
+    htmlFor: name,
+    hasError: !!error
+  }, label), /* @__PURE__ */ import_react42.default.createElement("textarea", {
+    id: name,
+    name,
+    value: value ?? "",
+    onChange,
+    placeholder,
+    className: finalClassName
+  }), !!error && /* @__PURE__ */ import_react42.default.createElement(ErrorMessage, null, error));
+};
+// src/lib/components/Inputs/TextInput.tsx
+var import_react43 = __toESM(require_react(), 1);
+var TextInput = ({
+  label,
+  name,
+  placeholder,
+  type,
+  value,
+  className,
+  autoComplete = "off",
+  errors,
+  ref,
+  onChange,
+  onClear
+}) => {
+  const error = errors?.map((e) => /* @__PURE__ */ import_react43.default.createElement("p", {
+    key: e
+  }, e));
+  const normalClassName = "w-full rounded-md border px-4 py-2 shadow-sm border-gray-300 hover:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-800";
+  const errorClassName = "w-full rounded-md border px-4 py-2 shadow-sm border-red-500 focus:outline-none focus:ring-1 focus:ring-red-800";
+  const finalClassName = `${className ? className + " " : ""}${error ? errorClassName : normalClassName}${value ? " pr-8" : ""}`;
+  const inputRef = import_react43.useRef(null);
+  const handleClear = () => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+    onClear && onClear();
+  };
+  return /* @__PURE__ */ import_react43.default.createElement(import_react43.default.Fragment, null, label && /* @__PURE__ */ import_react43.default.createElement(Label, {
+    htmlFor: name,
+    hasError: !!error
+  }, label), /* @__PURE__ */ import_react43.default.createElement("input", {
+    type,
+    id: name,
+    name,
+    value: value ?? "",
+    onChange,
+    placeholder,
+    className: finalClassName,
+    autoComplete,
+    ref
+  }), value && onClear && /* @__PURE__ */ import_react43.default.createElement(CloseButton, {
+    className: "right absolute top-0",
+    onClick: handleClear
+  }), !!error && /* @__PURE__ */ import_react43.default.createElement(ErrorMessage, null, error));
+};
+// src/lib/components/Inputs/TypeAheadInput.tsx
+var import_react49 = __toESM(require_react(), 1);
 
+// src/react/hooks/useAuthCheck.ts
+var import_react44 = __toESM(require_react(), 1);
+var useAuthCheck = () => {
+  const apiService = new ApiService;
+  const [authenticated, setAuthenticated] = import_react44.useState(undefined);
+  const checkAuth = async () => {
+    try {
+      const { authorized } = await apiService.get(`/${apiPrefix}/${authPrefix}/${checkRoute}`);
+      setAuthenticated(authorized);
+    } catch {
+      setAuthenticated(false);
+    }
+  };
+  import_react44.useEffect(() => {
+    if (authenticated === false) {
+      location.href = `${loginRoute}`;
+    }
+    const interval = setInterval(async () => {
+      await checkAuth();
+    }, 30 * 1000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [authenticated]);
+};
 // node_modules/zod/lib/index.mjs
 var util;
 (function(util2) {
@@ -28381,15 +42009,15 @@ var ZodParsedType = util.arrayToEnum([
   "map",
   "set"
 ]);
-var getParsedType = (data2) => {
-  const t = typeof data2;
+var getParsedType = (data) => {
+  const t = typeof data;
   switch (t) {
     case "undefined":
       return ZodParsedType.undefined;
     case "string":
       return ZodParsedType.string;
     case "number":
-      return isNaN(data2) ? ZodParsedType.nan : ZodParsedType.number;
+      return isNaN(data) ? ZodParsedType.nan : ZodParsedType.number;
     case "boolean":
       return ZodParsedType.boolean;
     case "function":
@@ -28399,22 +42027,22 @@ var getParsedType = (data2) => {
     case "symbol":
       return ZodParsedType.symbol;
     case "object":
-      if (Array.isArray(data2)) {
+      if (Array.isArray(data)) {
         return ZodParsedType.array;
       }
-      if (data2 === null) {
+      if (data === null) {
         return ZodParsedType.null;
       }
-      if (data2.then && typeof data2.then === "function" && data2.catch && typeof data2.catch === "function") {
+      if (data.then && typeof data.then === "function" && data.catch && typeof data.catch === "function") {
         return ZodParsedType.promise;
       }
-      if (typeof Map !== "undefined" && data2 instanceof Map) {
+      if (typeof Map !== "undefined" && data instanceof Map) {
         return ZodParsedType.map;
       }
-      if (typeof Set !== "undefined" && data2 instanceof Set) {
+      if (typeof Set !== "undefined" && data instanceof Set) {
         return ZodParsedType.set;
       }
-      if (typeof Date !== "undefined" && data2 instanceof Date) {
+      if (typeof Date !== "undefined" && data instanceof Date) {
         return ZodParsedType.date;
       }
       return ZodParsedType.object;
@@ -28644,7 +42272,7 @@ function getErrorMap() {
   return overrideErrorMap;
 }
 var makeIssue = (params) => {
-  const { data: data2, path, errorMaps, issueData } = params;
+  const { data, path, errorMaps, issueData } = params;
   const fullPath = [...path, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
@@ -28660,7 +42288,7 @@ var makeIssue = (params) => {
   let errorMessage = "";
   const maps = errorMaps.filter((m) => !!m).slice().reverse();
   for (const map of maps) {
-    errorMessage = map(fullIssue, { data: data2, defaultError: errorMessage }).message;
+    errorMessage = map(fullIssue, { data, defaultError: errorMessage }).message;
   }
   return {
     ...issueData,
@@ -28743,7 +42371,7 @@ var INVALID = Object.freeze({
   status: "aborted"
 });
 var DIRTY = (value) => ({ status: "dirty", value });
-var OK = (value) => ({ status: "valid", value });
+var OK2 = (value) => ({ status: "valid", value });
 var isAborted = (x) => x.status === "aborted";
 var isDirty = (x) => x.status === "dirty";
 var isValid = (x) => x.status === "valid";
@@ -28876,13 +42504,13 @@ class ZodType {
     const result = this._parse(input);
     return Promise.resolve(result);
   }
-  parse(data2, params) {
-    const result = this.safeParse(data2, params);
+  parse(data, params) {
+    const result = this.safeParse(data, params);
     if (result.success)
       return result.data;
     throw result.error;
   }
-  safeParse(data2, params) {
+  safeParse(data, params) {
     var _a;
     const ctx = {
       common: {
@@ -28893,13 +42521,13 @@ class ZodType {
       path: (params === null || params === undefined ? undefined : params.path) || [],
       schemaErrorMap: this._def.errorMap,
       parent: null,
-      data: data2,
-      parsedType: getParsedType(data2)
+      data,
+      parsedType: getParsedType(data)
     };
-    const result = this._parseSync({ data: data2, path: ctx.path, parent: ctx });
+    const result = this._parseSync({ data, path: ctx.path, parent: ctx });
     return handleResult(ctx, result);
   }
-  "~validate"(data2) {
+  "~validate"(data) {
     var _a, _b;
     const ctx = {
       common: {
@@ -28909,12 +42537,12 @@ class ZodType {
       path: [],
       schemaErrorMap: this._def.errorMap,
       parent: null,
-      data: data2,
-      parsedType: getParsedType(data2)
+      data,
+      parsedType: getParsedType(data)
     };
     if (!this["~standard"].async) {
       try {
-        const result = this._parseSync({ data: data2, path: [], parent: ctx });
+        const result = this._parseSync({ data, path: [], parent: ctx });
         return isValid(result) ? {
           value: result.value
         } : {
@@ -28930,19 +42558,19 @@ class ZodType {
         };
       }
     }
-    return this._parseAsync({ data: data2, path: [], parent: ctx }).then((result) => isValid(result) ? {
+    return this._parseAsync({ data, path: [], parent: ctx }).then((result) => isValid(result) ? {
       value: result.value
     } : {
       issues: ctx.common.issues
     });
   }
-  async parseAsync(data2, params) {
-    const result = await this.safeParseAsync(data2, params);
+  async parseAsync(data, params) {
+    const result = await this.safeParseAsync(data, params);
     if (result.success)
       return result.data;
     throw result.error;
   }
-  async safeParseAsync(data2, params) {
+  async safeParseAsync(data, params) {
     const ctx = {
       common: {
         issues: [],
@@ -28952,10 +42580,10 @@ class ZodType {
       path: (params === null || params === undefined ? undefined : params.path) || [],
       schemaErrorMap: this._def.errorMap,
       parent: null,
-      data: data2,
-      parsedType: getParsedType(data2)
+      data,
+      parsedType: getParsedType(data)
     };
-    const maybeAsyncResult = this._parse({ data: data2, path: ctx.path, parent: ctx });
+    const maybeAsyncResult = this._parse({ data, path: ctx.path, parent: ctx });
     const result = await (isAsync(maybeAsyncResult) ? maybeAsyncResult : Promise.resolve(maybeAsyncResult));
     return handleResult(ctx, result);
   }
@@ -28976,8 +42604,8 @@ class ZodType {
         ...getIssueProperties(val)
       });
       if (typeof Promise !== "undefined" && result instanceof Promise) {
-        return result.then((data2) => {
-          if (!data2) {
+        return result.then((data) => {
+          if (!data) {
             setError();
             return false;
           } else {
@@ -29043,7 +42671,7 @@ class ZodType {
     this["~standard"] = {
       version: 1,
       vendor: "zod",
-      validate: (data2) => this["~validate"](data2)
+      validate: (data) => this["~validate"](data)
     };
   }
   optional() {
@@ -29499,7 +43127,7 @@ class ZodString extends ZodType {
     return { status: status.value, value: input.data };
   }
   _regex(regex, validation, message) {
-    return this.refinement((data2) => regex.test(data2), {
+    return this.refinement((data) => regex.test(data), {
       validation,
       code: ZodIssueCode.invalid_string,
       ...errorUtil.errToObj(message)
@@ -30171,7 +43799,7 @@ class ZodBoolean extends ZodType {
       });
       return INVALID;
     }
-    return OK(input.data);
+    return OK2(input.data);
   }
 }
 ZodBoolean.create = (params) => {
@@ -30304,7 +43932,7 @@ class ZodSymbol extends ZodType {
       });
       return INVALID;
     }
-    return OK(input.data);
+    return OK2(input.data);
   }
 }
 ZodSymbol.create = (params) => {
@@ -30326,7 +43954,7 @@ class ZodUndefined extends ZodType {
       });
       return INVALID;
     }
-    return OK(input.data);
+    return OK2(input.data);
   }
 }
 ZodUndefined.create = (params) => {
@@ -30348,7 +43976,7 @@ class ZodNull extends ZodType {
       });
       return INVALID;
     }
-    return OK(input.data);
+    return OK2(input.data);
   }
 }
 ZodNull.create = (params) => {
@@ -30364,7 +43992,7 @@ class ZodAny extends ZodType {
     this._any = true;
   }
   _parse(input) {
-    return OK(input.data);
+    return OK2(input.data);
   }
 }
 ZodAny.create = (params) => {
@@ -30380,7 +44008,7 @@ class ZodUnknown extends ZodType {
     this._unknown = true;
   }
   _parse(input) {
-    return OK(input.data);
+    return OK2(input.data);
   }
 }
 ZodUnknown.create = (params) => {
@@ -30420,7 +44048,7 @@ class ZodVoid extends ZodType {
       });
       return INVALID;
     }
-    return OK(input.data);
+    return OK2(input.data);
   }
 }
 ZodVoid.create = (params) => {
@@ -31424,7 +45052,7 @@ class ZodFunction extends ZodType {
     const fn = ctx.data;
     if (this._def.returns instanceof ZodPromise) {
       const me = this;
-      return OK(async function(...args) {
+      return OK2(async function(...args) {
         const error = new ZodError([]);
         const parsedArgs = await me._def.args.parseAsync(args, params).catch((e) => {
           error.addIssue(makeArgsIssue(args, e));
@@ -31439,7 +45067,7 @@ class ZodFunction extends ZodType {
       });
     } else {
       const me = this;
-      return OK(function(...args) {
+      return OK2(function(...args) {
         const parsedArgs = me._def.args.safeParse(args, params);
         if (!parsedArgs.success) {
           throw new ZodError([makeArgsIssue(args, parsedArgs.error)]);
@@ -31568,7 +45196,7 @@ class ZodEnum extends ZodType {
       });
       return INVALID;
     }
-    return OK(input.data);
+    return OK2(input.data);
   }
   get options() {
     return this._def.values;
@@ -31639,7 +45267,7 @@ class ZodNativeEnum extends ZodType {
       });
       return INVALID;
     }
-    return OK(input.data);
+    return OK2(input.data);
   }
   get enum() {
     return this._def.values;
@@ -31669,8 +45297,8 @@ class ZodPromise extends ZodType {
       return INVALID;
     }
     const promisified = ctx.parsedType === ZodParsedType.promise ? ctx.data : Promise.resolve(ctx.data);
-    return OK(promisified.then((data2) => {
-      return this._def.type.parseAsync(data2, {
+    return OK2(promisified.then((data) => {
+      return this._def.type.parseAsync(data, {
         path: ctx.path,
         errorMap: ctx.common.contextualErrorMap
       });
@@ -31826,7 +45454,7 @@ class ZodOptional extends ZodType {
   _parse(input) {
     const parsedType = this._getType(input);
     if (parsedType === ZodParsedType.undefined) {
-      return OK(undefined);
+      return OK2(undefined);
     }
     return this._def.innerType._parse(input);
   }
@@ -31846,7 +45474,7 @@ class ZodNullable extends ZodType {
   _parse(input) {
     const parsedType = this._getType(input);
     if (parsedType === ZodParsedType.null) {
-      return OK(null);
+      return OK2(null);
     }
     return this._def.innerType._parse(input);
   }
@@ -31865,12 +45493,12 @@ ZodNullable.create = (type, params) => {
 class ZodDefault extends ZodType {
   _parse(input) {
     const { ctx } = this._processInputParams(input);
-    let data2 = ctx.data;
+    let data = ctx.data;
     if (ctx.parsedType === ZodParsedType.undefined) {
-      data2 = this._def.defaultValue();
+      data = this._def.defaultValue();
     }
     return this._def.innerType._parse({
-      data: data2,
+      data,
       path: ctx.path,
       parent: ctx
     });
@@ -31968,9 +45596,9 @@ var BRAND = Symbol("zod_brand");
 class ZodBranded extends ZodType {
   _parse(input) {
     const { ctx } = this._processInputParams(input);
-    const data2 = ctx.data;
+    const data = ctx.data;
     return this._def.type._parse({
-      data: data2,
+      data,
       path: ctx.path,
       parent: ctx
     });
@@ -32039,13 +45667,13 @@ class ZodPipeline extends ZodType {
 class ZodReadonly extends ZodType {
   _parse(input) {
     const result = this._def.innerType._parse(input);
-    const freeze = (data2) => {
-      if (isValid(data2)) {
-        data2.value = Object.freeze(data2.value);
+    const freeze = (data) => {
+      if (isValid(data)) {
+        data.value = Object.freeze(data.value);
       }
-      return data2;
+      return data;
     };
-    return isAsync(result) ? result.then((data2) => freeze(data2)) : freeze(result);
+    return isAsync(result) ? result.then((data) => freeze(data)) : freeze(result);
   }
   unwrap() {
     return this._def.innerType;
@@ -32058,28 +45686,28 @@ ZodReadonly.create = (type, params) => {
     ...processCreateParams(params)
   });
 };
-function cleanParams(params, data2) {
-  const p = typeof params === "function" ? params(data2) : typeof params === "string" ? { message: params } : params;
+function cleanParams(params, data) {
+  const p = typeof params === "function" ? params(data) : typeof params === "string" ? { message: params } : params;
   const p2 = typeof p === "string" ? { message: p } : p;
   return p2;
 }
 function custom(check, _params = {}, fatal) {
   if (check)
-    return ZodAny.create().superRefine((data2, ctx) => {
+    return ZodAny.create().superRefine((data, ctx) => {
       var _a, _b;
-      const r = check(data2);
+      const r = check(data);
       if (r instanceof Promise) {
         return r.then((r2) => {
           var _a2, _b2;
           if (!r2) {
-            const params = cleanParams(_params, data2);
+            const params = cleanParams(_params, data);
             const _fatal = (_b2 = (_a2 = params.fatal) !== null && _a2 !== undefined ? _a2 : fatal) !== null && _b2 !== undefined ? _b2 : true;
             ctx.addIssue({ code: "custom", ...params, fatal: _fatal });
           }
         });
       }
       if (!r) {
-        const params = cleanParams(_params, data2);
+        const params = cleanParams(_params, data);
         const _fatal = (_b = (_a = params.fatal) !== null && _a !== undefined ? _a : fatal) !== null && _b !== undefined ? _b : true;
         ctx.addIssue({ code: "custom", ...params, fatal: _fatal });
       }
@@ -32131,7 +45759,7 @@ var ZodFirstPartyTypeKind;
 })(ZodFirstPartyTypeKind || (ZodFirstPartyTypeKind = {}));
 var instanceOfType = (cls, params = {
   message: `Input not instance of ${cls.name}`
-}) => custom((data2) => data2 instanceof cls, params);
+}) => custom((data) => data instanceof cls, params);
 var stringType = ZodString.create;
 var numberType = ZodNumber.create;
 var nanType = ZodNaN.create;
@@ -32191,7 +45819,7 @@ var z = /* @__PURE__ */ Object.freeze({
   ParseStatus,
   INVALID,
   DIRTY,
-  OK,
+  OK: OK2,
   isAborted,
   isDirty,
   isValid,
@@ -32326,437 +45954,6 @@ var validateForm = (formData, validationSchema) => {
     };
   }
 };
-// src/react/hooks/useAuthCheck.ts
-var import_react38 = __toESM(require_react(), 1);
-
-// node_modules/http-status-codes/build/es/legacy.js
-var ACCEPTED = 202;
-var BAD_GATEWAY = 502;
-var BAD_REQUEST = 400;
-var CONFLICT = 409;
-var CONTINUE = 100;
-var CREATED = 201;
-var EXPECTATION_FAILED = 417;
-var FORBIDDEN = 403;
-var GATEWAY_TIMEOUT = 504;
-var GONE = 410;
-var HTTP_VERSION_NOT_SUPPORTED = 505;
-var IM_A_TEAPOT = 418;
-var INSUFFICIENT_SPACE_ON_RESOURCE = 419;
-var INSUFFICIENT_STORAGE = 507;
-var INTERNAL_SERVER_ERROR = 500;
-var LENGTH_REQUIRED = 411;
-var LOCKED = 423;
-var METHOD_FAILURE = 420;
-var METHOD_NOT_ALLOWED = 405;
-var MOVED_PERMANENTLY = 301;
-var MOVED_TEMPORARILY = 302;
-var MULTI_STATUS = 207;
-var MULTIPLE_CHOICES = 300;
-var NETWORK_AUTHENTICATION_REQUIRED = 511;
-var NO_CONTENT = 204;
-var NON_AUTHORITATIVE_INFORMATION = 203;
-var NOT_ACCEPTABLE = 406;
-var NOT_FOUND = 404;
-var NOT_IMPLEMENTED = 501;
-var NOT_MODIFIED = 304;
-var OK2 = 200;
-var PARTIAL_CONTENT = 206;
-var PAYMENT_REQUIRED = 402;
-var PERMANENT_REDIRECT = 308;
-var PRECONDITION_FAILED = 412;
-var PRECONDITION_REQUIRED = 428;
-var PROCESSING = 102;
-var PROXY_AUTHENTICATION_REQUIRED = 407;
-var REQUEST_HEADER_FIELDS_TOO_LARGE = 431;
-var REQUEST_TIMEOUT = 408;
-var REQUEST_TOO_LONG = 413;
-var REQUEST_URI_TOO_LONG = 414;
-var REQUESTED_RANGE_NOT_SATISFIABLE = 416;
-var RESET_CONTENT = 205;
-var SEE_OTHER = 303;
-var SERVICE_UNAVAILABLE = 503;
-var SWITCHING_PROTOCOLS = 101;
-var TEMPORARY_REDIRECT = 307;
-var TOO_MANY_REQUESTS = 429;
-var UNAUTHORIZED = 401;
-var UNPROCESSABLE_ENTITY = 422;
-var UNSUPPORTED_MEDIA_TYPE = 415;
-var USE_PROXY = 305;
-var legacy_default = {
-  ACCEPTED,
-  BAD_GATEWAY,
-  BAD_REQUEST,
-  CONFLICT,
-  CONTINUE,
-  CREATED,
-  EXPECTATION_FAILED,
-  FORBIDDEN,
-  GATEWAY_TIMEOUT,
-  GONE,
-  HTTP_VERSION_NOT_SUPPORTED,
-  IM_A_TEAPOT,
-  INSUFFICIENT_SPACE_ON_RESOURCE,
-  INSUFFICIENT_STORAGE,
-  INTERNAL_SERVER_ERROR,
-  LENGTH_REQUIRED,
-  LOCKED,
-  METHOD_FAILURE,
-  METHOD_NOT_ALLOWED,
-  MOVED_PERMANENTLY,
-  MOVED_TEMPORARILY,
-  MULTI_STATUS,
-  MULTIPLE_CHOICES,
-  NETWORK_AUTHENTICATION_REQUIRED,
-  NO_CONTENT,
-  NON_AUTHORITATIVE_INFORMATION,
-  NOT_ACCEPTABLE,
-  NOT_FOUND,
-  NOT_IMPLEMENTED,
-  NOT_MODIFIED,
-  OK: OK2,
-  PARTIAL_CONTENT,
-  PAYMENT_REQUIRED,
-  PERMANENT_REDIRECT,
-  PRECONDITION_FAILED,
-  PRECONDITION_REQUIRED,
-  PROCESSING,
-  PROXY_AUTHENTICATION_REQUIRED,
-  REQUEST_HEADER_FIELDS_TOO_LARGE,
-  REQUEST_TIMEOUT,
-  REQUEST_TOO_LONG,
-  REQUEST_URI_TOO_LONG,
-  REQUESTED_RANGE_NOT_SATISFIABLE,
-  RESET_CONTENT,
-  SEE_OTHER,
-  SERVICE_UNAVAILABLE,
-  SWITCHING_PROTOCOLS,
-  TEMPORARY_REDIRECT,
-  TOO_MANY_REQUESTS,
-  UNAUTHORIZED,
-  UNPROCESSABLE_ENTITY,
-  UNSUPPORTED_MEDIA_TYPE,
-  USE_PROXY
-};
-
-// node_modules/http-status-codes/build/es/utils.js
-var statusCodeToReasonPhrase = {
-  "202": "Accepted",
-  "502": "Bad Gateway",
-  "400": "Bad Request",
-  "409": "Conflict",
-  "100": "Continue",
-  "201": "Created",
-  "417": "Expectation Failed",
-  "424": "Failed Dependency",
-  "403": "Forbidden",
-  "504": "Gateway Timeout",
-  "410": "Gone",
-  "505": "HTTP Version Not Supported",
-  "418": "I'm a teapot",
-  "419": "Insufficient Space on Resource",
-  "507": "Insufficient Storage",
-  "500": "Internal Server Error",
-  "411": "Length Required",
-  "423": "Locked",
-  "420": "Method Failure",
-  "405": "Method Not Allowed",
-  "301": "Moved Permanently",
-  "302": "Moved Temporarily",
-  "207": "Multi-Status",
-  "300": "Multiple Choices",
-  "511": "Network Authentication Required",
-  "204": "No Content",
-  "203": "Non Authoritative Information",
-  "406": "Not Acceptable",
-  "404": "Not Found",
-  "501": "Not Implemented",
-  "304": "Not Modified",
-  "200": "OK",
-  "206": "Partial Content",
-  "402": "Payment Required",
-  "308": "Permanent Redirect",
-  "412": "Precondition Failed",
-  "428": "Precondition Required",
-  "102": "Processing",
-  "103": "Early Hints",
-  "426": "Upgrade Required",
-  "407": "Proxy Authentication Required",
-  "431": "Request Header Fields Too Large",
-  "408": "Request Timeout",
-  "413": "Request Entity Too Large",
-  "414": "Request-URI Too Long",
-  "416": "Requested Range Not Satisfiable",
-  "205": "Reset Content",
-  "303": "See Other",
-  "503": "Service Unavailable",
-  "101": "Switching Protocols",
-  "307": "Temporary Redirect",
-  "429": "Too Many Requests",
-  "401": "Unauthorized",
-  "451": "Unavailable For Legal Reasons",
-  "422": "Unprocessable Entity",
-  "415": "Unsupported Media Type",
-  "305": "Use Proxy",
-  "421": "Misdirected Request"
-};
-var reasonPhraseToStatusCode = {
-  Accepted: 202,
-  "Bad Gateway": 502,
-  "Bad Request": 400,
-  Conflict: 409,
-  Continue: 100,
-  Created: 201,
-  "Expectation Failed": 417,
-  "Failed Dependency": 424,
-  Forbidden: 403,
-  "Gateway Timeout": 504,
-  Gone: 410,
-  "HTTP Version Not Supported": 505,
-  "I'm a teapot": 418,
-  "Insufficient Space on Resource": 419,
-  "Insufficient Storage": 507,
-  "Internal Server Error": 500,
-  "Length Required": 411,
-  Locked: 423,
-  "Method Failure": 420,
-  "Method Not Allowed": 405,
-  "Moved Permanently": 301,
-  "Moved Temporarily": 302,
-  "Multi-Status": 207,
-  "Multiple Choices": 300,
-  "Network Authentication Required": 511,
-  "No Content": 204,
-  "Non Authoritative Information": 203,
-  "Not Acceptable": 406,
-  "Not Found": 404,
-  "Not Implemented": 501,
-  "Not Modified": 304,
-  OK: 200,
-  "Partial Content": 206,
-  "Payment Required": 402,
-  "Permanent Redirect": 308,
-  "Precondition Failed": 412,
-  "Precondition Required": 428,
-  Processing: 102,
-  "Early Hints": 103,
-  "Upgrade Required": 426,
-  "Proxy Authentication Required": 407,
-  "Request Header Fields Too Large": 431,
-  "Request Timeout": 408,
-  "Request Entity Too Large": 413,
-  "Request-URI Too Long": 414,
-  "Requested Range Not Satisfiable": 416,
-  "Reset Content": 205,
-  "See Other": 303,
-  "Service Unavailable": 503,
-  "Switching Protocols": 101,
-  "Temporary Redirect": 307,
-  "Too Many Requests": 429,
-  Unauthorized: 401,
-  "Unavailable For Legal Reasons": 451,
-  "Unprocessable Entity": 422,
-  "Unsupported Media Type": 415,
-  "Use Proxy": 305,
-  "Misdirected Request": 421
-};
-
-// node_modules/http-status-codes/build/es/utils-functions.js
-function getReasonPhrase(statusCode) {
-  var result = statusCodeToReasonPhrase[statusCode.toString()];
-  if (!result) {
-    throw new Error("Status code does not exist: " + statusCode);
-  }
-  return result;
-}
-function getStatusCode(reasonPhrase) {
-  var result = reasonPhraseToStatusCode[reasonPhrase];
-  if (!result) {
-    throw new Error("Reason phrase does not exist: " + reasonPhrase);
-  }
-  return result;
-}
-var getStatusText = getReasonPhrase;
-
-// node_modules/http-status-codes/build/es/status-codes.js
-var StatusCodes;
-(function(StatusCodes2) {
-  StatusCodes2[StatusCodes2["CONTINUE"] = 100] = "CONTINUE";
-  StatusCodes2[StatusCodes2["SWITCHING_PROTOCOLS"] = 101] = "SWITCHING_PROTOCOLS";
-  StatusCodes2[StatusCodes2["PROCESSING"] = 102] = "PROCESSING";
-  StatusCodes2[StatusCodes2["EARLY_HINTS"] = 103] = "EARLY_HINTS";
-  StatusCodes2[StatusCodes2["OK"] = 200] = "OK";
-  StatusCodes2[StatusCodes2["CREATED"] = 201] = "CREATED";
-  StatusCodes2[StatusCodes2["ACCEPTED"] = 202] = "ACCEPTED";
-  StatusCodes2[StatusCodes2["NON_AUTHORITATIVE_INFORMATION"] = 203] = "NON_AUTHORITATIVE_INFORMATION";
-  StatusCodes2[StatusCodes2["NO_CONTENT"] = 204] = "NO_CONTENT";
-  StatusCodes2[StatusCodes2["RESET_CONTENT"] = 205] = "RESET_CONTENT";
-  StatusCodes2[StatusCodes2["PARTIAL_CONTENT"] = 206] = "PARTIAL_CONTENT";
-  StatusCodes2[StatusCodes2["MULTI_STATUS"] = 207] = "MULTI_STATUS";
-  StatusCodes2[StatusCodes2["MULTIPLE_CHOICES"] = 300] = "MULTIPLE_CHOICES";
-  StatusCodes2[StatusCodes2["MOVED_PERMANENTLY"] = 301] = "MOVED_PERMANENTLY";
-  StatusCodes2[StatusCodes2["MOVED_TEMPORARILY"] = 302] = "MOVED_TEMPORARILY";
-  StatusCodes2[StatusCodes2["SEE_OTHER"] = 303] = "SEE_OTHER";
-  StatusCodes2[StatusCodes2["NOT_MODIFIED"] = 304] = "NOT_MODIFIED";
-  StatusCodes2[StatusCodes2["USE_PROXY"] = 305] = "USE_PROXY";
-  StatusCodes2[StatusCodes2["TEMPORARY_REDIRECT"] = 307] = "TEMPORARY_REDIRECT";
-  StatusCodes2[StatusCodes2["PERMANENT_REDIRECT"] = 308] = "PERMANENT_REDIRECT";
-  StatusCodes2[StatusCodes2["BAD_REQUEST"] = 400] = "BAD_REQUEST";
-  StatusCodes2[StatusCodes2["UNAUTHORIZED"] = 401] = "UNAUTHORIZED";
-  StatusCodes2[StatusCodes2["PAYMENT_REQUIRED"] = 402] = "PAYMENT_REQUIRED";
-  StatusCodes2[StatusCodes2["FORBIDDEN"] = 403] = "FORBIDDEN";
-  StatusCodes2[StatusCodes2["NOT_FOUND"] = 404] = "NOT_FOUND";
-  StatusCodes2[StatusCodes2["METHOD_NOT_ALLOWED"] = 405] = "METHOD_NOT_ALLOWED";
-  StatusCodes2[StatusCodes2["NOT_ACCEPTABLE"] = 406] = "NOT_ACCEPTABLE";
-  StatusCodes2[StatusCodes2["PROXY_AUTHENTICATION_REQUIRED"] = 407] = "PROXY_AUTHENTICATION_REQUIRED";
-  StatusCodes2[StatusCodes2["REQUEST_TIMEOUT"] = 408] = "REQUEST_TIMEOUT";
-  StatusCodes2[StatusCodes2["CONFLICT"] = 409] = "CONFLICT";
-  StatusCodes2[StatusCodes2["GONE"] = 410] = "GONE";
-  StatusCodes2[StatusCodes2["LENGTH_REQUIRED"] = 411] = "LENGTH_REQUIRED";
-  StatusCodes2[StatusCodes2["PRECONDITION_FAILED"] = 412] = "PRECONDITION_FAILED";
-  StatusCodes2[StatusCodes2["REQUEST_TOO_LONG"] = 413] = "REQUEST_TOO_LONG";
-  StatusCodes2[StatusCodes2["REQUEST_URI_TOO_LONG"] = 414] = "REQUEST_URI_TOO_LONG";
-  StatusCodes2[StatusCodes2["UNSUPPORTED_MEDIA_TYPE"] = 415] = "UNSUPPORTED_MEDIA_TYPE";
-  StatusCodes2[StatusCodes2["REQUESTED_RANGE_NOT_SATISFIABLE"] = 416] = "REQUESTED_RANGE_NOT_SATISFIABLE";
-  StatusCodes2[StatusCodes2["EXPECTATION_FAILED"] = 417] = "EXPECTATION_FAILED";
-  StatusCodes2[StatusCodes2["IM_A_TEAPOT"] = 418] = "IM_A_TEAPOT";
-  StatusCodes2[StatusCodes2["INSUFFICIENT_SPACE_ON_RESOURCE"] = 419] = "INSUFFICIENT_SPACE_ON_RESOURCE";
-  StatusCodes2[StatusCodes2["METHOD_FAILURE"] = 420] = "METHOD_FAILURE";
-  StatusCodes2[StatusCodes2["MISDIRECTED_REQUEST"] = 421] = "MISDIRECTED_REQUEST";
-  StatusCodes2[StatusCodes2["UNPROCESSABLE_ENTITY"] = 422] = "UNPROCESSABLE_ENTITY";
-  StatusCodes2[StatusCodes2["LOCKED"] = 423] = "LOCKED";
-  StatusCodes2[StatusCodes2["FAILED_DEPENDENCY"] = 424] = "FAILED_DEPENDENCY";
-  StatusCodes2[StatusCodes2["UPGRADE_REQUIRED"] = 426] = "UPGRADE_REQUIRED";
-  StatusCodes2[StatusCodes2["PRECONDITION_REQUIRED"] = 428] = "PRECONDITION_REQUIRED";
-  StatusCodes2[StatusCodes2["TOO_MANY_REQUESTS"] = 429] = "TOO_MANY_REQUESTS";
-  StatusCodes2[StatusCodes2["REQUEST_HEADER_FIELDS_TOO_LARGE"] = 431] = "REQUEST_HEADER_FIELDS_TOO_LARGE";
-  StatusCodes2[StatusCodes2["UNAVAILABLE_FOR_LEGAL_REASONS"] = 451] = "UNAVAILABLE_FOR_LEGAL_REASONS";
-  StatusCodes2[StatusCodes2["INTERNAL_SERVER_ERROR"] = 500] = "INTERNAL_SERVER_ERROR";
-  StatusCodes2[StatusCodes2["NOT_IMPLEMENTED"] = 501] = "NOT_IMPLEMENTED";
-  StatusCodes2[StatusCodes2["BAD_GATEWAY"] = 502] = "BAD_GATEWAY";
-  StatusCodes2[StatusCodes2["SERVICE_UNAVAILABLE"] = 503] = "SERVICE_UNAVAILABLE";
-  StatusCodes2[StatusCodes2["GATEWAY_TIMEOUT"] = 504] = "GATEWAY_TIMEOUT";
-  StatusCodes2[StatusCodes2["HTTP_VERSION_NOT_SUPPORTED"] = 505] = "HTTP_VERSION_NOT_SUPPORTED";
-  StatusCodes2[StatusCodes2["INSUFFICIENT_STORAGE"] = 507] = "INSUFFICIENT_STORAGE";
-  StatusCodes2[StatusCodes2["NETWORK_AUTHENTICATION_REQUIRED"] = 511] = "NETWORK_AUTHENTICATION_REQUIRED";
-})(StatusCodes || (StatusCodes = {}));
-// node_modules/http-status-codes/build/es/index.js
-var __assign = function() {
-  __assign = Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length;i < n; i++) {
-      s = arguments[i];
-      for (var p in s)
-        if (Object.prototype.hasOwnProperty.call(s, p))
-          t[p] = s[p];
-    }
-    return t;
-  };
-  return __assign.apply(this, arguments);
-};
-var es_default = __assign(__assign({}, legacy_default), {
-  getStatusCode,
-  getStatusText
-});
-
-// src/lib/types/ApiError.ts
-class ApiError extends Error {
-  status;
-  statusText;
-  validation;
-  constructor({ status, statusText, message, validation }) {
-    super(message);
-    this.status = status;
-    this.statusText = statusText ?? "An Error Occured";
-    this.message = message ?? "Failed request, please try again later.";
-    this.validation = validation;
-    message && emitAlert(this);
-  }
-}
-// src/react/api/index.ts
-class ApiService {
-  get = async (url) => {
-    return await apiFetch(url);
-  };
-  post = async (url, request) => {
-    return await apiFetch(url, {
-      method: "POST",
-      body: JSON.stringify(request)
-    });
-  };
-  put = async (url, request) => {
-    return await apiFetch(url, {
-      method: "PUT",
-      body: JSON.stringify(request)
-    });
-  };
-  delete = async (url, request) => {
-    return await apiFetch(url, {
-      method: "DELETE",
-      body: JSON.stringify(request)
-    });
-  };
-}
-var apiFetch = async (url, options = {}) => {
-  let response = await fetch(url, options);
-  if (response.status === StatusCodes.UNAUTHORIZED && response.url.endsWith(checkRoute)) {
-    await refreshToken();
-    response = await fetch(url, options);
-  }
-  if (!response.ok) {
-    let errorData;
-    try {
-      errorData = await response.json();
-    } catch {
-      throw new ApiError({
-        status: response.status,
-        statusText: response.statusText,
-        message: "could not parse error"
-      });
-    }
-    console.error(errorData);
-    throw new ApiError(errorData);
-  }
-  if (options.method === "POST" || options.method === "DELETE")
-    return response;
-  return await response.json();
-};
-var refreshToken = async () => {
-  const response = await fetch(`${apiPrefix}/${authPrefix}/${refreshRoute}`, {
-    method: "POST"
-  });
-  if (!response.ok) {
-    throw new ApiError({
-      status: response.status,
-      statusText: response.statusText,
-      message: "Failed to refresh token"
-    });
-  }
-};
-
-// src/react/hooks/useAuthCheck.ts
-var useAuthCheck = () => {
-  const apiService = new ApiService;
-  const [authenticated, setAuthenticated] = import_react38.useState(undefined);
-  const checkAuth = async () => {
-    try {
-      const { authorized } = await apiService.get(`/${apiPrefix}/${authPrefix}/${checkRoute}`);
-      setAuthenticated(authorized);
-    } catch {
-      setAuthenticated(false);
-    }
-  };
-  import_react38.useEffect(() => {
-    if (authenticated === false) {
-      location.href = `${loginRoute}`;
-    }
-    const interval = setInterval(async () => {
-      await checkAuth();
-    }, 30 * 1000);
-    return () => {
-      clearInterval(interval);
-    };
-  }, [authenticated]);
-};
 // src/react/hooks/useAuthLogin.ts
 var useAuthLogin = () => {
   const apiService = new ApiService;
@@ -32784,7 +45981,7 @@ var useAuthRegister = () => {
     email: emailSchema,
     password: passwordSchema,
     confirmPassword: passwordSchema
-  }).refine((data2) => data2.password === data2.confirmPassword, {
+  }).refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match.",
     path: ["confirmPassword"]
   });
@@ -32801,10 +45998,10 @@ var useAuthRegister = () => {
   };
 };
 // src/react/hooks/useDebounce.ts
-var import_react39 = __toESM(require_react(), 1);
+var import_react45 = __toESM(require_react(), 1);
 var useDebounce = (value, delay2) => {
-  const [debouncedValue, setDebouncedValue] = import_react39.useState(value);
-  import_react39.useEffect(() => {
+  const [debouncedValue, setDebouncedValue] = import_react45.useState(value);
+  import_react45.useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedValue(value);
     }, delay2);
@@ -32815,9 +46012,9 @@ var useDebounce = (value, delay2) => {
   return debouncedValue;
 };
 // src/react/hooks/usePersistentForm.ts
-var import_react40 = __toESM(require_react(), 1);
+var import_react46 = __toESM(require_react(), 1);
 var usePersistentForm = (ref) => {
-  import_react40.useEffect(() => {
+  import_react46.useEffect(() => {
     if (!ref.current) {
       throw new Error("Form ref is not defined.");
     }
@@ -32833,23 +46030,117 @@ var usePersistentForm = (ref) => {
   if (ref === null)
     return;
 };
+// src/react/providers/SocketProvider.tsx
+var import_react48 = __toESM(require_react(), 1);
+
 // src/react/providers/UserProvider.tsx
-var import_react41 = __toESM(require_react(), 1);
-var UserContext = import_react41.createContext(undefined);
+var import_react47 = __toESM(require_react(), 1);
+var UserContext = import_react47.createContext(undefined);
 var UserProvider = ({ value, children }) => {
-  const [user, setUser] = import_react41.useState(value);
+  const [user, setUser] = import_react47.useState(value);
   const contextValue = {
     user,
     setUser
   };
-  return /* @__PURE__ */ import_react41.default.createElement(UserContext.Provider, {
+  return /* @__PURE__ */ import_react47.default.createElement(UserContext.Provider, {
     value: contextValue
   }, children);
 };
 var useUserContext = () => {
-  const context = import_react41.useContext(UserContext);
+  const context = import_react47.useContext(UserContext);
   if (!context) {
     throw new Error("useUserContext must be used within a UserProvider");
+  }
+  return context;
+};
+
+// src/react/providers/SocketProvider.tsx
+var SocketContext = import_react48.createContext(undefined);
+var getSocketUri = (user) => {
+  let host, port;
+  try {
+    host = "localhost";
+    port = "8080";
+  } catch {
+    console.error("process doesn't exist");
+  }
+  return `ws://${host}:${port}/ws?userId=${user?.id}&sessionId=${user?.sessionId}`;
+};
+var handleOnlineStatus = (payload) => showToast({
+  message: /* @__PURE__ */ import_react48.default.createElement(import_react48.default.Fragment, null, /* @__PURE__ */ import_react48.default.createElement("b", null, payload.user.username), " is now", " ", /* @__PURE__ */ import_react48.default.createElement("b", null, payload.isOnline ? "online" : "offline")),
+  position: "bottom-right"
+});
+var SocketProvider = ({ children }) => {
+  const { user } = useUserContext();
+  const [socket, setSocket] = import_react48.useState(null);
+  const [messages, setMessages] = import_react48.useState([]);
+  import_react48.useEffect(() => {
+    if (user?.sessionId) {
+      const ws = new WebSocket(getSocketUri(user));
+      ws.onopen = () => {
+        setSocket(ws);
+      };
+      ws.onmessage = (event) => {
+        const payload = JSON.parse(event.data);
+        const { channel } = payload;
+        switch (channel) {
+          case "online-status" /* ONLINE_STATUS */:
+            handleOnlineStatus(payload);
+            break;
+          case "public-chat" /* PUBLIC_CHAT */:
+            setMessages((prev) => [...prev, payload]);
+            break;
+          default:
+            console.warn(`${channel} is a invalid channel type`);
+            break;
+        }
+      };
+      ws.onclose = () => {
+        showMessage({
+          message: /* @__PURE__ */ import_react48.default.createElement(import_react48.default.Fragment, null, "Websocket disconnected,", " ", /* @__PURE__ */ import_react48.default.createElement("u", {
+            className: "cursor-pointer",
+            onClick: () => window.location.reload()
+          }, "refresh app to reconnect"), "."),
+          type: "error"
+        });
+        setSocket(null);
+      };
+      ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
+      return () => {
+        ws.close();
+      };
+    }
+  }, [user]);
+  const publish = (data, callback) => {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify(data));
+      callback && callback();
+    } else {
+      console.warn("Not connected to WebSocket server");
+    }
+  };
+  const subscribe = (channel) => {
+    publish({
+      method: "subscribe" /* SUBSCRIBE */,
+      payload: { channel, user }
+    });
+  };
+  const contextValue = {
+    socket,
+    subscribe,
+    publish,
+    messages
+  };
+  return /* @__PURE__ */ import_react48.default.createElement(SocketContext.Provider, {
+    value: contextValue
+  }, children);
+};
+var useSocketContext = () => {
+  const context = import_react48.useContext(SocketContext);
+  if (!context) {
+    throw new Error("useSocketContext must be used within a SocketProvider");
   }
   return context;
 };
@@ -32948,6 +46239,9 @@ var useTodos = () => {
     return await apiService.post(`/${apiPrefix}/${todoRoute}`, request);
   };
   const onEdit = async (request) => {
+    if (request.teamId === "") {
+      delete request.teamId;
+    }
     return await apiService.put(`/${apiPrefix}/${todoRoute}/${request.id}`, request);
   };
   const onDelete = async (id3) => {
@@ -32998,342 +46292,7 @@ var useUsers = () => {
     refetch
   };
 };
-// src/react/components/Form/Form.tsx
-var Form2 = ({
-  inputs,
-  validationSchema,
-  onSubmit,
-  onSuccess,
-  onCancel,
-  submitButtonText,
-  cancelButtonText,
-  showCancelButton = false,
-  secondaryButtons
-}) => {
-  const [_, formAction] = import_react42.useActionState(async (_2, formData) => {
-    await handleFormSubmit(formData);
-    return `handleFormSubmit`;
-  }, undefined);
-  const getDefaultValues = () => {
-    const inputMap = new Map;
-    inputs.forEach((i) => {
-      inputMap.set(i.name, i.value);
-    });
-    return inputMap;
-  };
-  const [inputValues, setInputValues] = import_react42.useState(getDefaultValues());
-  const [apiError, setApiError] = import_react42.useState("");
-  const [validationErrors, setValidationErrors] = import_react42.useState({});
-  const formRef = import_react42.useRef(null);
-  usePersistentForm(formRef);
-  const handleCancel = () => {
-    onCancel && onCancel();
-    resetForm();
-  };
-  const resetForm = () => {
-    setApiError("");
-    setValidationErrors({});
-    formRef.current?.reset();
-    setInputValues(getDefaultValues());
-  };
-  const createMutation = useMutation({
-    mutationFn: async (data2) => {
-      return await onSubmit(data2);
-    },
-    onSuccess: (data2) => {
-      onSuccess && onSuccess(data2);
-      resetForm();
-    },
-    onError: (error) => {
-      error.validation && setApiError(error.validation);
-    }
-  });
-  const handleFormSubmit = (formData) => {
-    "use server";
-    setApiError("");
-    setValidationErrors({});
-    const validation = validateForm(formData, validationSchema);
-    if (validation.success) {
-      createMutation.mutate(validation.data);
-    } else {
-      setValidationErrors(validation.errors ?? {});
-    }
-  };
-  return /* @__PURE__ */ import_react42.default.createElement("form", {
-    action: formAction,
-    ref: formRef
-  }, /* @__PURE__ */ import_react42.default.createElement(ErrorMessage, null, apiError), inputs.map((input) => {
-    let control;
-    switch (input.type) {
-      case "hidden":
-        control = /* @__PURE__ */ import_react42.default.createElement(HiddenInput, {
-          ...input
-        });
-        break;
-      case "password":
-      case "text":
-        control = /* @__PURE__ */ import_react42.default.createElement(TextInput, {
-          ...input,
-          value: inputValues.get(input.name) ?? input.value,
-          errors: validationErrors[input.name],
-          onChange: (event) => {
-            setInputValues((prev) => new Map(prev).set(input.name, event.target.value));
-          }
-        });
-        break;
-      default:
-        control = /* @__PURE__ */ import_react42.default.createElement(import_react42.default.Fragment, null, "invlid input");
-        break;
-    }
-    return /* @__PURE__ */ import_react42.default.createElement("div", {
-      className: input.type !== "hidden" ? "mb-4" : "",
-      key: input.name
-    }, control);
-  }), /* @__PURE__ */ import_react42.default.createElement("div", {
-    className: "mt-6 flex items-center justify-between"
-  }, /* @__PURE__ */ import_react42.default.createElement("div", {
-    className: "flex w-full justify-start"
-  }, secondaryButtons), /* @__PURE__ */ import_react42.default.createElement("div", {
-    className: "flex items-center space-x-4"
-  }, showCancelButton && /* @__PURE__ */ import_react42.default.createElement(Button, {
-    type: "button",
-    onClick: handleCancel,
-    mode: "secondary" /* SECONDARY */
-  }, cancelButtonText ? cancelButtonText : "Cancel"), /* @__PURE__ */ import_react42.default.createElement(Button, {
-    type: "submit",
-    disabled: createMutation.isPending,
-    mode: "primary" /* PRIMARY */
-  }, submitButtonText ? submitButtonText : "Submit"))));
-};
-// src/react/components/Icons/CloseIcon.tsx
-var import_react43 = __toESM(require_react(), 1);
-var CloseIcon = () => /* @__PURE__ */ import_react43.default.createElement("svg", {
-  className: "h-6 w-6 fill-current",
-  viewBox: "0 0 20 20"
-}, /* @__PURE__ */ import_react43.default.createElement("path", {
-  fillRule: "evenodd",
-  d: "M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z",
-  clipRule: "evenodd"
-}));
-// src/react/components/Icons/EditIcon.tsx
-var import_react44 = __toESM(require_react(), 1);
-var EditIcon = () => /* @__PURE__ */ import_react44.default.createElement("svg", {
-  xmlns: "http://www.w3.org/2000/svg",
-  viewBox: "0 0 24 24",
-  fill: "none",
-  stroke: "currentColor",
-  strokeWidth: "2",
-  strokeLinecap: "round",
-  strokeLinejoin: "round",
-  className: "feather feather-pencil h-5 w-5"
-}, /* @__PURE__ */ import_react44.default.createElement("path", {
-  d: "M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-}), /* @__PURE__ */ import_react44.default.createElement("path", {
-  d: "M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
-}));
-// src/react/components/Icons/TrashIcon.tsx
-var import_react45 = __toESM(require_react(), 1);
-var TrashIcon = () => /* @__PURE__ */ import_react45.default.createElement("svg", {
-  xmlns: "http://www.w3.org/2000/svg",
-  viewBox: "0 0 24 24",
-  fill: "none",
-  stroke: "currentColor",
-  strokeWidth: "2",
-  strokeLinecap: "round",
-  strokeLinejoin: "round",
-  className: "h-5 w-5"
-}, /* @__PURE__ */ import_react45.default.createElement("polyline", {
-  points: "3 6 5 6 21 6"
-}), /* @__PURE__ */ import_react45.default.createElement("path", {
-  d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-}), /* @__PURE__ */ import_react45.default.createElement("line", {
-  x1: "10",
-  y1: "11",
-  x2: "10",
-  y2: "17"
-}), /* @__PURE__ */ import_react45.default.createElement("line", {
-  x1: "14",
-  y1: "11",
-  x2: "14",
-  y2: "17"
-}));
-// src/react/components/Inputs/DropDownInput.tsx
-var import_react46 = __toESM(require_react(), 1);
-var DropDownInput = ({
-  label,
-  name,
-  options,
-  value,
-  errors,
-  onChange,
-  placeholder
-}) => {
-  const error = errors?.map((e) => /* @__PURE__ */ import_react46.default.createElement("p", {
-    key: e
-  }, e));
-  const [isOpen, setIsOpen] = import_react46.useState(false);
-  const selectRef = import_react46.useRef(null);
-  const [highlightedIndex, setHighlightedIndex] = import_react46.useState(null);
-  const controlledValue = value ?? undefined;
-  import_react46.useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (selectRef.current && !selectRef.current.contains(event.target)) {
-        setIsOpen(false);
-        setHighlightedIndex(null);
-      }
-    };
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen]);
-  const handleOptionClick = import_react46.useCallback((optionValue) => {
-    onChange?.(optionValue);
-    setIsOpen(false);
-    setHighlightedIndex(null);
-  }, [onChange]);
-  const handleKeyDown = (event) => {
-    if (!isOpen)
-      return;
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      setHighlightedIndex((prevIndex) => {
-        if (prevIndex === null || prevIndex >= options.length - 1) {
-          return 0;
-        }
-        return prevIndex + 1;
-      });
-    } else if (event.key === "ArrowUp") {
-      event.preventDefault();
-      setHighlightedIndex((prevIndex) => {
-        if (prevIndex === null || prevIndex <= 0) {
-          return options.length - 1;
-        }
-        return prevIndex - 1;
-      });
-    } else if (event.key === "Enter" && highlightedIndex !== null) {
-      event.preventDefault();
-      handleOptionClick(options[highlightedIndex].value);
-    } else if (event.key === "Escape") {
-      event.preventDefault();
-      setIsOpen(false);
-      setHighlightedIndex(null);
-    }
-  };
-  return /* @__PURE__ */ import_react46.default.createElement("div", {
-    ref: selectRef,
-    className: "relative w-full"
-  }, label && /* @__PURE__ */ import_react46.default.createElement(Label, {
-    htmlFor: name,
-    hasError: !!error
-  }, label), /* @__PURE__ */ import_react46.default.createElement("div", {
-    className: "relative w-full"
-  }, /* @__PURE__ */ import_react46.default.createElement("button", {
-    type: "button",
-    className: `flex w-full items-center justify-between rounded-md border px-4 py-2 shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-gray-800 ${error ? "border-red-500 focus:ring-red-500" : "border-gray-300 hover:border-gray-500"}`,
-    onClick: () => setIsOpen(!isOpen),
-    onKeyDown: handleKeyDown,
-    "aria-haspopup": "listbox",
-    "aria-expanded": isOpen,
-    id: `dropdown-button-${name}`
-  }, /* @__PURE__ */ import_react46.default.createElement("span", {
-    className: "truncate"
-  }, options.find((opt) => opt.value === controlledValue)?.label || placeholder || "Select an option"), isOpen ? /* @__PURE__ */ import_react46.default.createElement("svg", {
-    xmlns: "http://www.w3.org/2000/svg",
-    viewBox: "0 0 20 20",
-    fill: "currentColor",
-    className: "h-5 w-5 text-gray-400"
-  }, /* @__PURE__ */ import_react46.default.createElement("path", {
-    fillRule: "evenodd",
-    d: "M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z",
-    clipRule: "evenodd"
-  })) : /* @__PURE__ */ import_react46.default.createElement("svg", {
-    xmlns: "http://www.w3.org/2000/svg",
-    viewBox: "0 0 20 20",
-    fill: "currentColor",
-    className: "h-5 w-5 text-gray-400"
-  }, /* @__PURE__ */ import_react46.default.createElement("path", {
-    fillRule: "evenodd",
-    d: "M14.77 7.79a.75.75 0 01-1.06-.02L10 3.832 6.35 7.77a.75.75 0 01-1.08-1.04l4.25-4.5a.75.75 0 011.08 0l4.25 4.5a.75.75 0 01.02 1.06z",
-    clipRule: "evenodd"
-  }))), isOpen && /* @__PURE__ */ import_react46.default.createElement("ul", {
-    className: "absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white shadow-lg",
-    role: "listbox",
-    "aria-labelledby": `dropdown-button-${name}`
-  }, options.map((option, index) => /* @__PURE__ */ import_react46.default.createElement("li", {
-    key: option.value,
-    className: `cursor-pointer px-4 py-2 hover:bg-gray-100 ${index === highlightedIndex && "bg-blue-100"}`,
-    onClick: () => handleOptionClick(option.value),
-    role: "option",
-    "aria-selected": controlledValue === option.value
-  }, option.label)))), !!error && /* @__PURE__ */ import_react46.default.createElement(ErrorMessage, null, error));
-};
-// src/react/components/Inputs/HiddenInput.tsx
-var import_react47 = __toESM(require_react(), 1);
-var HiddenInput = ({ name, type, value }) => {
-  return /* @__PURE__ */ import_react47.default.createElement("input", {
-    type,
-    id: name,
-    name,
-    value: value ?? ""
-  });
-};
-// src/react/components/Inputs/Label.tsx
-var import_react48 = __toESM(require_react(), 1);
-var Label = ({ htmlFor, hasError, children }) => /* @__PURE__ */ import_react48.default.createElement("label", {
-  htmlFor,
-  className: `mb-2 block text-sm font-bold text-${hasError ? "red" : "gray"}-600`
-}, children);
-// src/react/components/Inputs/TextInput.tsx
-var import_react49 = __toESM(require_react(), 1);
-var TextInput = ({
-  label,
-  name,
-  placeholder,
-  type,
-  value,
-  className,
-  autoComplete = "off",
-  errors,
-  ref,
-  onChange,
-  onClear
-}) => {
-  const error = errors?.map((e) => /* @__PURE__ */ import_react49.default.createElement("p", {
-    key: e
-  }, e));
-  const normalClassName = "w-full rounded-md border px-4 py-2 shadow-sm border-gray-300 hover:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-800";
-  const errorClassName = "w-full rounded-md border px-4 py-2 shadow-sm border-red-500 focus:outline-none focus:ring-1 focus:ring-red-800";
-  const finalClassName = `${className ? className + " " : ""}${error ? errorClassName : normalClassName}${value ? " pr-8" : ""}`;
-  const inputRef = import_react49.useRef(null);
-  const handleClear = () => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-    onClear && onClear();
-  };
-  return /* @__PURE__ */ import_react49.default.createElement(import_react49.default.Fragment, null, label && /* @__PURE__ */ import_react49.default.createElement(Label, {
-    htmlFor: name,
-    hasError: !!error
-  }, label), /* @__PURE__ */ import_react49.default.createElement("input", {
-    type,
-    id: name,
-    name,
-    value: value ?? "",
-    onChange,
-    placeholder,
-    className: finalClassName,
-    autoComplete,
-    ref
-  }), value && onClear && /* @__PURE__ */ import_react49.default.createElement(CloseButton, {
-    className: "right absolute top-0",
-    onClick: handleClear
-  }), !!error && /* @__PURE__ */ import_react49.default.createElement(ErrorMessage, null, error));
-};
-// src/react/components/Inputs/TypeAheadInput.tsx
-var import_react50 = __toESM(require_react(), 1);
+// src/lib/components/Inputs/TypeAheadInput.tsx
 var TypeAheadSearchInput = ({
   label,
   name,
@@ -33341,13 +46300,16 @@ var TypeAheadSearchInput = ({
   options,
   onChange,
   onSelect,
-  error
+  errors
 }) => {
-  const [searchTerm, setSearchTerm] = import_react50.useState("");
-  const [filteredOptions, setFilteredOptions] = import_react50.useState(options);
-  const [showOptions, setShowOptions] = import_react50.useState(false);
+  const error = errors?.map((e) => /* @__PURE__ */ import_react49.default.createElement("p", {
+    key: e
+  }, e));
+  const [searchTerm, setSearchTerm] = import_react49.useState("");
+  const [filteredOptions, setFilteredOptions] = import_react49.useState(options);
+  const [showOptions, setShowOptions] = import_react49.useState(false);
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  import_react50.useEffect(() => {
+  import_react49.useEffect(() => {
     if (debouncedSearchTerm) {
       onChange && onChange(debouncedSearchTerm);
       const filtered = options.filter((option) => option.label.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
@@ -33369,8 +46331,8 @@ var TypeAheadSearchInput = ({
     onSelect(value);
     setShowOptions(false);
   };
-  const containerRef = import_react50.useRef(null);
-  import_react50.useEffect(() => {
+  const containerRef = import_react49.useRef(null);
+  import_react49.useEffect(() => {
     const handleClickOutside = (event) => {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
         setShowOptions(false);
@@ -33383,10 +46345,10 @@ var TypeAheadSearchInput = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showOptions]);
-  return /* @__PURE__ */ import_react50.default.createElement("div", {
+  return /* @__PURE__ */ import_react49.default.createElement("div", {
     className: "relative",
     ref: containerRef
-  }, /* @__PURE__ */ import_react50.default.createElement(TextInput, {
+  }, /* @__PURE__ */ import_react49.default.createElement(TextInput, {
     type: "text",
     label,
     name,
@@ -33396,71 +46358,19 @@ var TypeAheadSearchInput = ({
     onClear: () => {
       setSearchTerm("");
     },
-    error
-  }), showOptions && /* @__PURE__ */ import_react50.default.createElement("div", {
+    errors
+  }), showOptions && /* @__PURE__ */ import_react49.default.createElement("div", {
     className: "absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white shadow-lg"
-  }, filteredOptions.length > 0 ? filteredOptions.map((option) => /* @__PURE__ */ import_react50.default.createElement("div", {
+  }, filteredOptions.length > 0 ? filteredOptions.map((option) => /* @__PURE__ */ import_react49.default.createElement("div", {
     key: option.value,
     className: "cursor-pointer px-4 py-2 hover:bg-gray-100",
     onClick: () => handleOptionSelect(option.value)
-  }, option.label)) : /* @__PURE__ */ import_react50.default.createElement("div", {
+  }, option.label)) : /* @__PURE__ */ import_react49.default.createElement("div", {
     className: "px-4 py-2 text-gray-500"
-  }, "No options found")), error && /* @__PURE__ */ import_react50.default.createElement(ErrorMessage, null, error.message));
+  }, "No options found")), error && /* @__PURE__ */ import_react49.default.createElement(ErrorMessage, null, error));
 };
-// src/react/components/Layout/index.tsx
-var import_react53 = __toESM(require_react(), 1);
-
-// src/react/components/Layout/AuthLayout.tsx
-var import_react51 = __toESM(require_react(), 1);
-var AuthLayout = ({
-  title,
-  children
-}) => {
-  return /* @__PURE__ */ import_react51.default.createElement("div", {
-    className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react51.default.createElement("div", {
-    className: "w-96 rounded bg-white p-8 shadow-md"
-  }, /* @__PURE__ */ import_react51.default.createElement("h1", {
-    className: "mb-6 text-center text-2xl font-semibold"
-  }, title), children));
-};
-
-// src/react/components/Layout/PageLayout.tsx
-var import_react52 = __toESM(require_react(), 1);
-var PageLayout = ({
-  title,
-  children
-}) => {
-  return /* @__PURE__ */ import_react52.default.createElement("div", {
-    className: "flex justify-center bg-gray-100"
-  }, /* @__PURE__ */ import_react52.default.createElement("div", {
-    className: "w-full rounded bg-white p-8 shadow-md"
-  }, /* @__PURE__ */ import_react52.default.createElement("h1", {
-    className: "mb-4 text-center text-2xl font-bold"
-  }, title), children));
-};
-
-// src/react/components/Layout/index.tsx
-var Layout = ({ type, title, children }) => {
-  let layout2;
-  switch (type) {
-    case "AUTH" /* AUTH */:
-      layout2 = /* @__PURE__ */ import_react53.default.createElement(AuthLayout, {
-        title
-      }, children);
-      break;
-    case "PAGE" /* PAGE */:
-    default:
-      layout2 = /* @__PURE__ */ import_react53.default.createElement(PageLayout, {
-        title
-      }, children);
-  }
-  return /* @__PURE__ */ import_react53.default.createElement(CustomErrorBoundary, {
-    fallback: /* @__PURE__ */ import_react53.default.createElement("h2", null, "Oops! Something went wrong in this section.")
-  }, /* @__PURE__ */ import_react53.default.createElement(Alerts, null), layout2);
-};
-// src/react/components/Modals/DeleteModal.tsx
-var import_react54 = __toESM(require_react(), 1);
+// src/lib/components/Modals/DeleteModal.tsx
+var import_react50 = __toESM(require_react(), 1);
 var DeleteModal = ({
   isOpen,
   onCancel,
@@ -33469,36 +46379,36 @@ var DeleteModal = ({
   itemName,
   children
 }) => {
-  return /* @__PURE__ */ import_react54.default.createElement(Modal, {
+  return /* @__PURE__ */ import_react50.default.createElement(Modal, {
     title,
     isOpen,
     allowClose: false
-  }, /* @__PURE__ */ import_react54.default.createElement("div", {
+  }, /* @__PURE__ */ import_react50.default.createElement("div", {
     className: "p2 mb-4"
-  }, /* @__PURE__ */ import_react54.default.createElement("div", {
+  }, /* @__PURE__ */ import_react50.default.createElement("div", {
     className: "text-gray-800"
-  }, /* @__PURE__ */ import_react54.default.createElement("p", {
+  }, /* @__PURE__ */ import_react50.default.createElement("p", {
     className: "mb-4"
-  }, "This will delete an item"), itemName && /* @__PURE__ */ import_react54.default.createElement("div", {
+  }, "This will delete an item"), itemName && /* @__PURE__ */ import_react50.default.createElement("div", {
     className: "mb-2 rounded-md border border-red-800 bg-gray-100 p-2 text-lg font-bold text-red-800"
-  }, itemName), /* @__PURE__ */ import_react54.default.createElement("p", {
+  }, itemName), /* @__PURE__ */ import_react50.default.createElement("p", {
     className: "mb-4"
-  }, "This cannot be undone, do you wish to continue?")), children), /* @__PURE__ */ import_react54.default.createElement("div", {
+  }, "This cannot be undone, do you wish to continue?")), children), /* @__PURE__ */ import_react50.default.createElement("div", {
     className: "mt-6 flex items-center justify-between"
-  }, /* @__PURE__ */ import_react54.default.createElement("div", {
+  }, /* @__PURE__ */ import_react50.default.createElement("div", {
     className: "flex w-full justify-start"
-  }), /* @__PURE__ */ import_react54.default.createElement("div", {
+  }), /* @__PURE__ */ import_react50.default.createElement("div", {
     className: "flex items-center space-x-4"
-  }, /* @__PURE__ */ import_react54.default.createElement(Button, {
+  }, /* @__PURE__ */ import_react50.default.createElement(Button, {
     mode: "secondary" /* SECONDARY */,
     onClick: onCancel
-  }, "Cancel"), /* @__PURE__ */ import_react54.default.createElement(Button, {
+  }, "Cancel"), /* @__PURE__ */ import_react50.default.createElement(Button, {
     mode: "delete" /* DELETE */,
     onClick: onDelete
   }, "Delete"))));
 };
-// src/react/components/Modals/Modal.tsx
-var import_react55 = __toESM(require_react(), 1);
+// src/lib/components/Modals/Modal.tsx
+var import_react51 = __toESM(require_react(), 1);
 var Modal = ({
   isOpen,
   allowClose = true,
@@ -33506,11 +46416,11 @@ var Modal = ({
   title,
   children
 }) => {
-  const modalRef = import_react55.useRef(null);
-  const handleClose = import_react55.useCallback(() => {
+  const modalRef = import_react51.useRef(null);
+  const handleClose = import_react51.useCallback(() => {
     allowClose && onClose && onClose();
   }, [allowClose, onClose]);
-  import_react55.useEffect(() => {
+  import_react51.useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
         handleClose();
@@ -33531,30 +46441,39 @@ var Modal = ({
   if (!isOpen) {
     return null;
   }
-  return /* @__PURE__ */ import_react55.default.createElement("div", {
+  return /* @__PURE__ */ import_react51.default.createElement("div", {
     className: "fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-black/50",
     onClick: handleClose
-  }, /* @__PURE__ */ import_react55.default.createElement("div", {
+  }, /* @__PURE__ */ import_react51.default.createElement("div", {
     className: "relative w-full max-w-2xl rounded-lg bg-white shadow-xl",
     ref: modalRef,
     tabIndex: -1,
     onClick: (e) => e.stopPropagation()
-  }, title && /* @__PURE__ */ import_react55.default.createElement("div", {
+  }, title && /* @__PURE__ */ import_react51.default.createElement("div", {
     className: "border-b px-5 py-3"
-  }, /* @__PURE__ */ import_react55.default.createElement("h2", {
+  }, /* @__PURE__ */ import_react51.default.createElement("h2", {
     className: "text-xl font-semibold text-gray-800"
-  }, title)), /* @__PURE__ */ import_react55.default.createElement("div", {
+  }, title)), /* @__PURE__ */ import_react51.default.createElement("div", {
     className: "p-5"
-  }, children), allowClose && /* @__PURE__ */ import_react55.default.createElement(CloseButton, {
+  }, children), allowClose && /* @__PURE__ */ import_react51.default.createElement(CloseButton, {
     className: "absolute pr-2 pt-2",
     onClick: handleClose
   })));
 };
+// src/lib/components/Pill/Pill.tsx
+var import_react52 = __toESM(require_react(), 1);
+var Pill = ({ value, onRemove }) => /* @__PURE__ */ import_react52.default.createElement("div", {
+  className: "mr-2 inline-flex items-center rounded-lg bg-gray-200 py-1 pl-3 pr-1 text-sm text-gray-800"
+}, /* @__PURE__ */ import_react52.default.createElement("span", null, value), /* @__PURE__ */ import_react52.default.createElement(CloseButton, {
+  className: "right-0 scale-75",
+  onClick: onRemove
+}));
 // src/react/components/Nav/Nav.tsx
-var import_react56 = __toESM(require_react(), 1);
+var import_react53 = __toESM(require_react(), 1);
+var import_react_router = __toESM(require_development(), 1);
 var Nav = () => {
   const apiService = new ApiService;
-  const navigate = useNavigate();
+  const navigate = import_react_router.useNavigate();
   const { user } = useUserContext();
   const handleLogout = async () => {
     "use server";
@@ -33567,12 +46486,12 @@ var Nav = () => {
   };
   const activeNavLinkClassName = "rounded-md px-3 py-2 text-sm font-bold text-gray-100 hover:text-white bg-gray-600 hover:bg-gray-700 cursor-pointer";
   const navLinkClassName = "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-gray-100 hover:bg-gray-700 cursor-pointer";
-  return /* @__PURE__ */ import_react56.default.createElement("nav", {
+  return /* @__PURE__ */ import_react53.default.createElement("nav", {
     className: "flex items-center justify-between bg-gray-800 p-4",
     style: { height: 60 }
-  }, /* @__PURE__ */ import_react56.default.createElement("div", {
+  }, /* @__PURE__ */ import_react53.default.createElement("div", {
     className: "flex items-center"
-  }, /* @__PURE__ */ import_react56.default.createElement("img", {
+  }, /* @__PURE__ */ import_react53.default.createElement("img", {
     src: "/public/bun.png",
     alt: "Logo",
     height: 50,
@@ -33580,41 +46499,276 @@ var Nav = () => {
     onClick: () => {
       navigate("/");
     }
-  }), /* @__PURE__ */ import_react56.default.createElement(NavLink, {
+  }), /* @__PURE__ */ import_react53.default.createElement(import_react_router.NavLink, {
     to: "/",
     className: "text-lg font-bold text-white"
-  }, "Todo App")), /* @__PURE__ */ import_react56.default.createElement("div", null, !user?.id && /* @__PURE__ */ import_react56.default.createElement(NavLink, {
+  }, "Todo App")), /* @__PURE__ */ import_react53.default.createElement("div", null, !user?.id && /* @__PURE__ */ import_react53.default.createElement(import_react_router.NavLink, {
     className: ({ isActive }) => isActive ? activeNavLinkClassName : navLinkClassName,
     to: `/${loginRoute}`
-  }, "Login"), user?.id && /* @__PURE__ */ import_react56.default.createElement(import_react56.default.Fragment, null, /* @__PURE__ */ import_react56.default.createElement(NavLink, {
+  }, "Login"), user?.id && /* @__PURE__ */ import_react53.default.createElement(import_react53.default.Fragment, null, /* @__PURE__ */ import_react53.default.createElement(import_react_router.NavLink, {
     className: ({ isActive }) => isActive ? activeNavLinkClassName : navLinkClassName,
     to: `/${todoRoute}`
-  }, "Todos"), /* @__PURE__ */ import_react56.default.createElement(NavLink, {
+  }, "Todos"), /* @__PURE__ */ import_react53.default.createElement(import_react_router.NavLink, {
     className: ({ isActive }) => isActive ? activeNavLinkClassName : navLinkClassName,
     to: `/${teamRoute}`
-  }, "Teams"), /* @__PURE__ */ import_react56.default.createElement("span", {
+  }, "Teams"), /* @__PURE__ */ import_react53.default.createElement(import_react_router.NavLink, {
+    className: ({ isActive }) => isActive ? activeNavLinkClassName : navLinkClassName,
+    to: `/public-chat`
+  }, "Public Chat"), /* @__PURE__ */ import_react53.default.createElement("span", {
     onClick: handleLogout,
     className: navLinkClassName
-  }, "Logout"), /* @__PURE__ */ import_react56.default.createElement("span", {
+  }, "Logout"), /* @__PURE__ */ import_react53.default.createElement("span", {
     className: "ml-2 border-spacing-1 rounded-md border px-3 py-2 text-sm font-medium text-gray-300"
   }, user.username))));
 };
-// src/react/components/Pill/Pill.tsx
-var import_react57 = __toESM(require_react(), 1);
-var Pill = ({ value, onRemove }) => /* @__PURE__ */ import_react57.default.createElement("div", {
-  className: "mr-2 inline-flex items-center rounded-lg bg-gray-200 py-1 pl-3 pr-1 text-sm text-gray-800"
-}, /* @__PURE__ */ import_react57.default.createElement("span", null, value), /* @__PURE__ */ import_react57.default.createElement(CloseButton, {
-  className: "right-0 scale-75",
-  onClick: onRemove
-}));
+// src/react/pages/Forbidden/ForbiddenPage.tsx
+var import_react54 = __toESM(require_react(), 1);
+var ForbiddenPage = () => {
+  return /* @__PURE__ */ import_react54.default.createElement("div", {
+    className: "flex h-screen items-center justify-center"
+  }, /* @__PURE__ */ import_react54.default.createElement("div", {
+    className: "text-center"
+  }, /* @__PURE__ */ import_react54.default.createElement("h1", {
+    className: "mb-4 text-4xl font-bold text-gray-800"
+  }, "403 Forbidden"), /* @__PURE__ */ import_react54.default.createElement("p", {
+    className: "mb-8 text-lg text-gray-600"
+  }, "You must be logged in to access this page!"), /* @__PURE__ */ import_react54.default.createElement("a", {
+    href: `/${loginRoute}`,
+    className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
+  }, "Login to begin")));
+};
+// src/react/pages/Home/HomePage.tsx
+var import_react55 = __toESM(require_react(), 1);
+var HomePage = () => {
+  return /* @__PURE__ */ import_react55.default.createElement("div", {
+    className: "flex h-screen items-center justify-center"
+  }, /* @__PURE__ */ import_react55.default.createElement("div", {
+    className: "text-center"
+  }, /* @__PURE__ */ import_react55.default.createElement("h1", {
+    className: "mb-4 text-4xl font-bold text-gray-800"
+  }, "Welcome!"), /* @__PURE__ */ import_react55.default.createElement("p", {
+    className: "mb-8 text-lg text-gray-600"
+  }, "A Todo app built with Bun, Elysia, and React Server Components"), /* @__PURE__ */ import_react55.default.createElement("a", {
+    href: `/${loginRoute}`,
+    className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
+  }, "Login to begin")));
+};
 // src/react/pages/Login/LoginPage.tsx
-"use client";
+var import_react63 = __toESM(require_react(), 1);
+
+// src/react/components/Cards/CardBase.tsx
+var import_react56 = __toESM(require_react(), 1);
+var CardBase = ({ children }) => {
+  return /* @__PURE__ */ import_react56.default.createElement("div", {
+    className: "rounded-md bg-white px-4 py-3 shadow-md hover:border hover:border-gray-400"
+  }, children);
+};
+// src/react/components/Cards/CardGrid.tsx
+var import_react57 = __toESM(require_react(), 1);
+var CardGrid = ({ children }) => {
+  return /* @__PURE__ */ import_react57.default.createElement("div", {
+    className: "grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+  }, children);
+};
+// src/react/components/CustomErrorBoundary/CustomErrorBoundary.tsx
+var import_react58 = __toESM(require_react(), 1);
+
+class CustomErrorBoundary extends import_react58.default.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("Caught an error:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
+}
+// src/react/components/Form/Form.tsx
+var import_react59 = __toESM(require_react(), 1);
+var Form = ({
+  inputs,
+  validationSchema,
+  onSubmit,
+  onSuccess,
+  onCancel,
+  submitButtonText,
+  cancelButtonText,
+  showCancelButton = false,
+  secondaryButtons,
+  disabled
+}) => {
+  const [_, formAction] = import_react59.useActionState(async (_2, formData) => {
+    await handleFormSubmit(formData);
+    return `handleFormSubmit`;
+  }, undefined);
+  const getDefaultValues = () => {
+    const inputMap = new Map;
+    inputs.forEach((i) => {
+      inputMap.set(i.name, i.value);
+    });
+    return inputMap;
+  };
+  const [inputValues, setInputValues] = import_react59.useState(getDefaultValues());
+  const [apiError, setApiError] = import_react59.useState("");
+  const [validationErrors, setValidationErrors] = import_react59.useState({});
+  const formRef = import_react59.useRef(null);
+  usePersistentForm(formRef);
+  const handleCancel = () => {
+    onCancel && onCancel();
+    resetForm();
+  };
+  const resetForm = () => {
+    setApiError("");
+    setValidationErrors({});
+    formRef.current?.reset();
+    setInputValues(getDefaultValues());
+  };
+  const createMutation = useMutation({
+    mutationFn: async (data) => {
+      return await onSubmit(data);
+    },
+    onSuccess: (data) => {
+      onSuccess && onSuccess(data);
+      resetForm();
+    },
+    onError: (error) => {
+      error.validation && setApiError(error.validation);
+    }
+  });
+  const handleFormSubmit = (formData) => {
+    "use server";
+    setApiError("");
+    setValidationErrors({});
+    const validation = validateForm(formData, validationSchema);
+    if (validation.success) {
+      createMutation.mutate(validation.data);
+    } else {
+      setValidationErrors(validation.errors ?? {});
+    }
+  };
+  return /* @__PURE__ */ import_react59.default.createElement("form", {
+    action: formAction,
+    ref: formRef
+  }, /* @__PURE__ */ import_react59.default.createElement(ErrorMessage, null, apiError), inputs.map((input) => {
+    let control;
+    switch (input.type) {
+      case "hidden":
+        control = /* @__PURE__ */ import_react59.default.createElement(HiddenInput, {
+          ...input
+        });
+        break;
+      case "password":
+      case "text":
+        control = /* @__PURE__ */ import_react59.default.createElement(TextInput, {
+          ...input,
+          value: inputValues.get(input.name) ?? input.value,
+          errors: validationErrors[input.name],
+          onChange: (event) => {
+            setInputValues((prev) => new Map(prev).set(input.name, event.target.value));
+          }
+        });
+        break;
+      case "textarea":
+        control = /* @__PURE__ */ import_react59.default.createElement(TextArea, {
+          ...input,
+          value: inputValues.get(input.name) ?? input.value,
+          errors: validationErrors[input.name],
+          onChange: (event) => {
+            setInputValues((prev) => new Map(prev).set(input.name, event.target.value));
+          }
+        });
+        break;
+      default:
+        control = /* @__PURE__ */ import_react59.default.createElement(import_react59.default.Fragment, null, "invlid input");
+        break;
+    }
+    return /* @__PURE__ */ import_react59.default.createElement("div", {
+      className: input.type !== "hidden" ? "mb-4" : "",
+      key: input.name
+    }, control);
+  }), /* @__PURE__ */ import_react59.default.createElement("div", {
+    className: "mt-6 flex items-center justify-between"
+  }, /* @__PURE__ */ import_react59.default.createElement("div", {
+    className: "flex w-full justify-start"
+  }, secondaryButtons), /* @__PURE__ */ import_react59.default.createElement("div", {
+    className: "flex items-center space-x-4"
+  }, showCancelButton && /* @__PURE__ */ import_react59.default.createElement(Button, {
+    type: "button",
+    onClick: handleCancel,
+    mode: "secondary" /* SECONDARY */
+  }, cancelButtonText ? cancelButtonText : "Cancel"), /* @__PURE__ */ import_react59.default.createElement(Button, {
+    type: "submit",
+    disabled: disabled || createMutation.isPending,
+    mode: "primary" /* PRIMARY */
+  }, submitButtonText ? submitButtonText : "Submit"))));
+};
+// src/react/components/Layout/index.tsx
+var import_react62 = __toESM(require_react(), 1);
+
+// src/react/components/Layout/AuthLayout.tsx
+var import_react60 = __toESM(require_react(), 1);
+var AuthLayout = ({
+  title,
+  children
+}) => {
+  return /* @__PURE__ */ import_react60.default.createElement("div", {
+    className: "flex h-screen items-center justify-center"
+  }, /* @__PURE__ */ import_react60.default.createElement("div", {
+    className: "w-96 rounded bg-white p-8 shadow-md"
+  }, /* @__PURE__ */ import_react60.default.createElement("h1", {
+    className: "mb-6 text-center text-2xl font-semibold"
+  }, title), children));
+};
+
+// src/react/components/Layout/PageLayout.tsx
+var import_react61 = __toESM(require_react(), 1);
+var PageLayout = ({
+  title,
+  children
+}) => {
+  return /* @__PURE__ */ import_react61.default.createElement("div", {
+    className: "flex justify-center bg-gray-100"
+  }, /* @__PURE__ */ import_react61.default.createElement("div", {
+    className: "w-full rounded bg-white p-8 shadow-md"
+  }, /* @__PURE__ */ import_react61.default.createElement("h1", {
+    className: "mb-4 text-center text-2xl font-bold"
+  }, title), children));
+};
+
+// src/react/components/Layout/index.tsx
+var Layout = ({ type, title = "", children }) => {
+  let layout2;
+  switch (type) {
+    case "AUTH" /* AUTH */:
+      layout2 = /* @__PURE__ */ import_react62.default.createElement(AuthLayout, {
+        title
+      }, children);
+      break;
+    case "PAGE" /* PAGE */:
+    default:
+      layout2 = /* @__PURE__ */ import_react62.default.createElement(PageLayout, {
+        title
+      }, children);
+  }
+  return /* @__PURE__ */ import_react62.default.createElement(CustomErrorBoundary, {
+    fallback: /* @__PURE__ */ import_react62.default.createElement("h2", null, "Oops! Something went wrong in this section.")
+  }, layout2);
+};
+// src/react/pages/Login/LoginPage.tsx
 var LoginPage = () => {
   const { validationSchema, onLogin, onSuccess } = useAuthLogin();
-  return /* @__PURE__ */ import_react58.default.createElement(Layout, {
+  return /* @__PURE__ */ import_react63.default.createElement(Layout, {
     type: "AUTH" /* AUTH */,
     title: "Login"
-  }, /* @__PURE__ */ import_react58.default.createElement(Form2, {
+  }, /* @__PURE__ */ import_react63.default.createElement(Form, {
     inputs: [
       {
         type: "text",
@@ -33634,36 +46788,35 @@ var LoginPage = () => {
     onSubmit: onLogin,
     onSuccess,
     submitButtonText: "Login",
-    secondaryButtons: /* @__PURE__ */ import_react58.default.createElement(LinkButton, {
+    secondaryButtons: /* @__PURE__ */ import_react63.default.createElement(LinkButton, {
       to: `/${registerRoute}`
     }, "Not a member yet? Register here!")
   }));
 };
 // src/react/pages/NotFound/NotFoundPage.tsx
-var import_react59 = __toESM(require_react(), 1);
+var import_react64 = __toESM(require_react(), 1);
 var NotFoundPage = () => {
-  return /* @__PURE__ */ import_react59.default.createElement("div", {
+  return /* @__PURE__ */ import_react64.default.createElement("div", {
     className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react59.default.createElement("div", {
+  }, /* @__PURE__ */ import_react64.default.createElement("div", {
     className: "text-center"
-  }, /* @__PURE__ */ import_react59.default.createElement("h1", {
+  }, /* @__PURE__ */ import_react64.default.createElement("h1", {
     className: "mb-4 text-4xl font-bold text-gray-800"
-  }, "404 Not Found"), /* @__PURE__ */ import_react59.default.createElement("p", {
+  }, "404 Not Found"), /* @__PURE__ */ import_react64.default.createElement("p", {
     className: "mb-8 text-lg text-gray-600"
-  }, "We couldn't find what you were looking for."), /* @__PURE__ */ import_react59.default.createElement("a", {
+  }, "We couldn't find what you were looking for."), /* @__PURE__ */ import_react64.default.createElement("a", {
     href: `/${loginRoute}`,
     className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
   }, "Login to begin")));
 };
 // src/react/pages/Register/RegisterPage.tsx
-var import_react60 = __toESM(require_react(), 1);
-"use client";
+var import_react65 = __toESM(require_react(), 1);
 var RegisterPage = () => {
   const { validationSchema, onRegister, onSuccess } = useAuthRegister();
-  return /* @__PURE__ */ import_react60.default.createElement(Layout, {
+  return /* @__PURE__ */ import_react65.default.createElement(Layout, {
     type: "AUTH" /* AUTH */,
     title: "Register"
-  }, /* @__PURE__ */ import_react60.default.createElement(Form2, {
+  }, /* @__PURE__ */ import_react65.default.createElement(Form, {
     inputs: [
       {
         type: "text",
@@ -33694,61 +46847,60 @@ var RegisterPage = () => {
     onSubmit: onRegister,
     onSuccess,
     submitButtonText: "Register",
-    secondaryButtons: /* @__PURE__ */ import_react60.default.createElement(LinkButton, {
+    secondaryButtons: /* @__PURE__ */ import_react65.default.createElement(LinkButton, {
       to: `/${loginRoute}`
     }, "Already a member?")
   }));
 };
 // src/react/pages/Team/TeamPage.tsx
-var import_react62 = __toESM(require_react(), 1);
+var import_react67 = __toESM(require_react(), 1);
 
 // src/react/pages/Team/TeamCard.tsx
-var import_react61 = __toESM(require_react(), 1);
+var import_react66 = __toESM(require_react(), 1);
 var TeamCard = ({
   team,
   onEdit,
   onDelete,
   children
 }) => {
-  return /* @__PURE__ */ import_react61.default.createElement(CardBase, null, /* @__PURE__ */ import_react61.default.createElement("div", {
+  return /* @__PURE__ */ import_react66.default.createElement(CardBase, null, /* @__PURE__ */ import_react66.default.createElement("div", {
     className: "flex items-center justify-between"
-  }, /* @__PURE__ */ import_react61.default.createElement("h3", {
+  }, /* @__PURE__ */ import_react66.default.createElement("h3", {
     className: "flex justify-start text-lg font-semibold text-gray-800"
-  }, team.name), /* @__PURE__ */ import_react61.default.createElement("div", {
+  }, team.name), /* @__PURE__ */ import_react66.default.createElement("div", {
     className: "flex justify-end space-x-2"
-  }, /* @__PURE__ */ import_react61.default.createElement(EditButton, {
+  }, /* @__PURE__ */ import_react66.default.createElement(EditButton, {
     onClick: () => onEdit(team.id)
-  }), /* @__PURE__ */ import_react61.default.createElement(DeleteButton, {
+  }), /* @__PURE__ */ import_react66.default.createElement(DeleteButton, {
     onClick: () => onDelete(team.id)
-  }))), /* @__PURE__ */ import_react61.default.createElement("div", {
+  }))), /* @__PURE__ */ import_react66.default.createElement("div", {
     className: "text-sm text-gray-500"
-  }, team.todosCount, " todo", team.todosCount > 1 ? "s" : ""), /* @__PURE__ */ import_react61.default.createElement("div", {
+  }, team.todosCount, " todo", team.todosCount > 1 ? "s" : ""), /* @__PURE__ */ import_react66.default.createElement("div", {
     title: team.members.map((m) => m.username).join(", "),
     className: "text-sm text-gray-500"
-  }, team.members.length, " member", team.members.length > 1 ? "s" : "", ":", team.members.length > 0 && /* @__PURE__ */ import_react61.default.createElement("span", {
+  }, team.members.length, " member", team.members.length > 1 ? "s" : "", ":", team.members.length > 0 && /* @__PURE__ */ import_react66.default.createElement("span", {
     className: "ml-1 text-xs text-gray-400"
-  }, team.members.slice(0, 3).map((m) => m.username).join(", "), team.members.length > 3 && " & more")), children, /* @__PURE__ */ import_react61.default.createElement("p", {
+  }, team.members.slice(0, 3).map((m) => m.username).join(", "), team.members.length > 3 && " & more")), children, /* @__PURE__ */ import_react66.default.createElement("p", {
     className: "mt-1 text-sm text-gray-600"
-  }, "Created by:", " ", /* @__PURE__ */ import_react61.default.createElement("span", {
+  }, "Created by:", " ", /* @__PURE__ */ import_react66.default.createElement("span", {
     className: "font-medium"
-  }, team.createdBy?.username)), team.updatedBy && /* @__PURE__ */ import_react61.default.createElement("p", {
+  }, team.createdBy?.username)), team.updatedBy && /* @__PURE__ */ import_react66.default.createElement("p", {
     className: "mt-1 text-sm text-gray-600"
-  }, "Last updated by:", " ", /* @__PURE__ */ import_react61.default.createElement("span", {
+  }, "Last updated by:", " ", /* @__PURE__ */ import_react66.default.createElement("span", {
     className: "font-medium"
   }, team.updatedBy?.username)));
 };
 
 // src/react/pages/Team/TeamPage.tsx
-"use client";
 var TeamPage = () => {
   useAuthCheck();
-  const [isEditModelOpen, setIsEditModalOpen] = import_react62.useState(false);
-  const [editId, setEditId] = import_react62.useState(undefined);
-  const [isDeleteModelOpen, setIsDeleteModalOpen] = import_react62.useState(false);
-  const [deleteId, setDeleteId] = import_react62.useState(undefined);
-  const [searchQuery, setSearchQuery] = import_react62.useState(undefined);
-  const [searchOptions, setSearchOptions] = import_react62.useState([]);
-  const [selectedMemberId, setSelectedMemberId] = import_react62.useState(undefined);
+  const [isEditModelOpen, setIsEditModalOpen] = import_react67.useState(false);
+  const [editId, setEditId] = import_react67.useState(undefined);
+  const [isDeleteModelOpen, setIsDeleteModalOpen] = import_react67.useState(false);
+  const [deleteId, setDeleteId] = import_react67.useState(undefined);
+  const [searchQuery, setSearchQuery] = import_react67.useState(undefined);
+  const [searchOptions, setSearchOptions] = import_react67.useState([]);
+  const [selectedMemberId, setSelectedMemberId] = import_react67.useState(undefined);
   const {
     getData: getTeams,
     createValidationSchema,
@@ -33764,7 +46916,7 @@ var TeamPage = () => {
   const teamForEdit = teams && teams.find((t) => t.id === editId);
   const teamForDelete = teams && teams.find((t) => t.id === deleteId);
   const { search } = useUsers();
-  import_react62.useEffect(() => {
+  import_react67.useEffect(() => {
     const fetchData = async () => {
       const foundMembers = await search(searchQuery);
       const searchOptions2 = foundMembers && foundMembers.length > 0 ? foundMembers.filter((fm) => !teamForEdit?.members.map((m) => m.id).includes(fm.id)).map((m) => ({
@@ -33791,11 +46943,11 @@ var TeamPage = () => {
     setDeleteId(undefined);
     setIsDeleteModalOpen(false);
   };
-  return /* @__PURE__ */ import_react62.default.createElement(Layout, {
+  return /* @__PURE__ */ import_react67.default.createElement(Layout, {
     title: "Team List"
-  }, /* @__PURE__ */ import_react62.default.createElement(ErrorMessage, null, error?.message ?? ""), /* @__PURE__ */ import_react62.default.createElement("div", {
+  }, /* @__PURE__ */ import_react67.default.createElement(ErrorMessage, null, error?.message ?? ""), /* @__PURE__ */ import_react67.default.createElement("div", {
     className: "mb-4"
-  }, /* @__PURE__ */ import_react62.default.createElement(Form2, {
+  }, /* @__PURE__ */ import_react67.default.createElement(Form, {
     inputs: [
       { type: "text", name: "name", placeholder: "Add a new team..." }
     ],
@@ -33804,16 +46956,16 @@ var TeamPage = () => {
     onSuccess: refetch,
     submitButtonText: "Add",
     showCancelButton: true
-  })), isPending && "Loading...", /* @__PURE__ */ import_react62.default.createElement(CardGrid, null, teams && teams.map((team) => /* @__PURE__ */ import_react62.default.createElement(TeamCard, {
+  })), isPending && "Loading...", /* @__PURE__ */ import_react67.default.createElement(CardGrid, null, teams && teams.map((team) => /* @__PURE__ */ import_react67.default.createElement(TeamCard, {
     key: team.id,
     team,
     onEdit: handleEdit,
     onDelete: handleDelete
-  }))), /* @__PURE__ */ import_react62.default.createElement(Modal, {
+  }))), /* @__PURE__ */ import_react67.default.createElement(Modal, {
     title: "Editing a Team",
     isOpen: isEditModelOpen && !!teamForEdit,
     onClose: handleCloseEditModal
-  }, /* @__PURE__ */ import_react62.default.createElement(Form2, {
+  }, /* @__PURE__ */ import_react67.default.createElement(Form, {
     inputs: [
       {
         type: "hidden",
@@ -33837,20 +46989,20 @@ var TeamPage = () => {
     onCancel: handleCloseEditModal,
     submitButtonText: "Edit",
     showCancelButton: true,
-    secondaryButtons: /* @__PURE__ */ import_react62.default.createElement(Button, {
+    secondaryButtons: /* @__PURE__ */ import_react67.default.createElement(Button, {
       mode: "delete" /* DELETE */,
       onClick: (event) => {
         event.preventDefault();
         handleDelete(teamForEdit.id);
       }
     }, "Delete")
-  }), /* @__PURE__ */ import_react62.default.createElement("div", {
+  }), /* @__PURE__ */ import_react67.default.createElement("div", {
     className: "mb-0 mt-5 flex items-end justify-between"
-  }, /* @__PURE__ */ import_react62.default.createElement("div", {
+  }, /* @__PURE__ */ import_react67.default.createElement("div", {
     className: "flex:none mr-4 w-full"
-  }, /* @__PURE__ */ import_react62.default.createElement(Label, {
+  }, /* @__PURE__ */ import_react67.default.createElement(Label, {
     htmlFor: "members"
-  }, "Add Members"), !selectedMemberId && /* @__PURE__ */ import_react62.default.createElement(TypeAheadSearchInput, {
+  }, "Add Members"), !selectedMemberId && /* @__PURE__ */ import_react67.default.createElement(TypeAheadSearchInput, {
     name: "members",
     placeholder: "Search for members...",
     options: searchOptions,
@@ -33858,15 +47010,15 @@ var TeamPage = () => {
     onSelect: (value) => {
       setSelectedMemberId(value);
     }
-  }), selectedMemberId && /* @__PURE__ */ import_react62.default.createElement("div", {
+  }), selectedMemberId && /* @__PURE__ */ import_react67.default.createElement("div", {
     className: "flex w-full items-end justify-between rounded border border-gray-800 p-2 pl-4"
-  }, searchOptions.find((o) => o.value === selectedMemberId)?.label, " ", /* @__PURE__ */ import_react62.default.createElement(CloseButton, {
+  }, searchOptions.find((o) => o.value === selectedMemberId)?.label, " ", /* @__PURE__ */ import_react67.default.createElement(CloseButton, {
     onClick: () => {
       setSelectedMemberId(undefined);
     }
-  }))), /* @__PURE__ */ import_react62.default.createElement("div", {
+  }))), /* @__PURE__ */ import_react67.default.createElement("div", {
     className: "max-h-10"
-  }, /* @__PURE__ */ import_react62.default.createElement(Button, {
+  }, /* @__PURE__ */ import_react67.default.createElement(Button, {
     mode: "secondary" /* SECONDARY */,
     disabled: !selectedMemberId,
     onClick: async () => {
@@ -33877,9 +47029,9 @@ var TeamPage = () => {
       setSelectedMemberId(undefined);
       setSearchQuery(undefined);
     }
-  }, "Add"))), teamForEdit && teamForEdit.members && /* @__PURE__ */ import_react62.default.createElement("div", {
+  }, "Add"))), teamForEdit && teamForEdit.members && /* @__PURE__ */ import_react67.default.createElement("div", {
     className: "relative mt-4 flex items-center"
-  }, teamForEdit.members.filter((m) => m.id !== teamForEdit?.createdBy?.id).map((m) => /* @__PURE__ */ import_react62.default.createElement(Pill, {
+  }, teamForEdit.members.filter((m) => m.id !== teamForEdit?.createdBy?.id).map((m) => /* @__PURE__ */ import_react67.default.createElement(Pill, {
     key: m.id,
     value: m.username,
     onRemove: async () => {
@@ -33888,15 +47040,15 @@ var TeamPage = () => {
         teamId: teamForEdit.id
       });
     }
-  }))), /* @__PURE__ */ import_react62.default.createElement("p", {
+  }))), /* @__PURE__ */ import_react67.default.createElement("p", {
     className: "mt-4 text-sm text-gray-600"
-  }, "Created by:", " ", /* @__PURE__ */ import_react62.default.createElement("span", {
+  }, "Created by:", " ", /* @__PURE__ */ import_react67.default.createElement("span", {
     className: "font-medium"
-  }, teamForEdit?.createdBy?.username)), teamForEdit?.updatedBy && /* @__PURE__ */ import_react62.default.createElement("p", {
+  }, teamForEdit?.createdBy?.username)), teamForEdit?.updatedBy && /* @__PURE__ */ import_react67.default.createElement("p", {
     className: "mt-2 text-sm text-gray-600"
-  }, "Last updated by:", " ", /* @__PURE__ */ import_react62.default.createElement("span", {
+  }, "Last updated by:", " ", /* @__PURE__ */ import_react67.default.createElement("span", {
     className: "font-medium"
-  }, teamForEdit?.updatedBy?.username))), /* @__PURE__ */ import_react62.default.createElement(DeleteModal, {
+  }, teamForEdit?.updatedBy?.username))), /* @__PURE__ */ import_react67.default.createElement(DeleteModal, {
     title: "Deleting a Team",
     itemName: teamForDelete?.name,
     isOpen: isDeleteModelOpen && !!teamForDelete,
@@ -33908,55 +47060,54 @@ var TeamPage = () => {
       deleted && handleCloseEditModal();
       deleted && handleCloseDeleteModal();
     }
-  }, /* @__PURE__ */ import_react62.default.createElement("i", {
+  }, /* @__PURE__ */ import_react67.default.createElement("i", {
     className: "text-red-800"
   }, "Note: This will delete all todos for this team")));
 };
 // src/react/pages/Todo/TodoPage.tsx
-var import_react64 = __toESM(require_react(), 1);
+var import_react69 = __toESM(require_react(), 1);
 
 // src/react/pages/Todo/TodoCard.tsx
-var import_react63 = __toESM(require_react(), 1);
+var import_react68 = __toESM(require_react(), 1);
 var TodoCard = ({
   todo,
   onDelete,
   onEdit,
   children
 }) => {
-  return /* @__PURE__ */ import_react63.default.createElement(CardBase, null, /* @__PURE__ */ import_react63.default.createElement(import_react63.default.Fragment, null, /* @__PURE__ */ import_react63.default.createElement("div", {
+  return /* @__PURE__ */ import_react68.default.createElement(CardBase, null, /* @__PURE__ */ import_react68.default.createElement(import_react68.default.Fragment, null, /* @__PURE__ */ import_react68.default.createElement("div", {
     className: "flex items-center justify-between"
-  }, /* @__PURE__ */ import_react63.default.createElement("h3", {
+  }, /* @__PURE__ */ import_react68.default.createElement("h3", {
     className: "flex justify-start text-lg font-semibold text-gray-800"
-  }, todo.title), /* @__PURE__ */ import_react63.default.createElement("div", {
+  }, todo.title), /* @__PURE__ */ import_react68.default.createElement("div", {
     className: "flex justify-end space-x-2"
-  }, /* @__PURE__ */ import_react63.default.createElement(EditButton, {
+  }, /* @__PURE__ */ import_react68.default.createElement(EditButton, {
     onClick: () => onEdit(todo.id)
-  }), /* @__PURE__ */ import_react63.default.createElement(DeleteButton, {
+  }), /* @__PURE__ */ import_react68.default.createElement(DeleteButton, {
     onClick: () => onDelete(todo.id)
-  }))), todo.description && /* @__PURE__ */ import_react63.default.createElement("p", {
+  }))), todo.description && /* @__PURE__ */ import_react68.default.createElement("p", {
     className: "mt-1 justify-start text-sm text-gray-600"
-  }, todo.description), !todo.description && /* @__PURE__ */ import_react63.default.createElement("p", {
+  }, todo.description), !todo.description && /* @__PURE__ */ import_react68.default.createElement("p", {
     className: "mt-1 justify-start text-sm text-gray-300"
-  }, "No description"), /* @__PURE__ */ import_react63.default.createElement("p", {
+  }, "No description"), /* @__PURE__ */ import_react68.default.createElement("p", {
     className: "mt-1 text-sm text-gray-600"
-  }, "Created by:", " ", /* @__PURE__ */ import_react63.default.createElement("span", {
+  }, "Created by:", " ", /* @__PURE__ */ import_react68.default.createElement("span", {
     className: "font-medium"
-  }, todo.createdBy?.username)), todo.updatedBy && /* @__PURE__ */ import_react63.default.createElement("p", {
+  }, todo.createdBy?.username)), todo.updatedBy && /* @__PURE__ */ import_react68.default.createElement("p", {
     className: "mt-1 text-sm text-gray-600"
-  }, "Last updated by:", " ", /* @__PURE__ */ import_react63.default.createElement("span", {
+  }, "Last updated by:", " ", /* @__PURE__ */ import_react68.default.createElement("span", {
     className: "font-medium"
   }, todo.updatedBy.username))), children);
 };
 
 // src/react/pages/Todo/TodoPage.tsx
-"use client";
 var TodoPage = () => {
   useAuthCheck();
-  const [isEditModelOpen, setIsEditModalOpen] = import_react64.useState(false);
-  const [editId, setEditId] = import_react64.useState(undefined);
-  const [isDeleteModelOpen, setIsDeleteModalOpen] = import_react64.useState(false);
-  const [deleteId, setDeleteId] = import_react64.useState(undefined);
-  const [selectedTeamId, setSelectedTeamId] = import_react64.useState(undefined);
+  const [isEditModelOpen, setIsEditModalOpen] = import_react69.useState(false);
+  const [editId, setEditId] = import_react69.useState(undefined);
+  const [isDeleteModelOpen, setIsDeleteModalOpen] = import_react69.useState(false);
+  const [deleteId, setDeleteId] = import_react69.useState(undefined);
+  const [selectedTeamId, setSelectedTeamId] = import_react69.useState(undefined);
   const {
     getData: getTodos,
     createValidationSchema,
@@ -33995,11 +47146,11 @@ var TodoPage = () => {
     label: `${t.name} (${t.todosCount} todo${t.todosCount > 0 ? "s" : ""})`,
     value: t.id
   })) : [];
-  return /* @__PURE__ */ import_react64.default.createElement(Layout, {
+  return /* @__PURE__ */ import_react69.default.createElement(Layout, {
     title: "Todo List"
-  }, /* @__PURE__ */ import_react64.default.createElement(ErrorMessage, null, error?.message ?? ""), /* @__PURE__ */ import_react64.default.createElement("div", {
+  }, /* @__PURE__ */ import_react69.default.createElement(ErrorMessage, null, error?.message ?? ""), /* @__PURE__ */ import_react69.default.createElement("div", {
     className: "mb-4"
-  }, /* @__PURE__ */ import_react64.default.createElement(Form2, {
+  }, /* @__PURE__ */ import_react69.default.createElement(Form, {
     inputs: [
       { type: "hidden", name: "teamId", value: selectedTeamId },
       { type: "text", name: "title", placeholder: "Add a new todo..." }
@@ -34009,9 +47160,9 @@ var TodoPage = () => {
     onSuccess: handleSuccess,
     submitButtonText: "Add",
     showCancelButton: true,
-    secondaryButtons: /* @__PURE__ */ import_react64.default.createElement("div", {
+    secondaryButtons: /* @__PURE__ */ import_react69.default.createElement("div", {
       className: "w-3/11"
-    }, /* @__PURE__ */ import_react64.default.createElement(DropDownInput, {
+    }, /* @__PURE__ */ import_react69.default.createElement(DropDownInput, {
       type: "select",
       name: "team",
       value: selectedTeamId,
@@ -34024,16 +47175,16 @@ var TodoPage = () => {
         setSelectedTeamId(value);
       }
     }))
-  })), isPending && "Loading...", /* @__PURE__ */ import_react64.default.createElement(CardGrid, null, todos && todos.map((todo) => /* @__PURE__ */ import_react64.default.createElement(TodoCard, {
+  })), isPending && "Loading...", /* @__PURE__ */ import_react69.default.createElement(CardGrid, null, todos && todos.map((todo) => /* @__PURE__ */ import_react69.default.createElement(TodoCard, {
     key: todo.id,
     onEdit: handleEdit,
     onDelete: handleDelete,
     todo
-  }))), /* @__PURE__ */ import_react64.default.createElement(Modal, {
+  }))), /* @__PURE__ */ import_react69.default.createElement(Modal, {
     title: "Editing a Todo Item",
     isOpen: isEditModelOpen && !!todoForEdit,
     onClose: handleCloseEditModal
-  }, /* @__PURE__ */ import_react64.default.createElement(Form2, {
+  }, /* @__PURE__ */ import_react69.default.createElement(Form, {
     inputs: [
       {
         type: "hidden",
@@ -34069,14 +47220,14 @@ var TodoPage = () => {
     onCancel: handleCloseEditModal,
     submitButtonText: "Edit",
     showCancelButton: true,
-    secondaryButtons: /* @__PURE__ */ import_react64.default.createElement(Button, {
+    secondaryButtons: /* @__PURE__ */ import_react69.default.createElement(Button, {
       mode: "delete" /* DELETE */,
       onClick: (event) => {
         event.preventDefault();
         handleDelete(todoForEdit.id);
       }
     }, "Delete")
-  })), /* @__PURE__ */ import_react64.default.createElement(DeleteModal, {
+  })), /* @__PURE__ */ import_react69.default.createElement(DeleteModal, {
     title: "Deleting a Todo Item",
     itemName: todoForDelete?.title,
     isOpen: isDeleteModelOpen && !!todoForDelete,
@@ -34090,9 +47241,154 @@ var TodoPage = () => {
     }
   }));
 };
+// src/react/pages/PublicChat/PublicChat.tsx
+var import_react71 = __toESM(require_react(), 1);
+
+// src/react/hooks/usePublicChat.ts
+var usePublicChat = () => {
+  const { socket, publish, messages } = useSocketContext();
+  const validationSchema = z.object({
+    message: z.string().min(1, { message: "Must be at least 1 character long." }).max(120, { message: "Cannot be more than 120 characters long" })
+  });
+  const sendMessage = async ({
+    message
+  }) => {
+    return await new Promise((resolve) => {
+      publish({
+        method: "publish" /* PUBLISH */,
+        payload: {
+          channel: "public-chat" /* PUBLIC_CHAT */,
+          message
+        }
+      });
+      resolve({ message });
+    });
+  };
+  return {
+    validationSchema,
+    socket,
+    sendMessage,
+    messages: messages.filter((m) => m.channel === "public-chat" /* PUBLIC_CHAT */)
+  };
+};
+
+// src/react/pages/PublicChat/ChatMessage.tsx
+var import_react70 = __toESM(require_react(), 1);
+var formatDistanceToNow = (date, options) => {
+  const now2 = new Date;
+  const diff = now2.getTime() - date.getTime();
+  const seconds = Math.floor(diff / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  const months = Math.floor(days / 30);
+  const years = Math.floor(days / 365);
+  let result;
+  if (years > 1)
+    result = `${years} years`;
+  else if (years === 1)
+    result = `1 year`;
+  else if (months > 1)
+    result = `${months} months`;
+  else if (months === 1)
+    result = `1 month`;
+  else if (days > 1)
+    result = `${days} days`;
+  else if (days === 1)
+    result = `1 day`;
+  else if (hours > 1)
+    result = `${hours} hours`;
+  else if (hours === 1)
+    result = `1 hour`;
+  else if (minutes > 1)
+    result = `${minutes} minutes`;
+  else if (minutes === 1)
+    result = `1 minute`;
+  else if (seconds > 1)
+    result = `${seconds} seconds`;
+  else
+    result = "just now";
+  if (options?.addSuffix && seconds > 1) {
+    return `${result} ago`;
+  }
+  return result;
+};
+var ChatMessage = ({
+  message,
+  username,
+  timestamp,
+  isCurrentUser = false
+}) => {
+  const [messageAge, setMessageAge] = import_react70.useState(timestamp ? formatDistanceToNow(new Date(timestamp), { addSuffix: true }) : "just now");
+  import_react70.useEffect(() => {
+    const timer = setInterval(() => {
+      if (timestamp) {
+        setMessageAge(formatDistanceToNow(new Date(timestamp), { addSuffix: true }));
+      }
+    }, 5 * 1000);
+    return () => {
+      clearInterval(timer);
+    };
+  }, [timestamp]);
+  return /* @__PURE__ */ import_react70.default.createElement("div", {
+    className: `flex flex-col gap-1 ${isCurrentUser ? "items-end" : "items-start"} mb-2`
+  }, /* @__PURE__ */ import_react70.default.createElement("div", {
+    className: `flex items-center gap-2 ${isCurrentUser ? "justify-end" : "justify-start"} `
+  }, /* @__PURE__ */ import_react70.default.createElement("span", {
+    className: `text-sm font-medium ${isCurrentUser ? "text-gray-800" : "text-gray-500"} `
+  }, isCurrentUser ? "You" : username)), /* @__PURE__ */ import_react70.default.createElement("div", {
+    className: `max-w-[70%] whitespace-pre-wrap break-words rounded-xl px-4 py-2 shadow-sm sm:max-w-[50%] md:max-w-[40%] ${isCurrentUser ? "ml-auto border border-blue-500/50 bg-gray-800 text-white" : "mr-auto border border-gray-200/50 bg-gray-200 text-gray-800"} `
+  }, message), messageAge && /* @__PURE__ */ import_react70.default.createElement("span", {
+    className: "text-xs text-gray-400"
+  }, messageAge));
+};
+
+// src/react/pages/PublicChat/PublicChat.tsx
+var PublicChat = () => {
+  const { user } = useUserContext();
+  const { validationSchema, socket, sendMessage, messages } = usePublicChat();
+  const scrollContainerRef = import_react71.useRef(null);
+  import_react71.useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  }, [messages]);
+  return /* @__PURE__ */ import_react71.default.createElement("div", {
+    className: "flex h-[calc(100vh-60px)] flex-col bg-gray-50 p-4"
+  }, /* @__PURE__ */ import_react71.default.createElement("h2", {
+    className: "mb-4 border-b border-gray-200 pb-2 text-lg font-semibold text-gray-800"
+  }, "Public Chat"), /* @__PURE__ */ import_react71.default.createElement("div", {
+    ref: scrollContainerRef,
+    className: "h-full flex-1 overflow-y-auto p-2"
+  }, messages.map((payload, index) => /* @__PURE__ */ import_react71.default.createElement(ChatMessage, {
+    key: index,
+    message: payload.message ?? "",
+    username: payload.user.username,
+    timestamp: payload.createdAt,
+    isCurrentUser: payload.user.id === user?.id
+  }))), /* @__PURE__ */ import_react71.default.createElement("div", {
+    className: "mt-4"
+  }, /* @__PURE__ */ import_react71.default.createElement(Form, {
+    inputs: [
+      {
+        type: "textarea",
+        name: "message",
+        label: "Chat Message",
+        placeholder: "Type your message..."
+      }
+    ],
+    validationSchema,
+    onSubmit: sendMessage,
+    showCancelButton: true,
+    disabled: !socket || socket.readyState !== WebSocket.OPEN
+  })));
+};
 // src/react/App.tsx
-var App = ({ dehydratedState, user }) => {
-  const location2 = useLocation();
+var App = ({
+  dehydratedState,
+  user
+}) => {
+  const location2 = import_react_router_dom2.useLocation();
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -34101,55 +47397,58 @@ var App = ({ dehydratedState, user }) => {
       }
     }
   });
-  return /* @__PURE__ */ import_react65.default.createElement("html", null, /* @__PURE__ */ import_react65.default.createElement("head", null, /* @__PURE__ */ import_react65.default.createElement("meta", {
+  return /* @__PURE__ */ import_react72.default.createElement("html", null, /* @__PURE__ */ import_react72.default.createElement("head", null, /* @__PURE__ */ import_react72.default.createElement("meta", {
     charSet: "utf-8"
-  }), /* @__PURE__ */ import_react65.default.createElement("title", null, "Bun, Elysia & React"), /* @__PURE__ */ import_react65.default.createElement("meta", {
+  }), /* @__PURE__ */ import_react72.default.createElement("title", null, "Bun, Elysia & React"), /* @__PURE__ */ import_react72.default.createElement("meta", {
     name: "description",
     content: "Bun, Elysia & React"
-  }), /* @__PURE__ */ import_react65.default.createElement("meta", {
+  }), /* @__PURE__ */ import_react72.default.createElement("meta", {
     name: "viewport",
     content: "width=device-width, initial-scale=1"
-  }), /* @__PURE__ */ import_react65.default.createElement("script", {
+  }), /* @__PURE__ */ import_react72.default.createElement("script", {
     src: "/public/index.js",
     type: "module",
     defer: true
-  }), /* @__PURE__ */ import_react65.default.createElement("link", {
+  }), /* @__PURE__ */ import_react72.default.createElement("link", {
     rel: "stylesheet",
     type: "text/css",
     href: "/public/index.css"
-  }), /* @__PURE__ */ import_react65.default.createElement("script", {
+  }), /* @__PURE__ */ import_react72.default.createElement("script", {
     src: "https://unpkg.com/@tailwindcss/browser@4"
-  }), /* @__PURE__ */ import_react65.default.createElement("link", {
+  }), /* @__PURE__ */ import_react72.default.createElement("link", {
     rel: "icon",
     type: "image/x-icon",
     href: "/public/favicon.ico"
-  })), /* @__PURE__ */ import_react65.default.createElement("body", null, /* @__PURE__ */ import_react65.default.createElement(QueryClientProvider, {
+  })), /* @__PURE__ */ import_react72.default.createElement("body", null, /* @__PURE__ */ import_react72.default.createElement(QueryClientProvider, {
     client: queryClient
-  }, /* @__PURE__ */ import_react65.default.createElement(HydrationBoundary, {
+  }, /* @__PURE__ */ import_react72.default.createElement(HydrationBoundary, {
     state: dehydratedState
-  }, /* @__PURE__ */ import_react65.default.createElement(UserProvider, {
+  }, /* @__PURE__ */ import_react72.default.createElement(UserProvider, {
     value: user
-  }, /* @__PURE__ */ import_react65.default.createElement(Nav, null), /* @__PURE__ */ import_react65.default.createElement(Outlet, null), /* @__PURE__ */ import_react65.default.createElement(Routes, {
+  }, /* @__PURE__ */ import_react72.default.createElement(SocketProvider, null, /* @__PURE__ */ import_react72.default.createElement(Nav, null), /* @__PURE__ */ import_react72.default.createElement(MessageBars, null), /* @__PURE__ */ import_react72.default.createElement(Toasts, null), /* @__PURE__ */ import_react72.default.createElement(import_react_router_dom2.Outlet, null), /* @__PURE__ */ import_react72.default.createElement(import_react_router_dom2.Routes, {
     location: location2
-  }, /* @__PURE__ */ import_react65.default.createElement(Route, {
+  }, /* @__PURE__ */ import_react72.default.createElement(import_react_router_dom2.Route, {
     path: "/",
-    element: /* @__PURE__ */ import_react65.default.createElement(HomePage, null)
-  }), /* @__PURE__ */ import_react65.default.createElement(Route, {
+    element: /* @__PURE__ */ import_react72.default.createElement(HomePage, null)
+  }), /* @__PURE__ */ import_react72.default.createElement(import_react_router_dom2.Route, {
     path: `${todoRoute}`,
-    element: user.id ? /* @__PURE__ */ import_react65.default.createElement(TodoPage, null) : /* @__PURE__ */ import_react65.default.createElement(ForbiddenPage, null)
-  }), /* @__PURE__ */ import_react65.default.createElement(Route, {
+    element: user.id ? /* @__PURE__ */ import_react72.default.createElement(TodoPage, null) : /* @__PURE__ */ import_react72.default.createElement(ForbiddenPage, null)
+  }), /* @__PURE__ */ import_react72.default.createElement(import_react_router_dom2.Route, {
     path: `${teamRoute}`,
-    element: user.id ? /* @__PURE__ */ import_react65.default.createElement(TeamPage, null) : /* @__PURE__ */ import_react65.default.createElement(ForbiddenPage, null)
-  }), /* @__PURE__ */ import_react65.default.createElement(Route, {
+    element: user.id ? /* @__PURE__ */ import_react72.default.createElement(TeamPage, null) : /* @__PURE__ */ import_react72.default.createElement(ForbiddenPage, null)
+  }), /* @__PURE__ */ import_react72.default.createElement(import_react_router_dom2.Route, {
+    path: `public-chat`,
+    element: user.id ? /* @__PURE__ */ import_react72.default.createElement(PublicChat, null) : /* @__PURE__ */ import_react72.default.createElement(ForbiddenPage, null)
+  }), /* @__PURE__ */ import_react72.default.createElement(import_react_router_dom2.Route, {
     path: `${loginRoute}`,
-    element: /* @__PURE__ */ import_react65.default.createElement(LoginPage, null)
-  }), /* @__PURE__ */ import_react65.default.createElement(Route, {
+    element: /* @__PURE__ */ import_react72.default.createElement(LoginPage, null)
+  }), /* @__PURE__ */ import_react72.default.createElement(import_react_router_dom2.Route, {
     path: `${registerRoute}`,
-    element: /* @__PURE__ */ import_react65.default.createElement(RegisterPage, null)
-  }), /* @__PURE__ */ import_react65.default.createElement(Route, {
+    element: /* @__PURE__ */ import_react72.default.createElement(RegisterPage, null)
+  }), /* @__PURE__ */ import_react72.default.createElement(import_react_router_dom2.Route, {
     path: "*",
-    element: /* @__PURE__ */ import_react65.default.createElement(NotFoundPage, null)
-  })))))));
+    element: /* @__PURE__ */ import_react72.default.createElement(NotFoundPage, null)
+  }))))))));
 };
 var App_default = App;
 
@@ -34158,7 +47457,9 @@ var dehydratedState = window.__QUERY_STATE__;
 delete window.__QUERY_STATE__;
 var userDTO = window.__USER_DATA__;
 delete window.__USER_DATA__;
-import_client.hydrateRoot(document, /* @__PURE__ */ import_react66.default.createElement(BrowserRouter, null, /* @__PURE__ */ import_react66.default.createElement(App_default, {
+import_client.hydrateRoot(document, /* @__PURE__ */ import_react73.default.createElement(import_react_router2.BrowserRouter, null, /* @__PURE__ */ import_react73.default.createElement(App_default, {
   dehydratedState,
   user: userDTO
 })));
+
+//# debugId=38ED5D42E8CA584864756E2164756E21

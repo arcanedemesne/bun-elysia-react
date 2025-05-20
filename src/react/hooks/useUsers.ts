@@ -2,8 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiPrefix, userRoute } from "@/lib/constants";
 import { UserDTO } from "@/lib/models";
-
-import { ApiService } from "@/api";
+import { ApiService } from "@/lib/services/ApiService";
 
 export const useUsers = () => {
   const apiService = new ApiService();

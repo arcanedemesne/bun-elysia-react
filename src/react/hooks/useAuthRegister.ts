@@ -6,10 +6,9 @@ import {
   registerRoute,
   todoRoute,
 } from "@/lib/constants";
+import { ApiService } from "@/lib/services/ApiService";
 import { RegisterRequest } from "@/lib/types";
 import { emailSchema, passwordSchema, usernameSchema } from "@/lib/validation";
-
-import { ApiService } from "@/api";
 
 export const useAuthRegister = () => {
   const apiService = new ApiService();

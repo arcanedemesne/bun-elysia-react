@@ -1,11 +1,10 @@
-"use client";
-
 import React from "react";
 
+import { LinkButton } from "@/lib/components";
 import { loginRoute } from "@/lib/constants";
 import { RegisterRequest } from "@/lib/types";
 
-import { Form, Layout, LayoutTypes, LinkButton } from "@/components";
+import { Form, Layout, LayoutTypes } from "@/components";
 import { useAuthRegister } from "@/hooks";
 
 export const RegisterPage = () => {

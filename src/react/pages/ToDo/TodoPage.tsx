@@ -1,21 +1,17 @@
-"use client";
-
 import React, { MouseEvent, useState } from "react";
 
-import { TodoInsertDTO, TodoUpdateDTO } from "@/lib/models";
-
-import { TodoCard } from "./TodoCard";
 import {
   Button,
   ButtonModes,
-  CardGrid,
   DeleteModal,
   DropDownInput,
   ErrorMessage,
-  Form,
-  Layout,
   Modal,
-} from "@/components";
+} from "@/lib/components";
+import { TodoInsertDTO, TodoUpdateDTO } from "@/lib/models";
+
+import { TodoCard } from "./TodoCard";
+import { CardGrid, Form, Layout } from "@/components";
 import { useAuthCheck, useTeams, useTodos } from "@/hooks";
 
 export const TodoPage = () => {
@@ -95,7 +91,7 @@ export const TodoPage = () => {
           onSubmit={onCreate}
           onSuccess={handleSuccess}
           submitButtonText="Add"
-          showCancelButton={true}
+          showCancelButton
           secondaryButtons={
             <div className="w-3/11">
               <DropDownInput
@@ -170,7 +166,7 @@ export const TodoPage = () => {
           }}
           onCancel={handleCloseEditModal}
           submitButtonText="Edit"
-          showCancelButton={true}
+          showCancelButton
           secondaryButtons={
             <Button
               mode={ButtonModes.DELETE}

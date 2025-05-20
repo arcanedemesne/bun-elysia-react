@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { apiPrefix, authPrefix, checkRoute, loginRoute } from "@/lib/constants";
-
-import { ApiService } from "@/api";
+import { ApiService } from "@/lib/services/ApiService";
 
 export const useAuthCheck = () => {
   const apiService = new ApiService();
