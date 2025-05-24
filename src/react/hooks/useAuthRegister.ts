@@ -1,11 +1,6 @@
 import { z } from "zod";
 
-import {
-  apiPrefix,
-  authPrefix,
-  registerRoute,
-  todoRoute,
-} from "@/lib/constants";
+import { apiPrefix, authPrefix, registerRoute, todoRoute } from "@/lib/constants";
 import { ApiService } from "@/lib/services/ApiService";
 import { RegisterRequest } from "@/lib/types";
 import { emailSchema, passwordSchema, usernameSchema } from "@/lib/validation";
@@ -26,10 +21,7 @@ export const useAuthRegister = () => {
     });
 
   const onRegister = async (request: RegisterRequest) => {
-    return await apiService.post(
-      `${apiPrefix}/${authPrefix}/${registerRoute}`,
-      request,
-    );
+    return await apiService.post(`${apiPrefix}/${authPrefix}/${registerRoute}`, request);
   };
 
   const onSuccess = () => {

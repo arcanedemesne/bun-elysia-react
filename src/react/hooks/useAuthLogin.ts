@@ -14,10 +14,7 @@ export const useAuthLogin = () => {
   });
 
   const onLogin = async (request: LoginRequest) => {
-    return await apiService.post(
-      `${apiPrefix}/${authPrefix}/${loginRoute}`,
-      request,
-    );
+    return await apiService.post(`${apiPrefix}/${authPrefix}/${loginRoute}`, request);
   };
 
   const onSuccess = () => {

@@ -1,10 +1,6 @@
 import React, { ReactNode } from "react";
 
-export const ErrorMessage = ({
-  children,
-}: {
-  children: string | ReactNode;
-}) => {
+export const ErrorMessage = ({ children }: { children: string | ReactNode }) => {
   return (
     <>
       {children && (

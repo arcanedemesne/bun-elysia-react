@@ -2,11 +2,11 @@ import React from "react";
 
 import { EditIcon } from "@/lib/components";
 
-type EditButtonProps = {
+type EditIconButtonProps = {
   onClick: () => void;
 };
 
-export const EditButton = ({ onClick }: EditButtonProps) => {
+export const EditIconButton = ({ onClick }: EditIconButtonProps) => {
   return (
     <button
       onClick={onClick}

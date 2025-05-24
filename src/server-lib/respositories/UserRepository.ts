@@ -7,9 +7,7 @@ import { users } from "../../data/schema";
 import { IRepository } from "./IRepository";
 import { throwDbError } from "./utilities";
 
-export class UserRepository
-  implements IRepository<User, UserDTO, UserInsertDTO, UserUpdateDTO>
-{
+export class UserRepository implements IRepository<User, UserDTO, UserInsertDTO, UserUpdateDTO> {
   async getAll(): Promise<User[]> {
     try {
       const data = await db.select().from(users).orderBy(users.username);
@@ -46,11 +44,7 @@ export class UserRepository
 
   async getByUsername(username: string): Promise<User | null> {
     try {
-      const data = await db
-        .select()
-        .from(users)
-        .where(eq(users.username, username))
-        .orderBy(users.username);
+      const data = await db.select().from(users).where(eq(users.username, username)).orderBy(users.username);
       if (data.length === 0) {
         return null;
       }
@@ -87,11 +81,7 @@ export class UserRepository
   async update(updateData: UserUpdateDTO): Promise<User | null> {
     try {
       const { id, ...rest } = updateData;
-      const data = await db
-        .update(users)
-        .set(rest)
-        .where(eq(users.id, id))
-        .returning();
+      const data = await db.update(users).set(rest).where(eq(users.id, id)).returning();
 
       if (data.length === 0) {
         return null; // User not found
@@ -104,10 +94,7 @@ export class UserRepository
 
   async delete(id: string): Promise<boolean> {
     try {
-      const existingEntity = await db
-        .select()
-        .from(users)
-        .where(eq(users.id, id));
+      const existingEntity = await db.select().from(users).where(eq(users.id, id));
       let data;
       if (existingEntity.length > 0) {
         data = await this.update({ id: existingEntity[0].id, active: false });

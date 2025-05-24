@@ -1,12 +1,6 @@
 import React, { ReactNode } from "react";
 
-export const PageLayout = ({
-  title,
-  children,
-}: {
-  title: string;
-  children: ReactNode;
-}) => {
+export const PageLayout = ({ title, children }: { title: string; children: ReactNode }) => {
   return (
     <div className="flex justify-center bg-gray-100">
       <div className="w-full rounded bg-white p-8 shadow-md">

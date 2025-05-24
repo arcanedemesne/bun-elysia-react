@@ -8,14 +8,7 @@ interface DeleteModalProps extends ModalProps {
   onDelete: (event: MouseEvent<HTMLButtonElement>) => void;
 }
 
-export const DeleteModal = ({
-  isOpen,
-  onCancel,
-  onDelete,
-  title,
-  itemName,
-  children,
-}: DeleteModalProps) => {
+export const DeleteModal = ({ isOpen, onCancel, onDelete, title, itemName, children }: DeleteModalProps) => {
   return (
     <Modal title={title} isOpen={isOpen} allowClose={false}>
       <div className="p2 mb-4">
@@ -26,9 +19,7 @@ export const DeleteModal = ({
               {itemName}
             </div>
           )}
-          <p className="mb-4">
-            This cannot be undone, do you wish to continue?
-          </p>
+          <p className="mb-4">This cannot be undone, do you wish to continue?</p>
         </div>
         {children}
       </div>

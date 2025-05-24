@@ -1,11 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 
-import {
-  apiPrefix,
-  authPrefix,
-  checkRoute,
-  refreshRoute,
-} from "@/lib/constants";
+import { apiPrefix, authPrefix, checkRoute, refreshRoute } from "@/lib/constants";
 import { ApiError, ResponseError } from "@/lib/types";
 
 export class ApiService {
@@ -35,16 +30,10 @@ export class ApiService {
   };
 }
 
-const apiFetch = async <T>(
-  url: string,
-  options: RequestInit = {},
-): Promise<T | any> => {
+const apiFetch = async <T>(url: string, options: RequestInit = {}): Promise<T | any> => {
   let response = await fetch(url, options);
 
-  if (
-    response.status === StatusCodes.UNAUTHORIZED &&
-    response.url.endsWith(checkRoute)
-  ) {
+  if (response.status === StatusCodes.UNAUTHORIZED && response.url.endsWith(checkRoute)) {
     await refreshToken();
     response = await fetch(url, options); // Retry
   }

@@ -42,9 +42,7 @@ export const RegisterPage = () => {
         onSubmit={onRegister}
         onSuccess={onSuccess}
         submitButtonText="Register"
-        secondaryButtons={
-          <LinkButton to={`/${loginRoute}`}>Already a member?</LinkButton>
-        }
+        secondaryButtons={<LinkButton to={`/${loginRoute}`}>Already a member?</LinkButton>}
       />
     </Layout>
   );

@@ -1,37 +1,51 @@
 /* eslint-disable no-console */
 import { Elysia } from "elysia";
 
-import { UserService } from "@/server-lib/services";
+import { TeamService, UserService } from "@/server-lib/services";
 
 import { WebSocket } from "ws";
 
 import { ChannelTypes, Message, PublishMessagePayload } from "@/lib/types";
 
-import { UserDTO } from "../lib";
+import { TeamSocketDTO, User, UserSocketDTO } from "../lib";
 
 export interface AppState {
   channels: Map<string, Set<WebSocket>>;
-  users: Map<string, UserDTO>;
+  users: Map<string, UserSocketDTO>;
 }
 
 const publish = (payload: PublishMessagePayload, ws: any) => {
   const store = sockets.store as AppState;
   if (store.channels.has(payload.channel)) {
-    store.channels.get(payload.channel)!.forEach((client) => {
-      if (
-        client.readyState === WebSocket.OPEN &&
-        client !== (ws as unknown as WebSocket)
-      ) {
-        console.log(
-          `${payload.user.username} has published a message with websocket ${ws.id}`,
-        );
-        client.send(JSON.stringify(payload));
+    store.channels.get(payload.channel)!.forEach(async (client) => {
+      if (client.readyState === WebSocket.OPEN && client !== (ws as unknown as WebSocket)) {
+        console.log(`${payload.user.username} has published a message with websocket ${ws.id}`);
+        const outgoingSocketUser = store.users.get(ws.id);
+        if (outgoingSocketUser) {
+          if (
+            payload.channel === ChannelTypes.ONLINE_STATUS ||
+            payload.channel === ChannelTypes.TEAM_CHAT // TODO: What about Organization and Private chats?
+          ) {
+            if (payload.team?.id) {
+              // TODO: Is there a faster way to do this? There could be millions of user sockets to check?
+              const teamService = new TeamService(payload.user.id);
+              const teams = await teamService.getByUserId(outgoingSocketUser.id);
+              if (teams.map((x) => x.id).includes(payload.team.id)) {
+                client.send(JSON.stringify(payload));
+              }
+            } else {
+              console.error(`Payload must contain a teamId`);
+            }
+          } else {
+            client.send(JSON.stringify(payload));
+          }
+        }
       }
     });
   }
 };
 
-const subscribe = (user: UserDTO, channel: string, ws: any) => {
+const subscribe = (user: UserSocketDTO, channel: string, ws: any) => {
   const store = sockets.store as AppState;
   if (!store.channels.has(channel)) {
     store.channels.set(channel, new Set<WebSocket>());
@@ -46,9 +60,7 @@ const subscribe = (user: UserDTO, channel: string, ws: any) => {
     store.users.set(ws.id, user);
   }
 
-  console.log(
-    `${user.username} has subscribed to channel ${channel} with websocket ${ws.id}`,
-  );
+  console.log(`${user.username} has subscribed to channel ${channel} with websocket ${ws.id}`);
 };
 
 const unsubscribe = (ws: any) => {
@@ -68,33 +80,46 @@ const unsubscribe = (ws: any) => {
 
 const sockets = new Elysia()
   .state("channels", new Map<string, Set<WebSocket>>())
-  .state("users", new Map<string, UserDTO>())
+  .state("users", new Map<string, UserSocketDTO>())
   .ws("/ws", {
     open: async (ws) => {
       const { userId, sessionId } = ws.data.query;
       if (userId && sessionId) {
         const userService = new UserService();
-        const user = await userService.getById(userId);
+        const user = (await userService.getById(userId)) as User;
         if (user?.sessionId !== sessionId) {
           // is logged out
           console.error("Invalid sessionId");
           ws.close(1008, "Invalid session");
         } else {
-          console.log(`${user.username} has connected with websocket ${ws.id}`);
           // is logged in
-          subscribe(user, ChannelTypes.ONLINE_STATUS, ws);
+          console.log(`${user.username} has connected with websocket ${ws.id}`);
           subscribe(user, ChannelTypes.PUBLIC_CHAT, ws);
-          publish(
-            {
-              channel: ChannelTypes.ONLINE_STATUS,
-              isOnline: true,
-              user: {
-                id: user.id,
-                username: user.username,
-              } as UserDTO,
-            } as PublishMessagePayload,
-            ws,
-          );
+          const teamService = new TeamService(user.id);
+          const teams = await teamService.getByUserId(userId);
+          if (teams.length > 0) {
+            subscribe(user, ChannelTypes.TEAM_CHAT, ws);
+            subscribe(user, ChannelTypes.ONLINE_STATUS, ws);
+            console.log(`${user.username} belongs to teams ${teams.map((x) => x.name).join(", ")}`);
+            // TODO: create concept of Organization or Project or something so that we aren't alerted for each team
+            teams.forEach((team) => {
+              publish(
+                {
+                  channel: ChannelTypes.ONLINE_STATUS,
+                  user: {
+                    id: user.id,
+                    username: user.username,
+                  } as UserSocketDTO,
+                  team: {
+                    id: team.id,
+                    name: team.name,
+                  } as TeamSocketDTO,
+                  isOnline: true,
+                } as PublishMessagePayload,
+                ws,
+              );
+            });
+          }
         }
       } else {
         console.error("No sessionId provided");
@@ -119,7 +144,7 @@ const sockets = new Elysia()
                 user: {
                   id: user.id,
                   username: user.username,
-                } as UserDTO,
+                } as UserSocketDTO,
                 createdAt: new Date(),
               } as PublishMessagePayload,
               ws,
@@ -146,7 +171,7 @@ const sockets = new Elysia()
           user: {
             id: user?.id,
             username: user?.username,
-          } as UserDTO,
+          } as UserSocketDTO,
         } as PublishMessagePayload,
         ws,
       );
@@ -155,6 +180,4 @@ const sockets = new Elysia()
 
   .listen(Number(process.env.SOCKET_PORT));
 
-console.log(
-  `🦊 Elysia websocket is running at ${sockets.server?.hostname}:${sockets.server?.port}`,
-);
+console.log(`🦊 Elysia websocket is running at ${sockets.server?.hostname}:${sockets.server?.port}`);

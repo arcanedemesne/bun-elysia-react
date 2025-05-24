@@ -31,8 +31,7 @@ export const TypeAheadSearchInput = ({
   const error = errors?.map((e) => <p key={e}>{e}</p>);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredOptions, setFilteredOptions] =
-    useState<TypeAheadSearchOption[]>(options);
+  const [filteredOptions, setFilteredOptions] = useState<TypeAheadSearchOption[]>(options);
   const [showOptions, setShowOptions] = useState(false);
   const debouncedSearchTerm = useDebounce(searchTerm, 300); // 300ms debounce
 
@@ -68,10 +67,7 @@ export const TypeAheadSearchInput = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setShowOptions(false);
       }
     };

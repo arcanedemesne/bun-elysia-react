@@ -3,12 +3,7 @@ import { User, UserDTO, UserInsertDTO, UserUpdateDTO } from "@/lib/models";
 import { BaseService } from ".";
 import { UserRepository } from "../respositories";
 
-export class UserService extends BaseService<
-  User,
-  UserDTO,
-  UserInsertDTO,
-  UserUpdateDTO
-> {
+export class UserService extends BaseService<User, UserDTO, UserInsertDTO, UserUpdateDTO> {
   repo: UserRepository;
 
   constructor() {

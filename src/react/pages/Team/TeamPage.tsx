@@ -3,7 +3,7 @@ import React, { MouseEvent, useEffect, useState } from "react";
 import {
   Button,
   ButtonModes,
-  CloseButton,
+  CloseIconButton,
   DeleteModal,
   ErrorMessage,
   Label,
@@ -28,12 +28,8 @@ export const TeamPage = () => {
   const [deleteId, setDeleteId] = useState<string | undefined>(undefined);
 
   const [searchQuery, setSearchQuery] = useState<string | undefined>(undefined);
-  const [searchOptions, setSearchOptions] = useState<TypeAheadSearchOption[]>(
-    [],
-  );
-  const [selectedMemberId, setSelectedMemberId] = useState<string | undefined>(
-    undefined,
-  );
+  const [searchOptions, setSearchOptions] = useState<TypeAheadSearchOption[]>([]);
+  const [selectedMemberId, setSelectedMemberId] = useState<string | undefined>(undefined);
 
   const {
     getData: getTeams,
@@ -61,9 +57,7 @@ export const TeamPage = () => {
       const searchOptions =
         foundMembers && foundMembers.length > 0
           ? foundMembers
-              .filter(
-                (fm) => !teamForEdit?.members.map((m) => m.id).includes(fm.id),
-              )
+              .filter((fm) => !teamForEdit?.members.map((m) => m.id).includes(fm.id))
               .map((m) => ({
                 label: m.username,
                 value: m.id,
@@ -102,9 +96,7 @@ export const TeamPage = () => {
 
       <div className="mb-4">
         <Form<TeamInsertDTO>
-          inputs={[
-            { type: "text", name: "name", placeholder: "Add a new team..." },
-          ]}
+          inputs={[{ type: "text", name: "name", placeholder: "Add a new team..." }]}
           validationSchema={createValidationSchema}
           onSubmit={onCreate}
           onSuccess={refetch}
@@ -117,21 +109,10 @@ export const TeamPage = () => {
 
       <CardGrid>
         {teams &&
-          teams.map((team) => (
-            <TeamCard
-              key={team.id}
-              team={team}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          ))}
+          teams.map((team) => <TeamCard key={team.id} team={team} onEdit={handleEdit} onDelete={handleDelete} />)}
       </CardGrid>
 
-      <Modal
-        title="Editing a Team"
-        isOpen={isEditModelOpen && !!teamForEdit}
-        onClose={handleCloseEditModal}
-      >
+      <Modal title="Editing a Team" isOpen={isEditModelOpen && !!teamForEdit} onClose={handleCloseEditModal}>
         <Form<TeamUpdateDTO>
           inputs={[
             {
@@ -185,7 +166,7 @@ export const TeamPage = () => {
             {selectedMemberId && (
               <div className="flex w-full items-end justify-between rounded border border-gray-800 p-2 pl-4">
                 {searchOptions.find((o) => o.value === selectedMemberId)?.label}{" "}
-                <CloseButton
+                <CloseIconButton
                   onClick={() => {
                     setSelectedMemberId(undefined);
                   }}
@@ -229,17 +210,11 @@ export const TeamPage = () => {
           </div>
         )}
         <p className="mt-4 text-sm text-gray-600">
-          Created by:{" "}
-          <span className="font-medium">
-            {teamForEdit?.createdBy?.username}
-          </span>
+          Created by: <span className="font-medium">{teamForEdit?.createdBy?.username}</span>
         </p>
         {teamForEdit?.updatedBy && (
           <p className="mt-2 text-sm text-gray-600">
-            Last updated by:{" "}
-            <span className="font-medium">
-              {teamForEdit?.updatedBy?.username}
-            </span>
+            Last updated by: <span className="font-medium">{teamForEdit?.updatedBy?.username}</span>
           </p>
         )}
       </Modal>
@@ -257,9 +232,7 @@ export const TeamPage = () => {
           deleted && handleCloseDeleteModal();
         }}
       >
-        <i className="text-red-800">
-          Note: This will delete all todos for this team
-        </i>
+        <i className="text-red-800">Note: This will delete all todos for this team</i>
       </DeleteModal>
     </Layout>
   );

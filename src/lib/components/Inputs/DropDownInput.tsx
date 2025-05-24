@@ -32,10 +32,7 @@ export const DropDownInput: React.FC<DropDownInputProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        selectRef.current &&
-        !selectRef.current.contains(event.target as Node)
-      ) {
+      if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
         setIsOpen(false);
         setHighlightedIndex(null);
       }
@@ -99,9 +96,7 @@ export const DropDownInput: React.FC<DropDownInputProps> = ({
         <button
           type="button"
           className={`flex w-full items-center justify-between rounded-md border px-4 py-2 shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-gray-800 ${
-            error
-              ? "border-red-500 focus:ring-red-500"
-              : "border-gray-300 hover:border-gray-500"
+            error ? "border-red-500 focus:ring-red-500" : "border-gray-300 hover:border-gray-500"
           }`}
           onClick={() => setIsOpen(!isOpen)}
           onKeyDown={handleKeyDown}
@@ -110,9 +105,7 @@ export const DropDownInput: React.FC<DropDownInputProps> = ({
           id={`dropdown-button-${name}`} // Add an ID for accessibility
         >
           <span className="truncate">
-            {options.find((opt) => opt.value === controlledValue)?.label ||
-              placeholder ||
-              "Select an option"}
+            {options.find((opt) => opt.value === controlledValue)?.label || placeholder || "Select an option"}
           </span>
           {isOpen ? (
             <svg

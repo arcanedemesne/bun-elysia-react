@@ -27,10 +27,6 @@ export const Layout = ({ type, title = "", children }: LayoutProps) => {
       layout = <PageLayout title={title}>{children}</PageLayout>;
   }
   return (
-    <CustomErrorBoundary
-      fallback={<h2>Oops! Something went wrong in this section.</h2>}
-    >
-      {layout}
-    </CustomErrorBoundary>
+    <CustomErrorBoundary fallback={<h2>Oops! Something went wrong in this section.</h2>}>{layout}</CustomErrorBoundary>
   );
 };

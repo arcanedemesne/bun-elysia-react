@@ -7,15 +7,7 @@ interface TextAreaProps extends Omit<InputProps, "type"> {
   onChange?: ChangeEventHandler<HTMLTextAreaElement> | undefined;
 }
 
-export const TextArea = ({
-  label,
-  name,
-  placeholder,
-  value,
-  className,
-  errors,
-  onChange,
-}: TextAreaProps) => {
+export const TextArea = ({ label, name, placeholder, value, className, errors, onChange }: TextAreaProps) => {
   const error = errors?.map((e) => <p key={e}>{e}</p>);
 
   const normalClassName =

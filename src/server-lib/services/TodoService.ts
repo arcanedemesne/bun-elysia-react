@@ -1,24 +1,13 @@
-import {
-  Todo,
-  TodoDTO,
-  TodoInsertDTO,
-  TodoUpdateDTO,
-  User,
-} from "@/lib/models";
+import { Todo, TodoDTO, TodoInsertDTO, TodoUpdateDTO } from "@/lib/models";
 
 import { BaseService } from ".";
 import { TodoRepository } from "../respositories";
 
-export class TodoService extends BaseService<
-  Todo,
-  TodoDTO,
-  TodoInsertDTO,
-  TodoUpdateDTO
-> {
+export class TodoService extends BaseService<Todo, TodoDTO, TodoInsertDTO, TodoUpdateDTO> {
   repo: TodoRepository;
 
-  constructor(user: User) {
-    const repo = new TodoRepository(user);
+  constructor(userId: string) {
+    const repo = new TodoRepository(userId);
     super(repo);
     this.repo = repo;
   }

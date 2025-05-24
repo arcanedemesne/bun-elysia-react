@@ -6,10 +6,7 @@ export const useAlerts = (eventListenerName: string) => {
   const [alerts, setAlerts] = useState<Alert[]>([]);
 
   const handleAdd = (event: any) => {
-    setAlerts((prev) => [
-      ...prev,
-      { id: crypto.randomUUID(), ...event.detail },
-    ]);
+    setAlerts((prev) => [...prev, { id: crypto.randomUUID(), ...event.detail }]);
   };
 
   const onRemove = (id: string) => {

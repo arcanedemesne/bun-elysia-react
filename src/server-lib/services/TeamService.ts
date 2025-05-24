@@ -1,27 +1,19 @@
-import {
-  Team,
-  TeamDTO,
-  TeamInsertDTO,
-  TeamMemberDTO,
-  TeamUpdateDTO,
-  User,
-} from "@/lib/models";
+import { Team, TeamDTO, TeamInsertDTO, TeamMemberDTO, TeamUpdateDTO } from "@/lib/models";
 
 import { BaseService } from ".";
 import { TeamRepository } from "../respositories";
 
-export class TeamService extends BaseService<
-  Team,
-  TeamDTO,
-  TeamInsertDTO,
-  TeamUpdateDTO
-> {
+export class TeamService extends BaseService<Team, TeamDTO, TeamInsertDTO, TeamUpdateDTO> {
   repo: TeamRepository;
 
-  constructor(user: User) {
-    const repo = new TeamRepository(user);
+  constructor(userId: string) {
+    const repo = new TeamRepository(userId);
     super(repo);
     this.repo = repo;
+  }
+
+  async getByOrganizationId(organizationId: string): Promise<TeamDTO[]> {
+    return await this.repo.getByOrganizationId(organizationId);
   }
 
   async getByUserId(userId: string): Promise<TeamDTO[]> {

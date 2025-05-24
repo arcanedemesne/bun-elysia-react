@@ -1,6 +1,6 @@
 import React, { ChangeEventHandler, useRef } from "react";
 
-import { CloseButton, ErrorMessage, InputProps, Label } from "@/lib/components";
+import { CloseIconButton, ErrorMessage, InputProps, Label } from "@/lib/components";
 
 interface TextInputProps extends InputProps {
   autoComplete?: string;
@@ -57,9 +57,7 @@ export const TextInput = ({
         autoComplete={autoComplete}
         ref={ref}
       />
-      {value && onClear && (
-        <CloseButton className="right absolute top-0" onClick={handleClear} />
-      )}
+      {value && onClear && <CloseIconButton className="right absolute top-0" onClick={handleClear} />}
       {!!error && <ErrorMessage>{error}</ErrorMessage>}
     </>
   );

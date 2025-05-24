@@ -1,14 +1,5 @@
-import {
-  BaseEntityActive,
-  BaseEntityId,
-  BaseEntityTimeStamps,
-  BaseEntityUserInfo,
-} from "../BaseEntity";
+import { BaseEntityActive, BaseEntityId, BaseEntityTimeStamps, BaseEntityUserInfo } from "../BaseEntity";
 
-export interface Team
-  extends BaseEntityId,
-    BaseEntityUserInfo,
-    BaseEntityTimeStamps,
-    BaseEntityActive {
+export interface Team extends BaseEntityId, BaseEntityUserInfo, BaseEntityTimeStamps, BaseEntityActive {
   name: string;
 }

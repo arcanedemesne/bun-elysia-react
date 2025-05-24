@@ -1,15 +1,19 @@
-import { UserDTO } from "../models";
+import { TeamDTO, UserDTO } from "../models";
 
 export enum ChannelTypes {
   ONLINE_STATUS = "online-status",
   PUBLIC_CHAT = "public-chat",
+  ORGANIZATION_CHAT = "organization-chat",
+  TEAM_CHAT = "team-chat",
+  PRIVATE_CHAT = "private-chat",
 }
 
 export interface PublishMessagePayload {
   channel: string;
   user: UserDTO;
-  createdAt?: Date;
+  team?: TeamDTO;
   message?: string;
+  createdAt?: Date;
   isOnline?: boolean;
 }
 

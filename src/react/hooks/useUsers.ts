@@ -12,9 +12,7 @@ export const useUsers = () => {
   const search = async (search?: string): Promise<UserDTO[]> => {
     if (search && search?.length >= 3) {
       const queryString = search ? `search=${search}` : "";
-      return await apiService.get<UserDTO[]>(
-        `/${apiPrefix}/${userRoute}?${queryString}`,
-      );
+      return await apiService.get<UserDTO[]>(`/${apiPrefix}/${userRoute}?${queryString}`);
     }
     return [];
   };
@@ -22,8 +20,7 @@ export const useUsers = () => {
   const GetData = () => {
     return useQuery<UserDTO[]>({
       queryKey: ["userData"],
-      queryFn: async () =>
-        await apiService.get<UserDTO[]>(`/${apiPrefix}/${userRoute}`),
+      queryFn: async () => await apiService.get<UserDTO[]>(`/${apiPrefix}/${userRoute}`),
     });
   };
 

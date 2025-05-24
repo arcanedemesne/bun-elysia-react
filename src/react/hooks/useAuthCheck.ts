@@ -6,15 +6,11 @@ import { ApiService } from "@/lib/services/ApiService";
 export const useAuthCheck = () => {
   const apiService = new ApiService();
 
-  const [authenticated, setAuthenticated] = useState<boolean | undefined>(
-    undefined,
-  );
+  const [authenticated, setAuthenticated] = useState<boolean | undefined>(undefined);
 
   const checkAuth = async () => {
     try {
-      const { authorized } = await apiService.get(
-        `/${apiPrefix}/${authPrefix}/${checkRoute}`,
-      );
+      const { authorized } = await apiService.get(`/${apiPrefix}/${authPrefix}/${checkRoute}`);
       setAuthenticated(authorized);
     } catch {
       setAuthenticated(false);

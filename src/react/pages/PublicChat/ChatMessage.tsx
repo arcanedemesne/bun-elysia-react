@@ -7,10 +7,7 @@ type ChatMessageProps = {
   isCurrentUser?: boolean;
 };
 
-const formatDistanceToNow = (
-  date: Date,
-  options?: { addSuffix?: boolean },
-): string => {
+const formatDistanceToNow = (date: Date, options?: { addSuffix?: boolean }): string => {
   const now = new Date();
   const diff = now.getTime() - date.getTime();
 
@@ -42,23 +39,14 @@ const formatDistanceToNow = (
   return result;
 };
 
-export const ChatMessage = ({
-  message,
-  username,
-  timestamp,
-  isCurrentUser = false,
-}: ChatMessageProps) => {
+export const ChatMessage = ({ message, username, timestamp, isCurrentUser = false }: ChatMessageProps) => {
   const [messageAge, setMessageAge] = useState(
-    timestamp
-      ? formatDistanceToNow(new Date(timestamp), { addSuffix: true })
-      : "just now",
+    timestamp ? formatDistanceToNow(new Date(timestamp), { addSuffix: true }) : "just now",
   );
   useEffect(() => {
     const timer = setInterval(() => {
       if (timestamp) {
-        setMessageAge(
-          formatDistanceToNow(new Date(timestamp), { addSuffix: true }),
-        );
+        setMessageAge(formatDistanceToNow(new Date(timestamp), { addSuffix: true }));
       }
     }, 5 * 1000);
     return () => {
@@ -67,15 +55,9 @@ export const ChatMessage = ({
   }, [timestamp]);
 
   return (
-    <div
-      className={`flex flex-col gap-1 ${isCurrentUser ? "items-end" : "items-start"} mb-2`}
-    >
-      <div
-        className={`flex items-center gap-2 ${isCurrentUser ? "justify-end" : "justify-start"} `}
-      >
-        <span
-          className={`text-sm font-medium ${isCurrentUser ? "text-gray-800" : "text-gray-500"} `}
-        >
+    <div className={`flex flex-col gap-1 ${isCurrentUser ? "items-end" : "items-start"} mb-2`}>
+      <div className={`flex items-center gap-2 ${isCurrentUser ? "justify-end" : "justify-start"} `}>
+        <span className={`text-sm font-medium ${isCurrentUser ? "text-gray-800" : "text-gray-500"} `}>
           {isCurrentUser ? "You" : username}
         </span>
       </div>
@@ -88,9 +70,7 @@ export const ChatMessage = ({
       >
         {message}
       </div>
-      {messageAge && (
-        <span className="text-xs text-gray-400">{messageAge}</span>
-      )}
+      {messageAge && <span className="text-xs text-gray-400">{messageAge}</span>}
     </div>
   );
 };

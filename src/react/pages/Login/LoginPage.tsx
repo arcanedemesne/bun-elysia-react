@@ -32,11 +32,7 @@ export const LoginPage = () => {
         onSubmit={onLogin}
         onSuccess={onSuccess}
         submitButtonText="Login"
-        secondaryButtons={
-          <LinkButton to={`/${registerRoute}`}>
-            Not a member yet? Register here!
-          </LinkButton>
-        }
+        secondaryButtons={<LinkButton to={`/${registerRoute}`}>Not a member yet? Register here!</LinkButton>}
       />
     </Layout>
   );

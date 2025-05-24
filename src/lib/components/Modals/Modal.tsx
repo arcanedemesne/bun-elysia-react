@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef } from "react";
 
-import { CloseButton } from "@/lib/components";
+import { CloseIconButton } from "@/lib/components";
 
 export type ModalProps = {
   isOpen: boolean;
@@ -10,13 +10,7 @@ export type ModalProps = {
   children?: React.ReactNode;
 };
 
-export const Modal = ({
-  isOpen,
-  allowClose = true,
-  onClose,
-  title,
-  children,
-}: ModalProps) => {
+export const Modal = ({ isOpen, allowClose = true, onClose, title, children }: ModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
   const handleClose = useCallback(() => {
@@ -71,9 +65,7 @@ export const Modal = ({
           </div>
         )}
         <div className="p-5">{children}</div>
-        {allowClose && (
-          <CloseButton className="absolute pr-2 pt-2" onClick={handleClose} />
-        )}
+        {allowClose && <CloseIconButton className="absolute pr-2 pt-2" onClick={handleClose} />}
       </div>
     </div>
   );

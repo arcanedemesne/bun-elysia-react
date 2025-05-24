@@ -1,6 +1,6 @@
 import Elysia from "elysia";
 
-import { UserRepository } from "@/server-lib/respositories";
+import { UserService } from "@/server-lib/respositories";
 
 import App from "../../react/App";
 import { QueryClient, dehydrate } from "@tanstack/react-query";
@@ -9,7 +9,7 @@ import { renderToReadableStream } from "react-dom/server";
 import { StaticRouter } from "react-router";
 
 import { apiPrefix, todoRoute } from "@/lib/constants";
-import { UserDTO } from "@/lib/models";
+import { User, UserDTO } from "@/lib/models";
 import { JwtContext } from "@/lib/types";
 
 import ScriptInjectionStream from "../scriptInjectionStream";
@@ -17,18 +17,13 @@ import ScriptInjectionStream from "../scriptInjectionStream";
 export const mainRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
   const apiHost = `${app.server?.hostname}:${app.server?.port}`;
 
-  async function fetchData(
-    queryClient: QueryClient,
-    url: string,
-    userId: string,
-  ) {
+  async function fetchData(queryClient: QueryClient, url: string, userId: string) {
+    // TODO: Prefetch teams?
     if (url === "/todos") {
       await queryClient.prefetchQuery({
         queryKey: ["todoData", userId],
         queryFn: async () => {
-          const response = await app.handle(
-            new Request(`${apiHost}/${apiPrefix}/${todoRoute}/${userId}`),
-          );
+          const response = await app.handle(new Request(`${apiHost}/${apiPrefix}/${todoRoute}/${userId}`));
           const data = await response.json();
           return data;
         },
@@ -56,7 +51,7 @@ export const mainRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
       const jwtPayload = await jwt.verify(accessToken.value);
       if (jwtPayload) {
         const userId = jwtPayload.sub;
-        const user = await new UserRepository().getById(userId!);
+        const user = (await new UserService().getById(userId!)) as User;
         if (user?.isOnline) {
           userDTO = {
             id: user.id,
@@ -85,9 +80,7 @@ export const mainRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
       },
     );
 
-    const modifiedStream = stream.pipeThrough(
-      new ScriptInjectionStream(dehydratedString, userDtoString),
-    );
+    const modifiedStream = stream.pipeThrough(new ScriptInjectionStream(dehydratedString, userDtoString));
 
     const response = new Response(modifiedStream, {
       headers: { "Content-Type": "text/html" },

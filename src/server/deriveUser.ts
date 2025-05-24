@@ -1,6 +1,6 @@
 import Elysia from "elysia";
 
-import { UserRepository } from "@/server-lib/respositories";
+import { UserService } from "@/server-lib/";
 
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
@@ -45,7 +45,7 @@ export const deriveUser = (app: Elysia<any, any, any, any, JwtContext>) => {
     }
 
     const userId = jwtPayload.sub;
-    const user = await new UserRepository().getById(userId!);
+    const user = await new UserService().getById(userId!);
 
     if (!user) {
       // handle error for user not found from the provided access token

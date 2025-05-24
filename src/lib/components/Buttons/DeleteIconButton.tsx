@@ -2,11 +2,11 @@ import React from "react";
 
 import { TrashIcon } from "@/lib/components";
 
-type DeleteButtonProps = {
+type DeleteIconButtonProps = {
   onClick: () => void;
 };
 
-export const DeleteButton = ({ onClick }: DeleteButtonProps) => {
+export const DeleteIconButton = ({ onClick }: DeleteIconButtonProps) => {
   return (
     <button
       onClick={onClick}

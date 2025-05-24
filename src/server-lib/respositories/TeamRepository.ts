@@ -1,15 +1,7 @@
 import { and, eq, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
-import {
-  Team,
-  TeamDTO,
-  TeamInsertDTO,
-  TeamMemberDTO,
-  TeamUpdateDTO,
-  User,
-  UserDTO,
-} from "@/lib/models";
+import { Team, TeamDTO, TeamInsertDTO, TeamMemberDTO, TeamUpdateDTO, UserDTO } from "@/lib/models";
 
 import { db } from "../../data/db";
 import { teams, todos, users, usersToTeams } from "../../data/schema";
@@ -20,13 +12,12 @@ const createdBy = alias(users, "createdBy");
 const updatedBy = alias(users, "updatedBy");
 const deletedBy = alias(users, "deletedBy");
 
-export class TeamRepository
-  implements IRepository<Team, TeamDTO, TeamInsertDTO, TeamUpdateDTO>
-{
-  constructor(public user: User) {}
+export class TeamRepository implements IRepository<Team, TeamDTO, TeamInsertDTO, TeamUpdateDTO> {
+  constructor(public userId: string) {}
 
   selectDTO = {
     id: teams.id,
+    organizationId: teams.organizationId,
     name: teams.name,
     createdAt: teams.createdAt,
     updatedAt: teams.updatedAt,
@@ -43,35 +34,13 @@ export class TeamRepository
       id: deletedBy.id,
       username: deletedBy.username,
     },
-    todosCount:
-      sql`(SELECT COUNT(*) FROM ${todos} WHERE ${todos.teamId} = ${teams.id} AND active IS true)`.as(
-        "todos_count",
-      ),
+    todosCount: sql`(SELECT COUNT(*) FROM ${todos} WHERE ${todos.teamId} = ${teams.id} AND active IS true)`.as(
+      "todos_count",
+    ),
   };
 
-  async getAll(): Promise<TeamDTO[]> {
-    try {
-      const data = await db
-        .select(this.selectDTO)
-        .from(teams)
-        .innerJoin(createdBy, eq(teams.createdBy, createdBy.id))
-        .fullJoin(updatedBy, eq(teams.updatedBy, updatedBy.id))
-        .fullJoin(deletedBy, eq(teams.deletedBy, deletedBy.id))
-        .where(eq(teams.active, true))
-        .orderBy(teams.createdAt);
-
-      const response = data as TeamDTO[];
-
-      for (let team of response) {
-        if (!team.members) team.members = [];
-        const members = await this.getMembers(team.id);
-        team.members.push(...members);
-      }
-
-      return response;
-    } catch (error) {
-      return throwDbError("Error getting teams", error);
-    }
+  async getAll() {
+    return throwDbError("Not implemented");
   }
 
   async getById(id: string): Promise<TeamDTO | null> {
@@ -99,6 +68,31 @@ export class TeamRepository
     }
   }
 
+  async getByOrganizationId(organizationId: string): Promise<TeamDTO[]> {
+    try {
+      const data = await db
+        .select(this.selectDTO)
+        .from(teams)
+        .innerJoin(createdBy, eq(teams.createdBy, createdBy.id))
+        .fullJoin(updatedBy, eq(teams.updatedBy, updatedBy.id))
+        .fullJoin(deletedBy, eq(teams.deletedBy, deletedBy.id))
+        .where(and(eq(teams.organizationId, organizationId), eq(teams.active, true)))
+        .orderBy(teams.createdAt);
+
+      const response = data as TeamDTO[];
+
+      for (let team of response) {
+        if (!team.members) team.members = [];
+        const members = await this.getMembers(team.id);
+        team.members.push(...members);
+      }
+
+      return response;
+    } catch (error) {
+      return throwDbError("Error getting teams by organization id", error);
+    }
+  }
+
   async getByUserId(userId: string): Promise<TeamDTO[]> {
     try {
       const data = await db
@@ -120,7 +114,7 @@ export class TeamRepository
 
       return response;
     } catch (error) {
-      return throwDbError("Error getting team by user id", error);
+      return throwDbError("Error getting teams by user id", error);
     }
   }
 
@@ -128,7 +122,7 @@ export class TeamRepository
     try {
       const data = await db
         .insert(teams)
-        .values({ ...insertData, createdBy: this.user.id })
+        .values({ ...insertData, createdBy: this.userId })
         .returning();
 
       if (data.length === 0) {
@@ -137,10 +131,7 @@ export class TeamRepository
 
       const response = data[0] as Team;
 
-      await db
-        .insert(usersToTeams)
-        .values({ userId: this.user.id, teamId: response.id })
-        .returning();
+      await db.insert(usersToTeams).values({ userId: this.userId, teamId: response.id }).returning();
 
       return response;
     } catch (error) {
@@ -150,12 +141,8 @@ export class TeamRepository
 
   async update(updateData: TeamUpdateDTO): Promise<Team | null> {
     try {
-      const { id, ...rest } = { ...updateData, updatedBy: this.user.id };
-      const data = await db
-        .update(teams)
-        .set(rest)
-        .where(eq(teams.id, id))
-        .returning();
+      const { id, ...rest } = { ...updateData, updatedBy: this.userId };
+      const data = await db.update(teams).set(rest).where(eq(teams.id, id)).returning();
 
       if (data.length === 0) {
         return null; // Update failed
@@ -169,10 +156,7 @@ export class TeamRepository
 
   async delete(id: string): Promise<boolean> {
     try {
-      const existingEntity = await db
-        .select()
-        .from(teams)
-        .where(eq(teams.id, id));
+      const existingEntity = await db.select().from(teams).where(eq(teams.id, id));
       let result;
       if (existingEntity.length > 0) {
         result = await this.update({
@@ -211,7 +195,7 @@ export class TeamRepository
 
       return data as UserDTO[];
     } catch (error) {
-      return throwDbError("Error inserting team", error);
+      return throwDbError("Error getting team members", error);
     }
   }
 
@@ -226,7 +210,7 @@ export class TeamRepository
 
       return data[0] as TeamMemberDTO;
     } catch (error) {
-      return throwDbError("Error inserting team", error);
+      return throwDbError("Error adding team member", error);
     }
   }
 
@@ -234,19 +218,14 @@ export class TeamRepository
     try {
       const data = await db
         .delete(usersToTeams)
-        .where(
-          and(
-            eq(usersToTeams.userId, member.userId),
-            eq(usersToTeams.teamId, member.teamId),
-          ),
-        )
+        .where(and(eq(usersToTeams.userId, member.userId), eq(usersToTeams.teamId, member.teamId)))
         .returning();
       if (data) {
         return true; // hard deleted successfully
       }
       return false; // unsuccessful delete
     } catch (error) {
-      return throwDbError("Error deleting team", error);
+      return throwDbError("Error removing team member", error);
     }
   }
 }

@@ -1,9 +1,7 @@
 import { IBaseService } from ".";
 import { IRepository } from "../respositories";
 
-export class BaseService<Entity, DTO, InsertDTO, UpdateDTO>
-  implements IBaseService<Entity, DTO, InsertDTO, UpdateDTO>
-{
+export class BaseService<Entity, DTO, InsertDTO, UpdateDTO> implements IBaseService<Entity, DTO, InsertDTO, UpdateDTO> {
   constructor(public repo: IRepository<Entity, DTO, InsertDTO, UpdateDTO>) {}
 
   async getAll(): Promise<Array<Entity | DTO>> {

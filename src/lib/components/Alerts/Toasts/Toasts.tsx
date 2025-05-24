@@ -4,7 +4,7 @@ import { toastEventListenerName } from "@/lib/services";
 import { Alert, ToastPosition } from "@/lib/types";
 
 import { useAlerts } from "..";
-import { Toast } from "./Toast";
+import { AnimatedAlert } from "../AnimatedAlert";
 
 export const Toasts = () => {
   const { alerts, onRemove } = useAlerts(toastEventListenerName);
@@ -52,23 +52,18 @@ export const Toasts = () => {
 
   const components: ReactNode[] = [];
   positionedMap.forEach((alerts, toastPosition) => {
-    components.push(
-      <div
-        key={crypto.randomUUID()}
-        className={`pointer-events-auto fixed z-50 flex flex-col ${getPosition(toastPosition)}`}
-      >
-        {alerts.map((alert) => {
-          return (
-            <Toast
-              key={alert.id!}
-              {...alert}
-              id={alert.id!}
-              onClose={onRemove}
-            />
-          );
-        })}
-      </div>,
-    );
+    if (alerts.length > 0) {
+      components.push(
+        <div
+          key={toastPosition}
+          className={`pointer-events-auto fixed z-50 flex flex-col ${getPosition(toastPosition)}`}
+        >
+          {alerts.map((alert) => {
+            return <AnimatedAlert key={alert.id!} {...alert} duration={10 * 1000} onClose={onRemove} />;
+          })}
+        </div>,
+      );
+    }
   });
 
   return <>{components}</>;

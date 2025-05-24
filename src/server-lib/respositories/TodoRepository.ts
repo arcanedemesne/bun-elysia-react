@@ -1,13 +1,7 @@
 import { and, eq, isNull } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
-import {
-  Todo,
-  TodoDTO,
-  TodoInsertDTO,
-  TodoUpdateDTO,
-  User,
-} from "@/lib/models";
+import { Todo, TodoDTO, TodoInsertDTO, TodoUpdateDTO } from "@/lib/models";
 
 import { db } from "../../data/db";
 import { teams, todos, users } from "../../data/schema";
@@ -18,10 +12,8 @@ const createdBy = alias(users, "createdBy");
 const updatedBy = alias(users, "updatedBy");
 const deletedBy = alias(users, "deletedBy");
 
-export class TodoRepository
-  implements IRepository<Todo, TodoDTO, TodoInsertDTO, TodoUpdateDTO>
-{
-  constructor(public user: User) {}
+export class TodoRepository implements IRepository<Todo, TodoDTO, TodoInsertDTO, TodoUpdateDTO> {
+  constructor(public userId: string) {}
 
   selectDTO = {
     id: todos.id,
@@ -89,13 +81,7 @@ export class TodoRepository
         .innerJoin(createdBy, eq(todos.createdBy, createdBy.id))
         .fullJoin(updatedBy, eq(todos.updatedBy, updatedBy.id))
         .fullJoin(deletedBy, eq(todos.deletedBy, deletedBy.id))
-        .where(
-          and(
-            eq(todos.createdBy, userId),
-            isNull(todos.teamId),
-            eq(todos.active, true),
-          ),
-        )
+        .where(and(eq(todos.createdBy, userId), isNull(todos.teamId), eq(todos.active, true)))
         .orderBy(todos.createdAt);
       return data as TodoDTO[];
     } catch (error) {
@@ -124,7 +110,7 @@ export class TodoRepository
     try {
       const data = await db
         .insert(todos)
-        .values({ ...insertData, createdBy: this.user.id })
+        .values({ ...insertData, createdBy: this.userId })
         .returning();
 
       if (data.length === 0) {
@@ -139,12 +125,8 @@ export class TodoRepository
 
   async update(updateData: TodoUpdateDTO): Promise<Todo | null> {
     try {
-      const { id, ...rest } = { ...updateData, updatedBy: this.user.id };
-      const data = await db
-        .update(todos)
-        .set(rest)
-        .where(eq(todos.id, id))
-        .returning();
+      const { id, ...rest } = { ...updateData, updatedBy: this.userId };
+      const data = await db.update(todos).set(rest).where(eq(todos.id, id)).returning();
 
       if (data.length === 0) {
         return null; // Update failed
@@ -158,15 +140,12 @@ export class TodoRepository
 
   async delete(id: string): Promise<boolean> {
     try {
-      const existingEntity = await db
-        .select()
-        .from(todos)
-        .where(eq(todos.id, id));
+      const existingEntity = await db.select().from(todos).where(eq(todos.id, id));
       let data;
       if (existingEntity.length > 0) {
         data = await this.update({
           id: existingEntity[0].id,
-          deletedBy: this.user.id,
+          deletedBy: this.userId,
           active: false,
         });
         if (data?.id) {

@@ -1,13 +1,6 @@
 import React, { MouseEvent, useState } from "react";
 
-import {
-  Button,
-  ButtonModes,
-  DeleteModal,
-  DropDownInput,
-  ErrorMessage,
-  Modal,
-} from "@/lib/components";
+import { Button, ButtonModes, DeleteModal, DropDownInput, ErrorMessage, Modal } from "@/lib/components";
 import { TodoInsertDTO, TodoUpdateDTO } from "@/lib/models";
 
 import { TodoCard } from "./TodoCard";
@@ -23,9 +16,7 @@ export const TodoPage = () => {
   const [isDeleteModelOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | undefined>(undefined);
 
-  const [selectedTeamId, setSelectedTeamId] = useState<string | undefined>(
-    undefined,
-  );
+  const [selectedTeamId, setSelectedTeamId] = useState<string | undefined>(undefined);
 
   const {
     getData: getTodos,
@@ -98,10 +89,7 @@ export const TodoPage = () => {
                 type="select"
                 name="team"
                 value={selectedTeamId}
-                options={[
-                  { label: `My Personal Todos`, value: undefined },
-                  ...teamOptions,
-                ]}
+                options={[{ label: `My Personal Todos`, value: undefined }, ...teamOptions]}
                 onChange={(value) => {
                   handleSuccess();
                   setSelectedTeamId(value);
@@ -116,21 +104,10 @@ export const TodoPage = () => {
 
       <CardGrid>
         {todos &&
-          todos.map((todo) => (
-            <TodoCard
-              key={todo.id}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              todo={todo}
-            />
-          ))}
+          todos.map((todo) => <TodoCard key={todo.id} onEdit={handleEdit} onDelete={handleDelete} todo={todo} />)}
       </CardGrid>
 
-      <Modal
-        title="Editing a Todo Item"
-        isOpen={isEditModelOpen && !!todoForEdit}
-        onClose={handleCloseEditModal}
-      >
+      <Modal title="Editing a Todo Item" isOpen={isEditModelOpen && !!todoForEdit} onClose={handleCloseEditModal}>
         <Form<TodoUpdateDTO>
           inputs={[
             {

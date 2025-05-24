@@ -5,7 +5,7 @@ import { ChannelTypes, MessageTypes, PublishMessagePayload } from "@/lib/types";
 import { useSocketContext } from "@/providers";
 
 export const usePublicChat = () => {
-  const { socket, publish, messages } = useSocketContext();
+  const { socket, publish, publicMessages } = useSocketContext();
 
   const validationSchema = z.object({
     message: z
@@ -14,11 +14,7 @@ export const usePublicChat = () => {
       .max(120, { message: "Cannot be more than 120 characters long" }),
   });
 
-  const sendMessage = async ({
-    message,
-  }: {
-    message: string;
-  }): Promise<{ message: string }> => {
+  const sendMessage = async ({ message }: { message: string }): Promise<{ message: string }> => {
     return await new Promise((resolve) => {
       publish({
         method: MessageTypes.PUBLISH,
@@ -35,6 +31,6 @@ export const usePublicChat = () => {
     validationSchema,
     socket,
     sendMessage,
-    messages: messages.filter((m) => m.channel === ChannelTypes.PUBLIC_CHAT),
+    publicMessages,
   };
 };

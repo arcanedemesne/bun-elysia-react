@@ -21,9 +21,7 @@ export const UserProvider: React.FC<{
     setUser,
   };
 
-  return (
-    <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>
-  );
+  return <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>;
 };
 
 export const useUserContext = () => {

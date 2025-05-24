@@ -43,13 +43,10 @@ export const Form = <T,>({
   secondaryButtons,
   disabled,
 }: FormProps<T>) => {
-  const [_, formAction] = useActionState<string | undefined, FormData>(
-    async (_, formData) => {
-      await handleFormSubmit(formData);
-      return `handleFormSubmit`;
-    },
-    undefined,
-  );
+  const [_, formAction] = useActionState<string | undefined, FormData>(async (_, formData) => {
+    await handleFormSubmit(formData);
+    return `handleFormSubmit`;
+  }, undefined);
 
   const getDefaultValues = () => {
     const inputMap = new Map<string, ValueType>();
@@ -59,8 +56,7 @@ export const Form = <T,>({
     return inputMap;
   };
 
-  const [inputValues, setInputValues] =
-    useState<Map<string, ValueType>>(getDefaultValues());
+  const [inputValues, setInputValues] = useState<Map<string, ValueType>>(getDefaultValues());
   const [apiError, setApiError] = useState("");
   const [validationErrors, setValidationErrors] = useState<FieldErrors>({});
   const formRef = useRef<HTMLFormElement>(null);
@@ -125,9 +121,7 @@ export const Form = <T,>({
                 value={inputValues.get(input.name) ?? input.value}
                 errors={validationErrors[input.name]}
                 onChange={(event) => {
-                  setInputValues((prev) =>
-                    new Map(prev).set(input.name, event.target.value),
-                  );
+                  setInputValues((prev) => new Map(prev).set(input.name, event.target.value));
                 }}
               />
             );
@@ -139,9 +133,7 @@ export const Form = <T,>({
                 value={inputValues.get(input.name) ?? input.value}
                 errors={validationErrors[input.name]}
                 onChange={(event) => {
-                  setInputValues((prev) =>
-                    new Map(prev).set(input.name, event.target.value),
-                  );
+                  setInputValues((prev) => new Map(prev).set(input.name, event.target.value));
                 }}
               />
             );
@@ -152,10 +144,7 @@ export const Form = <T,>({
         }
 
         return (
-          <div
-            className={input.type !== "hidden" ? "mb-4" : ""}
-            key={input.name}
-          >
+          <div className={input.type !== "hidden" ? "mb-4" : ""} key={input.name}>
             {control}
           </div>
         );
@@ -164,19 +153,11 @@ export const Form = <T,>({
         <div className="flex w-full justify-start">{secondaryButtons}</div>
         <div className="flex items-center space-x-4">
           {showCancelButton && (
-            <Button
-              type="button"
-              onClick={handleCancel}
-              mode={ButtonModes.SECONDARY}
-            >
+            <Button type="button" onClick={handleCancel} mode={ButtonModes.SECONDARY}>
               {cancelButtonText ? cancelButtonText : "Cancel"}
             </Button>
           )}
-          <Button
-            type="submit"
-            disabled={disabled || createMutation.isPending}
-            mode={ButtonModes.PRIMARY}
-          >
+          <Button type="submit" disabled={disabled || createMutation.isPending} mode={ButtonModes.PRIMARY}>
             {submitButtonText ? submitButtonText : "Submit"}
           </Button>
         </div>

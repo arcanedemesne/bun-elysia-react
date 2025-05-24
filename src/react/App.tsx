@@ -1,41 +1,17 @@
-import {
-  DehydratedState,
-  HydrationBoundary,
-  QueryClient,
-  QueryClientProvider,
-} from "@tanstack/react-query";
+import { DehydratedState, HydrationBoundary, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 import { Outlet, Route, Routes, useLocation } from "react-router-dom";
 
 import { MessageBars, Toasts } from "@/lib/components";
-import {
-  loginRoute,
-  registerRoute,
-  teamRoute,
-  todoRoute,
-} from "@/lib/constants";
+import { loginRoute, registerRoute, teamRoute, todoRoute } from "@/lib/constants";
 import { UserDTO } from "@/lib/models";
 
 import { Nav } from "./components/Nav";
-import {
-  ForbiddenPage,
-  HomePage,
-  LoginPage,
-  NotFoundPage,
-  RegisterPage,
-  TeamPage,
-  TodoPage,
-} from "./pages";
+import { ForbiddenPage, HomePage, LoginPage, NotFoundPage, RegisterPage, TeamPage, TodoPage } from "./pages";
 import { PublicChat } from "./pages/PublicChat";
 import { SocketProvider, UserProvider } from "./providers";
 
-const App = ({
-  dehydratedState,
-  user,
-}: {
-  dehydratedState: DehydratedState;
-  user: UserDTO;
-}) => {
+const App = ({ dehydratedState, user }: { dehydratedState: DehydratedState; user: UserDTO }) => {
   const location = useLocation();
 
   const queryClient = new QueryClient({
@@ -71,18 +47,9 @@ const App = ({
 
                 <Routes location={location}>
                   <Route path="/" element={<HomePage />} />
-                  <Route
-                    path={`${todoRoute}`}
-                    element={user.id ? <TodoPage /> : <ForbiddenPage />}
-                  />
-                  <Route
-                    path={`${teamRoute}`}
-                    element={user.id ? <TeamPage /> : <ForbiddenPage />}
-                  />
-                  <Route
-                    path={`public-chat`}
-                    element={user.id ? <PublicChat /> : <ForbiddenPage />}
-                  />
+                  <Route path={`${todoRoute}`} element={user.id ? <TodoPage /> : <ForbiddenPage />} />
+                  <Route path={`${teamRoute}`} element={user.id ? <TeamPage /> : <ForbiddenPage />} />
+                  <Route path={`public-chat`} element={user.id ? <PublicChat /> : <ForbiddenPage />} />
                   <Route path={`${loginRoute}`} element={<LoginPage />} />
                   <Route path={`${registerRoute}`} element={<RegisterPage />} />
                   <Route path="*" element={<NotFoundPage />} />

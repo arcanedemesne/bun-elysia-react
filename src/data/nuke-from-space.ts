@@ -15,16 +15,12 @@ const nukeFromSpace = async () => {
   try {
     const migrationsDirectory = path.join(__dirname, "drizzle", "migrations");
     await fs.rm(migrationsDirectory, { recursive: true, force: true });
-    console.log(
-      `Successfully deleted migrations folder: ${migrationsDirectory}`,
-    );
+    console.log(`Successfully deleted migrations folder: ${migrationsDirectory}`);
 
     console.log(`Dropping existing tables from schema "${schemaName}"...`);
     await client.query(`DROP TABLE IF EXISTS "${schemaName}".todos CASCADE`);
     await client.query(`DROP TABLE IF EXISTS "${schemaName}".teams CASCADE`);
-    await client.query(
-      `DROP TABLE IF EXISTS "${schemaName}".users_to_teams CASCADE`,
-    );
+    await client.query(`DROP TABLE IF EXISTS "${schemaName}".users_to_teams CASCADE`);
     await client.query(`DROP TABLE IF EXISTS "${schemaName}".users CASCADE`);
     console.log(`Tables dropped from schema "${schemaName}".`);
 

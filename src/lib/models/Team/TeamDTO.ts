@@ -1,14 +1,8 @@
-import {
-  BaseEntityActive,
-  BaseEntityId,
-  BaseEntityTimeStamps,
-} from "../BaseEntity";
+import { BaseEntityActive, BaseEntityId, BaseEntityTimeStamps } from "../BaseEntity";
 import { UserDTO } from "../User/UserDTO";
 
-export interface TeamDTO
-  extends BaseEntityId,
-    BaseEntityTimeStamps,
-    BaseEntityActive {
+export interface TeamDTO extends BaseEntityId, BaseEntityTimeStamps, BaseEntityActive {
+  organizationId: string;
   name: string;
   members: UserDTO[];
   todosCount: number;

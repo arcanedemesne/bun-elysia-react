@@ -1,12 +1,5 @@
-import {
-  BaseEntityActive,
-  BaseEntityId,
-  BaseEntityUserInfo,
-} from "../BaseEntity";
+import { BaseEntityActive, BaseEntityId, BaseEntityUserInfo } from "../BaseEntity";
 
-export interface TeamUpdateDTO
-  extends BaseEntityId,
-    BaseEntityUserInfo,
-    BaseEntityActive {
+export interface TeamUpdateDTO extends BaseEntityId, BaseEntityUserInfo, BaseEntityActive {
   name?: string;
 }

@@ -10,14 +10,7 @@ import { StatusCodes } from "http-status-codes";
 import { ResponseError } from "@/lib/types";
 
 import { deriveUser } from "./deriveUser";
-import {
-  authRoutes,
-  mainRoutes,
-  teamMemberRoutes,
-  teamRoutes,
-  todoRoutes,
-  userRoutes,
-} from "./routes";
+import { authRoutes, mainRoutes, teamMemberRoutes, teamRoutes, todoRoutes, userRoutes } from "./routes";
 
 await Bun.build({
   entrypoints: ["./src/react/index.tsx"],
@@ -86,6 +79,4 @@ const app = new Elysia()
 
   .listen(Number(process.env.HOST_PORT));
 
-console.log(
-  `🦊 Elysia server is running at ${app.server?.hostname}:${app.server?.port}`,
-);
+console.log(`🦊 Elysia server is running at ${app.server?.hostname}:${app.server?.port}`);

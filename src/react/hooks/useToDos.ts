@@ -5,11 +5,7 @@ import { z } from "zod";
 import { apiPrefix, todoRoute } from "@/lib/constants";
 import { TodoDTO, TodoInsertDTO, TodoUpdateDTO } from "@/lib/models";
 import { ApiService } from "@/lib/services/ApiService";
-import {
-  optionalTeamIdSchema,
-  todoTitleSchema,
-  uuidSchema,
-} from "@/lib/validation";
+import { optionalTeamIdSchema, todoTitleSchema, uuidSchema } from "@/lib/validation";
 
 import { useUserContext } from "@/providers";
 
@@ -23,10 +19,7 @@ export const useTodos = () => {
     const queryString = teamId ? `teamId=${teamId}` : `userId=${user?.id}`;
     return useQuery<TodoDTO[]>({
       queryKey: ["todoData", queryString],
-      queryFn: async () =>
-        await apiService.get<TodoDTO[]>(
-          `/${apiPrefix}/${todoRoute}?${queryString}`,
-        ),
+      queryFn: async () => await apiService.get<TodoDTO[]>(`/${apiPrefix}/${todoRoute}?${queryString}`),
       enabled: !!queryString,
     });
   };
@@ -54,18 +47,13 @@ export const useTodos = () => {
     if (request.teamId === "") {
       delete request.teamId;
     }
-    return await apiService.put(
-      `/${apiPrefix}/${todoRoute}/${request.id}`,
-      request,
-    );
+    return await apiService.put(`/${apiPrefix}/${todoRoute}/${request.id}`, request);
   };
 
   const onDelete = async (id: string) => {
     ("use server");
 
-    const response = await apiService.delete(
-      `/${apiPrefix}/${todoRoute}/${id}`,
-    );
+    const response = await apiService.delete(`/${apiPrefix}/${todoRoute}/${id}`);
 
     if (response.status === 200) {
       refetch();

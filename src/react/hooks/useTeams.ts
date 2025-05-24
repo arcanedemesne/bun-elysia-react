@@ -3,12 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { apiPrefix, teamMemberRoute, teamRoute } from "@/lib/constants";
-import {
-  TeamDTO,
-  TeamInsertDTO,
-  TeamMemberDTO,
-  TeamUpdateDTO,
-} from "@/lib/models";
+import { TeamDTO, TeamInsertDTO, TeamMemberDTO, TeamUpdateDTO } from "@/lib/models";
 import { ApiService } from "@/lib/services/ApiService";
 import { teamNameSchema, uuidSchema } from "@/lib/validation";
 
@@ -24,10 +19,7 @@ export const useTeams = () => {
     const queryString = `userId=${user?.id}`;
     return useQuery<TeamDTO[]>({
       queryKey: ["teamData", queryString],
-      queryFn: async () =>
-        await apiService.get<TeamDTO[]>(
-          `/${apiPrefix}/${teamRoute}?${queryString}`,
-        ),
+      queryFn: async () => await apiService.get<TeamDTO[]>(`/${apiPrefix}/${teamRoute}?${queryString}`),
     });
   };
 
@@ -46,18 +38,13 @@ export const useTeams = () => {
   };
 
   const onEdit = async (request: TeamUpdateDTO) => {
-    return await apiService.put(
-      `/${apiPrefix}/${teamRoute}/${request.id}`,
-      request,
-    );
+    return await apiService.put(`/${apiPrefix}/${teamRoute}/${request.id}`, request);
   };
 
   const onDelete = async (id: string): Promise<boolean> => {
     ("use server");
 
-    const response = await apiService.delete(
-      `/${apiPrefix}/${teamRoute}/${id}`,
-    );
+    const response = await apiService.delete(`/${apiPrefix}/${teamRoute}/${id}`);
 
     if (response.status === 200) {
       refetch();
@@ -75,10 +62,7 @@ export const useTeams = () => {
   const onAddMember = async (teamMember: TeamMemberDTO) => {
     ("use server");
 
-    const response = await apiService.post(
-      `/${apiPrefix}/${teamRoute}/${teamMemberRoute}`,
-      teamMember,
-    );
+    const response = await apiService.post(`/${apiPrefix}/${teamRoute}/${teamMemberRoute}`, teamMember);
 
     if (response.status === 200) {
       refetch();
@@ -88,10 +72,7 @@ export const useTeams = () => {
   const onRemoveMember = async (teamMember: TeamMemberDTO) => {
     ("use server");
 
-    const response = await apiService.delete(
-      `/${apiPrefix}/${teamRoute}/${teamMemberRoute}`,
-      teamMember,
-    );
+    const response = await apiService.delete(`/${apiPrefix}/${teamRoute}/${teamMemberRoute}`, teamMember);
 
     if (response.status === 200) {
       refetch();
