@@ -16,6 +16,10 @@ export class TodoService extends BaseService<Todo, TodoDTO, TodoInsertDTO, TodoU
     return await this.repo.getByUserId(userId);
   }
 
+  async getByOrganizationId(organizationId: string): Promise<any[]> {
+    return await this.repo.getByOrganizationId(organizationId);
+  }
+
   async getByTeamId(teamId: string): Promise<any[]> {
     return await this.repo.getByTeamId(teamId);
   }

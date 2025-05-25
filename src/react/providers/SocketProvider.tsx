@@ -11,10 +11,7 @@ const SocketContext = createContext<
       socket: WebSocket | null;
       subscribe: (channel: string) => void;
       publish: (data: any, callback?: () => void) => void;
-      publicMessages: PublishMessagePayload[];
-      organizationMessages: PublishMessagePayload[];
-      teamMessages: PublishMessagePayload[];
-      privateMessages: PublishMessagePayload[];
+      channelPayloads: Map<ChannelTypes, PublishMessagePayload[]>;
     }
   | undefined
 >(undefined);
@@ -35,9 +32,9 @@ const handleOnlineStatus = (payload: PublishMessagePayload) =>
     message: (
       <>
         <b>{payload.user.username}</b>{" "}
-        {payload.team ? (
+        {payload.organization ? (
           <>
-            from team <b>{payload.team.name}</b>
+            from organization <b>{payload.organization.name}</b>
           </>
         ) : null}{" "}
         is now <b>{payload.isOnline ? "online" : "offline"}</b>
@@ -52,10 +49,9 @@ export const SocketProvider: React.FC<{
   const { user } = useUserContext();
 
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [publicMessages, setPublicMessages] = useState<PublishMessagePayload[]>([]);
-  const [organizationMessages, setOrganizationMessages] = useState<PublishMessagePayload[]>([]);
-  const [teamMessages, setTeamMessages] = useState<PublishMessagePayload[]>([]);
-  const [privateMessages, setPrivateMessages] = useState<PublishMessagePayload[]>([]);
+  const [channelPayloads, setMessages] = useState<Map<ChannelTypes, PublishMessagePayload[]>>(
+    new Map<ChannelTypes, PublishMessagePayload[]>(),
+  );
 
   useEffect(() => {
     if (user?.sessionId) {
@@ -74,20 +70,17 @@ export const SocketProvider: React.FC<{
           case ChannelTypes.ONLINE_STATUS:
             handleOnlineStatus(payload);
             break;
-          case ChannelTypes.PUBLIC_CHAT:
-            setPublicMessages((prev) => [...prev, payload]);
-            break;
-          case ChannelTypes.ORGANIZATION_CHAT:
-            setOrganizationMessages((prev) => [...prev, payload]);
-            break;
-          case ChannelTypes.TEAM_CHAT:
-            setTeamMessages((prev) => [...prev, payload]);
-            break;
-          case ChannelTypes.PRIVATE_CHAT:
-            setPrivateMessages((prev) => [...prev, payload]);
-            break;
           default:
-            console.warn(`${channel} is a invalid channel type`);
+            setMessages((prev) => {
+              const next = new Map<ChannelTypes, PublishMessagePayload[]>();
+              if (prev?.has(channel)) {
+                const m = prev.get(channel) ?? [];
+                next.set(channel, [...m, payload]);
+              } else {
+                next.set(channel, [payload]);
+              }
+              return next;
+            });
             break;
         }
       };
@@ -138,10 +131,7 @@ export const SocketProvider: React.FC<{
     socket,
     subscribe,
     publish,
-    publicMessages,
-    organizationMessages,
-    teamMessages,
-    privateMessages,
+    channelPayloads,
   };
 
   return <SocketContext.Provider value={contextValue}>{children}</SocketContext.Provider>;

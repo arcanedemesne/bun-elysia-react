@@ -21,3 +21,5 @@ export const passwordSchema = z.string().min(6, { message: "Must be at least 6 c
 export const todoTitleSchema = z.string().min(6, { message: "Must be at least 6 characters long." });
 
 export const teamNameSchema = z.string().min(6, { message: "Must be at least 6 characters long." });
+
+export const organizationNameSchema = z.string().min(6, { message: "Must be at least 6 characters long." });

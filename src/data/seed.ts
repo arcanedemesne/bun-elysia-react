@@ -262,7 +262,8 @@ const seedDatabase = async () => {
             .values({
               title: "This is a team example todo item",
               description: "This is a team example description",
-              teamId: teamId,
+              organizationId,
+              teamId,
               createdBy: userId,
             })
             .returning();

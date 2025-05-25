@@ -76,7 +76,10 @@ export class TeamRepository implements IRepository<Team, TeamDTO, TeamInsertDTO,
         .innerJoin(createdBy, eq(teams.createdBy, createdBy.id))
         .fullJoin(updatedBy, eq(teams.updatedBy, updatedBy.id))
         .fullJoin(deletedBy, eq(teams.deletedBy, deletedBy.id))
-        .where(and(eq(teams.organizationId, organizationId), eq(teams.active, true)))
+        .innerJoin(usersToTeams, eq(teams.id, usersToTeams.teamId))
+        .where(
+          and(eq(teams.organizationId, organizationId), eq(usersToTeams.userId, this.userId), eq(teams.active, true)),
+        )
         .orderBy(teams.createdAt);
 
       const response = data as TeamDTO[];

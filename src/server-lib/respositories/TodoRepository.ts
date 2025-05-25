@@ -4,7 +4,7 @@ import { alias } from "drizzle-orm/pg-core";
 import { Todo, TodoDTO, TodoInsertDTO, TodoUpdateDTO } from "@/lib/models";
 
 import { db } from "../../data/db";
-import { teams, todos, users } from "../../data/schema";
+import { organizations, teams, todos, users } from "../../data/schema";
 import { IRepository } from "./IRepository";
 import { throwDbError } from "./utilities";
 
@@ -82,6 +82,23 @@ export class TodoRepository implements IRepository<Todo, TodoDTO, TodoInsertDTO,
         .fullJoin(updatedBy, eq(todos.updatedBy, updatedBy.id))
         .fullJoin(deletedBy, eq(todos.deletedBy, deletedBy.id))
         .where(and(eq(todos.createdBy, userId), isNull(todos.teamId), eq(todos.active, true)))
+        .orderBy(todos.createdAt);
+      return data as TodoDTO[];
+    } catch (error) {
+      return throwDbError("Error getting todos", error);
+    }
+  }
+
+  async getByOrganizationId(organizationId: string): Promise<TodoDTO[]> {
+    try {
+      const data = await db
+        .select(this.selectDTO)
+        .from(todos)
+        .innerJoin(organizations, eq(todos.organizationId, organizations.id))
+        .innerJoin(createdBy, eq(todos.createdBy, createdBy.id))
+        .fullJoin(updatedBy, eq(todos.updatedBy, updatedBy.id))
+        .fullJoin(deletedBy, eq(todos.deletedBy, deletedBy.id))
+        .where(and(eq(todos.organizationId, organizationId), eq(todos.active, true)))
         .orderBy(todos.createdAt);
       return data as TodoDTO[];
     } catch (error) {

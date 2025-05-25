@@ -15,8 +15,8 @@ export const useTeams = () => {
   const { user } = useUserContext();
   const queryClient = useQueryClient();
 
-  const GetData = () => {
-    const queryString = `userId=${user?.id}`;
+  const GetData = (organizationId?: string) => {
+    const queryString = organizationId ? `organizationId=${organizationId}` : `userId=${user?.id}`;
     return useQuery<TeamDTO[]>({
       queryKey: ["teamData", queryString],
       queryFn: async () => await apiService.get<TeamDTO[]>(`/${apiPrefix}/${teamRoute}?${queryString}`),
@@ -25,7 +25,7 @@ export const useTeams = () => {
 
   const createValidationSchema = z.object({
     name: teamNameSchema,
-    teamId: z.string().optional(),
+    organizationId: uuidSchema,
   });
 
   const editValidationSchema = z.object({

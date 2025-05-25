@@ -5,7 +5,6 @@ import {
   ButtonModes,
   CloseIconButton,
   DeleteModal,
-  DropDownInput,
   ErrorMessage,
   Label,
   Modal,
@@ -14,14 +13,14 @@ import {
   TypeAheadSearchOption,
 } from "@/lib/components";
 import { PopOutChatWrapper } from "@/lib/components/Chat/PopOutChatWrapper";
-import { TeamInsertDTO, TeamUpdateDTO } from "@/lib/models";
+import { OrganizationInsertDTO, OrganizationUpdateDTO } from "@/lib/models";
 import { ChannelTypes } from "@/lib/types";
 
-import { TeamCard } from "./TeamCard";
+import { OrganizationCard } from "./OrganizationCard";
 import { CardGrid, Form, Layout } from "@/components";
-import { useAuthCheck, useOrganizations, useTeams, useUsers } from "@/hooks";
+import { useAuthCheck, useOrganizations, useUsers } from "@/hooks";
 
-export const TeamPage = () => {
+export const OrganizationPage = () => {
   useAuthCheck();
 
   const [isEditModelOpen, setIsEditModalOpen] = useState(false);
@@ -34,37 +33,25 @@ export const TeamPage = () => {
   const [searchOptions, setSearchOptions] = useState<TypeAheadSearchOption[]>([]);
   const [selectedMemberId, setSelectedMemberId] = useState<string | undefined>(undefined);
 
-  const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | undefined>(undefined);
-
   const [chatId, setChatId] = useState<string | undefined>(undefined);
 
   const {
-    getData: getTeams,
+    getData: getOrganizations,
     createValidationSchema,
     editValidationSchema,
     onCreate,
     onEdit,
     onDelete,
-    refetch: refetchTeams,
+    refetch: refetchOrganizations,
     onAddMember,
     onRemoveMember,
-  } = useTeams();
+  } = useOrganizations();
 
-  const { getData: getOrganizations, refetch: refetchOrganizations } = useOrganizations();
-  const { data: organizations } = getOrganizations();
+  const { isPending, error, data: organizations } = getOrganizations();
 
-  const { isPending, error, data: teams } = getTeams(selectedOrganizationId);
-
-  const teamForEdit = teams && teams.find((t) => t.id === editId);
-  const teamForDelete = teams && teams.find((t) => t.id === deleteId);
-  const teamForChat = teams && teams.find((t) => t.id === chatId);
-
-  const organizationOptions = organizations
-    ? organizations.map((t) => ({
-        label: `${t.name} (${t.teamsCount} team${t.teamsCount > 0 ? "s" : ""})`,
-        value: t.id,
-      }))
-    : [];
+  const organizationForEdit = organizations && organizations.find((t) => t.id === editId);
+  const organizationForDelete = organizations && organizations.find((t) => t.id === deleteId);
+  const organizationForChat = organizations && organizations.find((t) => t.id === chatId);
 
   const { search } = useUsers();
 
@@ -75,7 +62,7 @@ export const TeamPage = () => {
       const searchOptions =
         foundMembers && foundMembers.length > 0
           ? foundMembers
-              .filter((fm) => !teamForEdit?.members.map((m) => m.id).includes(fm.id))
+              .filter((fm) => !organizationForEdit?.members.map((m) => m.id).includes(fm.id))
               .map((m) => ({
                 label: m.username,
                 value: m.id,
@@ -118,71 +105,56 @@ export const TeamPage = () => {
 
   const handleSuccess = () => {
     refetchOrganizations();
-    refetchTeams();
   };
 
   return (
-    <Layout title="Team List">
+    <Layout title="Organization List">
       <ErrorMessage>{error?.message ?? ""}</ErrorMessage>
 
       <div className="mb-4">
-        <Form<TeamInsertDTO>
-          inputs={[
-            {
-              type: "hidden",
-              name: "organizationId",
-              value: selectedOrganizationId,
-            },
-            { type: "text", name: "name", placeholder: "Add a new team..." },
-          ]}
+        <Form<OrganizationInsertDTO>
+          inputs={[{ type: "text", name: "name", placeholder: "Add a new organization..." }]}
           validationSchema={createValidationSchema}
-          disabled={!selectedOrganizationId}
           onSubmit={onCreate}
           onSuccess={handleSuccess}
           submitButtonText="Add"
           showCancelButton
-          secondaryButtons={
-            <>
-              <div className="w-3/11">
-                <DropDownInput
-                  type="select"
-                  name="organization"
-                  value={selectedOrganizationId}
-                  options={[{ label: `All My Teams`, value: undefined }, ...organizationOptions]}
-                  onChange={(value) => {
-                    handleSuccess();
-                    setSelectedOrganizationId(value);
-                  }}
-                />
-              </div>
-            </>
-          }
         />
       </div>
 
       {isPending && "Loading..."}
 
       <CardGrid>
-        {teams &&
-          teams.map((team) => (
-            <TeamCard key={team.id} team={team} onChat={handleChat} onEdit={handleEdit} onDelete={handleDelete} />
+        {organizations &&
+          organizations.map((organization) => (
+            <OrganizationCard
+              key={organization.id}
+              organization={organization}
+              onChat={handleChat}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
           ))}
       </CardGrid>
 
-      <Modal title="Editing a Team" isOpen={isEditModelOpen && !!teamForEdit} onClose={handleCloseEditModal}>
-        <Form<TeamUpdateDTO>
+      <Modal
+        title="Editing an Organization"
+        isOpen={isEditModelOpen && !!organizationForEdit}
+        onClose={handleCloseEditModal}
+      >
+        <Form<OrganizationUpdateDTO>
           inputs={[
             {
               type: "hidden",
               name: "id",
-              value: teamForEdit?.id,
+              value: organizationForEdit?.id,
             },
             {
               type: "text",
               name: "name",
-              label: "Team Name",
-              placeholder: "Add a team name...",
-              value: teamForEdit?.name,
+              label: "Organization Name",
+              placeholder: "Add a organization name...",
+              value: organizationForEdit?.name,
             },
           ]}
           validationSchema={editValidationSchema}
@@ -200,7 +172,7 @@ export const TeamPage = () => {
                 mode={ButtonModes.DELETE}
                 onClick={(event: MouseEvent<HTMLButtonElement>) => {
                   event.preventDefault();
-                  handleDelete(teamForEdit!.id);
+                  handleDelete(organizationForEdit!.id);
                 }}
               >
                 Delete
@@ -240,7 +212,7 @@ export const TeamPage = () => {
               onClick={async () => {
                 await onAddMember({
                   userId: selectedMemberId!,
-                  teamId: teamForEdit!.id,
+                  organizationId: organizationForEdit!.id,
                 });
                 setSelectedMemberId(undefined);
                 setSearchQuery(undefined);
@@ -250,10 +222,10 @@ export const TeamPage = () => {
             </Button>
           </div>
         </div>
-        {teamForEdit && teamForEdit.members && (
+        {organizationForEdit && organizationForEdit.members && (
           <div className="relative mt-4 flex items-center">
-            {teamForEdit.members
-              .filter((m) => m.id !== teamForEdit?.createdBy?.id)
+            {organizationForEdit.members
+              .filter((m) => m.id !== organizationForEdit?.createdBy?.id)
               .map((m) => (
                 <Pill
                   key={m.id}
@@ -261,7 +233,7 @@ export const TeamPage = () => {
                   onRemove={async () => {
                     await onRemoveMember({
                       userId: m.id,
-                      teamId: teamForEdit.id,
+                      organizationId: organizationForEdit.id,
                     });
                   }}
                 />
@@ -269,33 +241,37 @@ export const TeamPage = () => {
           </div>
         )}
         <p className="mt-4 text-sm text-gray-600">
-          Created by: <span className="font-medium">{teamForEdit?.createdBy?.username}</span>
+          Created by: <span className="font-medium">{organizationForEdit?.createdBy?.username}</span>
         </p>
-        {teamForEdit?.updatedBy && (
+        {organizationForEdit?.updatedBy && (
           <p className="mt-2 text-sm text-gray-600">
-            Last updated by: <span className="font-medium">{teamForEdit?.updatedBy?.username}</span>
+            Last updated by: <span className="font-medium">{organizationForEdit?.updatedBy?.username}</span>
           </p>
         )}
       </Modal>
 
       <DeleteModal
-        title="Deleting a Team"
-        itemName={teamForDelete?.name}
-        isOpen={isDeleteModelOpen && !!teamForDelete}
+        title="Deleting a Organization"
+        itemName={organizationForDelete?.name}
+        isOpen={isDeleteModelOpen && !!organizationForDelete}
         onCancel={() => {
           handleCloseDeleteModal();
         }}
         onDelete={() => {
-          const deleted = teamForDelete && onDelete(teamForDelete.id);
+          const deleted = organizationForDelete && onDelete(organizationForDelete.id);
           deleted && handleCloseEditModal();
           deleted && handleCloseDeleteModal();
         }}
       >
-        <i className="text-red-800">Note: This will delete all todos for this team</i>
+        <i className="text-red-800">Note: This will delete all teams & todos for this organization</i>
       </DeleteModal>
 
-      {teamForChat && (
-        <PopOutChatWrapper team={teamForChat} channel={ChannelTypes.TEAM_CHAT} onClose={handleCloseChat} />
+      {organizationForChat && (
+        <PopOutChatWrapper
+          organization={organizationForChat}
+          channel={ChannelTypes.ORGANIZATION_CHAT}
+          onClose={handleCloseChat}
+        />
       )}
     </Layout>
   );

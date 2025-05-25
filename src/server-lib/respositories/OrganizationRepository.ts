@@ -74,7 +74,7 @@ export class OrganizationRepository
 
       return response;
     } catch (error) {
-      return throwDbError("Error getting team by id", error);
+      return throwDbError("Error getting organization by id", error);
     }
   }
 

@@ -1,7 +1,16 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router";
 
-import { apiPrefix, authPrefix, loginRoute, logoutRoute, teamRoute, todoRoute } from "@/lib/constants";
+import {
+  apiPrefix,
+  authPrefix,
+  chatsRoute,
+  loginRoute,
+  logoutRoute,
+  organizationRoute,
+  teamRoute,
+  todoRoute,
+} from "@/lib/constants";
 import { ApiService } from "@/lib/services";
 
 import { useUserContext } from "@/providers";
@@ -57,9 +66,9 @@ export const Nav = () => {
           <>
             <NavLink
               className={({ isActive }) => (isActive ? activeNavLinkClassName : navLinkClassName)}
-              to={`/${todoRoute}`}
+              to={`/${organizationRoute}`}
             >
-              Todos
+              Organizations
             </NavLink>
             <NavLink
               className={({ isActive }) => (isActive ? activeNavLinkClassName : navLinkClassName)}
@@ -69,9 +78,15 @@ export const Nav = () => {
             </NavLink>
             <NavLink
               className={({ isActive }) => (isActive ? activeNavLinkClassName : navLinkClassName)}
-              to={`/public-chat`}
+              to={`/${todoRoute}`}
             >
-              Public Chat
+              Todos
+            </NavLink>
+            <NavLink
+              className={({ isActive }) => (isActive ? activeNavLinkClassName : navLinkClassName)}
+              to={`/${chatsRoute}`}
+            >
+              Chats
             </NavLink>
             <span onClick={handleLogout} className={navLinkClassName}>
               Logout

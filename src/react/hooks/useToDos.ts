@@ -15,8 +15,12 @@ export const useTodos = () => {
   const { user } = useUserContext();
   const queryClient = useQueryClient();
 
-  const GetData = (teamId?: string | null) => {
-    const queryString = teamId ? `teamId=${teamId}` : `userId=${user?.id}`;
+  const GetData = ({ organizationId, teamId }: { organizationId?: string | null; teamId?: string | null }) => {
+    const queryString = teamId
+      ? `teamId=${teamId}`
+      : organizationId
+        ? `organizationId=${organizationId}`
+        : `userId=${user?.id}`;
     return useQuery<TodoDTO[]>({
       queryKey: ["todoData", queryString],
       queryFn: async () => await apiService.get<TodoDTO[]>(`/${apiPrefix}/${todoRoute}?${queryString}`),
@@ -37,6 +41,9 @@ export const useTodos = () => {
   });
 
   const onCreate = async (request: TodoInsertDTO) => {
+    if (request.organizationId === "") {
+      delete request.organizationId;
+    }
     if (request.teamId === "") {
       delete request.teamId;
     }

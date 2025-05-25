@@ -1,4 +1,4 @@
-import { TeamDTO, UserDTO } from "../models";
+import { OrganizationSocketDTO, TeamSocketDTO, UserSocketDTO } from "../models";
 
 export enum ChannelTypes {
   ONLINE_STATUS = "online-status",
@@ -10,8 +10,9 @@ export enum ChannelTypes {
 
 export interface PublishMessagePayload {
   channel: string;
-  user: UserDTO;
-  team?: TeamDTO;
+  user: UserSocketDTO;
+  organization?: OrganizationSocketDTO;
+  team?: TeamSocketDTO;
   message?: string;
   createdAt?: Date;
   isOnline?: boolean;

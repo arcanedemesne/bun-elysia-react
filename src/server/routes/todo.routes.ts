@@ -17,6 +17,8 @@ export const todoRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           return await service.getByUserId(query.userId);
         } else if (query.teamId) {
           return await service.getByTeamId(query.teamId);
+        } else if (query.organizationId) {
+          return await service.getByOrganizationId(query.organizationId);
         }
         return await service.getAll();
       })

@@ -5,7 +5,7 @@ import { TodoInsertDTO, TodoUpdateDTO } from "@/lib/models";
 
 import { TodoCard } from "./TodoCard";
 import { CardGrid, Form, Layout } from "@/components";
-import { useAuthCheck, useTeams, useTodos } from "@/hooks";
+import { useAuthCheck, useOrganizations, useTeams, useTodos } from "@/hooks";
 
 export const TodoPage = () => {
   useAuthCheck();
@@ -16,6 +16,7 @@ export const TodoPage = () => {
   const [isDeleteModelOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | undefined>(undefined);
 
+  const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | undefined>(undefined);
   const [selectedTeamId, setSelectedTeamId] = useState<string | undefined>(undefined);
 
   const {
@@ -28,10 +29,20 @@ export const TodoPage = () => {
     refetch: refetchTodos,
   } = useTodos();
 
-  const { isPending, error, data: todos } = getTodos(selectedTeamId);
+  const {
+    isPending,
+    error,
+    data: todos,
+  } = getTodos({
+    organizationId: selectedOrganizationId,
+    teamId: selectedTeamId,
+  });
+
+  const { getData: getOrganizations, refetch: refetchOrganizations } = useOrganizations();
+  const { data: organizations } = getOrganizations();
 
   const { getData: getTeams, refetch: refetchTeams } = useTeams();
-  const { data: teams } = getTeams();
+  const { data: teams } = getTeams(selectedOrganizationId);
 
   const handleEdit = (id: string) => {
     setEditId(id);
@@ -55,11 +66,21 @@ export const TodoPage = () => {
 
   const handleSuccess = () => {
     refetchTodos();
+    refetchOrganizations();
     refetchTeams();
   };
 
   const todoForEdit = todos && todos.find((t) => t.id === editId);
   const todoForDelete = todos && todos.find((t) => t.id === deleteId);
+
+  const selectedOrganization = organizations && organizations.find((o) => o.id === selectedOrganizationId);
+
+  const organizationOptions = organizations
+    ? organizations.map((t) => ({
+        label: `${t.name} (${t.teamsCount} team${t.teamsCount > 0 ? "s" : ""})`,
+        value: t.id,
+      }))
+    : [];
 
   const teamOptions = teams
     ? teams.map((t) => ({
@@ -75,6 +96,7 @@ export const TodoPage = () => {
       <div className="mb-4">
         <Form<TodoInsertDTO>
           inputs={[
+            { type: "hidden", name: "organizatinId", value: selectedOrganizationId },
             { type: "hidden", name: "teamId", value: selectedTeamId },
             { type: "text", name: "title", placeholder: "Add a new todo..." },
           ]}
@@ -84,18 +106,37 @@ export const TodoPage = () => {
           submitButtonText="Add"
           showCancelButton
           secondaryButtons={
-            <div className="w-3/11">
-              <DropDownInput
-                type="select"
-                name="team"
-                value={selectedTeamId}
-                options={[{ label: `My Personal Todos`, value: undefined }, ...teamOptions]}
-                onChange={(value) => {
-                  handleSuccess();
-                  setSelectedTeamId(value);
-                }}
-              />
-            </div>
+            <>
+              <div className="w-3/11">
+                <DropDownInput
+                  type="select"
+                  name="organization"
+                  value={selectedOrganizationId}
+                  options={[{ label: `My Personal Todos`, value: undefined }, ...organizationOptions]}
+                  onChange={(value) => {
+                    handleSuccess();
+                    setSelectedOrganizationId(value);
+                  }}
+                />
+              </div>
+              {selectedOrganization && (
+                <div className="w-3/11">
+                  <DropDownInput
+                    type="select"
+                    name="team"
+                    value={selectedTeamId}
+                    options={[
+                      { label: `All Todos for ${selectedOrganization?.name}`, value: undefined },
+                      ...teamOptions,
+                    ]}
+                    onChange={(value) => {
+                      handleSuccess();
+                      setSelectedTeamId(value);
+                    }}
+                  />
+                </div>
+              )}
+            </>
           }
         />
       </div>

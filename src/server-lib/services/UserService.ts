@@ -16,6 +16,14 @@ export class UserService extends BaseService<User, UserDTO, UserInsertDTO, UserU
     return await this.repo.search(query);
   }
 
+  async getByTeamIds(teamIds: string[]): Promise<UserDTO[]> {
+    return await this.repo.getByTeamIds(teamIds);
+  }
+
+  async getByOrganizationIds(organizationIds: string[]): Promise<UserDTO[]> {
+    return await this.repo.getByOrganizationIds(organizationIds);
+  }
+
   async getByUsername(username: string): Promise<User | null> {
     return await this.repo.getByUsername(username);
   }

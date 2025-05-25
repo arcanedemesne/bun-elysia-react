@@ -1,5 +1,6 @@
 export * from "./Alerts";
 export * from "./Buttons";
+export * from "./Chat";
 export * from "./ErrorMessage";
 export * from "./Icons";
 export * from "./Inputs";

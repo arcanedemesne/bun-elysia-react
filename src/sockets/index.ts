@@ -1,41 +1,46 @@
 /* eslint-disable no-console */
 import { Elysia } from "elysia";
 
-import { TeamService, UserService } from "@/server-lib/services";
+import { OrganizationService, UserService } from "@/server-lib/services";
 
 import { WebSocket } from "ws";
 
+import { OrganizationSocketDTO, User, UserDTO, UserSocketDTO } from "@/lib/models";
 import { ChannelTypes, Message, PublishMessagePayload } from "@/lib/types";
-
-import { TeamSocketDTO, User, UserSocketDTO } from "../lib";
 
 export interface AppState {
   channels: Map<string, Set<WebSocket>>;
   users: Map<string, UserSocketDTO>;
 }
 
-const publish = (payload: PublishMessagePayload, ws: any) => {
+const publish = async (payload: PublishMessagePayload, ws: any) => {
   const store = sockets.store as AppState;
+  const userService = new UserService();
+
+  const requiresOrganization = (payload.organization && payload.channel === ChannelTypes.ORGANIZATION_CHAT) ?? false;
+  const requiresTeam = (payload.team && payload.channel === ChannelTypes.TEAM_CHAT) ?? false;
+  let allowedUsers: UserDTO[] = [];
+
+  if (requiresOrganization) {
+    allowedUsers = await userService.getByOrganizationIds([payload.organization!.id]);
+  } else if (requiresTeam) {
+    allowedUsers = await userService.getByTeamIds([payload.team!.id]);
+  }
+
   if (store.channels.has(payload.channel)) {
     store.channels.get(payload.channel)!.forEach(async (client) => {
       if (client.readyState === WebSocket.OPEN && client !== (ws as unknown as WebSocket)) {
-        console.log(`${payload.user.username} has published a message with websocket ${ws.id}`);
+        console.log(
+          `${payload.user.username} has published a message to channel ${payload.channel} with websocket ${ws.id}`,
+        );
         const outgoingSocketUser = store.users.get(ws.id);
+
         if (outgoingSocketUser) {
           if (
-            payload.channel === ChannelTypes.ONLINE_STATUS ||
-            payload.channel === ChannelTypes.TEAM_CHAT // TODO: What about Organization and Private chats?
+            (payload.channel === ChannelTypes.ONLINE_STATUS || requiresOrganization || requiresTeam) &&
+            allowedUsers.map((u) => u.id).includes(outgoingSocketUser.id)
           ) {
-            if (payload.team?.id) {
-              // TODO: Is there a faster way to do this? There could be millions of user sockets to check?
-              const teamService = new TeamService(payload.user.id);
-              const teams = await teamService.getByUserId(outgoingSocketUser.id);
-              if (teams.map((x) => x.id).includes(payload.team.id)) {
-                client.send(JSON.stringify(payload));
-              }
-            } else {
-              console.error(`Payload must contain a teamId`);
-            }
+            client.send(JSON.stringify(payload));
           } else {
             client.send(JSON.stringify(payload));
           }
@@ -83,47 +88,53 @@ const sockets = new Elysia()
   .state("users", new Map<string, UserSocketDTO>())
   .ws("/ws", {
     open: async (ws) => {
-      const { userId, sessionId } = ws.data.query;
-      if (userId && sessionId) {
-        const userService = new UserService();
-        const user = (await userService.getById(userId)) as User;
-        if (user?.sessionId !== sessionId) {
-          // is logged out
-          console.error("Invalid sessionId");
-          ws.close(1008, "Invalid session");
-        } else {
-          // is logged in
-          console.log(`${user.username} has connected with websocket ${ws.id}`);
-          subscribe(user, ChannelTypes.PUBLIC_CHAT, ws);
-          const teamService = new TeamService(user.id);
-          const teams = await teamService.getByUserId(userId);
-          if (teams.length > 0) {
-            subscribe(user, ChannelTypes.TEAM_CHAT, ws);
-            subscribe(user, ChannelTypes.ONLINE_STATUS, ws);
-            console.log(`${user.username} belongs to teams ${teams.map((x) => x.name).join(", ")}`);
-            // TODO: create concept of Organization or Project or something so that we aren't alerted for each team
-            teams.forEach((team) => {
-              publish(
-                {
-                  channel: ChannelTypes.ONLINE_STATUS,
-                  user: {
-                    id: user.id,
-                    username: user.username,
-                  } as UserSocketDTO,
-                  team: {
-                    id: team.id,
-                    name: team.name,
-                  } as TeamSocketDTO,
-                  isOnline: true,
-                } as PublishMessagePayload,
-                ws,
-              );
-            });
+      try {
+        const { userId, sessionId } = ws.data.query;
+        if (userId && sessionId) {
+          const userService = new UserService();
+          const user = (await userService.getById(userId)) as User;
+          if (user?.sessionId !== sessionId) {
+            // is logged out
+            console.error("Invalid sessionId");
+            ws.close(1008, "Invalid session");
+          } else {
+            // is logged in
+            console.log(`${user.username} has connected with websocket ${ws.id}`);
+            subscribe(user, ChannelTypes.PUBLIC_CHAT, ws);
+            const organizationService = new OrganizationService(user.id);
+            const organizations = await organizationService.getByUserId(userId);
+            if (organizations.length > 0) {
+              subscribe(user, ChannelTypes.ORGANIZATION_CHAT, ws);
+              subscribe(user, ChannelTypes.TEAM_CHAT, ws);
+              subscribe(user, ChannelTypes.ONLINE_STATUS, ws);
+              console.log(`${user.username} belongs to organizations ${organizations.map((x) => x.name).join(", ")}`);
+
+              organizations.forEach((organization) => {
+                publish(
+                  {
+                    channel: ChannelTypes.ONLINE_STATUS,
+                    user: {
+                      id: user.id,
+                      username: user.username,
+                    } as UserSocketDTO,
+                    organization: {
+                      id: organization.id,
+                      name: organization.name,
+                    } as OrganizationSocketDTO,
+                    isOnline: true,
+                  } as PublishMessagePayload,
+                  ws,
+                );
+              });
+            }
           }
+        } else {
+          console.error("No sessionId provided");
+          ws.close(1008, "Authentication required");
         }
-      } else {
-        console.error("No sessionId provided");
-        ws.close(1008, "Authentication required");
+      } catch (error) {
+        console.error("Error establishing connection:", error);
+        ws.send(JSON.stringify({ error: "Error establishing connection" }));
       }
     },
     message: async (ws, message: Message) => {

@@ -10,7 +10,16 @@ import { StatusCodes } from "http-status-codes";
 import { ResponseError } from "@/lib/types";
 
 import { deriveUser } from "./deriveUser";
-import { authRoutes, mainRoutes, teamMemberRoutes, teamRoutes, todoRoutes, userRoutes } from "./routes";
+import {
+  authRoutes,
+  mainRoutes,
+  organizationMemberRoutes,
+  organizationRoutes,
+  teamMemberRoutes,
+  teamRoutes,
+  todoRoutes,
+  userRoutes,
+} from "./routes";
 
 await Bun.build({
   entrypoints: ["./src/react/index.tsx"],
@@ -46,6 +55,12 @@ const app = new Elysia()
 
   // TODOS
   .use(todoRoutes)
+
+  // ORGANIZATIONS
+  .use(organizationRoutes)
+
+  // ORGANIZATION MEMBERS
+  .use(organizationMemberRoutes)
 
   // TEAMS
   .use(teamRoutes)

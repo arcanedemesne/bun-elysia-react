@@ -2,6 +2,7 @@ export * from "./useAuthCheck";
 export * from "./useAuthLogin";
 export * from "./useAuthRegister";
 export * from "./useDebounce";
+export * from "./useOrganizations";
 export * from "./usePersistentForm";
 export * from "./useTeams";
 export * from "./useTodos";

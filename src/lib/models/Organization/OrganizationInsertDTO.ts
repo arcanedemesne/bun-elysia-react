@@ -1,6 +1,4 @@
-import { BaseEntityUserInfo } from "../BaseEntity";
-
-export interface OrganizationInsertDTO extends BaseEntityUserInfo {
+export interface OrganizationInsertDTO {
   name: string;
   description?: string;
 }

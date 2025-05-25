@@ -21,6 +21,7 @@ export const Button = ({
   mode,
   type = "button",
   onClick,
+
   children,
 }: ButtonProps) => {
   let theme;
