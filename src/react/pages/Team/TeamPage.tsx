@@ -66,11 +66,11 @@ export const TeamPage = () => {
       }))
     : [];
 
-  const { search } = useUsers();
+  const { search, invalidate: invalidateSearch } = useUsers();
 
   useEffect(() => {
     const fetchData = async () => {
-      const foundMembers = await search(searchQuery);
+      const foundMembers = await search({ organizationId: teamForEdit?.organizationId, searchQuery });
 
       const searchOptions =
         foundMembers && foundMembers.length > 0
@@ -117,6 +117,7 @@ export const TeamPage = () => {
   };
 
   const handleSuccess = () => {
+    invalidateSearch();
     refetchOrganizations();
     refetchTeams();
   };
@@ -244,6 +245,7 @@ export const TeamPage = () => {
                 });
                 setSelectedMemberId(undefined);
                 setSearchQuery(undefined);
+                handleSuccess();
               }}
             >
               Add

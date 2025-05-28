@@ -5,13 +5,13 @@ import { OrganizationService } from "@/server-lib/services";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 import { apiPrefix, organizationMemberRoute, organizationRoute } from "@/lib/constants";
-import { OrganizationMemberDTO, User } from "@/lib/models";
+import { IUser, OrganizationMemberDTO } from "@/lib/models";
 import { JwtContext, ResponseError } from "@/lib/types";
 
 export const organizationMemberRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
   return app.group(`/${apiPrefix}/${organizationRoute}/${organizationMemberRoute}`, (group) =>
     group
-      .post(``, async ({ user, body }: { user: User; body: any }) => {
+      .post(``, async ({ user, body }: { user: IUser; body: any }) => {
         const parsed = JSON.parse(body as string) as OrganizationMemberDTO;
         const service = new OrganizationService(user.id);
         const entity = await service.addMember(parsed);
@@ -24,7 +24,7 @@ export const organizationMemberRoutes = (app: Elysia<any, any, any, any, JwtCont
         }
         return entity;
       })
-      .delete(``, async ({ user, body }: { user: User; body: any }) => {
+      .delete(``, async ({ user, body }: { user: IUser; body: any }) => {
         const parsed = JSON.parse(body as string) as OrganizationMemberDTO;
         const service = new OrganizationService(user.id);
         const success = await service.removeMember(parsed);

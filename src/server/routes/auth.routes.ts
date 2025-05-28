@@ -15,7 +15,7 @@ import {
   refreshRoute,
   registerRoute,
 } from "@/lib/constants";
-import { User, UserInsertDTO, UserUpdateDTO } from "@/lib/models";
+import { IUserInsert, IUserUpdate } from "@/lib/models";
 import { JwtContext, LoginRequest, RegisterRequest, ResponseError } from "@/lib/types";
 
 const getExpTimestamp = (secondsFromNow: number) => {
@@ -71,7 +71,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
             isOnline: true,
             sessionId: crypto.randomUUID(),
             refreshToken: refreshJWTToken,
-          } as UserUpdateDTO);
+          } as IUserUpdate);
 
           if (updatedUser?.isOnline) {
             set.status = StatusCodes.OK;
@@ -121,7 +121,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           isOnline: false,
           sessionId: null,
           refreshToken: null,
-        } as UserInsertDTO;
+        } as IUserInsert;
 
         const insertedUser = await service.insert(newUser);
         if (!insertedUser) {
@@ -162,7 +162,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           isOnline: true,
           sessionId: crypto.randomUUID(),
           refreshToken: refreshJWTToken,
-        } as UserUpdateDTO);
+        } as IUserUpdate);
 
         if (updatedUser?.isOnline) {
           set.status = StatusCodes.OK;
@@ -244,7 +244,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           isOnline: true,
           sessionId: crypto.randomUUID(),
           refreshToken: refreshJWTToken,
-        } as UserUpdateDTO);
+        } as IUserUpdate);
 
         if (updatedUser?.isOnline) {
           set.status = StatusCodes.OK;
@@ -288,7 +288,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
         }
 
         const userId = jwtPayload.sub;
-        const user = (await service.getById(userId!)) as User;
+        const user = await service.getById(userId!);
 
         if (!user || !user.isOnline) {
           // handle error for user not found from the provided access token
@@ -315,7 +315,7 @@ export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
               isOnline: false,
               sessionId: null,
               refreshToken: null,
-            } as UserUpdateDTO);
+            } as IUserUpdate);
           }
         }
         accessToken.remove();

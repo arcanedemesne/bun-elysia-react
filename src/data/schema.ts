@@ -37,17 +37,21 @@ export const users = schema.table(
     ...trackableEntityTimeStamps,
     ...trackableEntityActive,
   },
-  (table) => [index().on(table.username), index().on(table.email)],
+  (table) => [index().on(table.username), index().on(table.email), index().on(table.active)],
 );
 
-export const organizations = schema.table("organizations", {
-  ...trackableEntityId,
-  name: varchar({ length: 255 }).unique().notNull(),
-  description: varchar({ length: 255 }),
-  ...trackableEntityUserInfo,
-  ...trackableEntityTimeStamps,
-  ...trackableEntityActive,
-});
+export const organizations = schema.table(
+  "organizations",
+  {
+    ...trackableEntityId,
+    name: varchar({ length: 255 }).unique().notNull(),
+    description: varchar({ length: 255 }),
+    ...trackableEntityUserInfo,
+    ...trackableEntityTimeStamps,
+    ...trackableEntityActive,
+  },
+  (table) => [index().on(table.name), index().on(table.active)],
+);
 
 export const usersToOrganizations = schema.table(
   "users_to_organizations",
@@ -65,8 +69,28 @@ export const usersToOrganizations = schema.table(
     ...trackableEntityUserInfo,
     ...trackableEntityTimeStamps,
   },
-  (table) => [primaryKey({ columns: [table.userId, table.organizationId] })],
+  (table) => [
+    primaryKey({ columns: [table.userId, table.organizationId] }),
+    index().on(table.organizationId),
+    index().on(table.userId),
+  ],
 );
+
+export const organizationRelations = relations(organizations, ({ many }) => ({
+  usersToOrganizations: many(usersToOrganizations),
+  teamsToOrganization: many(teams),
+}));
+
+export const usersOrganizationsRelations = relations(usersToOrganizations, ({ one }) => ({
+  user: one(users, {
+    fields: [usersToOrganizations.userId],
+    references: [users.id],
+  }),
+  team: one(organizations, {
+    fields: [usersToOrganizations.organizationId],
+    references: [organizations.id],
+  }),
+}));
 
 export const teams = schema.table(
   "teams",
@@ -82,7 +106,7 @@ export const teams = schema.table(
     ...trackableEntityTimeStamps,
     ...trackableEntityActive,
   },
-  (table) => [index().on(table.name)],
+  (table) => [index().on(table.name), index().on(table.active)],
 );
 
 export const usersToTeams = schema.table(
@@ -101,12 +125,16 @@ export const usersToTeams = schema.table(
     ...trackableEntityUserInfo,
     ...trackableEntityTimeStamps,
   },
-  (table) => [primaryKey({ columns: [table.userId, table.teamId] })],
+  (table) => [
+    primaryKey({ columns: [table.userId, table.teamId] }),
+    index().on(table.teamId),
+    index().on(table.userId),
+  ],
 );
 
 export const usersRelations = relations(users, ({ many }) => ({
   usersToTeams: many(usersToTeams),
-  usersToOrganizaions: many(usersToOrganizations),
+  usersToOrganizations: many(usersToOrganizations),
 }));
 
 export const teamsRelations = relations(teams, ({ one, many }) => ({
@@ -144,7 +172,12 @@ export const todos = schema.table(
     ...trackableEntityTimeStamps,
     ...trackableEntityActive,
   },
-  (table) => [index().on(table.teamId), index().on(table.createdBy)],
+  (table) => [
+    index().on(table.organizationId),
+    index().on(table.teamId),
+    index().on(table.createdBy),
+    index().on(table.active),
+  ],
 );
 
 export const usersTodosRelations = relations(users, ({ many }) => ({
@@ -180,23 +213,32 @@ export const todosOrganizationRelation = relations(todos, ({ one }) => ({
   }),
 }));
 
-export const messages = schema.table("messages", {
-  ...trackableEntityId,
-  channel: varchar({ length: 255 }).notNull(),
-  message: varchar({ length: 255 }).notNull(),
-  organizationId: uuid().references(() => organizations.id, {
-    onDelete: "cascade",
-  }),
-  teamId: uuid().references(() => teams.id, {
-    onDelete: "cascade",
-  }),
-  recipient: uuid().references(() => users.id, {
-    onDelete: "cascade",
-  }),
-  ...trackableEntityUserInfo,
-  ...trackableEntityTimeStamps,
-  ...trackableEntityActive,
-});
+export const messages = schema.table(
+  "messages",
+  {
+    ...trackableEntityId,
+    channel: varchar({ length: 255 }).notNull(),
+    message: varchar({ length: 255 }).notNull(),
+    organizationId: uuid().references(() => organizations.id, {
+      onDelete: "cascade",
+    }),
+    teamId: uuid().references(() => teams.id, {
+      onDelete: "cascade",
+    }),
+    recipient: uuid().references(() => users.id, {
+      onDelete: "cascade",
+    }),
+    ...trackableEntityUserInfo,
+    ...trackableEntityTimeStamps,
+    ...trackableEntityActive,
+  },
+  (table) => [
+    index().on(table.organizationId),
+    index().on(table.teamId),
+    index().on(table.createdBy),
+    index().on(table.active),
+  ],
+);
 
 export const usersMessagesRelations = relations(users, ({ many }) => ({
   messages: many(messages),

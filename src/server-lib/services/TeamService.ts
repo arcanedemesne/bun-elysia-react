@@ -3,7 +3,7 @@ import { Team, TeamDTO, TeamInsertDTO, TeamMemberDTO, TeamUpdateDTO } from "@/li
 import { BaseService } from ".";
 import { TeamRepository } from "../respositories";
 
-export class TeamService extends BaseService<Team, TeamDTO, TeamInsertDTO, TeamUpdateDTO> {
+export class TeamService extends BaseService<Team, TeamInsertDTO, TeamUpdateDTO> {
   repo: TeamRepository;
 
   constructor(userId: string) {

@@ -9,9 +9,16 @@ export const useUsers = () => {
 
   const queryClient = useQueryClient();
 
-  const search = async (search?: string): Promise<UserDTO[]> => {
-    if (search && search?.length >= 3) {
-      const queryString = search ? `search=${search}` : "";
+  const search = async ({
+    organizationId,
+    searchQuery,
+  }: {
+    organizationId?: string;
+    searchQuery?: string;
+  }): Promise<UserDTO[]> => {
+    if (searchQuery && searchQuery?.length >= 3) {
+      const prefix = organizationId ? `organizationId=${organizationId}` : null;
+      const queryString = prefix && searchQuery ? `${prefix}&search=${searchQuery}` : "";
       return await apiService.get<UserDTO[]>(`/${apiPrefix}/${userRoute}?${queryString}`);
     }
     return [];
@@ -24,14 +31,19 @@ export const useUsers = () => {
     });
   };
 
-  const refetch = () => {
+  const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["userData"] });
+  };
+
+  const refetch = () => {
+    invalidate();
     queryClient.refetchQueries({ queryKey: ["userData"] });
   };
 
   return {
     search,
     getData: GetData,
+    invalidate,
     refetch,
   };
 };

@@ -43,9 +43,9 @@ export const TypeAheadSearchInput = ({
         option.label.toLowerCase().includes(debouncedSearchTerm.toLowerCase()),
       );
       setFilteredOptions(filtered);
-      setShowOptions(filtered.length > 0);
+      setShowOptions(true);
     } else {
-      setFilteredOptions(options); // Show all options when search term is empty
+      setFilteredOptions(options);
       setShowOptions(false);
     }
   }, [debouncedSearchTerm, options, onChange]);
@@ -57,10 +57,10 @@ export const TypeAheadSearchInput = ({
   const handleOptionSelect = (value: string) => {
     const selectedOption = options.find((option) => option.value === value);
     if (selectedOption) {
-      setSearchTerm(selectedOption.label); // Display the label in the input
+      setSearchTerm(selectedOption.label);
     }
     onSelect(value);
-    setShowOptions(false); // Close dropdown after selection
+    setShowOptions(false);
   };
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -106,7 +106,7 @@ export const TypeAheadSearchInput = ({
               </div>
             ))
           ) : (
-            <div className="px-4 py-2 text-gray-500">No options found</div>
+            <div className="px-4 py-2 text-gray-500">No results found</div>
           )}
         </div>
       )}

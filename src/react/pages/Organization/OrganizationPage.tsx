@@ -57,7 +57,7 @@ export const OrganizationPage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const foundMembers = await search(searchQuery);
+      const foundMembers = await search({ searchQuery });
 
       const searchOptions =
         foundMembers && foundMembers.length > 0

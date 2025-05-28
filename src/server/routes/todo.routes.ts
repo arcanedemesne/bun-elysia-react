@@ -5,13 +5,13 @@ import { TodoService } from "@/server-lib/services";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 import { apiPrefix, todoRoute } from "@/lib/constants";
-import { TodoInsertDTO, TodoUpdateDTO, User } from "@/lib/models";
+import { IUser, TodoInsertDTO, TodoUpdateDTO } from "@/lib/models";
 import { JwtContext, ResponseError } from "@/lib/types";
 
 export const todoRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
   return app.group(`/${apiPrefix}/${todoRoute}`, (group) =>
     group
-      .get(``, async ({ user, query }: { user: User; query: any }) => {
+      .get(``, async ({ user, query }: { user: IUser; query: any }) => {
         const service = new TodoService(user.id);
         if (query.userId) {
           return await service.getByUserId(query.userId);
@@ -22,7 +22,7 @@ export const todoRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
         }
         return await service.getAll();
       })
-      .get(`/:id`, async ({ user, params: { id } }: { user: User; params: { id: string } }) => {
+      .get(`/:id`, async ({ user, params: { id } }: { user: IUser; params: { id: string } }) => {
         const service = new TodoService(user.id);
         const todo = await service.getById(id);
         if (!todo) {
@@ -34,7 +34,7 @@ export const todoRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
         }
         return todo;
       })
-      .post(``, async ({ user, body }: { user: User; body: any }) => {
+      .post(``, async ({ user, body }: { user: IUser; body: any }) => {
         const parsed = JSON.parse(body as string) as TodoInsertDTO;
         const service = new TodoService(user.id);
         const entity = await service.insert(parsed);
@@ -47,7 +47,7 @@ export const todoRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
         }
         return entity;
       })
-      .put(`/:id`, async ({ user, params: { id }, body }: { user: User; params: { id: string }; body: any }) => {
+      .put(`/:id`, async ({ user, params: { id }, body }: { user: IUser; params: { id: string }; body: any }) => {
         const parsed = JSON.parse(body as string) as TodoUpdateDTO;
 
         if (id !== parsed.id) {
@@ -69,7 +69,7 @@ export const todoRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
         }
         return entity;
       })
-      .delete(`/:id`, async ({ user, params: { id } }: { user: User; params: { id: string } }) => {
+      .delete(`/:id`, async ({ user, params: { id } }: { user: IUser; params: { id: string } }) => {
         const service = new TodoService(user.id);
         const success = await service.delete(id);
         if (!success) {

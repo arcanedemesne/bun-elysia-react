@@ -1,9 +1,9 @@
-import { User, UserDTO, UserInsertDTO, UserUpdateDTO } from "@/lib/models";
+import { IUser, IUserInsert, IUserUpdate, User, UserDTO } from "@/lib/models";
 
 import { BaseService } from ".";
 import { UserRepository } from "../respositories";
 
-export class UserService extends BaseService<User, UserDTO, UserInsertDTO, UserUpdateDTO> {
+export class UserService extends BaseService<IUser, IUserInsert, IUserUpdate> {
   repo: UserRepository;
 
   constructor() {
@@ -12,23 +12,24 @@ export class UserService extends BaseService<User, UserDTO, UserInsertDTO, UserU
     this.repo = repo;
   }
 
-  async search(query: string): Promise<UserDTO[]> {
-    return await this.repo.search(query);
+  async search(organizationId: string, query: string): Promise<UserDTO[]> {
+    const users = await this.repo.search(organizationId, query);
+    return users.map((x) => new User(x).toDTO());
   }
 
-  async getByTeamIds(teamIds: string[]): Promise<UserDTO[]> {
+  async getByTeamIds(teamIds: string[]): Promise<string[]> {
     return await this.repo.getByTeamIds(teamIds);
   }
 
-  async getByOrganizationIds(organizationIds: string[]): Promise<UserDTO[]> {
+  async getByOrganizationIds(organizationIds: string[]): Promise<string[]> {
     return await this.repo.getByOrganizationIds(organizationIds);
   }
 
-  async getByUsername(username: string): Promise<User | null> {
+  async getByUsername(username: string): Promise<IUser | null> {
     return await this.repo.getByUsername(username);
   }
 
-  async getByEmail(email: string): Promise<User | null> {
+  async getByEmail(email: string): Promise<IUser | null> {
     return await this.repo.getByEmail(email);
   }
 }

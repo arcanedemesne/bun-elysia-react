@@ -1,6 +1,6 @@
 import { BaseEntityActive, BaseEntityId } from "../BaseEntity";
 
-export interface UserUpdateDTO extends BaseEntityId, BaseEntityActive {
+export interface IUserUpdate extends BaseEntityId, BaseEntityActive {
   username?: string;
   email?: string;
   password?: string;

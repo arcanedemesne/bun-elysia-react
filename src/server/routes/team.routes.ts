@@ -5,13 +5,13 @@ import { TeamService } from "@/server-lib/services";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 import { apiPrefix, teamRoute } from "@/lib/constants";
-import { TeamInsertDTO, TeamUpdateDTO, User } from "@/lib/models";
+import { IUser, TeamInsertDTO, TeamUpdateDTO } from "@/lib/models";
 import { JwtContext, ResponseError } from "@/lib/types";
 
 export const teamRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
   return app.group(`/${apiPrefix}/${teamRoute}`, (group) =>
     group
-      .get(``, async ({ user, query }: { user: User; query: any }) => {
+      .get(``, async ({ user, query }: { user: IUser; query: any }) => {
         const service = new TeamService(user.id);
         if (query.userId) {
           return await service.getByUserId(query.userId);
@@ -20,7 +20,7 @@ export const teamRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
         }
         return await service.getAll();
       })
-      .get(`/:id`, async ({ user, params: { id } }: { user: User; params: { id: string } }) => {
+      .get(`/:id`, async ({ user, params: { id } }: { user: IUser; params: { id: string } }) => {
         const service = new TeamService(user.id);
         const entity = await service.getById(id);
         if (!entity) {
@@ -32,7 +32,7 @@ export const teamRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
         }
         return entity;
       })
-      .post(``, async ({ user, body }: { user: User; body: any }) => {
+      .post(``, async ({ user, body }: { user: IUser; body: any }) => {
         const parsed = JSON.parse(body as string) as TeamInsertDTO;
         const service = new TeamService(user.id);
         const entity = await service.insert(parsed);
@@ -45,7 +45,7 @@ export const teamRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
         }
         return entity;
       })
-      .put(`/:id`, async ({ user, params: { id }, body }: { user: User; params: { id: string }; body: any }) => {
+      .put(`/:id`, async ({ user, params: { id }, body }: { user: IUser; params: { id: string }; body: any }) => {
         const parsed = JSON.parse(body as string) as TeamUpdateDTO;
         const service = new TeamService(user.id);
 
@@ -67,7 +67,7 @@ export const teamRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
         }
         return entity;
       })
-      .delete(`/:id`, async ({ user, params: { id } }: { user: User; params: { id: string } }) => {
+      .delete(`/:id`, async ({ user, params: { id } }: { user: IUser; params: { id: string } }) => {
         const service = new TeamService(user.id);
         const success = await service.delete(id);
         if (!success) {

@@ -12,7 +12,7 @@ const createdBy = alias(users, "createdBy");
 const updatedBy = alias(users, "updatedBy");
 const deletedBy = alias(users, "deletedBy");
 
-export class TodoRepository implements IRepository<Todo, TodoDTO, TodoInsertDTO, TodoUpdateDTO> {
+export class TodoRepository implements IRepository<Todo, TodoInsertDTO, TodoUpdateDTO> {
   constructor(public userId: string) {}
 
   selectDTO = {
@@ -37,37 +37,37 @@ export class TodoRepository implements IRepository<Todo, TodoDTO, TodoInsertDTO,
     },
   };
 
-  async getAll(): Promise<TodoDTO[]> {
+  async getAll(): Promise<Todo[]> {
     try {
       const data = await db
-        .select(this.selectDTO)
+        .select()
         .from(todos)
-        .innerJoin(createdBy, eq(todos.createdBy, createdBy.id))
-        .fullJoin(updatedBy, eq(todos.updatedBy, updatedBy.id))
-        .fullJoin(deletedBy, eq(todos.deletedBy, deletedBy.id))
+        // .innerJoin(createdBy, eq(todos.createdBy, createdBy.id))
+        // .fullJoin(updatedBy, eq(todos.updatedBy, updatedBy.id))
+        // .fullJoin(deletedBy, eq(todos.deletedBy, deletedBy.id))
         .where(eq(todos.active, true))
         .orderBy(todos.createdAt);
-      return data as TodoDTO[];
+      return data as Todo[];
     } catch (error) {
       return throwDbError("Error getting todos", error);
     }
   }
 
-  async getById(id: string): Promise<TodoDTO | null> {
+  async getById(id: string): Promise<Todo | null> {
     try {
       const data = await db
-        .select(this.selectDTO)
+        .select()
         .from(todos)
-        .innerJoin(createdBy, eq(todos.createdBy, createdBy.id))
-        .fullJoin(updatedBy, eq(todos.updatedBy, updatedBy.id))
-        .fullJoin(deletedBy, eq(todos.deletedBy, deletedBy.id))
+        // .innerJoin(createdBy, eq(todos.createdBy, createdBy.id))
+        // .fullJoin(updatedBy, eq(todos.updatedBy, updatedBy.id))
+        // .fullJoin(deletedBy, eq(todos.deletedBy, deletedBy.id))
         .where(and(eq(todos.id, id), eq(todos.active, true)));
 
       if (data.length === 0) {
         return null;
       }
 
-      return data[0] as TodoDTO;
+      return data[0] as Todo;
     } catch (error) {
       return throwDbError("Error getting todos", error);
     }

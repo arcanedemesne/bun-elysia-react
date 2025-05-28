@@ -18,7 +18,10 @@ const nukeFromSpace = async () => {
     console.log(`Successfully deleted migrations folder: ${migrationsDirectory}`);
 
     console.log(`Dropping existing tables from schema "${schemaName}"...`);
+    await client.query(`DROP TABLE IF EXISTS "${schemaName}".messages CASCADE`);
     await client.query(`DROP TABLE IF EXISTS "${schemaName}".todos CASCADE`);
+    await client.query(`DROP TABLE IF EXISTS "${schemaName}".organizations CASCADE`);
+    await client.query(`DROP TABLE IF EXISTS "${schemaName}".users_to_organizations CASCADE`);
     await client.query(`DROP TABLE IF EXISTS "${schemaName}".teams CASCADE`);
     await client.query(`DROP TABLE IF EXISTS "${schemaName}".users_to_teams CASCADE`);
     await client.query(`DROP TABLE IF EXISTS "${schemaName}".users CASCADE`);

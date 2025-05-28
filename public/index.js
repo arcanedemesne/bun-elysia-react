@@ -38634,9 +38634,13 @@ var useTodos = () => {
 var useUsers = () => {
   const apiService = new ApiService;
   const queryClient = useQueryClient();
-  const search = async (search2) => {
-    if (search2 && search2?.length >= 3) {
-      const queryString = search2 ? `search=${search2}` : "";
+  const search = async ({
+    organizationId,
+    searchQuery
+  }) => {
+    if (searchQuery && searchQuery?.length >= 3) {
+      const prefix = organizationId ? `organizationId=${organizationId}` : null;
+      const queryString = prefix && searchQuery ? `${prefix}&search=${searchQuery}` : "";
       return await apiService.get(`/${apiPrefix}/${userRoute}?${queryString}`);
     }
     return [];
@@ -38647,13 +38651,17 @@ var useUsers = () => {
       queryFn: async () => await apiService.get(`/${apiPrefix}/${userRoute}`)
     });
   };
-  const refetch = () => {
+  const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["userData"] });
+  };
+  const refetch = () => {
+    invalidate();
     queryClient.refetchQueries({ queryKey: ["userData"] });
   };
   return {
     search,
     getData: GetData,
+    invalidate,
     refetch
   };
 };
@@ -39256,7 +39264,7 @@ var TypeAheadSearchInput = ({
       onChange && onChange(debouncedSearchTerm);
       const filtered = options.filter((option) => option.label.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
       setFilteredOptions(filtered);
-      setShowOptions(filtered.length > 0);
+      setShowOptions(true);
     } else {
       setFilteredOptions(options);
       setShowOptions(false);
@@ -39309,7 +39317,7 @@ var TypeAheadSearchInput = ({
     onClick: () => handleOptionSelect(option.value)
   }, option.label)) : /* @__PURE__ */ import_react41.default.createElement("div", {
     className: "px-4 py-2 text-gray-500"
-  }, "No options found")), error && /* @__PURE__ */ import_react41.default.createElement(ErrorMessage, null, error));
+  }, "No results found")), error && /* @__PURE__ */ import_react41.default.createElement(ErrorMessage, null, error));
 };
 // src/lib/components/Modals/DeleteModal.tsx
 var import_react42 = __toESM(require_react(), 1);
@@ -39577,7 +39585,7 @@ var OrganizationPage = () => {
   const { search } = useUsers();
   import_react52.useEffect(() => {
     const fetchData = async () => {
-      const foundMembers = await search(searchQuery);
+      const foundMembers = await search({ searchQuery });
       const searchOptions2 = foundMembers && foundMembers.length > 0 ? foundMembers.filter((fm) => !organizationForEdit?.members.map((m) => m.id).includes(fm.id)).map((m) => ({
         label: m.username,
         value: m.id
@@ -39849,10 +39857,10 @@ var TeamPage = () => {
     label: `${t.name} (${t.teamsCount} team${t.teamsCount > 0 ? "s" : ""})`,
     value: t.id
   })) : [];
-  const { search } = useUsers();
+  const { search, invalidate: invalidateSearch } = useUsers();
   import_react55.useEffect(() => {
     const fetchData = async () => {
-      const foundMembers = await search(searchQuery);
+      const foundMembers = await search({ organizationId: teamForEdit?.organizationId, searchQuery });
       const searchOptions2 = foundMembers && foundMembers.length > 0 ? foundMembers.filter((fm) => !teamForEdit?.members.map((m) => m.id).includes(fm.id)).map((m) => ({
         label: m.username,
         value: m.id
@@ -39884,6 +39892,7 @@ var TeamPage = () => {
     setChatId(undefined);
   };
   const handleSuccess = () => {
+    invalidateSearch();
     refetchOrganizations();
     refetchTeams();
   };
@@ -39993,6 +40002,7 @@ var TeamPage = () => {
       });
       setSelectedMemberId(undefined);
       setSearchQuery(undefined);
+      handleSuccess();
     }
   }, "Add"))), teamForEdit && teamForEdit.members && /* @__PURE__ */ import_react55.default.createElement("div", {
     className: "relative mt-4 flex items-center"
@@ -40312,4 +40322,4 @@ import_client.hydrateRoot(document, /* @__PURE__ */ import_react59.default.creat
   user: userDTO
 })));
 
-//# debugId=19DEB0046B6DFE4F64756E2164756E21
+//# debugId=88EC56EBE55A82FA64756E2164756E21

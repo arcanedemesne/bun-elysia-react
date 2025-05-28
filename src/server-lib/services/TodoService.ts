@@ -1,9 +1,9 @@
-import { Todo, TodoDTO, TodoInsertDTO, TodoUpdateDTO } from "@/lib/models";
+import { Todo, TodoInsertDTO, TodoUpdateDTO } from "@/lib/models";
 
 import { BaseService } from ".";
 import { TodoRepository } from "../respositories";
 
-export class TodoService extends BaseService<Todo, TodoDTO, TodoInsertDTO, TodoUpdateDTO> {
+export class TodoService extends BaseService<Todo, TodoInsertDTO, TodoUpdateDTO> {
   repo: TodoRepository;
 
   constructor(userId: string) {

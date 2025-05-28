@@ -1,23 +1,23 @@
 import { IBaseService } from ".";
 import { IRepository } from "../respositories";
 
-export class BaseService<Entity, DTO, InsertDTO, UpdateDTO> implements IBaseService<Entity, DTO, InsertDTO, UpdateDTO> {
-  constructor(public repo: IRepository<Entity, DTO, InsertDTO, UpdateDTO>) {}
+export class BaseService<IEntity, IInsert, IUpdate> implements IBaseService<IEntity, IInsert, IUpdate> {
+  constructor(public repo: IRepository<IEntity, IInsert, IUpdate>) {}
 
-  async getAll(): Promise<Array<Entity | DTO>> {
+  async getAll(): Promise<Array<IEntity>> {
     return this.repo.getAll();
   }
 
-  async getById(id: string): Promise<Entity | DTO | null> {
+  async getById(id: string): Promise<IEntity | null> {
     return this.repo.getById(id);
   }
 
-  async insert(dto: InsertDTO): Promise<Entity | null> {
-    return this.repo.insert(dto);
+  async insert(model: IInsert): Promise<IEntity | null> {
+    return this.repo.insert(model);
   }
 
-  async update(dto: UpdateDTO): Promise<Entity | null> {
-    return this.repo.update(dto);
+  async update(model: IUpdate): Promise<IEntity | null> {
+    return this.repo.update(model);
   }
 
   async delete(id: string): Promise<boolean> {

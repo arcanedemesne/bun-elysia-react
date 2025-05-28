@@ -1,7 +1,7 @@
-export interface IRepository<Entity, DTO, InsertDTO, UpdateDTO> {
-  getAll: () => Promise<Array<Entity | DTO>>;
-  getById: (id: string) => Promise<Entity | DTO | null>;
-  insert: (entity: InsertDTO) => Promise<Entity | null>;
-  update: (entity: UpdateDTO) => Promise<Entity | null>;
+export interface IRepository<IEntity, IInsert, IUpdate> {
+  getAll: () => Promise<Array<IEntity>>;
+  getById: (id: string) => Promise<IEntity | null>;
+  insert: (entity: IInsert) => Promise<IEntity | null>;
+  update: (entity: IUpdate) => Promise<IEntity | null>;
   delete: (id: string) => Promise<boolean>;
 }

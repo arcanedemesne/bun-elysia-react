@@ -5,20 +5,20 @@ import { OrganizationService } from "@/server-lib/services";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 import { apiPrefix, organizationRoute } from "@/lib/constants";
-import { OrganizationInsertDTO, OrganizationUpdateDTO, User } from "@/lib/models";
+import { IUser, OrganizationInsertDTO, OrganizationUpdateDTO } from "@/lib/models";
 import { JwtContext, ResponseError } from "@/lib/types";
 
 export const organizationRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
   return app.group(`/${apiPrefix}/${organizationRoute}`, (group) =>
     group
-      .get(``, async ({ user, query }: { user: User; query: any }) => {
+      .get(``, async ({ user, query }: { user: IUser; query: any }) => {
         const service = new OrganizationService(user.id);
         if (query.userId) {
           return await service.getByUserId(query.userId);
         }
         return await service.getAll();
       })
-      .get(`/:id`, async ({ user, params: { id } }: { user: User; params: { id: string } }) => {
+      .get(`/:id`, async ({ user, params: { id } }: { user: IUser; params: { id: string } }) => {
         const service = new OrganizationService(user.id);
         const entity = await service.getById(id);
         if (!entity) {
@@ -30,7 +30,7 @@ export const organizationRoutes = (app: Elysia<any, any, any, any, JwtContext>) 
         }
         return entity;
       })
-      .post(``, async ({ user, body }: { user: User; body: any }) => {
+      .post(``, async ({ user, body }: { user: IUser; body: any }) => {
         const parsed = JSON.parse(body as string) as OrganizationInsertDTO;
         const service = new OrganizationService(user.id);
         const entity = await service.insert(parsed);
@@ -43,7 +43,7 @@ export const organizationRoutes = (app: Elysia<any, any, any, any, JwtContext>) 
         }
         return entity;
       })
-      .put(`/:id`, async ({ user, params: { id }, body }: { user: User; params: { id: string }; body: any }) => {
+      .put(`/:id`, async ({ user, params: { id }, body }: { user: IUser; params: { id: string }; body: any }) => {
         const parsed = JSON.parse(body as string) as OrganizationUpdateDTO;
         const service = new OrganizationService(user.id);
 
@@ -65,7 +65,7 @@ export const organizationRoutes = (app: Elysia<any, any, any, any, JwtContext>) 
         }
         return entity;
       })
-      .delete(`/:id`, async ({ user, params: { id } }: { user: User; params: { id: string } }) => {
+      .delete(`/:id`, async ({ user, params: { id } }: { user: IUser; params: { id: string } }) => {
         const service = new OrganizationService(user.id);
         const success = await service.delete(id);
         if (!success) {

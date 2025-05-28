@@ -1,3 +1,5 @@
+import { SQL, sql } from "drizzle-orm";
+
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 import { ResponseError } from "@/lib/types";
@@ -10,4 +12,20 @@ export const throwDbError = (messagePrefix: string, error?: unknown) => {
     statusText: ReasonPhrases.INTERNAL_SERVER_ERROR,
     message,
   });
+};
+
+type PlaceholderType = Record<string, SQL<unknown> | any>;
+type ValueType = Record<string, any>;
+type ReturnType = { placeholders: PlaceholderType; values: ValueType };
+export const paramaterize = (payload: any, wrapInSql?: boolean | undefined): ReturnType => {
+  const placeholders: PlaceholderType = {};
+  const values: ValueType = {};
+
+  for (const key in payload) {
+    if (Object.prototype.hasOwnProperty.call(payload, key) && payload[key] !== undefined) {
+      placeholders[key] = wrapInSql ? sql`${sql.placeholder(key)}` : sql.placeholder(key);
+      values[key] = payload[key];
+    }
+  }
+  return { placeholders, values };
 };

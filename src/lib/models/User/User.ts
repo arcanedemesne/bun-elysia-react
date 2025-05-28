@@ -1,10 +1,24 @@
-import { BaseEntityActive, BaseEntityId, BaseEntityTimeStamps } from "@/lib/models/BaseEntity";
+import { BaseEntityId } from "@/lib/models/BaseEntity";
 
-export interface User extends BaseEntityId, BaseEntityTimeStamps, BaseEntityActive {
+import { IUser } from "./IUser";
+
+export interface UserDTO extends BaseEntityId {
   username: string;
-  email: string;
-  password: string;
-  isOnline: boolean;
-  sessionId: string | null;
-  refreshToken: string | null;
+  sessionId?: string | null;
+}
+
+export interface UserSocketDTO extends BaseEntityId {
+  username: string;
+}
+
+export class User {
+  constructor(public user: IUser) {}
+
+  toDTO = (sessionId?: boolean) => {
+    return {
+      id: this.user.id,
+      username: this.user.username,
+      sessionId: sessionId ? this.user.sessionId : undefined,
+    } as UserDTO;
+  };
 }

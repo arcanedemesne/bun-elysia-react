@@ -5,7 +5,7 @@ import { UserService } from "@/server-lib/services";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 import { apiPrefix, userRoute } from "@/lib/constants";
-import { UserInsertDTO, UserUpdateDTO } from "@/lib/models";
+import { IUserInsert, IUserUpdate } from "@/lib/models";
 import { JwtContext, ResponseError } from "@/lib/types";
 
 export const userRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
@@ -13,8 +13,8 @@ export const userRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
     group
       .get(``, async ({ query }) => {
         const service = new UserService();
-        if (query.search) {
-          return await service.search(query.search);
+        if (query.organizationId && query.search) {
+          return await service.search(query.organizationId, query.search);
         }
         return await service.getAll();
       })
@@ -30,8 +30,29 @@ export const userRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
         }
         return user;
       })
+      .post(``, async ({ body }) => {
+        const parsed = JSON.parse(body as string) as IUserInsert;
+        const service = new UserService();
+        let user = await service.getByUsername(parsed.username);
+        if (user) {
+          return ResponseError.throw({
+            status: StatusCodes.CONFLICT,
+            statusText: ReasonPhrases.CONFLICT,
+            message: `User with username ${parsed.username} already exists`,
+          });
+        }
+        user = await service.insert(parsed);
+        if (!user) {
+          return ResponseError.throw({
+            status: StatusCodes.CONFLICT,
+            statusText: ReasonPhrases.CONFLICT,
+            message: `User with username ${parsed.username} could not be created`,
+          });
+        }
+        return user;
+      })
       .put(`/:id`, async ({ params: { id }, body }) => {
-        const parsed = JSON.parse(body as string) as UserUpdateDTO;
+        const parsed = JSON.parse(body as string) as IUserUpdate;
         const service = new UserService();
 
         if (id !== parsed.id) {
@@ -51,27 +72,6 @@ export const userRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
           });
         }
         return entity;
-      })
-      .post(``, async ({ body }) => {
-        const parsed = JSON.parse(body as string) as UserInsertDTO;
-        const service = new UserService();
-        let user = await service.getByUsername(parsed.username);
-        if (user) {
-          return ResponseError.throw({
-            status: StatusCodes.CONFLICT,
-            statusText: ReasonPhrases.CONFLICT,
-            message: `User with username ${parsed.username} already exists`,
-          });
-        }
-        user = await service.insert(parsed);
-        if (!user) {
-          return ResponseError.throw({
-            status: StatusCodes.CONFLICT,
-            statusText: ReasonPhrases.CONFLICT,
-            message: `User with username ${parsed.username} could not be created`,
-          });
-        }
-        return user;
       })
       .delete(`/:id`, async ({ params: { id } }) => {
         const service = new UserService();

@@ -19,9 +19,7 @@ const createdBy = alias(users, "createdBy");
 const updatedBy = alias(users, "updatedBy");
 const deletedBy = alias(users, "deletedBy");
 
-export class OrganizationRepository
-  implements IRepository<Organization, OrganizationDTO, OrganizationInsertDTO, OrganizationUpdateDTO>
-{
+export class OrganizationRepository implements IRepository<Organization, OrganizationInsertDTO, OrganizationUpdateDTO> {
   constructor(public userId: string) {}
 
   selectDTO = {
@@ -53,24 +51,23 @@ export class OrganizationRepository
     return throwDbError("Not implemented");
   }
 
-  async getById(id: string): Promise<OrganizationDTO | null> {
+  async getById(id: string): Promise<Organization | null> {
     try {
       const data = await db
-        .select(this.selectDTO)
+        .select()
         .from(organizations)
-        .innerJoin(createdBy, eq(organizations.createdBy, createdBy.id))
-        .fullJoin(updatedBy, eq(organizations.updatedBy, updatedBy.id))
-        .fullJoin(deletedBy, eq(organizations.deletedBy, deletedBy.id))
+        // .innerJoin(createdBy, eq(organizations.createdBy, createdBy.id))
+        // .fullJoin(updatedBy, eq(organizations.updatedBy, updatedBy.id))
+        // .fullJoin(deletedBy, eq(organizations.deletedBy, deletedBy.id))
         .where(and(eq(organizations.id, id), eq(organizations.active, true)));
 
       if (data.length === 0) {
         return null;
       }
+      const response = data[0] as Organization;
 
-      const response = data[0] as unknown as OrganizationDTO;
-
-      const members = await this.getMembers(response.id);
-      response.members.push(...members);
+      // const members = await this.getMembers(response.id);
+      // response.members.push(...members);
 
       return response;
     } catch (error) {

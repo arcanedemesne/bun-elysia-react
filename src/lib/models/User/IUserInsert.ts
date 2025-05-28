@@ -1,4 +1,4 @@
-export interface UserInsertDTO {
+export interface IUserInsert {
   username: string;
   email: string;
   password: string;

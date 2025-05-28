@@ -51,13 +51,9 @@ export const mainRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
       const jwtPayload = await jwt.verify(accessToken.value);
       if (jwtPayload) {
         const userId = jwtPayload.sub;
-        const user = (await new UserService().getById(userId!)) as User;
+        const user = await new UserService().getById(userId!);
         if (user?.isOnline) {
-          userDTO = {
-            id: user.id,
-            sessionId: user.sessionId,
-            username: user.username,
-          };
+          userDTO = new User(user).toDTO(true);
         }
       }
     }

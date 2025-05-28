@@ -5,7 +5,7 @@ import { OrganizationService, UserService } from "@/server-lib/services";
 
 import { WebSocket } from "ws";
 
-import { OrganizationSocketDTO, User, UserDTO, UserSocketDTO } from "@/lib/models";
+import { OrganizationSocketDTO, User, UserSocketDTO } from "@/lib/models";
 import { ChannelTypes, Message, PublishMessagePayload } from "@/lib/types";
 
 export interface AppState {
@@ -17,32 +17,30 @@ const publish = async (payload: PublishMessagePayload, ws: any) => {
   const store = sockets.store as AppState;
   const userService = new UserService();
 
-  const requiresOrganization = (payload.organization && payload.channel === ChannelTypes.ORGANIZATION_CHAT) ?? false;
-  const requiresTeam = (payload.team && payload.channel === ChannelTypes.TEAM_CHAT) ?? false;
-  let allowedUsers: UserDTO[] = [];
+  const requiresOrganization = payload.organization ?? false;
+  const requiresTeam = payload.team ?? false;
+  let allowedUserIds: string[] = [];
 
   if (requiresOrganization) {
-    allowedUsers = await userService.getByOrganizationIds([payload.organization!.id]);
+    allowedUserIds = await userService.getByOrganizationIds([payload.organization!.id]);
   } else if (requiresTeam) {
-    allowedUsers = await userService.getByTeamIds([payload.team!.id]);
+    allowedUserIds = await userService.getByTeamIds([payload.team!.id]);
   }
 
-  if (store.channels.has(payload.channel)) {
-    store.channels.get(payload.channel)!.forEach(async (client) => {
-      if (client.readyState === WebSocket.OPEN && client !== (ws as unknown as WebSocket)) {
-        console.log(
-          `${payload.user.username} has published a message to channel ${payload.channel} with websocket ${ws.id}`,
-        );
-        const outgoingSocketUser = store.users.get(ws.id);
+  const sendPayload = (client: any, payload: PublishMessagePayload) => {
+    client.send(JSON.stringify(payload));
+  };
 
+  if (store.channels.has(payload.channel)) {
+    console.log(`user ${payload.user.username} is attempting to publish a message on channel ${payload.channel}`);
+    store.channels.get(payload.channel)!.forEach(async (client: any) => {
+      if (client.readyState === WebSocket.OPEN && client !== (ws as unknown as WebSocket)) {
+        const outgoingSocketUser = store.users.get(client.id);
         if (outgoingSocketUser) {
-          if (
-            (payload.channel === ChannelTypes.ONLINE_STATUS || requiresOrganization || requiresTeam) &&
-            allowedUsers.map((u) => u.id).includes(outgoingSocketUser.id)
-          ) {
-            client.send(JSON.stringify(payload));
-          } else {
-            client.send(JSON.stringify(payload));
+          if (payload.channel === ChannelTypes.PUBLIC_CHAT && !requiresOrganization && !requiresTeam) {
+            sendPayload(client, payload);
+          } else if (allowedUserIds.includes(outgoingSocketUser.id)) {
+            sendPayload(client, payload);
           }
         }
       }
@@ -52,20 +50,27 @@ const publish = async (payload: PublishMessagePayload, ws: any) => {
 
 const subscribe = (user: UserSocketDTO, channel: string, ws: any) => {
   const store = sockets.store as AppState;
-  if (!store.channels.has(channel)) {
-    store.channels.set(channel, new Set<WebSocket>());
-  }
-
-  if (!store.channels.get(channel)!.has(ws)) {
-    store.channels.get(channel)!.add(ws as unknown as WebSocket);
-  }
 
   if (!store.users.has(ws.id)) {
-    // TODO: remove users old entry
+    // delete old connections
+    console.log(`deleting ${user.username}'s older connections before establishing a new one`);
+    const oldUserWS = store.users.entries().find((x) => x[1].id === user.id);
+    oldUserWS && unsubscribe(oldUserWS[0]);
+    // set new user entry for websocket
     store.users.set(ws.id, user);
   }
 
-  console.log(`${user.username} has subscribed to channel ${channel} with websocket ${ws.id}`);
+  if (!store.channels.has(channel)) {
+    // set new channel
+    store.channels.set(channel, new Set<WebSocket>());
+    console.log(`New channel ${channel} has been added`);
+  }
+
+  if (!store.channels.get(channel)!.has(ws)) {
+    // set new websocket entry for channel
+    store.channels.get(channel)!.add(ws as unknown as WebSocket);
+    console.log(`${user.username} has subscribed to channel ${channel} with websocket ${ws.id}`);
+  }
 };
 
 const unsubscribe = (ws: any) => {
@@ -92,7 +97,7 @@ const sockets = new Elysia()
         const { userId, sessionId } = ws.data.query;
         if (userId && sessionId) {
           const userService = new UserService();
-          const user = (await userService.getById(userId)) as User;
+          const user = await userService.getById(userId);
           if (user?.sessionId !== sessionId) {
             // is logged out
             console.error("Invalid sessionId");
@@ -113,10 +118,7 @@ const sockets = new Elysia()
                 publish(
                   {
                     channel: ChannelTypes.ONLINE_STATUS,
-                    user: {
-                      id: user.id,
-                      username: user.username,
-                    } as UserSocketDTO,
+                    user: new User(user).toDTO(),
                     organization: {
                       id: organization.id,
                       name: organization.name,

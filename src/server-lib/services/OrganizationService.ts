@@ -9,12 +9,7 @@ import {
 import { BaseService } from ".";
 import { OrganizationRepository } from "../respositories";
 
-export class OrganizationService extends BaseService<
-  Organization,
-  OrganizationDTO,
-  OrganizationInsertDTO,
-  OrganizationUpdateDTO
-> {
+export class OrganizationService extends BaseService<Organization, OrganizationInsertDTO, OrganizationUpdateDTO> {
   repo: OrganizationRepository;
 
   constructor(userId: string) {
