@@ -2,8 +2,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { z } from "zod";
 
-import { apiPrefix, teamMemberRoute, teamRoute } from "@/lib/constants";
-import { TeamDTO, TeamInsertDTO, TeamMemberDTO, TeamUpdateDTO } from "@/lib/models";
+import { apiPrefix, memberRoute, teamRoute } from "@/lib/constants";
+import { ITeamInsert, ITeamUpdate, TeamDTO, TeamMemberDTO } from "@/lib/models";
 import { ApiService } from "@/lib/services/ApiService";
 import { teamNameSchema, uuidSchema } from "@/lib/validation";
 
@@ -16,10 +16,12 @@ export const useTeams = () => {
   const queryClient = useQueryClient();
 
   const GetData = (organizationId?: string) => {
-    const queryString = organizationId ? `organizationId=${organizationId}` : `userId=${user?.id}`;
+    let endpoint = `user/${user?.id}`;
+    if (organizationId) endpoint = `organization/${organizationId}`;
+
     return useQuery<TeamDTO[]>({
-      queryKey: ["teamData", queryString],
-      queryFn: async () => await apiService.get<TeamDTO[]>(`/${apiPrefix}/${teamRoute}?${queryString}`),
+      queryKey: ["teamData", endpoint],
+      queryFn: async () => await apiService.get<TeamDTO[]>(`/${apiPrefix}/${teamRoute}/${endpoint}`),
     });
   };
 
@@ -33,11 +35,11 @@ export const useTeams = () => {
     name: teamNameSchema,
   });
 
-  const onCreate = async (request: TeamInsertDTO) => {
+  const onCreate = async (request: ITeamInsert) => {
     return await apiService.post(`/${apiPrefix}/${teamRoute}`, request);
   };
 
-  const onEdit = async (request: TeamUpdateDTO) => {
+  const onEdit = async (request: ITeamUpdate) => {
     return await apiService.put(`/${apiPrefix}/${teamRoute}/${request.id}`, request);
   };
 
@@ -62,7 +64,7 @@ export const useTeams = () => {
   const onAddMember = async (teamMember: TeamMemberDTO) => {
     ("use server");
 
-    const response = await apiService.post(`/${apiPrefix}/${teamRoute}/${teamMemberRoute}`, teamMember);
+    const response = await apiService.post(`/${apiPrefix}/${teamRoute}/${memberRoute}`, teamMember);
 
     if (response.status === 200) {
       refetch();
@@ -72,7 +74,7 @@ export const useTeams = () => {
   const onRemoveMember = async (teamMember: TeamMemberDTO) => {
     ("use server");
 
-    const response = await apiService.delete(`/${apiPrefix}/${teamRoute}/${teamMemberRoute}`, teamMember);
+    const response = await apiService.delete(`/${apiPrefix}/${teamRoute}/${memberRoute}`, teamMember);
 
     if (response.status === 200) {
       refetch();

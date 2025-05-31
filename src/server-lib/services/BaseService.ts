@@ -1,5 +1,5 @@
-import { IBaseService } from ".";
 import { IRepository } from "../respositories";
+import { IBaseService } from "./IBaseService";
 
 export class BaseService<IEntity, IInsert, IUpdate> implements IBaseService<IEntity, IInsert, IUpdate> {
   constructor(public repo: IRepository<IEntity, IInsert, IUpdate>) {}

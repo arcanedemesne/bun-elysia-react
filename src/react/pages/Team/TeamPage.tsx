@@ -14,7 +14,7 @@ import {
   TypeAheadSearchOption,
 } from "@/lib/components";
 import { PopOutChatWrapper } from "@/lib/components/Chat/PopOutChatWrapper";
-import { TeamInsertDTO, TeamUpdateDTO } from "@/lib/models";
+import { ITeamInsert, ITeamUpdate } from "@/lib/models";
 import { ChannelTypes } from "@/lib/types";
 
 import { TeamCard } from "./TeamCard";
@@ -127,7 +127,7 @@ export const TeamPage = () => {
       <ErrorMessage>{error?.message ?? ""}</ErrorMessage>
 
       <div className="mb-4">
-        <Form<TeamInsertDTO>
+        <Form<ITeamInsert>
           inputs={[
             {
               type: "hidden",
@@ -171,7 +171,7 @@ export const TeamPage = () => {
       </CardGrid>
 
       <Modal title="Editing a Team" isOpen={isEditModelOpen && !!teamForEdit} onClose={handleCloseEditModal}>
-        <Form<TeamUpdateDTO>
+        <Form<ITeamUpdate>
           inputs={[
             {
               type: "hidden",

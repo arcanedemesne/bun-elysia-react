@@ -1,136 +1,95 @@
-import { and, eq, sql } from "drizzle-orm";
-import { alias } from "drizzle-orm/pg-core";
+import { and, eq } from "drizzle-orm";
 
-import {
-  Organization,
-  OrganizationDTO,
-  OrganizationInsertDTO,
-  OrganizationMemberDTO,
-  OrganizationUpdateDTO,
-  UserDTO,
-} from "@/lib/models";
+import { IOrganization, IOrganizationInsert, IOrganizationUpdate, OrganizationMemberDTO } from "@/lib/models";
 
 import { db } from "../../data/db";
-import { organizations, teams, users, usersToOrganizations } from "../../data/schema";
+import { organizations, usersToOrganizations } from "../../data/schema";
 import { IRepository } from "./IRepository";
-import { throwDbError } from "./utilities";
+import { removePropsFromEntities, throwDbError, withRelations } from "./utilities";
 
-const createdBy = alias(users, "createdBy");
-const updatedBy = alias(users, "updatedBy");
-const deletedBy = alias(users, "deletedBy");
+const clauses = { active: eq(organizations.active, true) };
 
-export class OrganizationRepository implements IRepository<Organization, OrganizationInsertDTO, OrganizationUpdateDTO> {
+const defaultWith = {
+  usersToOrganizations: {
+    with: {
+      user: true,
+    },
+  },
+  teams: true,
+  todos: true,
+  ...withRelations.user,
+};
+
+const transform = <T>(entities: any[]): T => {
+  entities = entities.map((x) => ({
+    ...x,
+    members: x.usersToOrganizations.map((t: any) => t.user),
+  }));
+
+  entities = removePropsFromEntities(
+    entities.filter((x) => x.usersToOrganizations.length > 0),
+    ["usersToOrganizations"],
+  );
+
+  return entities as T;
+};
+
+export class OrganizationRepository implements IRepository<IOrganization, IOrganizationInsert, IOrganizationUpdate> {
   constructor(public userId: string) {}
 
-  selectDTO = {
-    id: organizations.id,
-    name: organizations.name,
-    description: organizations.description,
-    createdAt: organizations.createdAt,
-    updatedAt: organizations.updatedAt,
-    deletedAt: organizations.deletedAt,
-    createdBy: {
-      id: createdBy.id,
-      username: createdBy.username,
-    },
-    updatedBy: {
-      id: updatedBy.id,
-      username: updatedBy.username,
-    },
-    deletedBy: {
-      id: deletedBy.id,
-      username: deletedBy.username,
-    },
-    teamsCount:
-      sql`(SELECT COUNT(*) FROM ${teams} WHERE ${teams.organizationId} = ${organizations.id} AND active IS true)`.as(
-        "teams_count",
-      ),
-  };
+  async getAll(): Promise<IOrganization[]> {
+    try {
+      const entities = await db.query.organizations.findMany({
+        with: defaultWith,
+        where: clauses.active,
+      });
 
-  async getAll() {
-    return throwDbError("Not implemented");
+      return transform<IOrganization[]>(entities);
+    } catch (error) {
+      return throwDbError("Error getting organizations", error);
+    }
   }
 
-  async getById(id: string): Promise<Organization | null> {
+  async getById(id: string): Promise<IOrganization | null> {
     try {
-      const data = await db
-        .select()
-        .from(organizations)
-        // .innerJoin(createdBy, eq(organizations.createdBy, createdBy.id))
-        // .fullJoin(updatedBy, eq(organizations.updatedBy, updatedBy.id))
-        // .fullJoin(deletedBy, eq(organizations.deletedBy, deletedBy.id))
-        .where(and(eq(organizations.id, id), eq(organizations.active, true)));
+      const entity = await db.query.organizations.findFirst({
+        with: defaultWith,
+        where: and(eq(organizations.id, id), clauses.active),
+      });
 
-      if (data.length === 0) {
-        return null;
-      }
-      const response = data[0] as Organization;
-
-      // const members = await this.getMembers(response.id);
-      // response.members.push(...members);
-
-      return response;
+      return transform<IOrganization[]>([entity])[0];
     } catch (error) {
       return throwDbError("Error getting organization by id", error);
     }
   }
 
-  async getByUserId(userId: string): Promise<OrganizationDTO[]> {
+  async insert(payload: IOrganizationInsert): Promise<IOrganization | null> {
     try {
-      const data = await db
-        .select(this.selectDTO)
-        .from(organizations)
-        .innerJoin(createdBy, eq(organizations.createdBy, createdBy.id))
-        .fullJoin(updatedBy, eq(organizations.updatedBy, updatedBy.id))
-        .fullJoin(deletedBy, eq(organizations.deletedBy, deletedBy.id))
-        .innerJoin(usersToOrganizations, eq(organizations.id, usersToOrganizations.organizationId))
-        .where(and(eq(usersToOrganizations.userId, userId), eq(organizations.active, true)))
-        .orderBy(organizations.createdAt);
+      const insertPayload = { ...payload, createdBy: this.userId };
+      const entities = await db.insert(organizations).values(insertPayload).returning();
 
-      const response = data as unknown as OrganizationDTO[];
-      for (let team of response) {
-        if (!team.members) team.members = [];
-        const members = await this.getMembers(team.id);
-        team.members.push(...members);
+      if (entities.length === 0) {
+        throw new Error(`Could not insert organization with name ${payload.name}`);
       }
-
-      return response;
-    } catch (error) {
-      return throwDbError("Error getting organizations by user id", error);
-    }
-  }
-
-  async insert(insertData: OrganizationInsertDTO): Promise<Organization | null> {
-    try {
-      const data = await db
-        .insert(organizations)
-        .values({ ...insertData, createdBy: this.userId })
-        .returning();
-
-      if (data.length === 0) {
-        return null;
-      }
-
-      const response = data[0] as Organization;
-
-      await db.insert(usersToOrganizations).values({ userId: this.userId, organizationId: response.id }).returning();
-
-      return response;
+      return entities[0] as IOrganization;
     } catch (error) {
       return throwDbError("Error inserting organization", error);
     }
   }
 
-  async update(updateData: OrganizationUpdateDTO): Promise<Organization | null> {
+  async update(payload: IOrganizationUpdate): Promise<IOrganization | null> {
     try {
-      const { id, ...rest } = { ...updateData, updatedBy: this.userId };
-      const data = await db.update(organizations).set(rest).where(eq(organizations.id, id)).returning();
+      const updatePayload = { ...payload, updatedBy: this.userId };
+      const entities = await db
+        .update(organizations)
+        .set(updatePayload)
+        .where(eq(organizations.id, payload.id))
+        .returning();
 
-      if (data.length === 0) {
-        return null; // Update failed
+      if (entities.length === 0) {
+        throw new Error(`Could not update organization with id ${payload.id}`);
       }
-
-      return data[0] as Organization;
+      return entities[0] as IOrganization;
     } catch (error) {
       return throwDbError("Error updating organization", error);
     }
@@ -138,59 +97,64 @@ export class OrganizationRepository implements IRepository<Organization, Organiz
 
   async delete(id: string): Promise<boolean> {
     try {
-      const existingEntity = await db.select().from(organizations).where(eq(organizations.id, id));
-      let result;
-      if (existingEntity.length > 0) {
-        result = await this.update({
-          id: existingEntity[0].id,
-          deletedBy: existingEntity[0].deletedBy!,
+      const existingEntity = await this.getById(id);
+
+      if (existingEntity) {
+        const entity = await this.update({
+          id,
+          deletedAt: new Date(),
+          deletedBy: this.userId,
           active: false,
         });
-        if (result?.id) {
+        if (!entity?.active) {
           return true; // soft deleted successfully
         }
       } else {
-        await db.delete(usersToOrganizations).where(eq(usersToOrganizations.organizationId, id));
-        result = await db.delete(organizations).where(eq(organizations.id, id));
-        if (result) {
+        const entities = await db.delete(organizations).where(eq(organizations.id, id)).returning();
+
+        if (entities.length > 0) {
           return true; // hard deleted successfully
         }
       }
 
-      return false; // not found
+      throw new Error();
     } catch (error) {
       return throwDbError("Error deleting organization", error);
     }
   }
 
-  async getMembers(organizationId: string): Promise<UserDTO[]> {
+  async getByUserId(userId: string): Promise<IOrganization[]> {
     try {
-      const data = await db
-        .select({
-          id: users.id,
-          username: users.username,
-        })
-        .from(usersToOrganizations)
-        .innerJoin(users, eq(usersToOrganizations.userId, users.id))
-        .where(and(eq(usersToOrganizations.organizationId, organizationId), eq(users.active, true)))
-        .orderBy(users.username);
+      let entities = await db.query.organizations.findMany({
+        with: {
+          ...defaultWith,
+          usersToOrganizations: {
+            ...defaultWith.usersToOrganizations,
+            where: eq(usersToOrganizations.userId, userId),
+          },
+        },
+        where: clauses.active,
+      });
 
-      return data as UserDTO[];
+      return transform<IOrganization[]>(entities);
     } catch (error) {
-      return throwDbError("Error getting organization members", error);
+      return throwDbError("Error getting organizations by user id", error);
     }
   }
 
   async addMember(member: OrganizationMemberDTO): Promise<OrganizationMemberDTO | null> {
     try {
-      // TODO: check if exists and set to acive?
-      const data = await db.insert(usersToOrganizations).values(member).returning();
-
-      if (data.length === 0) {
-        return null;
+      const members = (await this.getById(member.organizationId))?.members ?? [];
+      if (members.find((x) => x.id === member.userId)) {
+        throw new Error("Member already exists on organization");
       }
 
-      return data[0] as OrganizationMemberDTO;
+      const entities = await db.insert(usersToOrganizations).values(member).returning();
+
+      if (entities.length === 0) {
+        throw new Error(`Could not add member with id ${member.userId}`);
+      }
+      return entities[0] as OrganizationMemberDTO;
     } catch (error) {
       return throwDbError("Error adding organization member", error);
     }
@@ -198,18 +162,21 @@ export class OrganizationRepository implements IRepository<Organization, Organiz
 
   async removeMember(member: OrganizationMemberDTO): Promise<boolean> {
     try {
-      const data = await db
+      const members = (await this.getById(member.organizationId))?.members ?? [];
+      if (!members.find((x) => x.id === member.userId)) {
+        throw new Error("Member doesn't exist on organization");
+      }
+      const entities = await db
         .delete(usersToOrganizations)
         .where(
-          and(
-            eq(usersToOrganizations.userId, member.userId),
-            eq(usersToOrganizations.organizationId, member.organizationId),
-          ),
+          and(eq(usersToOrganizations.userId, member.userId), eq(usersToOrganizations.teamId, member.organizationId)),
         )
         .returning();
-      if (data) {
+
+      if (entities.length > 0) {
         return true; // hard deleted successfully
       }
+
       return false; // unsuccessful delete
     } catch (error) {
       return throwDbError("Error removing organization member", error);

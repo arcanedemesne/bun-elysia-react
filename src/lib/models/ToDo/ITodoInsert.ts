@@ -1,4 +1,4 @@
-export interface TodoInsertDTO {
+export interface ITodoInsert {
   title: string;
   description?: string;
   organizationId?: string;

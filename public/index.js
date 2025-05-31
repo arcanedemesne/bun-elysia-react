@@ -33714,13 +33714,12 @@ var chatsRoute = "chats";
 var checkRoute = "check";
 var loginRoute = "login";
 var logoutRoute = "logout";
+var memberRoute = "members";
 var organizationRoute = "organizations";
-var organizationMemberRoute = "organization-members";
 var refreshRoute = "refresh";
 var registerRoute = "register";
 var todoRoute = "todos";
 var teamRoute = "teams";
-var teamMemberRoute = "team-members";
 var userRoute = "users";
 var ACCESS_TOKEN_EXP = 60 * 60;
 var REFRESH_TOKEN_EXP = 7 * 86400;
@@ -38428,10 +38427,10 @@ var useOrganizations = () => {
   const { user } = useUserContext();
   const queryClient = useQueryClient();
   const GetData = () => {
-    const queryString = `userId=${user?.id}`;
+    const endpoint = `user/${user?.id}`;
     return useQuery({
-      queryKey: ["organizationData", queryString],
-      queryFn: async () => await apiService.get(`/${apiPrefix}/${organizationRoute}?${queryString}`)
+      queryKey: ["organizationData", endpoint],
+      queryFn: async () => await apiService.get(`/${apiPrefix}/${organizationRoute}/${endpoint}`)
     });
   };
   const createValidationSchema = z.object({
@@ -38463,14 +38462,14 @@ var useOrganizations = () => {
   };
   const onAddMember = async (organizationMember) => {
     "use server";
-    const response = await apiService.post(`/${apiPrefix}/${organizationRoute}/${organizationMemberRoute}`, organizationMember);
+    const response = await apiService.post(`/${apiPrefix}/${organizationRoute}/${memberRoute}`, organizationMember);
     if (response.status === 200) {
       refetch();
     }
   };
   const onRemoveMember = async (organizationMember) => {
     "use server";
-    const response = await apiService.delete(`/${apiPrefix}/${organizationRoute}/${organizationMemberRoute}`, organizationMember);
+    const response = await apiService.delete(`/${apiPrefix}/${organizationRoute}/${memberRoute}`, organizationMember);
     if (response.status === 200) {
       refetch();
     }
@@ -38512,10 +38511,12 @@ var useTeams = () => {
   const { user } = useUserContext();
   const queryClient = useQueryClient();
   const GetData = (organizationId) => {
-    const queryString = organizationId ? `organizationId=${organizationId}` : `userId=${user?.id}`;
+    let endpoint = `user/${user?.id}`;
+    if (organizationId)
+      endpoint = `organization/${organizationId}`;
     return useQuery({
-      queryKey: ["teamData", queryString],
-      queryFn: async () => await apiService.get(`/${apiPrefix}/${teamRoute}?${queryString}`)
+      queryKey: ["teamData", endpoint],
+      queryFn: async () => await apiService.get(`/${apiPrefix}/${teamRoute}/${endpoint}`)
     });
   };
   const createValidationSchema = z.object({
@@ -38547,14 +38548,14 @@ var useTeams = () => {
   };
   const onAddMember = async (teamMember) => {
     "use server";
-    const response = await apiService.post(`/${apiPrefix}/${teamRoute}/${teamMemberRoute}`, teamMember);
+    const response = await apiService.post(`/${apiPrefix}/${teamRoute}/${memberRoute}`, teamMember);
     if (response.status === 200) {
       refetch();
     }
   };
   const onRemoveMember = async (teamMember) => {
     "use server";
-    const response = await apiService.delete(`/${apiPrefix}/${teamRoute}/${teamMemberRoute}`, teamMember);
+    const response = await apiService.delete(`/${apiPrefix}/${teamRoute}/${memberRoute}`, teamMember);
     if (response.status === 200) {
       refetch();
     }
@@ -38577,11 +38578,15 @@ var useTodos = () => {
   const { user } = useUserContext();
   const queryClient = useQueryClient();
   const GetData = ({ organizationId, teamId }) => {
-    const queryString = teamId ? `teamId=${teamId}` : organizationId ? `organizationId=${organizationId}` : `userId=${user?.id}`;
+    let endpoint = `user/${user?.id}`;
+    if (organizationId)
+      endpoint = `organization/${organizationId}`;
+    if (teamId)
+      endpoint = `team/${teamId}`;
     return useQuery({
-      queryKey: ["todoData", queryString],
-      queryFn: async () => await apiService.get(`/${apiPrefix}/${todoRoute}?${queryString}`),
-      enabled: !!queryString
+      queryKey: ["todoData", endpoint],
+      queryFn: async () => await apiService.get(`/${apiPrefix}/${todoRoute}/${endpoint}`),
+      enabled: !!endpoint
     });
   };
   const createValidationSchema = z.object({
@@ -40222,13 +40227,15 @@ var TodoPage = () => {
     onCancel: handleCloseEditModal,
     submitButtonText: "Edit",
     showCancelButton: true,
-    secondaryButtons: /* @__PURE__ */ import_react57.default.createElement(Button, {
+    secondaryButtons: /* @__PURE__ */ import_react57.default.createElement("div", {
+      className: "w-auto"
+    }, /* @__PURE__ */ import_react57.default.createElement(Button, {
       mode: "delete" /* DELETE */,
       onClick: (event) => {
         event.preventDefault();
         handleDelete(todoForEdit.id);
       }
-    }, "Delete")
+    }, "Delete"))
   })), /* @__PURE__ */ import_react57.default.createElement(DeleteModal, {
     title: "Deleting a Todo Item",
     itemName: todoForDelete?.title,
@@ -40322,4 +40329,4 @@ import_client.hydrateRoot(document, /* @__PURE__ */ import_react59.default.creat
   user: userDTO
 })));
 
-//# debugId=88EC56EBE55A82FA64756E2164756E21
+//# debugId=B0C909736E1DF45664756E2164756E21

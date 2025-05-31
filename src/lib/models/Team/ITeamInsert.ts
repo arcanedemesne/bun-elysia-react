@@ -1,4 +1,4 @@
-export interface TeamInsertDTO {
+export interface ITeamInsert {
   organizationId: string;
   name: string;
 }

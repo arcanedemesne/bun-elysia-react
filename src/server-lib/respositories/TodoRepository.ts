@@ -1,155 +1,65 @@
 import { and, eq, isNull } from "drizzle-orm";
-import { alias } from "drizzle-orm/pg-core";
 
-import { Todo, TodoDTO, TodoInsertDTO, TodoUpdateDTO } from "@/lib/models";
+import { ITodo, ITodoInsert, ITodoUpdate } from "@/lib/models";
 
 import { db } from "../../data/db";
-import { organizations, teams, todos, users } from "../../data/schema";
+import { todos } from "../../data/schema";
 import { IRepository } from "./IRepository";
-import { throwDbError } from "./utilities";
+import { throwDbError, withRelations } from "./utilities";
 
-const createdBy = alias(users, "createdBy");
-const updatedBy = alias(users, "updatedBy");
-const deletedBy = alias(users, "deletedBy");
+const clauses = {
+  active: eq(todos.active, true),
+};
 
-export class TodoRepository implements IRepository<Todo, TodoInsertDTO, TodoUpdateDTO> {
+export class TodoRepository implements IRepository<ITodo, ITodoInsert, ITodoUpdate> {
   constructor(public userId: string) {}
 
-  selectDTO = {
-    id: todos.id,
-    title: todos.title,
-    description: todos.description,
-    teamId: todos.teamId,
-    createdAt: todos.createdAt,
-    updatedAt: todos.updatedAt,
-    deletedAt: todos.deletedAt,
-    createdBy: {
-      id: createdBy.id,
-      username: createdBy.username,
-    },
-    updatedBy: {
-      id: updatedBy.id,
-      username: updatedBy.username,
-    },
-    deletedBy: {
-      id: deletedBy.id,
-      username: deletedBy.username,
-    },
-  };
-
-  async getAll(): Promise<Todo[]> {
+  // #region CRUD
+  async getAll(): Promise<ITodo[]> {
     try {
-      const data = await db
-        .select()
-        .from(todos)
-        // .innerJoin(createdBy, eq(todos.createdBy, createdBy.id))
-        // .fullJoin(updatedBy, eq(todos.updatedBy, updatedBy.id))
-        // .fullJoin(deletedBy, eq(todos.deletedBy, deletedBy.id))
-        .where(eq(todos.active, true))
-        .orderBy(todos.createdAt);
-      return data as Todo[];
+      return (await db.query.todos.findMany({
+        with: { ...withRelations.user, organization: true, team: true },
+        where: clauses.active,
+      })) as ITodo[];
     } catch (error) {
       return throwDbError("Error getting todos", error);
     }
   }
 
-  async getById(id: string): Promise<Todo | null> {
+  async getById(id: string): Promise<ITodo | null> {
     try {
-      const data = await db
-        .select()
-        .from(todos)
-        // .innerJoin(createdBy, eq(todos.createdBy, createdBy.id))
-        // .fullJoin(updatedBy, eq(todos.updatedBy, updatedBy.id))
-        // .fullJoin(deletedBy, eq(todos.deletedBy, deletedBy.id))
-        .where(and(eq(todos.id, id), eq(todos.active, true)));
+      return (await db.query.todos.findFirst({
+        with: { ...withRelations.user, organization: true, team: true },
+        where: and(eq(todos.id, id), clauses.active),
+      })) as ITodo | null;
+    } catch (error) {
+      return throwDbError("Error getting todo by id", error);
+    }
+  }
 
-      if (data.length === 0) {
-        return null;
+  async insert(payload: ITodoInsert): Promise<ITodo | null> {
+    try {
+      const insertPayload = { ...payload, createdBy: this.userId };
+      const entities = await db.insert(todos).values(insertPayload).returning();
+
+      if (entities.length === 0) {
+        throw new Error(`Could not insert todo with title ${payload.title}`);
       }
-
-      return data[0] as Todo;
-    } catch (error) {
-      return throwDbError("Error getting todos", error);
-    }
-  }
-
-  async getByUserId(userId: string): Promise<TodoDTO[]> {
-    try {
-      const data = await db
-        .select(this.selectDTO)
-        .from(todos)
-        .innerJoin(createdBy, eq(todos.createdBy, createdBy.id))
-        .fullJoin(updatedBy, eq(todos.updatedBy, updatedBy.id))
-        .fullJoin(deletedBy, eq(todos.deletedBy, deletedBy.id))
-        .where(and(eq(todos.createdBy, userId), isNull(todos.teamId), eq(todos.active, true)))
-        .orderBy(todos.createdAt);
-      return data as TodoDTO[];
-    } catch (error) {
-      return throwDbError("Error getting todos", error);
-    }
-  }
-
-  async getByOrganizationId(organizationId: string): Promise<TodoDTO[]> {
-    try {
-      const data = await db
-        .select(this.selectDTO)
-        .from(todos)
-        .innerJoin(organizations, eq(todos.organizationId, organizations.id))
-        .innerJoin(createdBy, eq(todos.createdBy, createdBy.id))
-        .fullJoin(updatedBy, eq(todos.updatedBy, updatedBy.id))
-        .fullJoin(deletedBy, eq(todos.deletedBy, deletedBy.id))
-        .where(and(eq(todos.organizationId, organizationId), eq(todos.active, true)))
-        .orderBy(todos.createdAt);
-      return data as TodoDTO[];
-    } catch (error) {
-      return throwDbError("Error getting todos", error);
-    }
-  }
-
-  async getByTeamId(teamId: string): Promise<TodoDTO[]> {
-    try {
-      const data = await db
-        .select(this.selectDTO)
-        .from(todos)
-        .innerJoin(teams, eq(todos.teamId, teams.id))
-        .innerJoin(createdBy, eq(todos.createdBy, createdBy.id))
-        .fullJoin(updatedBy, eq(todos.updatedBy, updatedBy.id))
-        .fullJoin(deletedBy, eq(todos.deletedBy, deletedBy.id))
-        .where(and(eq(todos.teamId, teamId), eq(todos.active, true)))
-        .orderBy(todos.createdAt);
-      return data as TodoDTO[];
-    } catch (error) {
-      return throwDbError("Error getting todos", error);
-    }
-  }
-
-  async insert(insertData: TodoInsertDTO): Promise<Todo | null> {
-    try {
-      const data = await db
-        .insert(todos)
-        .values({ ...insertData, createdBy: this.userId })
-        .returning();
-
-      if (data.length === 0) {
-        return null;
-      }
-
-      return data[0] as Todo;
+      return entities[0] as ITodo;
     } catch (error) {
       return throwDbError("Error inserting todo", error);
     }
   }
 
-  async update(updateData: TodoUpdateDTO): Promise<Todo | null> {
+  async update(payload: ITodoUpdate): Promise<ITodo | null> {
     try {
-      const { id, ...rest } = { ...updateData, updatedBy: this.userId };
-      const data = await db.update(todos).set(rest).where(eq(todos.id, id)).returning();
+      const updatePayload = { ...payload, updatedBy: this.userId };
+      const entities = await db.update(todos).set(updatePayload).where(eq(todos.id, payload.id)).returning();
 
-      if (data.length === 0) {
-        return null; // Update failed
+      if (entities.length === 0) {
+        throw new Error(`Could not update todo with id ${payload.id}`);
       }
-
-      return data[0] as Todo;
+      return entities[0] as ITodo;
     } catch (error) {
       return throwDbError("Error updating todo", error);
     }
@@ -157,27 +67,63 @@ export class TodoRepository implements IRepository<Todo, TodoInsertDTO, TodoUpda
 
   async delete(id: string): Promise<boolean> {
     try {
-      const existingEntity = await db.select().from(todos).where(eq(todos.id, id));
-      let data;
-      if (existingEntity.length > 0) {
-        data = await this.update({
-          id: existingEntity[0].id,
+      const existingEntity = await this.getById(id);
+
+      if (existingEntity) {
+        const entity = await this.update({
+          id,
+          deletedAt: new Date(),
           deletedBy: this.userId,
           active: false,
         });
-        if (data?.id) {
+        if (!entity?.active) {
           return true; // soft deleted successfully
         }
       } else {
-        data = await db.delete(todos).where(eq(todos.id, id)).returning();
-        if (data) {
+        const entities = await db.delete(todos).where(eq(todos.id, id)).returning();
+
+        if (entities.length > 0) {
           return true; // hard deleted successfully
         }
       }
 
-      return false; // unsuccessful delete
+      throw new Error();
     } catch (error) {
       return throwDbError("Error deleting todo", error);
+    }
+  }
+  // #endregion
+
+  async getByUserId(userId: string): Promise<ITodo[]> {
+    try {
+      return (await db.query.todos.findMany({
+        with: { ...withRelations.user, organization: true, team: true },
+        where: and(eq(todos.createdBy, userId), isNull(todos.organizationId), isNull(todos.teamId), clauses.active),
+      })) as ITodo[];
+    } catch (error) {
+      return throwDbError("Error getting todos for user", error);
+    }
+  }
+
+  async getByOrganizationId(organizationId: string): Promise<ITodo[]> {
+    try {
+      return (await db.query.todos.findMany({
+        with: { ...withRelations.user, organization: true, team: true },
+        where: and(eq(todos.organizationId, organizationId), clauses.active),
+      })) as ITodo[];
+    } catch (error) {
+      return throwDbError("Error getting todos for organization", error);
+    }
+  }
+
+  async getByTeamId(teamId: string): Promise<ITodo[]> {
+    try {
+      return (await db.query.todos.findMany({
+        with: { ...withRelations.user, organization: true, team: true },
+        where: and(eq(todos.teamId, teamId), clauses.active),
+      })) as ITodo[];
+    } catch (error) {
+      return throwDbError("Error getting todos for team", error);
     }
   }
 }

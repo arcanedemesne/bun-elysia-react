@@ -17,6 +17,7 @@ export const throwDbError = (messagePrefix: string, error?: unknown) => {
 type PlaceholderType = Record<string, SQL<unknown> | any>;
 type ValueType = Record<string, any>;
 type ReturnType = { placeholders: PlaceholderType; values: ValueType };
+// Use this in raw sql`` statements
 export const paramaterize = (payload: any, wrapInSql?: boolean | undefined): ReturnType => {
   const placeholders: PlaceholderType = {};
   const values: ValueType = {};
@@ -28,4 +29,37 @@ export const paramaterize = (payload: any, wrapInSql?: boolean | undefined): Ret
     }
   }
   return { placeholders, values };
+};
+
+const userDTOcolumns = {
+  columns: {
+    id: true,
+    username: true,
+  },
+};
+
+export const withRelations = {
+  user: {
+    createdBy: true,
+    updatedBy: true,
+    deletedBy: true,
+  },
+
+  userDTO: {
+    createdBy: userDTOcolumns,
+    updatedBy: userDTOcolumns,
+    deletedBy: userDTOcolumns,
+  },
+};
+
+export const removePropsFromEntities = <T>(list: any[], propsToRemove: string[]) => {
+  return list.map((item) => {
+    const newItem = { ...item };
+
+    propsToRemove.forEach((prop) => {
+      delete newItem[prop];
+    });
+
+    return newItem as T;
+  });
 };

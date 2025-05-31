@@ -1,4 +1,4 @@
-export interface OrganizationInsertDTO {
+export interface IOrganizationInsert {
   name: string;
   description?: string;
 }

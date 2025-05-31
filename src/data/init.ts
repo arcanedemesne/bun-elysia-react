@@ -2,7 +2,7 @@
 import { Client } from "pg";
 
 import { dbCredentials } from "./db";
-import { schemaName } from "./schema";
+import { schemaName } from "./schema/config";
 
 const client = new Client(dbCredentials);
 

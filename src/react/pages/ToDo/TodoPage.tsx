@@ -1,7 +1,7 @@
 import React, { MouseEvent, useState } from "react";
 
 import { Button, ButtonModes, DeleteModal, DropDownInput, ErrorMessage, Modal } from "@/lib/components";
-import { TodoInsertDTO, TodoUpdateDTO } from "@/lib/models";
+import { ITodoInsert, ITodoUpdate } from "@/lib/models";
 
 import { TodoCard } from "./TodoCard";
 import { CardGrid, Form, Layout } from "@/components";
@@ -94,7 +94,7 @@ export const TodoPage = () => {
       <ErrorMessage>{error?.message ?? ""}</ErrorMessage>
 
       <div className="mb-4">
-        <Form<TodoInsertDTO>
+        <Form<ITodoInsert>
           inputs={[
             { type: "hidden", name: "organizatinId", value: selectedOrganizationId },
             { type: "hidden", name: "teamId", value: selectedTeamId },
@@ -149,7 +149,7 @@ export const TodoPage = () => {
       </CardGrid>
 
       <Modal title="Editing a Todo Item" isOpen={isEditModelOpen && !!todoForEdit} onClose={handleCloseEditModal}>
-        <Form<TodoUpdateDTO>
+        <Form<ITodoUpdate>
           inputs={[
             {
               type: "hidden",
@@ -186,15 +186,17 @@ export const TodoPage = () => {
           submitButtonText="Edit"
           showCancelButton
           secondaryButtons={
-            <Button
-              mode={ButtonModes.DELETE}
-              onClick={(event: MouseEvent<HTMLButtonElement>) => {
-                event.preventDefault();
-                handleDelete(todoForEdit!.id);
-              }}
-            >
-              Delete
-            </Button>
+            <div className="w-auto">
+              <Button
+                mode={ButtonModes.DELETE}
+                onClick={(event: MouseEvent<HTMLButtonElement>) => {
+                  event.preventDefault();
+                  handleDelete(todoForEdit!.id);
+                }}
+              >
+                Delete
+              </Button>
+            </div>
           }
         />
       </Modal>

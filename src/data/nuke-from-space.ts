@@ -4,7 +4,7 @@ import * as path from "path";
 import { Client } from "pg";
 
 import { dbCredentials } from "./db";
-import { schemaName } from "./schema";
+import { schemaName } from "./schema/config";
 import * as fs from "fs/promises";
 
 const client = new Client(dbCredentials);
@@ -33,7 +33,7 @@ const nukeFromSpace = async () => {
 
     console.log(`Dropping existing tables from schema "drizzle"...`);
     await client.query(`DROP TABLE IF EXISTS "drizzle".__drizzle_migrations`);
-    console.log(`Tables dropped from schema "${schemaName}".`);
+    console.log(`Tables dropped from schema "drizzle".`);
 
     console.log(`Dropping schema "drizzle"...`);
     await client.query(`DROP SCHEMA IF EXISTS "drizzle"`);

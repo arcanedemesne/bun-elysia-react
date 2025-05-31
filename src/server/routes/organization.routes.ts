@@ -4,19 +4,20 @@ import { OrganizationService } from "@/server-lib/services";
 
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
-import { apiPrefix, organizationRoute } from "@/lib/constants";
-import { IUser, OrganizationInsertDTO, OrganizationUpdateDTO } from "@/lib/models";
+import { apiPrefix, memberRoute, organizationRoute } from "@/lib/constants";
+import { IOrganizationInsert, IOrganizationUpdate, IUser, OrganizationMemberDTO } from "@/lib/models";
 import { JwtContext, ResponseError } from "@/lib/types";
 
 export const organizationRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
   return app.group(`/${apiPrefix}/${organizationRoute}`, (group) =>
     group
-      .get(``, async ({ user, query }: { user: IUser; query: any }) => {
+      .get(``, async ({ user }: { user: IUser }) => {
         const service = new OrganizationService(user.id);
-        if (query.userId) {
-          return await service.getByUserId(query.userId);
-        }
         return await service.getAll();
+      })
+      .get(`/user/:userId`, async ({ user, params: { userId } }: { user: IUser; params: { userId: string } }) => {
+        const service = new OrganizationService(user.id);
+        return await service.getByUserId(userId);
       })
       .get(`/:id`, async ({ user, params: { id } }: { user: IUser; params: { id: string } }) => {
         const service = new OrganizationService(user.id);
@@ -30,8 +31,33 @@ export const organizationRoutes = (app: Elysia<any, any, any, any, JwtContext>) 
         }
         return entity;
       })
+      .post(`/${memberRoute}`, async ({ user, body }: { user: IUser; body: any }) => {
+        const parsed = JSON.parse(body as string) as OrganizationMemberDTO;
+        const service = new OrganizationService(user.id);
+        const entity = await service.addMember(parsed);
+        if (!entity) {
+          return ResponseError.throw({
+            status: StatusCodes.CONFLICT,
+            statusText: ReasonPhrases.CONFLICT,
+            message: `User could not be added to organization`,
+          });
+        }
+        return entity;
+      })
+      .delete(`/${memberRoute}`, async ({ user, body }: { user: IUser; body: any }) => {
+        const parsed = JSON.parse(body as string) as OrganizationMemberDTO;
+        const service = new OrganizationService(user.id);
+        const success = await service.removeMember(parsed);
+        if (!success) {
+          return ResponseError.throw({
+            status: StatusCodes.NOT_FOUND,
+            statusText: ReasonPhrases.NOT_FOUND,
+            message: `User could not be removed from organization`,
+          });
+        }
+      })
       .post(``, async ({ user, body }: { user: IUser; body: any }) => {
-        const parsed = JSON.parse(body as string) as OrganizationInsertDTO;
+        const parsed = JSON.parse(body as string) as IOrganizationInsert;
         const service = new OrganizationService(user.id);
         const entity = await service.insert(parsed);
         if (!entity) {
@@ -44,7 +70,7 @@ export const organizationRoutes = (app: Elysia<any, any, any, any, JwtContext>) 
         return entity;
       })
       .put(`/:id`, async ({ user, params: { id }, body }: { user: IUser; params: { id: string }; body: any }) => {
-        const parsed = JSON.parse(body as string) as OrganizationUpdateDTO;
+        const parsed = JSON.parse(body as string) as IOrganizationUpdate;
         const service = new OrganizationService(user.id);
 
         if (id !== parsed.id) {

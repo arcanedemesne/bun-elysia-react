@@ -13,7 +13,7 @@ import {
   TypeAheadSearchOption,
 } from "@/lib/components";
 import { PopOutChatWrapper } from "@/lib/components/Chat/PopOutChatWrapper";
-import { OrganizationInsertDTO, OrganizationUpdateDTO } from "@/lib/models";
+import { IOrganizationInsert, IOrganizationUpdate } from "@/lib/models";
 import { ChannelTypes } from "@/lib/types";
 
 import { OrganizationCard } from "./OrganizationCard";
@@ -112,7 +112,7 @@ export const OrganizationPage = () => {
       <ErrorMessage>{error?.message ?? ""}</ErrorMessage>
 
       <div className="mb-4">
-        <Form<OrganizationInsertDTO>
+        <Form<IOrganizationInsert>
           inputs={[{ type: "text", name: "name", placeholder: "Add a new organization..." }]}
           validationSchema={createValidationSchema}
           onSubmit={onCreate}
@@ -142,7 +142,7 @@ export const OrganizationPage = () => {
         isOpen={isEditModelOpen && !!organizationForEdit}
         onClose={handleCloseEditModal}
       >
-        <Form<OrganizationUpdateDTO>
+        <Form<IOrganizationUpdate>
           inputs={[
             {
               type: "hidden",

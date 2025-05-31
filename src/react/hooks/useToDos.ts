@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { apiPrefix, todoRoute } from "@/lib/constants";
-import { TodoDTO, TodoInsertDTO, TodoUpdateDTO } from "@/lib/models";
+import { ITodoInsert, ITodoUpdate, TodoDTO } from "@/lib/models";
 import { ApiService } from "@/lib/services/ApiService";
 import { optionalTeamIdSchema, todoTitleSchema, uuidSchema } from "@/lib/validation";
 
@@ -16,15 +16,14 @@ export const useTodos = () => {
   const queryClient = useQueryClient();
 
   const GetData = ({ organizationId, teamId }: { organizationId?: string | null; teamId?: string | null }) => {
-    const queryString = teamId
-      ? `teamId=${teamId}`
-      : organizationId
-        ? `organizationId=${organizationId}`
-        : `userId=${user?.id}`;
+    let endpoint = `user/${user?.id}`;
+    if (organizationId) endpoint = `organization/${organizationId}`;
+    if (teamId) endpoint = `team/${teamId}`;
+
     return useQuery<TodoDTO[]>({
-      queryKey: ["todoData", queryString],
-      queryFn: async () => await apiService.get<TodoDTO[]>(`/${apiPrefix}/${todoRoute}?${queryString}`),
-      enabled: !!queryString,
+      queryKey: ["todoData", endpoint],
+      queryFn: async () => await apiService.get<TodoDTO[]>(`/${apiPrefix}/${todoRoute}/${endpoint}`),
+      enabled: !!endpoint,
     });
   };
 
@@ -40,7 +39,7 @@ export const useTodos = () => {
     description: z.string().optional().nullable(),
   });
 
-  const onCreate = async (request: TodoInsertDTO) => {
+  const onCreate = async (request: ITodoInsert) => {
     if (request.organizationId === "") {
       delete request.organizationId;
     }
@@ -50,7 +49,7 @@ export const useTodos = () => {
     return await apiService.post(`/${apiPrefix}/${todoRoute}`, request);
   };
 
-  const onEdit = async (request: TodoUpdateDTO) => {
+  const onEdit = async (request: ITodoUpdate) => {
     if (request.teamId === "") {
       delete request.teamId;
     }
