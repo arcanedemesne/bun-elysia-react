@@ -63,7 +63,7 @@ export class BaseRepository<IEntity, IInsert, IUpdate> implements IBaseRepositor
 
   async getByProperty(property: string, value: string): Promise<IEntity | null> {
     try {
-      const columns = this.table._.columns;
+      const columns = getTableColumns(this.table);
 
       if (!(property in columns)) {
         throw new Error(`Invalid property: '${property}' for table '${this.entityTypeName}'`);
