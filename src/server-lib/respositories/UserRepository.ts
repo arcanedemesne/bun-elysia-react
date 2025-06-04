@@ -34,18 +34,6 @@ export class UserRepository extends BaseRepository<IUser, IUserInsert, IUserUpda
     }
   }
 
-  // TODO: Put in BaseRepository?
-  async getByProperty(property: string, value: string): Promise<IUser | null> {
-    try {
-      return (await db.query.users.findFirst({
-        with: defaultWith,
-        where: and(eq(users[property], value), this.clauses.active),
-      })) as IUser | null;
-    } catch (error) {
-      return throwDbError(`Error getting user by ${property} with value ${value}`, error);
-    }
-  }
-
   async getByTeamIds(teamIds: string[]): Promise<string[]> {
     try {
       const entities = await db.query.usersToTeams.findMany({
