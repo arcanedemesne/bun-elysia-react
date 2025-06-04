@@ -1,5 +1,5 @@
 import { and, eq, getTableColumns, getTableName } from "drizzle-orm";
-import { PgTable } from "drizzle-orm/pg-core";
+import { PgColumn, PgTable } from "drizzle-orm/pg-core";
 
 import { IBaseRepository } from "./IBaseRepository";
 import { throwDbError } from "./utilities";
@@ -25,19 +25,10 @@ export class BaseRepository<IEntity, IInsert, IUpdate> implements IBaseRepositor
   async getQueryable(): Promise<any> {
     let queryable;
 
-    // TODO: Get this from schema?
-    type allowedTables =
-      | "users"
-      | "organizations"
-      | "usersToOrganizations"
-      | "teams"
-      | "usersToTeams"
-      | "todos"
-      | "messages";
-    const tableName: allowedTables = getTableName(this.table) as allowedTables;
+    const tableName: string = getTableName(this.table);
 
-    if (db.query[tableName]) {
-      queryable = db.query[tableName];
+    if (Object.keys(db.query).includes(tableName)) {
+      return db.query[tableName as keyof typeof db.query];
     } else {
       throwDbError(`Invalid db table name`);
     }
@@ -67,6 +58,24 @@ export class BaseRepository<IEntity, IInsert, IUpdate> implements IBaseRepositor
       return this.transform ? this.transform<IEntity[]>([entity])[0] : entity;
     } catch (error) {
       return throwDbError(`Error getting  ${this.entityTypeName} by id`, error);
+    }
+  }
+
+  async getByProperty(property: string, value: string): Promise<IEntity | null> {
+    try {
+      const columns = this.table._.columns;
+
+      if (!(property in columns)) {
+        throw new Error(`Invalid property: '${property}' for table '${this.entityTypeName}'`);
+      }
+
+      const field = columns[property] as PgColumn;
+      return (await this.getQueryable()).findFirst({
+        with: this.defaultWith,
+        where: and(eq(field, value), this.clauses.active),
+      }) as IEntity | null;
+    } catch (error) {
+      return throwDbError(`Error getting ${this.entityTypeName} by ${property} with value ${value}`, error);
     }
   }
 
