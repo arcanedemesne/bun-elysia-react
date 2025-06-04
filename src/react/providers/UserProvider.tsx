@@ -1,20 +1,20 @@
 import React, { createContext, useContext, useState } from "react";
 
-import { UserDTO } from "@/lib/models";
+import { IUserDTO } from "@/lib/models";
 
 const UserContext = createContext<
   | {
-      user: UserDTO | undefined;
-      setUser: React.Dispatch<React.SetStateAction<UserDTO | undefined>>;
+      user: IUserDTO | undefined;
+      setUser: React.Dispatch<React.SetStateAction<IUserDTO | undefined>>;
     }
   | undefined
 >(undefined);
 
 export const UserProvider: React.FC<{
-  value: UserDTO | undefined;
+  value: IUserDTO | undefined;
   children: React.ReactNode;
 }> = ({ value, children }) => {
-  const [user, setUser] = useState<UserDTO | undefined>(value);
+  const [user, setUser] = useState<IUserDTO | undefined>(value);
 
   const contextValue = {
     user,

@@ -1,6 +1,6 @@
-import { BaseEntityActive, BaseEntityId, BaseEntityTimeStamps, BaseEntityUserId } from "@/lib/models/BaseEntity";
+import { IUpdateEntity } from "@/lib/models/BaseEntity";
 
-export interface ITodoUpdate extends BaseEntityId, BaseEntityUserId, BaseEntityTimeStamps, BaseEntityActive {
+export interface ITodoUpdate extends IUpdateEntity {
   title?: string;
   description?: string;
   teamId?: string;

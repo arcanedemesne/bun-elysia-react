@@ -1,12 +1,12 @@
 import React, { ReactNode } from "react";
 
 import { DeleteIconButton, EditIconButton } from "@/lib/components";
-import { TodoDTO } from "@/lib/models";
+import { ITodoDTO } from "@/lib/models";
 
 import { CardBase } from "@/components";
 
 type TodoCardProps = {
-  todo: TodoDTO;
+  todo: ITodoDTO;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   children?: ReactNode;

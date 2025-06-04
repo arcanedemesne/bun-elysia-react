@@ -5,19 +5,15 @@ import { TeamService } from "@/server-lib/services";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 import { apiPrefix, teamRoute } from "@/lib/constants";
-import { ITeamInsert, ITeamUpdate, IUser, TeamMemberDTO } from "@/lib/models";
+import { ITeamInsert, ITeamMemberDTO, ITeamUpdate, IUser } from "@/lib/models";
 import { JwtContext, ResponseError } from "@/lib/types";
 
 export const teamRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
   return app.group(`/${apiPrefix}/${teamRoute}`, (group) =>
     group
-      .get(``, async ({ user, query }: { user: IUser; query: any }) => {
+      .get(``, async ({ user }: { user: IUser }) => {
         const service = new TeamService(user.id);
-        if (query.userId) {
-          return await service.getByUserId(query.userId);
-        } else if (query.organizationId) {
-          return await service.getByOrganizationId(query.organizationId);
-        }
+
         return await service.getAll();
       })
       .get(`/user/:userId`, async ({ user, params: { userId } }: { user: IUser; params: { userId: string } }) => {
@@ -44,7 +40,7 @@ export const teamRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
         return entity;
       })
       .post(`/members`, async ({ user, body }: { user: IUser; body: any }) => {
-        const parsed = JSON.parse(body as string) as TeamMemberDTO;
+        const parsed = JSON.parse(body as string) as ITeamMemberDTO;
         const service = new TeamService(user.id);
         const entity = await service.addMember(parsed);
         if (!entity) {
@@ -57,7 +53,7 @@ export const teamRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
         return entity;
       })
       .delete(`/members`, async ({ user, body }: { user: IUser; body: any }) => {
-        const parsed = JSON.parse(body as string) as TeamMemberDTO;
+        const parsed = JSON.parse(body as string) as ITeamMemberDTO;
         const service = new TeamService(user.id);
         const success = await service.removeMember(parsed);
         if (!success) {
@@ -77,6 +73,15 @@ export const teamRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
             status: StatusCodes.CONFLICT,
             statusText: ReasonPhrases.CONFLICT,
             message: `Team with name ${parsed.name} could not be created`,
+          });
+        }
+        const member = await service.addMember({ userId: user.id, teamId: entity?.id });
+        if (!member) {
+          await service.delete(entity?.id);
+          return ResponseError.throw({
+            status: StatusCodes.CONFLICT,
+            statusText: ReasonPhrases.CONFLICT,
+            message: `User ${user.username} could not be added to Team ${parsed.name}`,
           });
         }
         return entity;

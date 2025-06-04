@@ -1,6 +1,13 @@
 import React, { ChangeEventHandler, useRef } from "react";
 
-import { CloseIconButton, ErrorMessage, InputProps, Label } from "@/lib/components";
+import {
+  CloseIconButton,
+  ErrorMessage,
+  InputProps,
+  Label,
+  textInputDefaultClassName,
+  textInputErrorClassName,
+} from "@/lib/components";
 
 interface TextInputProps extends InputProps {
   autoComplete?: string;
@@ -25,11 +32,7 @@ export const TextInput = ({
 }: TextInputProps) => {
   const error = errors?.map((e) => <p key={e}>{e}</p>);
 
-  const normalClassName =
-    "w-full rounded-md border px-4 py-2 shadow-sm border-gray-300 hover:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-800";
-  const errorClassName =
-    "w-full rounded-md border px-4 py-2 shadow-sm border-red-500 focus:outline-none focus:ring-1 focus:ring-red-800";
-  const finalClassName = `${className ? className + " " : ""}${error ? errorClassName : normalClassName}${value ? " pr-8" : ""}`;
+  const finalClassName = `${className ? className + " " : ""}${error ? textInputErrorClassName : textInputDefaultClassName}${value ? " pr-8" : ""}`;
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleClear = () => {

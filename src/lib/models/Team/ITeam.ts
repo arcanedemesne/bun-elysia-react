@@ -1,12 +1,12 @@
-import { BaseEntityActive, BaseEntityId, BaseEntityTimeStamps, BaseEntityUser } from "../BaseEntity";
+import { IBaseEntity } from "../BaseEntity";
 import { IOrganization } from "../Organization";
 import { ITodo } from "../Todo";
 import { IUser } from "../User";
 
-export interface ITeam extends BaseEntityId, BaseEntityUser, BaseEntityTimeStamps, BaseEntityActive {
+export interface ITeam extends IBaseEntity {
   name: string;
-  organiztionId: string;
-  organization?: IOrganization;
+  organizationId: string;
+  organization: IOrganization;
   members: IUser[];
   todos: ITodo[];
 }

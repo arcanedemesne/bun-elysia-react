@@ -1,6 +1,6 @@
-import { BaseEntityActive, BaseEntityId, BaseEntityTimeStamps } from "../BaseEntity";
+import { IBaseEntity } from "../BaseEntity";
 
-export interface IUser extends BaseEntityId, BaseEntityTimeStamps, BaseEntityActive {
+export interface IUser extends IBaseEntity {
   username: string;
   email: string;
   password: string;

@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiPrefix, userRoute } from "@/lib/constants";
-import { UserDTO } from "@/lib/models";
+import { IUserDTO } from "@/lib/models";
 import { ApiService } from "@/lib/services/ApiService";
 
 export const useUsers = () => {
@@ -15,19 +15,21 @@ export const useUsers = () => {
   }: {
     organizationId?: string;
     searchQuery?: string;
-  }): Promise<UserDTO[]> => {
+  }): Promise<IUserDTO[]> => {
     if (searchQuery && searchQuery?.length >= 3) {
-      const prefix = organizationId ? `organizationId=${organizationId}` : null;
-      const queryString = prefix && searchQuery ? `${prefix}&search=${searchQuery}` : "";
-      return await apiService.get<UserDTO[]>(`/${apiPrefix}/${userRoute}?${queryString}`);
+      const searchQueryString = searchQuery ? `searchQuery=${searchQuery}` : null;
+      const organizationString = organizationId ? `organizationId=${organizationId}` : null;
+      return await apiService.get<IUserDTO[]>(
+        `/${apiPrefix}/${userRoute}/search?${searchQueryString}&${organizationString}`,
+      );
     }
     return [];
   };
 
   const GetData = () => {
-    return useQuery<UserDTO[]>({
+    return useQuery<IUserDTO[]>({
       queryKey: ["userData"],
-      queryFn: async () => await apiService.get<UserDTO[]>(`/${apiPrefix}/${userRoute}`),
+      queryFn: async () => await apiService.get<IUserDTO[]>(`/${apiPrefix}/${userRoute}`),
     });
   };
 

@@ -5,7 +5,7 @@ export const uuidSchema = z.string().regex(uuidRegex, {
   message: "Invalid UUID format",
 });
 
-export const optionalTeamIdSchema = z
+export const optionalUuidSchema = z
   .string()
   .optional()
   .refine((val) => !val || uuidRegex.test(val), {

@@ -30833,7 +30833,7 @@ var require_dist2 = __commonJS((exports, module) => {
 });
 
 // src/react/index.tsx
-var import_react59 = __toESM(require_react(), 1);
+var import_react60 = __toESM(require_react(), 1);
 var import_client = __toESM(require_client(), 1);
 var import_react_router2 = __toESM(require_development(), 1);
 
@@ -33329,7 +33329,7 @@ function useMutation(options, queryClient) {
 }
 
 // src/react/App.tsx
-var import_react58 = __toESM(require_react(), 1);
+var import_react59 = __toESM(require_react(), 1);
 var import_react_router_dom2 = __toESM(require_dist2(), 1);
 
 // src/lib/components/Alerts/hooks/useAlerts.ts
@@ -34024,76 +34024,295 @@ var MinimizeIconButton = ({ color = "gray", className, onClick }) => /* @__PURE_
   onClick
 }, /* @__PURE__ */ import_react12.default.createElement(MinimizeIcon, null));
 // src/lib/components/Chat/ChatForm.tsx
-var import_react28 = __toESM(require_react(), 1);
+var import_react35 = __toESM(require_react(), 1);
 
-// src/lib/components/Chat/ChatMessage/ChatMessage.tsx
+// src/lib/components/Inputs/CheckBox.tsx
 var import_react13 = __toESM(require_react(), 1);
-var formatDistanceToNow = (date, options) => {
-  const now = new Date;
-  const diff = now.getTime() - date.getTime();
-  const seconds = Math.floor(diff / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-  const months = Math.floor(days / 30);
-  const years = Math.floor(days / 365);
-  let result;
-  if (years > 1)
-    result = `${years} years`;
-  else if (years === 1)
-    result = `1 year`;
-  else if (months > 1)
-    result = `${months} months`;
-  else if (months === 1)
-    result = `1 month`;
-  else if (days > 1)
-    result = `${days} days`;
-  else if (days === 1)
-    result = `1 day`;
-  else if (hours > 1)
-    result = `${hours} hours`;
-  else if (hours === 1)
-    result = `1 hour`;
-  else if (minutes > 1)
-    result = `${minutes} minutes`;
-  else if (minutes === 1)
-    result = `1 minute`;
-  else if (seconds > 1)
-    result = `${seconds} seconds`;
-  else
-    result = "just now";
-  if (options?.addSuffix && seconds > 1) {
-    return `${result} ago`;
+var CheckBox = ({
+  label,
+  name,
+  checked,
+  labelPosition = "east",
+  className,
+  errors,
+  onChange
+}) => {
+  const error = errors?.map((e) => /* @__PURE__ */ import_react13.default.createElement("p", {
+    key: e
+  }, e));
+  let containerClassName;
+  let labelClassName;
+  switch (labelPosition) {
+    case "north":
+      containerClassName = "flex flex-col-reverse items-center";
+      labelClassName = "mb-2";
+      break;
+    case "east":
+      containerClassName = "inline-flex items-center";
+      labelClassName = "ml-2";
+      break;
+    case "south":
+      containerClassName = "flex flex-col items-center";
+      labelClassName = "mt-2";
+      break;
+    case "west":
+      containerClassName = "inline-flex items-center flex-row-reverse";
+      labelClassName = "mr-2";
+      break;
+    default:
+      break;
   }
-  return result;
+  const defaultClassName = "rounded-full w-5 h-5 accent-gray-600 hover:accent-gray-800 cursor-pointer";
+  const errorClassName = "rounded-full w-5 h-5 accent-red-600 hover:accent-red-800 cursor-pointer";
+  const finalClassName = `${className ? className + " " : ""}${error ? errorClassName : defaultClassName}`;
+  const checkBoxRef = import_react13.useRef(null);
+  return /* @__PURE__ */ import_react13.default.createElement(import_react13.default.Fragment, null, /* @__PURE__ */ import_react13.default.createElement("div", {
+    className: containerClassName
+  }, /* @__PURE__ */ import_react13.default.createElement("input", {
+    ref: checkBoxRef,
+    id: name,
+    name,
+    type: "checkbox",
+    checked,
+    onChange,
+    className: finalClassName
+  }), label && /* @__PURE__ */ import_react13.default.createElement(Label, {
+    htmlFor: name,
+    hasError: !!error,
+    className: labelClassName
+  }, label)), !!error && /* @__PURE__ */ import_react13.default.createElement(ErrorMessage, null, error));
 };
-var ChatMessage = ({ message, username, timestamp, isCurrentUser = false }) => {
-  const [messageAge, setMessageAge] = import_react13.useState(timestamp ? formatDistanceToNow(new Date(timestamp), { addSuffix: true }) : "just now");
-  import_react13.useEffect(() => {
-    const timer = setInterval(() => {
-      if (timestamp) {
-        setMessageAge(formatDistanceToNow(new Date(timestamp), { addSuffix: true }));
+// src/lib/components/Inputs/DropDownInput.tsx
+var import_react14 = __toESM(require_react(), 1);
+var DropDownInput = ({
+  label,
+  name,
+  options,
+  value,
+  errors,
+  onChange,
+  placeholder
+}) => {
+  const error = errors?.map((e) => /* @__PURE__ */ import_react14.default.createElement("p", {
+    key: e
+  }, e));
+  const [isOpen, setIsOpen] = import_react14.useState(false);
+  const selectRef = import_react14.useRef(null);
+  const [highlightedIndex, setHighlightedIndex] = import_react14.useState(null);
+  const controlledValue = value ?? undefined;
+  import_react14.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (selectRef.current && !selectRef.current.contains(event.target)) {
+        setIsOpen(false);
+        setHighlightedIndex(null);
       }
-    }, 5 * 1000);
-    return () => {
-      clearInterval(timer);
     };
-  }, [timestamp]);
-  return /* @__PURE__ */ import_react13.default.createElement("div", {
-    className: `flex flex-col gap-1 ${isCurrentUser ? "items-end" : "items-start"} mb-2`
-  }, /* @__PURE__ */ import_react13.default.createElement("div", {
-    className: `flex items-center gap-2 ${isCurrentUser ? "justify-end" : "justify-start"} `
-  }, /* @__PURE__ */ import_react13.default.createElement("span", {
-    className: `text-sm font-medium ${isCurrentUser ? "text-gray-800" : "text-gray-500"} `
-  }, isCurrentUser ? "You" : username)), /* @__PURE__ */ import_react13.default.createElement("div", {
-    className: `max-w-[70%] whitespace-pre-wrap break-words rounded-xl px-3 py-1 shadow-sm sm:max-w-[50%] md:max-w-[40%] ${isCurrentUser ? "ml-auto border border-blue-500/50 bg-gray-800 text-white" : "mr-auto border border-gray-200/50 bg-gray-200 text-gray-800"} `
-  }, message), messageAge && /* @__PURE__ */ import_react13.default.createElement("span", {
-    className: "text-xs text-gray-400"
-  }, messageAge));
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+  const handleOptionClick = import_react14.useCallback((optionValue) => {
+    onChange?.(optionValue);
+    setIsOpen(false);
+    setHighlightedIndex(null);
+  }, [onChange]);
+  const handleKeyDown = (event) => {
+    if (!isOpen)
+      return;
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setHighlightedIndex((prevIndex) => {
+        if (prevIndex === null || prevIndex >= options.length - 1) {
+          return 0;
+        }
+        return prevIndex + 1;
+      });
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setHighlightedIndex((prevIndex) => {
+        if (prevIndex === null || prevIndex <= 0) {
+          return options.length - 1;
+        }
+        return prevIndex - 1;
+      });
+    } else if (event.key === "Enter" && highlightedIndex !== null) {
+      event.preventDefault();
+      handleOptionClick(options[highlightedIndex].value);
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      setIsOpen(false);
+      setHighlightedIndex(null);
+    }
+  };
+  return /* @__PURE__ */ import_react14.default.createElement("div", {
+    ref: selectRef,
+    className: "relative w-full"
+  }, label && /* @__PURE__ */ import_react14.default.createElement(Label, {
+    htmlFor: name,
+    hasError: !!error
+  }, label), /* @__PURE__ */ import_react14.default.createElement("div", {
+    className: "relative w-full"
+  }, /* @__PURE__ */ import_react14.default.createElement("button", {
+    type: "button",
+    className: `flex w-full items-center justify-between rounded-md border px-4 py-2 shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-gray-800 ${error ? "border-red-500 focus:ring-red-500" : "border-gray-300 hover:border-gray-500"}`,
+    onClick: () => setIsOpen(!isOpen),
+    onKeyDown: handleKeyDown,
+    "aria-haspopup": "listbox",
+    "aria-expanded": isOpen,
+    id: `dropdown-button-${name}`
+  }, /* @__PURE__ */ import_react14.default.createElement("span", {
+    className: "truncate"
+  }, options.find((opt) => opt.value === controlledValue)?.label || placeholder || "Select an option"), isOpen ? /* @__PURE__ */ import_react14.default.createElement("svg", {
+    xmlns: "http://www.w3.org/2000/svg",
+    viewBox: "0 0 20 20",
+    fill: "currentColor",
+    className: "h-5 w-5 text-gray-400"
+  }, /* @__PURE__ */ import_react14.default.createElement("path", {
+    fillRule: "evenodd",
+    d: "M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z",
+    clipRule: "evenodd"
+  })) : /* @__PURE__ */ import_react14.default.createElement("svg", {
+    xmlns: "http://www.w3.org/2000/svg",
+    viewBox: "0 0 20 20",
+    fill: "currentColor",
+    className: "h-5 w-5 text-gray-400"
+  }, /* @__PURE__ */ import_react14.default.createElement("path", {
+    fillRule: "evenodd",
+    d: "M14.77 7.79a.75.75 0 01-1.06-.02L10 3.832 6.35 7.77a.75.75 0 01-1.08-1.04l4.25-4.5a.75.75 0 011.08 0l4.25 4.5a.75.75 0 01.02 1.06z",
+    clipRule: "evenodd"
+  }))), isOpen && /* @__PURE__ */ import_react14.default.createElement("ul", {
+    className: "absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white shadow-lg",
+    role: "listbox",
+    "aria-labelledby": `dropdown-button-${name}`
+  }, options.map((option, index) => /* @__PURE__ */ import_react14.default.createElement("li", {
+    key: `${option.value}-${index}`,
+    className: `cursor-pointer px-4 py-2 hover:bg-gray-100 ${index === highlightedIndex && "bg-blue-100"}`,
+    onClick: () => handleOptionClick(option.value),
+    role: "option",
+    "aria-selected": controlledValue === option.value
+  }, option.label)))), !!error && /* @__PURE__ */ import_react14.default.createElement(ErrorMessage, null, error));
 };
-// src/lib/components/Chat/hooks/useChat.ts
+// src/lib/components/Inputs/HiddenInput.tsx
+var import_react15 = __toESM(require_react(), 1);
+var HiddenInput = ({ name, type, value }) => {
+  return /* @__PURE__ */ import_react15.default.createElement("input", {
+    type,
+    id: name,
+    name,
+    value: value ?? ""
+  });
+};
+// src/lib/components/Inputs/Label.tsx
 var import_react16 = __toESM(require_react(), 1);
+var Label = ({ htmlFor, hasError, className = "mb-2 font-bold", onClick, children }) => /* @__PURE__ */ import_react16.default.createElement("label", {
+  htmlFor,
+  className: `${className} block text-sm text-${hasError ? "red" : "gray"}-600`,
+  onClick
+}, children);
+// src/lib/components/Inputs/TextArea.tsx
+var import_react17 = __toESM(require_react(), 1);
+var TextArea = ({
+  label,
+  name,
+  placeholder,
+  value,
+  className,
+  errors,
+  onChange,
+  onKeyDown
+}) => {
+  const error = errors?.map((e) => /* @__PURE__ */ import_react17.default.createElement("p", {
+    key: e
+  }, e));
+  const finalClassName = `${className ? className + " " : ""}${error ? textInputErrorClassName : textInputDefaultClassName}${value ? " pr-8" : ""}`;
+  return /* @__PURE__ */ import_react17.default.createElement(import_react17.default.Fragment, null, label && /* @__PURE__ */ import_react17.default.createElement(Label, {
+    htmlFor: name,
+    hasError: !!error
+  }, label), /* @__PURE__ */ import_react17.default.createElement("textarea", {
+    id: name,
+    name,
+    value: value ?? "",
+    onChange,
+    onKeyDown,
+    placeholder,
+    className: finalClassName
+  }), !!error && /* @__PURE__ */ import_react17.default.createElement(ErrorMessage, null, error));
+};
+// src/lib/components/Inputs/TextInput.tsx
+var import_react18 = __toESM(require_react(), 1);
+var TextInput = ({
+  label,
+  name,
+  placeholder,
+  type,
+  value,
+  className,
+  autoComplete = "off",
+  errors,
+  ref,
+  onChange,
+  onClear
+}) => {
+  const error = errors?.map((e) => /* @__PURE__ */ import_react18.default.createElement("p", {
+    key: e
+  }, e));
+  const finalClassName = `${className ? className + " " : ""}${error ? textInputErrorClassName : textInputDefaultClassName}${value ? " pr-8" : ""}`;
+  const inputRef = import_react18.useRef(null);
+  const handleClear = () => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+    onClear && onClear();
+  };
+  return /* @__PURE__ */ import_react18.default.createElement(import_react18.default.Fragment, null, label && /* @__PURE__ */ import_react18.default.createElement(Label, {
+    htmlFor: name,
+    hasError: !!error
+  }, label), /* @__PURE__ */ import_react18.default.createElement("input", {
+    type,
+    id: name,
+    name,
+    value: value ?? "",
+    onChange,
+    placeholder,
+    className: finalClassName,
+    autoComplete,
+    ref
+  }), value && onClear && /* @__PURE__ */ import_react18.default.createElement(CloseIconButton, {
+    className: "right absolute top-0",
+    onClick: handleClear
+  }), !!error && /* @__PURE__ */ import_react18.default.createElement(ErrorMessage, null, error));
+};
+// src/lib/components/Inputs/TypeAheadInput.tsx
+var import_react24 = __toESM(require_react(), 1);
 
+// src/react/hooks/useAuthCheck.ts
+var import_react19 = __toESM(require_react(), 1);
+var useAuthCheck = () => {
+  const apiService = new ApiService;
+  const [authenticated, setAuthenticated] = import_react19.useState(undefined);
+  const checkAuth = async () => {
+    try {
+      const { authorized } = await apiService.get(`/${apiPrefix}/${authPrefix}/${checkRoute}`);
+      setAuthenticated(authorized);
+    } catch {
+      setAuthenticated(false);
+    }
+  };
+  import_react19.useEffect(() => {
+    if (authenticated === false) {
+      location.href = `${loginRoute}`;
+    }
+    const interval = setInterval(async () => {
+      await checkAuth();
+    }, 30 * 1000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [authenticated]);
+};
 // node_modules/zod/lib/index.mjs
 var util;
 (function(util2) {
@@ -38100,221 +38319,12 @@ var z = /* @__PURE__ */ Object.freeze({
   ZodError
 });
 
-// src/react/providers/SocketProvider.tsx
-var import_react15 = __toESM(require_react(), 1);
-
-// src/react/providers/UserProvider.tsx
-var import_react14 = __toESM(require_react(), 1);
-var UserContext = import_react14.createContext(undefined);
-var UserProvider = ({ value, children }) => {
-  const [user, setUser] = import_react14.useState(value);
-  const contextValue = {
-    user,
-    setUser
-  };
-  return /* @__PURE__ */ import_react14.default.createElement(UserContext.Provider, {
-    value: contextValue
-  }, children);
-};
-var useUserContext = () => {
-  const context = import_react14.useContext(UserContext);
-  if (!context) {
-    throw new Error("useUserContext must be used within a UserProvider");
-  }
-  return context;
-};
-
-// src/react/providers/SocketProvider.tsx
-var SocketContext = import_react15.createContext(undefined);
-var getSocketUri = (user) => {
-  let host, port;
-  try {
-    host = "localhost";
-    port = "8080";
-  } catch {
-    console.error("process doesn't exist");
-  }
-  return `ws://${host}:${port}/ws?userId=${user?.id}&sessionId=${user?.sessionId}`;
-};
-var handleOnlineStatus = (payload) => showToast({
-  message: /* @__PURE__ */ import_react15.default.createElement(import_react15.default.Fragment, null, /* @__PURE__ */ import_react15.default.createElement("b", null, payload.user.username), " ", payload.organization ? /* @__PURE__ */ import_react15.default.createElement(import_react15.default.Fragment, null, "from organization ", /* @__PURE__ */ import_react15.default.createElement("b", null, payload.organization.name)) : null, " ", "is now ", /* @__PURE__ */ import_react15.default.createElement("b", null, payload.isOnline ? "online" : "offline")),
-  position: "bottom-right"
-});
-var SocketProvider = ({ children }) => {
-  const { user } = useUserContext();
-  const [socket, setSocket] = import_react15.useState(null);
-  const [channelPayloads, setMessages] = import_react15.useState(new Map);
-  import_react15.useEffect(() => {
-    if (user?.sessionId) {
-      const ws = new WebSocket(getSocketUri(user));
-      ws.onopen = () => {
-        setSocket(ws);
-      };
-      ws.onmessage = (event) => {
-        const payload = JSON.parse(event.data);
-        const { channel } = payload;
-        switch (channel) {
-          case "online-status" /* ONLINE_STATUS */:
-            handleOnlineStatus(payload);
-            break;
-          default:
-            setMessages((prev) => {
-              const next = new Map;
-              if (prev?.has(channel)) {
-                const m = prev.get(channel) ?? [];
-                next.set(channel, [...m, payload]);
-              } else {
-                next.set(channel, [payload]);
-              }
-              return next;
-            });
-            break;
-        }
-      };
-      ws.onclose = () => {
-        showMessage({
-          message: /* @__PURE__ */ import_react15.default.createElement(import_react15.default.Fragment, null, "Websocket disconnected,", " ", /* @__PURE__ */ import_react15.default.createElement("u", {
-            className: "cursor-pointer",
-            onClick: () => window.location.reload()
-          }, "refresh app to reconnect"), "."),
-          type: "error"
-        });
-        setSocket(null);
-      };
-      ws.onerror = (error) => {
-        console.error("WebSocket error:", error);
-      };
-      return () => {
-        ws.close();
-      };
-    }
-  }, [user]);
-  const publish = (data, callback) => {
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify(data));
-      callback && callback();
-    } else {
-      console.warn("Not connected to WebSocket server");
-    }
-  };
-  const subscribe = (channel) => {
-    publish({
-      method: "subscribe" /* SUBSCRIBE */,
-      payload: { channel, user }
-    });
-  };
-  const contextValue = {
-    socket,
-    subscribe,
-    publish,
-    channelPayloads
-  };
-  return /* @__PURE__ */ import_react15.default.createElement(SocketContext.Provider, {
-    value: contextValue
-  }, children);
-};
-var useSocketContext = () => {
-  const context = import_react15.useContext(SocketContext);
-  if (!context) {
-    throw new Error("useSocketContext must be used within a SocketProvider");
-  }
-  return context;
-};
-// src/lib/components/Chat/hooks/useChat.ts
-var useChat = ({ organization, team, channel }) => {
-  const { socket, publish, channelPayloads } = useSocketContext();
-  const [messages, setMessages] = import_react16.useState([]);
-  import_react16.useEffect(() => {
-    if (channel) {
-      const channelMessages = channelPayloads.get(channel) ?? [];
-      let filteredMessages = [];
-      if (organization) {
-        filteredMessages = channelMessages?.filter((x) => x.organization?.id === organization.id);
-      } else if (team) {
-        filteredMessages = channelMessages?.filter((x) => x.team?.id === team.id);
-      } else {
-        filteredMessages = channelMessages;
-      }
-      setMessages(filteredMessages);
-    }
-  }, [channel, organization, team, channelPayloads]);
-  const validationSchema = z.object({
-    message: z.string().min(1, { message: "Must be at least 1 character long." }).max(120, { message: "Cannot be more than 120 characters long" })
-  });
-  const organizationSocketDTO = organization ? {
-    id: organization?.id,
-    name: organization?.name
-  } : null;
-  const teamSocketDTO = team ? {
-    id: team?.id,
-    name: team?.name
-  } : null;
-  const sendMessage = async ({ message }) => {
-    return await new Promise((resolve) => {
-      publish({
-        method: "publish" /* PUBLISH */,
-        payload: {
-          channel,
-          organization: organizationSocketDTO,
-          team: teamSocketDTO,
-          message
-        }
-      });
-      resolve({ message });
-    });
-  };
-  return {
-    validationSchema,
-    socket,
-    sendMessage,
-    messages
-  };
-};
-
-// src/react/components/Cards/CardBase.tsx
-var import_react17 = __toESM(require_react(), 1);
-var CardBase = ({ children }) => {
-  return /* @__PURE__ */ import_react17.default.createElement("div", {
-    className: "rounded-md bg-white px-4 py-3 shadow-md hover:border hover:border-gray-400"
-  }, children);
-};
-// src/react/components/Cards/CardGrid.tsx
-var import_react18 = __toESM(require_react(), 1);
-var CardGrid = ({ children }) => {
-  return /* @__PURE__ */ import_react18.default.createElement("div", {
-    className: "grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
-  }, children);
-};
-// src/react/components/CustomErrorBoundary/CustomErrorBoundary.tsx
-var import_react19 = __toESM(require_react(), 1);
-
-class CustomErrorBoundary extends import_react19.default.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error };
-  }
-  componentDidCatch(error, errorInfo) {
-    console.error("Caught an error:", error, errorInfo);
-  }
-  render() {
-    if (this.state.hasError) {
-      return this.props.fallback;
-    }
-    return this.props.children;
-  }
-}
-// src/react/components/Form/Form.tsx
-var import_react23 = __toESM(require_react(), 1);
-
 // src/lib/validation/schemas.ts
 var uuidRegex2 = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 var uuidSchema = z.string().regex(uuidRegex2, {
   message: "Invalid UUID format"
 });
-var optionalTeamIdSchema = z.string().optional().refine((val) => !val || uuidRegex2.test(val), {
+var optionalUuidSchema = z.string().optional().refine((val) => !val || uuidRegex2.test(val), {
   message: "Invalid UUID format"
 });
 var usernameSchema = z.string().min(3, { message: "Must be at least 3 characters long." });
@@ -38338,31 +38348,6 @@ var validateForm = (formData, validationSchema) => {
       errors: validation.error.flatten().fieldErrors
     };
   }
-};
-// src/react/hooks/useAuthCheck.ts
-var import_react20 = __toESM(require_react(), 1);
-var useAuthCheck = () => {
-  const apiService = new ApiService;
-  const [authenticated, setAuthenticated] = import_react20.useState(undefined);
-  const checkAuth = async () => {
-    try {
-      const { authorized } = await apiService.get(`/${apiPrefix}/${authPrefix}/${checkRoute}`);
-      setAuthenticated(authorized);
-    } catch {
-      setAuthenticated(false);
-    }
-  };
-  import_react20.useEffect(() => {
-    if (authenticated === false) {
-      location.href = `${loginRoute}`;
-    }
-    const interval = setInterval(async () => {
-      await checkAuth();
-    }, 30 * 1000);
-    return () => {
-      clearInterval(interval);
-    };
-  }, [authenticated]);
 };
 // src/react/hooks/useAuthLogin.ts
 var useAuthLogin = () => {
@@ -38408,10 +38393,10 @@ var useAuthRegister = () => {
   };
 };
 // src/react/hooks/useDebounce.ts
-var import_react21 = __toESM(require_react(), 1);
+var import_react20 = __toESM(require_react(), 1);
 var useDebounce = (value, delay) => {
-  const [debouncedValue, setDebouncedValue] = import_react21.useState(value);
-  import_react21.useEffect(() => {
+  const [debouncedValue, setDebouncedValue] = import_react20.useState(value);
+  import_react20.useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedValue(value);
     }, delay);
@@ -38420,6 +38405,126 @@ var useDebounce = (value, delay) => {
     };
   }, [value, delay]);
   return debouncedValue;
+};
+// src/react/providers/SocketProvider.tsx
+var import_react22 = __toESM(require_react(), 1);
+
+// src/react/providers/UserProvider.tsx
+var import_react21 = __toESM(require_react(), 1);
+var UserContext = import_react21.createContext(undefined);
+var UserProvider = ({ value, children }) => {
+  const [user, setUser] = import_react21.useState(value);
+  const contextValue = {
+    user,
+    setUser
+  };
+  return /* @__PURE__ */ import_react21.default.createElement(UserContext.Provider, {
+    value: contextValue
+  }, children);
+};
+var useUserContext = () => {
+  const context = import_react21.useContext(UserContext);
+  if (!context) {
+    throw new Error("useUserContext must be used within a UserProvider");
+  }
+  return context;
+};
+
+// src/react/providers/SocketProvider.tsx
+var SocketContext = import_react22.createContext(undefined);
+var getSocketUri = (user) => {
+  let host, port;
+  try {
+    host = "localhost";
+    port = "8080";
+  } catch {
+    console.error("process doesn't exist");
+  }
+  return `ws://${host}:${port}/ws?userId=${user?.id}&sessionId=${user?.sessionId}`;
+};
+var handleOnlineStatus = (payload) => showToast({
+  message: /* @__PURE__ */ import_react22.default.createElement(import_react22.default.Fragment, null, /* @__PURE__ */ import_react22.default.createElement("b", null, payload.user.username), " ", payload.organization ? /* @__PURE__ */ import_react22.default.createElement(import_react22.default.Fragment, null, "from organization ", /* @__PURE__ */ import_react22.default.createElement("b", null, payload.organization.name)) : null, " ", "is now ", /* @__PURE__ */ import_react22.default.createElement("b", null, payload.isOnline ? "online" : "offline")),
+  position: "bottom-right"
+});
+var SocketProvider = ({ children }) => {
+  const { user } = useUserContext();
+  const [socket, setSocket] = import_react22.useState(null);
+  const [channelPayloads, setMessages] = import_react22.useState(new Map);
+  import_react22.useEffect(() => {
+    if (user?.sessionId) {
+      const ws = new WebSocket(getSocketUri(user));
+      ws.onopen = () => {
+        setSocket(ws);
+      };
+      ws.onmessage = (event) => {
+        const payload = JSON.parse(event.data);
+        const { channel } = payload;
+        switch (channel) {
+          case "online-status" /* ONLINE_STATUS */:
+            handleOnlineStatus(payload);
+            break;
+          default:
+            setMessages((prev) => {
+              const next = new Map;
+              if (prev?.has(channel)) {
+                const m = prev.get(channel) ?? [];
+                next.set(channel, [...m, payload]);
+              } else {
+                next.set(channel, [payload]);
+              }
+              return next;
+            });
+            break;
+        }
+      };
+      ws.onclose = () => {
+        showMessage({
+          message: /* @__PURE__ */ import_react22.default.createElement(import_react22.default.Fragment, null, "Websocket disconnected,", " ", /* @__PURE__ */ import_react22.default.createElement("u", {
+            className: "cursor-pointer",
+            onClick: () => window.location.reload()
+          }, "refresh app to reconnect"), "."),
+          type: "error"
+        });
+        setSocket(null);
+      };
+      ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
+      return () => {
+        ws.close();
+      };
+    }
+  }, [user]);
+  const publish = (data, callback) => {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify(data));
+      callback && callback();
+    } else {
+      console.warn("Not connected to WebSocket server");
+    }
+  };
+  const subscribe = (channel) => {
+    publish({
+      method: "subscribe" /* SUBSCRIBE */,
+      payload: { channel, user }
+    });
+  };
+  const contextValue = {
+    socket,
+    subscribe,
+    publish,
+    channelPayloads
+  };
+  return /* @__PURE__ */ import_react22.default.createElement(SocketContext.Provider, {
+    value: contextValue
+  }, children);
+};
+var useSocketContext = () => {
+  const context = import_react22.useContext(SocketContext);
+  if (!context) {
+    throw new Error("useSocketContext must be used within a SocketProvider");
+  }
+  return context;
 };
 // src/react/hooks/useOrganizations.ts
 var useOrganizations = () => {
@@ -38442,9 +38547,11 @@ var useOrganizations = () => {
     name: organizationNameSchema
   });
   const onCreate = async (request) => {
+    "use server";
     return await apiService.post(`/${apiPrefix}/${organizationRoute}`, request);
   };
   const onEdit = async (request) => {
+    "use server";
     return await apiService.put(`/${apiPrefix}/${organizationRoute}/${request.id}`, request);
   };
   const onDelete = async (id) => {
@@ -38487,9 +38594,9 @@ var useOrganizations = () => {
   };
 };
 // src/react/hooks/usePersistentForm.ts
-var import_react22 = __toESM(require_react(), 1);
+var import_react23 = __toESM(require_react(), 1);
 var usePersistentForm = (ref) => {
-  import_react22.useEffect(() => {
+  import_react23.useEffect(() => {
     if (!ref.current) {
       throw new Error("Form ref is not defined.");
     }
@@ -38528,9 +38635,11 @@ var useTeams = () => {
     name: teamNameSchema
   });
   const onCreate = async (request) => {
+    "use server";
     return await apiService.post(`/${apiPrefix}/${teamRoute}`, request);
   };
   const onEdit = async (request) => {
+    "use server";
     return await apiService.put(`/${apiPrefix}/${teamRoute}/${request.id}`, request);
   };
   const onDelete = async (id) => {
@@ -38581,7 +38690,7 @@ var useTodos = () => {
     let endpoint = `user/${user?.id}`;
     if (organizationId)
       endpoint = `organization/${organizationId}`;
-    if (teamId)
+    if (organizationId && teamId)
       endpoint = `team/${teamId}`;
     return useQuery({
       queryKey: ["todoData", endpoint],
@@ -38591,15 +38700,18 @@ var useTodos = () => {
   };
   const createValidationSchema = z.object({
     title: todoTitleSchema,
-    teamId: optionalTeamIdSchema
+    teamId: optionalUuidSchema,
+    organizationId: optionalUuidSchema
   });
   const editValidationSchema = z.object({
     id: uuidSchema,
     title: todoTitleSchema,
-    teamId: optionalTeamIdSchema,
+    teamId: optionalUuidSchema,
+    organizationId: optionalUuidSchema,
     description: z.string().optional().nullable()
   });
   const onCreate = async (request) => {
+    "use server";
     if (request.organizationId === "") {
       delete request.organizationId;
     }
@@ -38609,6 +38721,7 @@ var useTodos = () => {
     return await apiService.post(`/${apiPrefix}/${todoRoute}`, request);
   };
   const onEdit = async (request) => {
+    "use server";
     if (request.teamId === "") {
       delete request.teamId;
     }
@@ -38644,9 +38757,9 @@ var useUsers = () => {
     searchQuery
   }) => {
     if (searchQuery && searchQuery?.length >= 3) {
-      const prefix = organizationId ? `organizationId=${organizationId}` : null;
-      const queryString = prefix && searchQuery ? `${prefix}&search=${searchQuery}` : "";
-      return await apiService.get(`/${apiPrefix}/${userRoute}?${queryString}`);
+      const searchQueryString = searchQuery ? `searchQuery=${searchQuery}` : null;
+      const organizationString = organizationId ? `organizationId=${organizationId}` : null;
+      return await apiService.get(`/${apiPrefix}/${userRoute}/search?${searchQueryString}&${organizationString}`);
     }
     return [];
   };
@@ -38670,7 +38783,242 @@ var useUsers = () => {
     refetch
   };
 };
+// src/lib/components/Inputs/TypeAheadInput.tsx
+var TypeAheadSearchInput = ({
+  label,
+  name,
+  placeholder,
+  options,
+  onChange,
+  onSelect,
+  errors
+}) => {
+  const error = errors?.map((e) => /* @__PURE__ */ import_react24.default.createElement("p", {
+    key: e
+  }, e));
+  const [searchTerm, setSearchTerm] = import_react24.useState("");
+  const [filteredOptions, setFilteredOptions] = import_react24.useState(options);
+  const [showOptions, setShowOptions] = import_react24.useState(false);
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  import_react24.useEffect(() => {
+    if (debouncedSearchTerm) {
+      onChange && onChange(debouncedSearchTerm);
+      const filtered = options.filter((option) => option.label.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
+      setFilteredOptions(filtered);
+      setShowOptions(true);
+    } else {
+      setFilteredOptions(options);
+      setShowOptions(false);
+    }
+  }, [debouncedSearchTerm, options, onChange]);
+  const handleInputChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+  const handleOptionSelect = (value) => {
+    const selectedOption = options.find((option) => option.value === value);
+    if (selectedOption) {
+      setSearchTerm(selectedOption.label);
+    }
+    onSelect(value);
+    setShowOptions(false);
+  };
+  const containerRef = import_react24.useRef(null);
+  import_react24.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setShowOptions(false);
+      }
+    };
+    if (showOptions) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showOptions]);
+  return /* @__PURE__ */ import_react24.default.createElement("div", {
+    className: "relative",
+    ref: containerRef
+  }, /* @__PURE__ */ import_react24.default.createElement(TextInput, {
+    type: "text",
+    label,
+    name,
+    placeholder,
+    value: searchTerm,
+    onChange: handleInputChange,
+    onClear: () => {
+      setSearchTerm("");
+    },
+    errors
+  }), showOptions && /* @__PURE__ */ import_react24.default.createElement("div", {
+    className: "absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white shadow-lg"
+  }, filteredOptions.length > 0 ? filteredOptions.map((option) => /* @__PURE__ */ import_react24.default.createElement("div", {
+    key: option.value,
+    className: "cursor-pointer px-4 py-2 hover:bg-gray-100",
+    onClick: () => handleOptionSelect(option.value)
+  }, option.label)) : /* @__PURE__ */ import_react24.default.createElement("div", {
+    className: "px-4 py-2 text-gray-500"
+  }, "No results found")), error && /* @__PURE__ */ import_react24.default.createElement(ErrorMessage, null, error));
+};
+
+// src/lib/components/Inputs/index.tsx
+var textInputDefaultClassName = "w-full rounded-md border px-4 py-2 shadow-sm border-gray-300 hover:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-800";
+var textInputErrorClassName = "w-full rounded-md border px-4 py-2 shadow-sm border-red-500 focus:outline-none focus:ring-1 focus:ring-red-800";
+
+// src/lib/components/Chat/ChatMessage/ChatMessage.tsx
+var import_react25 = __toESM(require_react(), 1);
+var formatDistanceToNow = (date, options) => {
+  const now = new Date;
+  const diff = now.getTime() - date.getTime();
+  const seconds = Math.floor(diff / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  const months = Math.floor(days / 30);
+  const years = Math.floor(days / 365);
+  let result;
+  if (years > 1)
+    result = `${years} years`;
+  else if (years === 1)
+    result = `1 year`;
+  else if (months > 1)
+    result = `${months} months`;
+  else if (months === 1)
+    result = `1 month`;
+  else if (days > 1)
+    result = `${days} days`;
+  else if (days === 1)
+    result = `1 day`;
+  else if (hours > 1)
+    result = `${hours} hours`;
+  else if (hours === 1)
+    result = `1 hour`;
+  else if (minutes > 1)
+    result = `${minutes} minutes`;
+  else if (minutes === 1)
+    result = `1 minute`;
+  else if (seconds > 1)
+    result = `${seconds} seconds`;
+  else
+    result = "just now";
+  if (options?.addSuffix && seconds > 1) {
+    return `${result} ago`;
+  }
+  return result;
+};
+var ChatMessage = ({ message, username, timestamp, isCurrentUser = false }) => {
+  const [messageAge, setMessageAge] = import_react25.useState(timestamp ? formatDistanceToNow(new Date(timestamp), { addSuffix: true }) : "just now");
+  import_react25.useEffect(() => {
+    const timer = setInterval(() => {
+      if (timestamp) {
+        setMessageAge(formatDistanceToNow(new Date(timestamp), { addSuffix: true }));
+      }
+    }, 5 * 1000);
+    return () => {
+      clearInterval(timer);
+    };
+  }, [timestamp]);
+  return /* @__PURE__ */ import_react25.default.createElement("div", {
+    className: `flex flex-col gap-1 ${isCurrentUser ? "items-end" : "items-start"} mb-2`
+  }, /* @__PURE__ */ import_react25.default.createElement("div", {
+    className: `flex items-center gap-2 ${isCurrentUser ? "justify-end" : "justify-start"} `
+  }, /* @__PURE__ */ import_react25.default.createElement("span", {
+    className: `text-sm font-medium ${isCurrentUser ? "text-gray-800" : "text-gray-500"} `
+  }, isCurrentUser ? "You" : username)), /* @__PURE__ */ import_react25.default.createElement("div", {
+    className: `max-w-[70%] whitespace-pre-wrap break-words rounded-xl px-3 py-1 shadow-sm sm:max-w-[50%] md:max-w-[40%] ${isCurrentUser ? "ml-auto border border-blue-500/50 bg-gray-800 text-white" : "mr-auto border border-gray-200/50 bg-gray-200 text-gray-800"} `
+  }, message), messageAge && /* @__PURE__ */ import_react25.default.createElement("span", {
+    className: "text-xs text-gray-400"
+  }, messageAge));
+};
+// src/lib/components/Chat/hooks/useChat.ts
+var import_react26 = __toESM(require_react(), 1);
+var useChat = ({ organization, team, channel }) => {
+  const { socket, publish, channelPayloads } = useSocketContext();
+  const [messages, setMessages] = import_react26.useState([]);
+  import_react26.useEffect(() => {
+    if (channel) {
+      const channelMessages = channelPayloads.get(channel) ?? [];
+      let filteredMessages = [];
+      if (organization) {
+        filteredMessages = channelMessages?.filter((x) => x.organization?.id === organization.id);
+      } else if (team) {
+        filteredMessages = channelMessages?.filter((x) => x.team?.id === team.id);
+      } else {
+        filteredMessages = channelMessages;
+      }
+      setMessages(filteredMessages);
+    }
+  }, [channel, organization, team, channelPayloads]);
+  const validationSchema = z.object({
+    message: z.string().min(1, { message: "Must be at least 1 character long." }).max(120, { message: "Cannot be more than 120 characters long" })
+  });
+  const organizationSocketDTO = organization ? {
+    id: organization?.id,
+    name: organization?.name
+  } : null;
+  const teamSocketDTO = team ? {
+    id: team?.id,
+    name: team?.name
+  } : null;
+  const sendMessage = async ({ message }) => {
+    return await new Promise((resolve) => {
+      publish({
+        method: "publish" /* PUBLISH */,
+        payload: {
+          channel,
+          organization: organizationSocketDTO,
+          team: teamSocketDTO,
+          message
+        }
+      });
+      resolve({ message });
+    });
+  };
+  return {
+    validationSchema,
+    socket,
+    sendMessage,
+    messages
+  };
+};
+
+// src/react/components/Cards/CardBase.tsx
+var import_react27 = __toESM(require_react(), 1);
+var CardBase = ({ children }) => {
+  return /* @__PURE__ */ import_react27.default.createElement("div", {
+    className: "rounded-md bg-white px-4 py-3 shadow-md hover:border hover:border-gray-400"
+  }, children);
+};
+// src/react/components/Cards/CardGrid.tsx
+var import_react28 = __toESM(require_react(), 1);
+var CardGrid = ({ children }) => {
+  return /* @__PURE__ */ import_react28.default.createElement("div", {
+    className: "grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+  }, children);
+};
+// src/react/components/CustomErrorBoundary/CustomErrorBoundary.tsx
+var import_react29 = __toESM(require_react(), 1);
+
+class CustomErrorBoundary extends import_react29.default.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("Caught an error:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
+}
 // src/react/components/Form/Form.tsx
+var import_react30 = __toESM(require_react(), 1);
 var Form = ({
   inputs,
   validationSchema,
@@ -38683,7 +39031,7 @@ var Form = ({
   secondaryButtons,
   disabled
 }) => {
-  const [_, formAction] = import_react23.useActionState(async (_2, formData) => {
+  const [_, formAction] = import_react30.useActionState(async (_2, formData) => {
     await handleFormSubmit(formData);
     return `handleFormSubmit`;
   }, undefined);
@@ -38694,10 +39042,10 @@ var Form = ({
     });
     return inputMap;
   };
-  const [inputValues, setInputValues] = import_react23.useState(getDefaultValues());
-  const [apiError, setApiError] = import_react23.useState("");
-  const [validationErrors, setValidationErrors] = import_react23.useState({});
-  const formRef = import_react23.useRef(null);
+  const [inputValues, setInputValues] = import_react30.useState(getDefaultValues());
+  const [apiError, setApiError] = import_react30.useState("");
+  const [validationErrors, setValidationErrors] = import_react30.useState({});
+  const formRef = import_react30.useRef(null);
   usePersistentForm(formRef);
   const handleCancel = () => {
     onCancel && onCancel();
@@ -38732,20 +39080,20 @@ var Form = ({
       setValidationErrors(validation.errors ?? {});
     }
   };
-  return /* @__PURE__ */ import_react23.default.createElement("form", {
+  return /* @__PURE__ */ import_react30.default.createElement("form", {
     action: formAction,
     ref: formRef
-  }, /* @__PURE__ */ import_react23.default.createElement(ErrorMessage, null, apiError), inputs.map((input) => {
+  }, /* @__PURE__ */ import_react30.default.createElement(ErrorMessage, null, apiError), inputs.map((input) => {
     let control;
     switch (input.type) {
       case "hidden":
-        control = /* @__PURE__ */ import_react23.default.createElement(HiddenInput, {
+        control = /* @__PURE__ */ import_react30.default.createElement(HiddenInput, {
           ...input
         });
         break;
       case "password":
       case "text":
-        control = /* @__PURE__ */ import_react23.default.createElement(TextInput, {
+        control = /* @__PURE__ */ import_react30.default.createElement(TextInput, {
           ...input,
           value: inputValues.get(input.name) ?? input.value,
           errors: validationErrors[input.name],
@@ -38755,62 +39103,70 @@ var Form = ({
         });
         break;
       case "textarea":
-        control = /* @__PURE__ */ import_react23.default.createElement(TextArea, {
+        control = /* @__PURE__ */ import_react30.default.createElement(TextArea, {
           ...input,
           value: inputValues.get(input.name) ?? input.value,
           errors: validationErrors[input.name],
           onChange: (event) => {
             setInputValues((prev) => new Map(prev).set(input.name, event.target.value));
+          },
+          onKeyDown: (event) => {
+            if (input.textAreaSubmitOnEnter && event.key === "Enter" && !event.shiftKey) {
+              event.preventDefault();
+              if (formRef.current) {
+                formRef.current.requestSubmit();
+              }
+            }
           }
         });
         break;
       default:
-        control = /* @__PURE__ */ import_react23.default.createElement(import_react23.default.Fragment, null, "invlid input");
+        control = /* @__PURE__ */ import_react30.default.createElement(import_react30.default.Fragment, null, "invlid input");
         break;
     }
-    return /* @__PURE__ */ import_react23.default.createElement("div", {
+    return /* @__PURE__ */ import_react30.default.createElement("div", {
       className: input.type !== "hidden" ? "mb-4" : "",
       key: input.name
     }, control);
-  }), /* @__PURE__ */ import_react23.default.createElement("div", {
+  }), /* @__PURE__ */ import_react30.default.createElement("div", {
     className: "mt-6 flex items-center justify-between"
-  }, /* @__PURE__ */ import_react23.default.createElement("div", {
+  }, /* @__PURE__ */ import_react30.default.createElement("div", {
     className: "flex w-full justify-start"
-  }, secondaryButtons), /* @__PURE__ */ import_react23.default.createElement("div", {
+  }, secondaryButtons), /* @__PURE__ */ import_react30.default.createElement("div", {
     className: "flex items-center space-x-4"
-  }, showCancelButton && /* @__PURE__ */ import_react23.default.createElement(Button, {
+  }, showCancelButton && /* @__PURE__ */ import_react30.default.createElement(Button, {
     type: "button",
     onClick: handleCancel,
     mode: "secondary" /* SECONDARY */
-  }, cancelButtonText ? cancelButtonText : "Cancel"), /* @__PURE__ */ import_react23.default.createElement(Button, {
+  }, cancelButtonText ? cancelButtonText : "Cancel"), /* @__PURE__ */ import_react30.default.createElement(Button, {
     type: "submit",
     disabled: disabled || createMutation.isPending,
     mode: "primary" /* PRIMARY */
   }, submitButtonText ? submitButtonText : "Submit"))));
 };
 // src/react/components/Layout/index.tsx
-var import_react26 = __toESM(require_react(), 1);
+var import_react33 = __toESM(require_react(), 1);
 
 // src/react/components/Layout/AuthLayout.tsx
-var import_react24 = __toESM(require_react(), 1);
+var import_react31 = __toESM(require_react(), 1);
 var AuthLayout = ({ title, children }) => {
-  return /* @__PURE__ */ import_react24.default.createElement("div", {
+  return /* @__PURE__ */ import_react31.default.createElement("div", {
     className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react24.default.createElement("div", {
+  }, /* @__PURE__ */ import_react31.default.createElement("div", {
     className: "w-96 rounded bg-white p-8 shadow-md"
-  }, /* @__PURE__ */ import_react24.default.createElement("h1", {
+  }, /* @__PURE__ */ import_react31.default.createElement("h1", {
     className: "mb-6 text-center text-2xl font-semibold"
   }, title), children));
 };
 
 // src/react/components/Layout/PageLayout.tsx
-var import_react25 = __toESM(require_react(), 1);
+var import_react32 = __toESM(require_react(), 1);
 var PageLayout = ({ title, children }) => {
-  return /* @__PURE__ */ import_react25.default.createElement("div", {
+  return /* @__PURE__ */ import_react32.default.createElement("div", {
     className: "flex justify-center bg-gray-100"
-  }, /* @__PURE__ */ import_react25.default.createElement("div", {
+  }, /* @__PURE__ */ import_react32.default.createElement("div", {
     className: "w-full rounded bg-white p-8 shadow-md"
-  }, /* @__PURE__ */ import_react25.default.createElement("h1", {
+  }, /* @__PURE__ */ import_react32.default.createElement("h1", {
     className: "mb-4 text-center text-2xl font-bold"
   }, title), children));
 };
@@ -38820,22 +39176,22 @@ var Layout = ({ type, title = "", children }) => {
   let layout;
   switch (type) {
     case "AUTH" /* AUTH */:
-      layout = /* @__PURE__ */ import_react26.default.createElement(AuthLayout, {
+      layout = /* @__PURE__ */ import_react33.default.createElement(AuthLayout, {
         title
       }, children);
       break;
     case "PAGE" /* PAGE */:
     default:
-      layout = /* @__PURE__ */ import_react26.default.createElement(PageLayout, {
+      layout = /* @__PURE__ */ import_react33.default.createElement(PageLayout, {
         title
       }, children);
   }
-  return /* @__PURE__ */ import_react26.default.createElement(CustomErrorBoundary, {
-    fallback: /* @__PURE__ */ import_react26.default.createElement("h2", null, "Oops! Something went wrong in this section.")
+  return /* @__PURE__ */ import_react33.default.createElement(CustomErrorBoundary, {
+    fallback: /* @__PURE__ */ import_react33.default.createElement("h2", null, "Oops! Something went wrong in this section.")
   }, layout);
 };
 // src/react/components/Nav/Nav.tsx
-var import_react27 = __toESM(require_react(), 1);
+var import_react34 = __toESM(require_react(), 1);
 var import_react_router = __toESM(require_development(), 1);
 var Nav = () => {
   const apiService = new ApiService;
@@ -38852,12 +39208,12 @@ var Nav = () => {
   };
   const activeNavLinkClassName = "rounded-md px-3 py-2 text-sm font-bold text-gray-100 hover:text-white bg-gray-600 hover:bg-gray-700 cursor-pointer";
   const navLinkClassName = "rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-gray-100 hover:bg-gray-700 cursor-pointer";
-  return /* @__PURE__ */ import_react27.default.createElement("nav", {
+  return /* @__PURE__ */ import_react34.default.createElement("nav", {
     className: "flex items-center justify-between bg-gray-800 p-4",
     style: { height: 60 }
-  }, /* @__PURE__ */ import_react27.default.createElement("div", {
+  }, /* @__PURE__ */ import_react34.default.createElement("div", {
     className: "flex items-center"
-  }, /* @__PURE__ */ import_react27.default.createElement("img", {
+  }, /* @__PURE__ */ import_react34.default.createElement("img", {
     src: "/public/bun.png",
     alt: "Logo",
     height: 50,
@@ -38865,28 +39221,28 @@ var Nav = () => {
     onClick: () => {
       navigate("/");
     }
-  }), /* @__PURE__ */ import_react27.default.createElement(import_react_router.NavLink, {
+  }), /* @__PURE__ */ import_react34.default.createElement(import_react_router.NavLink, {
     to: "/",
     className: "text-lg font-bold text-white"
-  }, "Todo App")), /* @__PURE__ */ import_react27.default.createElement("div", null, !user?.id && /* @__PURE__ */ import_react27.default.createElement(import_react_router.NavLink, {
+  }, "Todo App")), /* @__PURE__ */ import_react34.default.createElement("div", null, !user?.id && /* @__PURE__ */ import_react34.default.createElement(import_react_router.NavLink, {
     className: ({ isActive }) => isActive ? activeNavLinkClassName : navLinkClassName,
     to: `/${loginRoute}`
-  }, "Login"), user?.id && /* @__PURE__ */ import_react27.default.createElement(import_react27.default.Fragment, null, /* @__PURE__ */ import_react27.default.createElement(import_react_router.NavLink, {
+  }, "Login"), user?.id && /* @__PURE__ */ import_react34.default.createElement(import_react34.default.Fragment, null, /* @__PURE__ */ import_react34.default.createElement(import_react_router.NavLink, {
     className: ({ isActive }) => isActive ? activeNavLinkClassName : navLinkClassName,
     to: `/${organizationRoute}`
-  }, "Organizations"), /* @__PURE__ */ import_react27.default.createElement(import_react_router.NavLink, {
+  }, "Organizations"), /* @__PURE__ */ import_react34.default.createElement(import_react_router.NavLink, {
     className: ({ isActive }) => isActive ? activeNavLinkClassName : navLinkClassName,
     to: `/${teamRoute}`
-  }, "Teams"), /* @__PURE__ */ import_react27.default.createElement(import_react_router.NavLink, {
+  }, "Teams"), /* @__PURE__ */ import_react34.default.createElement(import_react_router.NavLink, {
     className: ({ isActive }) => isActive ? activeNavLinkClassName : navLinkClassName,
     to: `/${todoRoute}`
-  }, "Todos"), /* @__PURE__ */ import_react27.default.createElement(import_react_router.NavLink, {
+  }, "Todos"), /* @__PURE__ */ import_react34.default.createElement(import_react_router.NavLink, {
     className: ({ isActive }) => isActive ? activeNavLinkClassName : navLinkClassName,
     to: `/${chatsRoute}`
-  }, "Chats"), /* @__PURE__ */ import_react27.default.createElement("span", {
+  }, "Chats"), /* @__PURE__ */ import_react34.default.createElement("span", {
     onClick: handleLogout,
     className: navLinkClassName
-  }, "Logout"), /* @__PURE__ */ import_react27.default.createElement("span", {
+  }, "Logout"), /* @__PURE__ */ import_react34.default.createElement("span", {
     className: "ml-2 border-spacing-1 rounded-md border px-3 py-2 text-sm font-medium text-gray-300"
   }, user.username))));
 };
@@ -38894,89 +39250,102 @@ var Nav = () => {
 var ChatForm = (props) => {
   const { user } = useUserContext();
   const { validationSchema, socket, sendMessage, messages } = useChat(props);
-  const scrollContainerRef = import_react28.useRef(null);
-  import_react28.useEffect(() => {
+  const scrollContainerRef = import_react35.useRef(null);
+  const [textAreaSubmitOnEnter, setTextAreaSubmitOnEnter] = import_react35.useState(true);
+  import_react35.useEffect(() => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
     }
   }, [messages]);
-  return /* @__PURE__ */ import_react28.default.createElement(import_react28.default.Fragment, null, /* @__PURE__ */ import_react28.default.createElement("div", {
+  const handleSubmitOnEnterCheckChanged = () => {
+    setTextAreaSubmitOnEnter((prev) => !prev);
+  };
+  return /* @__PURE__ */ import_react35.default.createElement(import_react35.default.Fragment, null, /* @__PURE__ */ import_react35.default.createElement("div", {
     ref: scrollContainerRef,
     className: "h-full flex-1 overflow-y-auto p-2"
-  }, messages.map((payload, index) => /* @__PURE__ */ import_react28.default.createElement(ChatMessage, {
+  }, messages.map((payload, index) => /* @__PURE__ */ import_react35.default.createElement(ChatMessage, {
     key: index,
     message: payload.message ?? "",
     username: payload.user.username,
     timestamp: payload.createdAt,
     isCurrentUser: payload.user.id === user?.id
-  }))), /* @__PURE__ */ import_react28.default.createElement("div", {
+  }))), /* @__PURE__ */ import_react35.default.createElement("div", {
     className: "mt-4"
-  }, /* @__PURE__ */ import_react28.default.createElement(Form, {
+  }, /* @__PURE__ */ import_react35.default.createElement(Form, {
     inputs: [
       {
         type: "textarea",
         name: "message",
         label: "Chat Message",
-        placeholder: "Type your message..."
+        placeholder: "Type your message...",
+        textAreaSubmitOnEnter
       }
     ],
     validationSchema,
     onSubmit: sendMessage,
     showCancelButton: true,
+    secondaryButtons: /* @__PURE__ */ import_react35.default.createElement("div", {
+      style: { width: "auto" }
+    }, /* @__PURE__ */ import_react35.default.createElement(CheckBox, {
+      name: "submitOnEnter",
+      checked: textAreaSubmitOnEnter,
+      onChange: handleSubmitOnEnterCheckChanged,
+      label: "Submit on enter"
+    })),
     disabled: !socket || socket.readyState !== WebSocket.OPEN
   })));
 };
 // src/lib/components/ErrorMessage/ErrorMessage.tsx
-var import_react29 = __toESM(require_react(), 1);
+var import_react36 = __toESM(require_react(), 1);
 var ErrorMessage = ({ children }) => {
-  return /* @__PURE__ */ import_react29.default.createElement(import_react29.default.Fragment, null, children && /* @__PURE__ */ import_react29.default.createElement("div", {
+  return /* @__PURE__ */ import_react36.default.createElement(import_react36.default.Fragment, null, children && /* @__PURE__ */ import_react36.default.createElement("div", {
     className: "mt-2 flex items-center text-sm text-red-600"
-  }, /* @__PURE__ */ import_react29.default.createElement("span", null, children)));
+  }, /* @__PURE__ */ import_react36.default.createElement("span", null, children)));
 };
 // src/lib/components/Icons/ChatIcon.tsx
-var import_react30 = __toESM(require_react(), 1);
-var ChatIcon = ({ isTyping }) => /* @__PURE__ */ import_react30.default.createElement("svg", {
+var import_react37 = __toESM(require_react(), 1);
+var ChatIcon = ({ isTyping }) => /* @__PURE__ */ import_react37.default.createElement("svg", {
   className: "mt-1",
   width: "24",
   height: "24",
   viewBox: "0 0 24 24",
   fill: "none",
   xmlns: "http://www.w3.org/2000/svg"
-}, /* @__PURE__ */ import_react30.default.createElement("path", {
+}, /* @__PURE__ */ import_react37.default.createElement("path", {
   d: "M21 15V4C21 3.44772 20.5523 3 20 3H4C3.44772 3 3 3.44772 3 4V15C3 15.5523 3.44772 16 4 16H18.5L21 18.5V16C21 15.5523 20.5523 15 20 15H21Z",
   stroke: "currentColor",
   strokeWidth: "2",
   strokeLinecap: "round",
   strokeLinejoin: "round"
-}), isTyping && /* @__PURE__ */ import_react30.default.createElement(import_react30.default.Fragment, null, /* @__PURE__ */ import_react30.default.createElement("circle", {
+}), isTyping && /* @__PURE__ */ import_react37.default.createElement(import_react37.default.Fragment, null, /* @__PURE__ */ import_react37.default.createElement("circle", {
   cx: "8",
   cy: "10",
   r: "1",
   fill: "currentColor"
-}), /* @__PURE__ */ import_react30.default.createElement("circle", {
+}), /* @__PURE__ */ import_react37.default.createElement("circle", {
   cx: "12",
   cy: "10",
   r: "1",
   fill: "currentColor"
-}), /* @__PURE__ */ import_react30.default.createElement("circle", {
+}), /* @__PURE__ */ import_react37.default.createElement("circle", {
   cx: "16",
   cy: "10",
   r: "1",
   fill: "currentColor"
 })));
 // src/lib/components/Icons/CloseIcon.tsx
-var import_react31 = __toESM(require_react(), 1);
-var CloseIcon = () => /* @__PURE__ */ import_react31.default.createElement("svg", {
+var import_react38 = __toESM(require_react(), 1);
+var CloseIcon = () => /* @__PURE__ */ import_react38.default.createElement("svg", {
   className: "h-6 w-6 fill-current",
   viewBox: "0 0 20 20"
-}, /* @__PURE__ */ import_react31.default.createElement("path", {
+}, /* @__PURE__ */ import_react38.default.createElement("path", {
   fillRule: "evenodd",
   d: "M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z",
   clipRule: "evenodd"
 }));
 // src/lib/components/Icons/EditIcon.tsx
-var import_react32 = __toESM(require_react(), 1);
-var EditIcon = () => /* @__PURE__ */ import_react32.default.createElement("svg", {
+var import_react39 = __toESM(require_react(), 1);
+var EditIcon = () => /* @__PURE__ */ import_react39.default.createElement("svg", {
   xmlns: "http://www.w3.org/2000/svg",
   viewBox: "0 0 24 24",
   fill: "none",
@@ -38985,20 +39354,20 @@ var EditIcon = () => /* @__PURE__ */ import_react32.default.createElement("svg",
   strokeLinecap: "round",
   strokeLinejoin: "round",
   className: "feather feather-pencil h-5 w-5"
-}, /* @__PURE__ */ import_react32.default.createElement("path", {
+}, /* @__PURE__ */ import_react39.default.createElement("path", {
   d: "M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-}), /* @__PURE__ */ import_react32.default.createElement("path", {
+}), /* @__PURE__ */ import_react39.default.createElement("path", {
   d: "M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
 }));
 // src/lib/components/Icons/MaximizeIcon.tsx
-var import_react33 = __toESM(require_react(), 1);
-var MaximizeIcon = () => /* @__PURE__ */ import_react33.default.createElement("svg", {
+var import_react40 = __toESM(require_react(), 1);
+var MaximizeIcon = () => /* @__PURE__ */ import_react40.default.createElement("svg", {
   width: "24",
   height: "24",
   viewBox: "0 0 24 24",
   fill: "none",
   xmlns: "http://www.w3.org/2000/svg"
-}, /* @__PURE__ */ import_react33.default.createElement("rect", {
+}, /* @__PURE__ */ import_react40.default.createElement("rect", {
   x: "5",
   y: "5",
   width: "14",
@@ -39010,14 +39379,14 @@ var MaximizeIcon = () => /* @__PURE__ */ import_react33.default.createElement("s
   strokeLinejoin: "round"
 }));
 // src/lib/components/Icons/MinimizeIcon.tsx
-var import_react34 = __toESM(require_react(), 1);
-var MinimizeIcon = () => /* @__PURE__ */ import_react34.default.createElement("svg", {
+var import_react41 = __toESM(require_react(), 1);
+var MinimizeIcon = () => /* @__PURE__ */ import_react41.default.createElement("svg", {
   width: "24",
   height: "24",
   viewBox: "0 0 24 24",
   fill: "none",
   xmlns: "http://www.w3.org/2000/svg"
-}, /* @__PURE__ */ import_react34.default.createElement("path", {
+}, /* @__PURE__ */ import_react41.default.createElement("path", {
   d: "M5 12H19",
   stroke: "currentColor",
   strokeWidth: "2",
@@ -39025,8 +39394,8 @@ var MinimizeIcon = () => /* @__PURE__ */ import_react34.default.createElement("s
   strokeLinejoin: "round"
 }));
 // src/lib/components/Icons/TrashIcon.tsx
-var import_react35 = __toESM(require_react(), 1);
-var TrashIcon = () => /* @__PURE__ */ import_react35.default.createElement("svg", {
+var import_react42 = __toESM(require_react(), 1);
+var TrashIcon = () => /* @__PURE__ */ import_react42.default.createElement("svg", {
   xmlns: "http://www.w3.org/2000/svg",
   viewBox: "0 0 24 24",
   fill: "none",
@@ -39035,334 +39404,60 @@ var TrashIcon = () => /* @__PURE__ */ import_react35.default.createElement("svg"
   strokeLinecap: "round",
   strokeLinejoin: "round",
   className: "h-5 w-5"
-}, /* @__PURE__ */ import_react35.default.createElement("polyline", {
+}, /* @__PURE__ */ import_react42.default.createElement("polyline", {
   points: "3 6 5 6 21 6"
-}), /* @__PURE__ */ import_react35.default.createElement("path", {
+}), /* @__PURE__ */ import_react42.default.createElement("path", {
   d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-}), /* @__PURE__ */ import_react35.default.createElement("line", {
+}), /* @__PURE__ */ import_react42.default.createElement("line", {
   x1: "10",
   y1: "11",
   x2: "10",
   y2: "17"
-}), /* @__PURE__ */ import_react35.default.createElement("line", {
+}), /* @__PURE__ */ import_react42.default.createElement("line", {
   x1: "14",
   y1: "11",
   x2: "14",
   y2: "17"
 }));
-// src/lib/components/Inputs/DropDownInput.tsx
-var import_react36 = __toESM(require_react(), 1);
-var DropDownInput = ({
-  label,
-  name,
-  options,
-  value,
-  errors,
-  onChange,
-  placeholder
-}) => {
-  const error = errors?.map((e) => /* @__PURE__ */ import_react36.default.createElement("p", {
-    key: e
-  }, e));
-  const [isOpen, setIsOpen] = import_react36.useState(false);
-  const selectRef = import_react36.useRef(null);
-  const [highlightedIndex, setHighlightedIndex] = import_react36.useState(null);
-  const controlledValue = value ?? undefined;
-  import_react36.useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (selectRef.current && !selectRef.current.contains(event.target)) {
-        setIsOpen(false);
-        setHighlightedIndex(null);
-      }
-    };
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen]);
-  const handleOptionClick = import_react36.useCallback((optionValue) => {
-    onChange?.(optionValue);
-    setIsOpen(false);
-    setHighlightedIndex(null);
-  }, [onChange]);
-  const handleKeyDown = (event) => {
-    if (!isOpen)
-      return;
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      setHighlightedIndex((prevIndex) => {
-        if (prevIndex === null || prevIndex >= options.length - 1) {
-          return 0;
-        }
-        return prevIndex + 1;
-      });
-    } else if (event.key === "ArrowUp") {
-      event.preventDefault();
-      setHighlightedIndex((prevIndex) => {
-        if (prevIndex === null || prevIndex <= 0) {
-          return options.length - 1;
-        }
-        return prevIndex - 1;
-      });
-    } else if (event.key === "Enter" && highlightedIndex !== null) {
-      event.preventDefault();
-      handleOptionClick(options[highlightedIndex].value);
-    } else if (event.key === "Escape") {
-      event.preventDefault();
-      setIsOpen(false);
-      setHighlightedIndex(null);
-    }
-  };
-  return /* @__PURE__ */ import_react36.default.createElement("div", {
-    ref: selectRef,
-    className: "relative w-full"
-  }, label && /* @__PURE__ */ import_react36.default.createElement(Label, {
-    htmlFor: name,
-    hasError: !!error
-  }, label), /* @__PURE__ */ import_react36.default.createElement("div", {
-    className: "relative w-full"
-  }, /* @__PURE__ */ import_react36.default.createElement("button", {
-    type: "button",
-    className: `flex w-full items-center justify-between rounded-md border px-4 py-2 shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-gray-800 ${error ? "border-red-500 focus:ring-red-500" : "border-gray-300 hover:border-gray-500"}`,
-    onClick: () => setIsOpen(!isOpen),
-    onKeyDown: handleKeyDown,
-    "aria-haspopup": "listbox",
-    "aria-expanded": isOpen,
-    id: `dropdown-button-${name}`
-  }, /* @__PURE__ */ import_react36.default.createElement("span", {
-    className: "truncate"
-  }, options.find((opt) => opt.value === controlledValue)?.label || placeholder || "Select an option"), isOpen ? /* @__PURE__ */ import_react36.default.createElement("svg", {
-    xmlns: "http://www.w3.org/2000/svg",
-    viewBox: "0 0 20 20",
-    fill: "currentColor",
-    className: "h-5 w-5 text-gray-400"
-  }, /* @__PURE__ */ import_react36.default.createElement("path", {
-    fillRule: "evenodd",
-    d: "M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z",
-    clipRule: "evenodd"
-  })) : /* @__PURE__ */ import_react36.default.createElement("svg", {
-    xmlns: "http://www.w3.org/2000/svg",
-    viewBox: "0 0 20 20",
-    fill: "currentColor",
-    className: "h-5 w-5 text-gray-400"
-  }, /* @__PURE__ */ import_react36.default.createElement("path", {
-    fillRule: "evenodd",
-    d: "M14.77 7.79a.75.75 0 01-1.06-.02L10 3.832 6.35 7.77a.75.75 0 01-1.08-1.04l4.25-4.5a.75.75 0 011.08 0l4.25 4.5a.75.75 0 01.02 1.06z",
-    clipRule: "evenodd"
-  }))), isOpen && /* @__PURE__ */ import_react36.default.createElement("ul", {
-    className: "absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white shadow-lg",
-    role: "listbox",
-    "aria-labelledby": `dropdown-button-${name}`
-  }, options.map((option, index) => /* @__PURE__ */ import_react36.default.createElement("li", {
-    key: `${option.value}-${index}`,
-    className: `cursor-pointer px-4 py-2 hover:bg-gray-100 ${index === highlightedIndex && "bg-blue-100"}`,
-    onClick: () => handleOptionClick(option.value),
-    role: "option",
-    "aria-selected": controlledValue === option.value
-  }, option.label)))), !!error && /* @__PURE__ */ import_react36.default.createElement(ErrorMessage, null, error));
-};
-// src/lib/components/Inputs/HiddenInput.tsx
-var import_react37 = __toESM(require_react(), 1);
-var HiddenInput = ({ name, type, value }) => {
-  return /* @__PURE__ */ import_react37.default.createElement("input", {
-    type,
-    id: name,
-    name,
-    value: value ?? ""
-  });
-};
-// src/lib/components/Inputs/Label.tsx
-var import_react38 = __toESM(require_react(), 1);
-var Label = ({ htmlFor, hasError, children }) => /* @__PURE__ */ import_react38.default.createElement("label", {
-  htmlFor,
-  className: `mb-2 block text-sm font-bold text-${hasError ? "red" : "gray"}-600`
-}, children);
-// src/lib/components/Inputs/TextArea.tsx
-var import_react39 = __toESM(require_react(), 1);
-var TextArea = ({ label, name, placeholder, value, className, errors, onChange }) => {
-  const error = errors?.map((e) => /* @__PURE__ */ import_react39.default.createElement("p", {
-    key: e
-  }, e));
-  const normalClassName = "w-full rounded-md border px-4 py-2 shadow-sm border-gray-300 hover:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-800";
-  const errorClassName = "w-full rounded-md border px-4 py-2 shadow-sm border-red-500 focus:outline-none focus:ring-1 focus:ring-red-800";
-  const finalClassName = `${className ? className + " " : ""}${error ? errorClassName : normalClassName}${value ? " pr-8" : ""}`;
-  return /* @__PURE__ */ import_react39.default.createElement(import_react39.default.Fragment, null, label && /* @__PURE__ */ import_react39.default.createElement(Label, {
-    htmlFor: name,
-    hasError: !!error
-  }, label), /* @__PURE__ */ import_react39.default.createElement("textarea", {
-    id: name,
-    name,
-    value: value ?? "",
-    onChange,
-    placeholder,
-    className: finalClassName
-  }), !!error && /* @__PURE__ */ import_react39.default.createElement(ErrorMessage, null, error));
-};
-// src/lib/components/Inputs/TextInput.tsx
-var import_react40 = __toESM(require_react(), 1);
-var TextInput = ({
-  label,
-  name,
-  placeholder,
-  type,
-  value,
-  className,
-  autoComplete = "off",
-  errors,
-  ref,
-  onChange,
-  onClear
-}) => {
-  const error = errors?.map((e) => /* @__PURE__ */ import_react40.default.createElement("p", {
-    key: e
-  }, e));
-  const normalClassName = "w-full rounded-md border px-4 py-2 shadow-sm border-gray-300 hover:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-800";
-  const errorClassName = "w-full rounded-md border px-4 py-2 shadow-sm border-red-500 focus:outline-none focus:ring-1 focus:ring-red-800";
-  const finalClassName = `${className ? className + " " : ""}${error ? errorClassName : normalClassName}${value ? " pr-8" : ""}`;
-  const inputRef = import_react40.useRef(null);
-  const handleClear = () => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-    onClear && onClear();
-  };
-  return /* @__PURE__ */ import_react40.default.createElement(import_react40.default.Fragment, null, label && /* @__PURE__ */ import_react40.default.createElement(Label, {
-    htmlFor: name,
-    hasError: !!error
-  }, label), /* @__PURE__ */ import_react40.default.createElement("input", {
-    type,
-    id: name,
-    name,
-    value: value ?? "",
-    onChange,
-    placeholder,
-    className: finalClassName,
-    autoComplete,
-    ref
-  }), value && onClear && /* @__PURE__ */ import_react40.default.createElement(CloseIconButton, {
-    className: "right absolute top-0",
-    onClick: handleClear
-  }), !!error && /* @__PURE__ */ import_react40.default.createElement(ErrorMessage, null, error));
-};
-// src/lib/components/Inputs/TypeAheadInput.tsx
-var import_react41 = __toESM(require_react(), 1);
-var TypeAheadSearchInput = ({
-  label,
-  name,
-  placeholder,
-  options,
-  onChange,
-  onSelect,
-  errors
-}) => {
-  const error = errors?.map((e) => /* @__PURE__ */ import_react41.default.createElement("p", {
-    key: e
-  }, e));
-  const [searchTerm, setSearchTerm] = import_react41.useState("");
-  const [filteredOptions, setFilteredOptions] = import_react41.useState(options);
-  const [showOptions, setShowOptions] = import_react41.useState(false);
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  import_react41.useEffect(() => {
-    if (debouncedSearchTerm) {
-      onChange && onChange(debouncedSearchTerm);
-      const filtered = options.filter((option) => option.label.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
-      setFilteredOptions(filtered);
-      setShowOptions(true);
-    } else {
-      setFilteredOptions(options);
-      setShowOptions(false);
-    }
-  }, [debouncedSearchTerm, options, onChange]);
-  const handleInputChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-  const handleOptionSelect = (value) => {
-    const selectedOption = options.find((option) => option.value === value);
-    if (selectedOption) {
-      setSearchTerm(selectedOption.label);
-    }
-    onSelect(value);
-    setShowOptions(false);
-  };
-  const containerRef = import_react41.useRef(null);
-  import_react41.useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
-        setShowOptions(false);
-      }
-    };
-    if (showOptions) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showOptions]);
-  return /* @__PURE__ */ import_react41.default.createElement("div", {
-    className: "relative",
-    ref: containerRef
-  }, /* @__PURE__ */ import_react41.default.createElement(TextInput, {
-    type: "text",
-    label,
-    name,
-    placeholder,
-    value: searchTerm,
-    onChange: handleInputChange,
-    onClear: () => {
-      setSearchTerm("");
-    },
-    errors
-  }), showOptions && /* @__PURE__ */ import_react41.default.createElement("div", {
-    className: "absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white shadow-lg"
-  }, filteredOptions.length > 0 ? filteredOptions.map((option) => /* @__PURE__ */ import_react41.default.createElement("div", {
-    key: option.value,
-    className: "cursor-pointer px-4 py-2 hover:bg-gray-100",
-    onClick: () => handleOptionSelect(option.value)
-  }, option.label)) : /* @__PURE__ */ import_react41.default.createElement("div", {
-    className: "px-4 py-2 text-gray-500"
-  }, "No results found")), error && /* @__PURE__ */ import_react41.default.createElement(ErrorMessage, null, error));
-};
 // src/lib/components/Modals/DeleteModal.tsx
-var import_react42 = __toESM(require_react(), 1);
+var import_react43 = __toESM(require_react(), 1);
 var DeleteModal = ({ isOpen, onCancel, onDelete, title, itemName, children }) => {
-  return /* @__PURE__ */ import_react42.default.createElement(Modal, {
+  return /* @__PURE__ */ import_react43.default.createElement(Modal, {
     title,
     isOpen,
     allowClose: false
-  }, /* @__PURE__ */ import_react42.default.createElement("div", {
+  }, /* @__PURE__ */ import_react43.default.createElement("div", {
     className: "p2 mb-4"
-  }, /* @__PURE__ */ import_react42.default.createElement("div", {
+  }, /* @__PURE__ */ import_react43.default.createElement("div", {
     className: "text-gray-800"
-  }, /* @__PURE__ */ import_react42.default.createElement("p", {
+  }, /* @__PURE__ */ import_react43.default.createElement("p", {
     className: "mb-4"
-  }, "This will delete an item"), itemName && /* @__PURE__ */ import_react42.default.createElement("div", {
+  }, "This will delete an item"), itemName && /* @__PURE__ */ import_react43.default.createElement("div", {
     className: "mb-2 rounded-md border border-red-800 bg-gray-100 p-2 text-lg font-bold text-red-800"
-  }, itemName), /* @__PURE__ */ import_react42.default.createElement("p", {
+  }, itemName), /* @__PURE__ */ import_react43.default.createElement("p", {
     className: "mb-4"
-  }, "This cannot be undone, do you wish to continue?")), children), /* @__PURE__ */ import_react42.default.createElement("div", {
+  }, "This cannot be undone, do you wish to continue?")), children), /* @__PURE__ */ import_react43.default.createElement("div", {
     className: "mt-6 flex items-center justify-between"
-  }, /* @__PURE__ */ import_react42.default.createElement("div", {
+  }, /* @__PURE__ */ import_react43.default.createElement("div", {
     className: "flex w-full justify-start"
-  }), /* @__PURE__ */ import_react42.default.createElement("div", {
+  }), /* @__PURE__ */ import_react43.default.createElement("div", {
     className: "flex items-center space-x-4"
-  }, /* @__PURE__ */ import_react42.default.createElement(Button, {
+  }, /* @__PURE__ */ import_react43.default.createElement(Button, {
     mode: "secondary" /* SECONDARY */,
     onClick: onCancel
-  }, "Cancel"), /* @__PURE__ */ import_react42.default.createElement(Button, {
+  }, "Cancel"), /* @__PURE__ */ import_react43.default.createElement(Button, {
     mode: "delete" /* DELETE */,
     onClick: onDelete
   }, "Delete"))));
 };
 // src/lib/components/Modals/Modal.tsx
-var import_react43 = __toESM(require_react(), 1);
+var import_react44 = __toESM(require_react(), 1);
 var Modal = ({ isOpen, allowClose = true, onClose, title, children }) => {
-  const modalRef = import_react43.useRef(null);
-  const handleClose = import_react43.useCallback(() => {
+  const modalRef = import_react44.useRef(null);
+  const handleClose = import_react44.useCallback(() => {
     allowClose && onClose && onClose();
   }, [allowClose, onClose]);
-  import_react43.useEffect(() => {
+  import_react44.useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
         handleClose();
@@ -39383,84 +39478,84 @@ var Modal = ({ isOpen, allowClose = true, onClose, title, children }) => {
   if (!isOpen) {
     return null;
   }
-  return /* @__PURE__ */ import_react43.default.createElement("div", {
+  return /* @__PURE__ */ import_react44.default.createElement("div", {
     className: "fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-black/50",
     onClick: handleClose
-  }, /* @__PURE__ */ import_react43.default.createElement("div", {
+  }, /* @__PURE__ */ import_react44.default.createElement("div", {
     className: "relative w-full max-w-2xl rounded-lg bg-white shadow-xl",
     ref: modalRef,
     tabIndex: -1,
     onClick: (e) => e.stopPropagation()
-  }, title && /* @__PURE__ */ import_react43.default.createElement("div", {
+  }, title && /* @__PURE__ */ import_react44.default.createElement("div", {
     className: "border-b px-5 py-3"
-  }, /* @__PURE__ */ import_react43.default.createElement("h2", {
+  }, /* @__PURE__ */ import_react44.default.createElement("h2", {
     className: "text-xl font-semibold text-gray-800"
-  }, title)), /* @__PURE__ */ import_react43.default.createElement("div", {
+  }, title)), /* @__PURE__ */ import_react44.default.createElement("div", {
     className: "p-5"
-  }, children), allowClose && /* @__PURE__ */ import_react43.default.createElement(CloseIconButton, {
+  }, children), allowClose && /* @__PURE__ */ import_react44.default.createElement(CloseIconButton, {
     className: "absolute pr-2 pt-2",
     onClick: handleClose
   })));
 };
 // src/lib/components/Pill/Pill.tsx
-var import_react44 = __toESM(require_react(), 1);
-var Pill = ({ value, onRemove }) => /* @__PURE__ */ import_react44.default.createElement("div", {
+var import_react45 = __toESM(require_react(), 1);
+var Pill = ({ value, onRemove }) => /* @__PURE__ */ import_react45.default.createElement("div", {
   className: "mr-2 inline-flex items-center rounded-lg bg-gray-200 py-1 pl-3 pr-1 text-sm text-gray-800"
-}, /* @__PURE__ */ import_react44.default.createElement("span", null, value), /* @__PURE__ */ import_react44.default.createElement(CloseIconButton, {
+}, /* @__PURE__ */ import_react45.default.createElement("span", null, value), /* @__PURE__ */ import_react45.default.createElement(CloseIconButton, {
   className: "right-0 scale-75",
   onClick: onRemove
 }));
 // src/react/pages/Chats/Chats.tsx
-var import_react45 = __toESM(require_react(), 1);
+var import_react46 = __toESM(require_react(), 1);
 var Chats = () => {
-  return /* @__PURE__ */ import_react45.default.createElement("div", {
+  return /* @__PURE__ */ import_react46.default.createElement("div", {
     className: "flex h-[calc(100vh-60px)] flex-col bg-gray-50 p-4"
-  }, /* @__PURE__ */ import_react45.default.createElement("h4", {
+  }, /* @__PURE__ */ import_react46.default.createElement("h4", {
     className: "mb-4 border-b border-gray-200 pb-2 text-sm font-semibold text-gray-600"
-  }, "Chats (Public for now)"), /* @__PURE__ */ import_react45.default.createElement(ChatForm, {
+  }, "Chats (Public for now)"), /* @__PURE__ */ import_react46.default.createElement(ChatForm, {
     channel: "public-chat" /* PUBLIC_CHAT */
   }));
 };
 // src/react/pages/Forbidden/ForbiddenPage.tsx
-var import_react46 = __toESM(require_react(), 1);
-var ForbiddenPage = () => {
-  return /* @__PURE__ */ import_react46.default.createElement("div", {
-    className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react46.default.createElement("div", {
-    className: "text-center"
-  }, /* @__PURE__ */ import_react46.default.createElement("h1", {
-    className: "mb-4 text-4xl font-bold text-gray-800"
-  }, "403 Forbidden"), /* @__PURE__ */ import_react46.default.createElement("p", {
-    className: "mb-8 text-lg text-gray-600"
-  }, "You must be logged in to access this page!"), /* @__PURE__ */ import_react46.default.createElement("a", {
-    href: `/${loginRoute}`,
-    className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
-  }, "Login to begin")));
-};
-// src/react/pages/Home/HomePage.tsx
 var import_react47 = __toESM(require_react(), 1);
-var HomePage = () => {
+var ForbiddenPage = () => {
   return /* @__PURE__ */ import_react47.default.createElement("div", {
     className: "flex h-screen items-center justify-center"
   }, /* @__PURE__ */ import_react47.default.createElement("div", {
     className: "text-center"
   }, /* @__PURE__ */ import_react47.default.createElement("h1", {
     className: "mb-4 text-4xl font-bold text-gray-800"
-  }, "Welcome!"), /* @__PURE__ */ import_react47.default.createElement("p", {
+  }, "403 Forbidden"), /* @__PURE__ */ import_react47.default.createElement("p", {
     className: "mb-8 text-lg text-gray-600"
-  }, "A Todo app built with Bun, Elysia, and React Server Components"), /* @__PURE__ */ import_react47.default.createElement("a", {
+  }, "You must be logged in to access this page!"), /* @__PURE__ */ import_react47.default.createElement("a", {
+    href: `/${loginRoute}`,
+    className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
+  }, "Login to begin")));
+};
+// src/react/pages/Home/HomePage.tsx
+var import_react48 = __toESM(require_react(), 1);
+var HomePage = () => {
+  return /* @__PURE__ */ import_react48.default.createElement("div", {
+    className: "flex h-screen items-center justify-center"
+  }, /* @__PURE__ */ import_react48.default.createElement("div", {
+    className: "text-center"
+  }, /* @__PURE__ */ import_react48.default.createElement("h1", {
+    className: "mb-4 text-4xl font-bold text-gray-800"
+  }, "Welcome!"), /* @__PURE__ */ import_react48.default.createElement("p", {
+    className: "mb-8 text-lg text-gray-600"
+  }, "A Todo app built with Bun, Elysia, and React Server Components"), /* @__PURE__ */ import_react48.default.createElement("a", {
     href: `/${loginRoute}`,
     className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
   }, "Login to begin")));
 };
 // src/react/pages/Login/LoginPage.tsx
-var import_react48 = __toESM(require_react(), 1);
+var import_react49 = __toESM(require_react(), 1);
 var LoginPage = () => {
   const { validationSchema, onLogin, onSuccess } = useAuthLogin();
-  return /* @__PURE__ */ import_react48.default.createElement(Layout, {
+  return /* @__PURE__ */ import_react49.default.createElement(Layout, {
     type: "AUTH" /* AUTH */,
     title: "Login"
-  }, /* @__PURE__ */ import_react48.default.createElement(Form, {
+  }, /* @__PURE__ */ import_react49.default.createElement(Form, {
     inputs: [
       {
         type: "text",
@@ -39480,83 +39575,83 @@ var LoginPage = () => {
     onSubmit: onLogin,
     onSuccess,
     submitButtonText: "Login",
-    secondaryButtons: /* @__PURE__ */ import_react48.default.createElement(LinkButton, {
+    secondaryButtons: /* @__PURE__ */ import_react49.default.createElement(LinkButton, {
       to: `/${registerRoute}`
     }, "Not a member yet? Register here!")
   }));
 };
 // src/react/pages/NotFound/NotFoundPage.tsx
-var import_react49 = __toESM(require_react(), 1);
+var import_react50 = __toESM(require_react(), 1);
 var NotFoundPage = () => {
-  return /* @__PURE__ */ import_react49.default.createElement("div", {
+  return /* @__PURE__ */ import_react50.default.createElement("div", {
     className: "flex h-screen items-center justify-center"
-  }, /* @__PURE__ */ import_react49.default.createElement("div", {
+  }, /* @__PURE__ */ import_react50.default.createElement("div", {
     className: "text-center"
-  }, /* @__PURE__ */ import_react49.default.createElement("h1", {
+  }, /* @__PURE__ */ import_react50.default.createElement("h1", {
     className: "mb-4 text-4xl font-bold text-gray-800"
-  }, "404 Not Found"), /* @__PURE__ */ import_react49.default.createElement("p", {
+  }, "404 Not Found"), /* @__PURE__ */ import_react50.default.createElement("p", {
     className: "mb-8 text-lg text-gray-600"
-  }, "We couldn't find what you were looking for."), /* @__PURE__ */ import_react49.default.createElement("a", {
+  }, "We couldn't find what you were looking for."), /* @__PURE__ */ import_react50.default.createElement("a", {
     href: `/${loginRoute}`,
     className: "rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-semibold text-white transition-colors duration-300 hover:shadow-lg"
   }, "Login to begin")));
 };
 // src/react/pages/Organization/OrganizationPage.tsx
-var import_react52 = __toESM(require_react(), 1);
+var import_react53 = __toESM(require_react(), 1);
 
 // src/lib/components/Chat/PopOutChatWrapper.tsx
-var import_react50 = __toESM(require_react(), 1);
+var import_react51 = __toESM(require_react(), 1);
 var PopOutChatWrapper = ({ channel, organization, team, onClose }) => {
-  const [isMinimized, setIsMinimized] = import_react50.useState(false);
+  const [isMinimized, setIsMinimized] = import_react51.useState(false);
   const channelName = channel.split("-").map((x) => x[0].toLocaleUpperCase() + x.slice(1, x.length).toLocaleLowerCase()).join(" ");
   const subChannelName = organization?.name ?? team?.name;
-  return /* @__PURE__ */ import_react50.default.createElement("div", {
+  return /* @__PURE__ */ import_react51.default.createElement("div", {
     className: `border-1 fixed bottom-0 flex h-${isMinimized ? "18" : "[calc(50%)]"} w-${isMinimized ? "100" : "[calc(50%)]"} flex-col justify-center rounded-t-2xl border-gray-200 bg-gray-50 p-4 shadow-md hover:border-gray-400`
-  }, /* @__PURE__ */ import_react50.default.createElement("h4", {
+  }, /* @__PURE__ */ import_react51.default.createElement("h4", {
     className: "mb-4 border-b border-gray-200 pb-2 text-sm font-semibold text-gray-600"
-  }, channelName, " - ", subChannelName), /* @__PURE__ */ import_react50.default.createElement("div", null, isMinimized && /* @__PURE__ */ import_react50.default.createElement(MaximizeIconButton, {
+  }, channelName, " - ", subChannelName), /* @__PURE__ */ import_react51.default.createElement("div", null, isMinimized && /* @__PURE__ */ import_react51.default.createElement(MaximizeIconButton, {
     className: "absolute mr-9 mt-1",
     onClick: () => setIsMinimized(false)
-  }), !isMinimized && /* @__PURE__ */ import_react50.default.createElement(MinimizeIconButton, {
+  }), !isMinimized && /* @__PURE__ */ import_react51.default.createElement(MinimizeIconButton, {
     className: "absolute mr-9 mt-2.5",
     onClick: () => setIsMinimized(true)
-  }), /* @__PURE__ */ import_react50.default.createElement(CloseIconButton, {
+  }), /* @__PURE__ */ import_react51.default.createElement(CloseIconButton, {
     className: "absolute mr-2 mt-1",
     onClick: () => organization && onClose(organization.id) || team && onClose(team?.id)
-  })), !isMinimized && /* @__PURE__ */ import_react50.default.createElement(ChatForm, {
+  })), !isMinimized && /* @__PURE__ */ import_react51.default.createElement(ChatForm, {
     ...{ channel, organization, team }
   }));
 };
 
 // src/react/pages/Organization/OrganizationCard.tsx
-var import_react51 = __toESM(require_react(), 1);
+var import_react52 = __toESM(require_react(), 1);
 var OrganizationCard = ({ organization, onChat, onEdit, onDelete, children }) => {
-  return /* @__PURE__ */ import_react51.default.createElement(CardBase, null, /* @__PURE__ */ import_react51.default.createElement("div", {
+  return /* @__PURE__ */ import_react52.default.createElement(CardBase, null, /* @__PURE__ */ import_react52.default.createElement("div", {
     className: "flex items-center justify-between"
-  }, /* @__PURE__ */ import_react51.default.createElement("h3", {
+  }, /* @__PURE__ */ import_react52.default.createElement("h3", {
     className: "flex justify-start text-lg font-semibold text-gray-800"
-  }, organization.name), /* @__PURE__ */ import_react51.default.createElement("div", {
+  }, organization.name), /* @__PURE__ */ import_react52.default.createElement("div", {
     className: "flex justify-end space-x-2"
-  }, /* @__PURE__ */ import_react51.default.createElement(ChatIconButton, {
+  }, /* @__PURE__ */ import_react52.default.createElement(ChatIconButton, {
     onClick: () => onChat(organization.id)
-  }), /* @__PURE__ */ import_react51.default.createElement(EditIconButton, {
+  }), /* @__PURE__ */ import_react52.default.createElement(EditIconButton, {
     onClick: () => onEdit(organization.id)
-  }), /* @__PURE__ */ import_react51.default.createElement(DeleteIconButton, {
+  }), /* @__PURE__ */ import_react52.default.createElement(DeleteIconButton, {
     onClick: () => onDelete(organization.id)
-  }))), /* @__PURE__ */ import_react51.default.createElement("div", {
+  }))), /* @__PURE__ */ import_react52.default.createElement("div", {
     className: "text-sm text-gray-500"
-  }, organization.teamsCount, " team", organization.teamsCount > 1 ? "s" : ""), /* @__PURE__ */ import_react51.default.createElement("div", {
+  }, organization.teamsCount, " team", organization.teamsCount > 1 ? "s" : ""), /* @__PURE__ */ import_react52.default.createElement("div", {
     title: organization.members.map((m) => m.username).join(", "),
     className: "text-sm text-gray-500"
-  }, organization.members.length, " member", organization.members.length > 1 ? "s" : "", ":", organization.members.length > 0 && /* @__PURE__ */ import_react51.default.createElement("span", {
+  }, organization.members.length, " member", organization.members.length > 1 ? "s" : "", ":", organization.members.length > 0 && /* @__PURE__ */ import_react52.default.createElement("span", {
     className: "ml-1 text-xs text-gray-400"
-  }, organization.members.slice(0, 3).map((m) => m.username).join(", "), organization.members.length > 3 && " & more")), children, /* @__PURE__ */ import_react51.default.createElement("p", {
+  }, organization.members.slice(0, 3).map((m) => m.username).join(", "), organization.members.length > 3 && " & more")), children, /* @__PURE__ */ import_react52.default.createElement("p", {
     className: "mt-1 text-sm text-gray-600"
-  }, "Created by: ", /* @__PURE__ */ import_react51.default.createElement("span", {
+  }, "Created by: ", /* @__PURE__ */ import_react52.default.createElement("span", {
     className: "font-medium"
-  }, organization.createdBy?.username)), organization.updatedBy && /* @__PURE__ */ import_react51.default.createElement("p", {
+  }, organization.createdBy?.username)), organization.updatedBy && /* @__PURE__ */ import_react52.default.createElement("p", {
     className: "mt-1 text-sm text-gray-600"
-  }, "Last updated by: ", /* @__PURE__ */ import_react51.default.createElement("span", {
+  }, "Last updated by: ", /* @__PURE__ */ import_react52.default.createElement("span", {
     className: "font-medium"
   }, organization.updatedBy?.username)));
 };
@@ -39564,14 +39659,14 @@ var OrganizationCard = ({ organization, onChat, onEdit, onDelete, children }) =>
 // src/react/pages/Organization/OrganizationPage.tsx
 var OrganizationPage = () => {
   useAuthCheck();
-  const [isEditModelOpen, setIsEditModalOpen] = import_react52.useState(false);
-  const [editId, setEditId] = import_react52.useState(undefined);
-  const [isDeleteModelOpen, setIsDeleteModalOpen] = import_react52.useState(false);
-  const [deleteId, setDeleteId] = import_react52.useState(undefined);
-  const [searchQuery, setSearchQuery] = import_react52.useState(undefined);
-  const [searchOptions, setSearchOptions] = import_react52.useState([]);
-  const [selectedMemberId, setSelectedMemberId] = import_react52.useState(undefined);
-  const [chatId, setChatId] = import_react52.useState(undefined);
+  const [isEditModelOpen, setIsEditModalOpen] = import_react53.useState(false);
+  const [editId, setEditId] = import_react53.useState(undefined);
+  const [isDeleteModelOpen, setIsDeleteModalOpen] = import_react53.useState(false);
+  const [deleteId, setDeleteId] = import_react53.useState(undefined);
+  const [searchQuery, setSearchQuery] = import_react53.useState(undefined);
+  const [searchOptions, setSearchOptions] = import_react53.useState([]);
+  const [selectedMemberId, setSelectedMemberId] = import_react53.useState(undefined);
+  const [chatId, setChatId] = import_react53.useState(undefined);
   const {
     getData: getOrganizations,
     createValidationSchema,
@@ -39588,7 +39683,7 @@ var OrganizationPage = () => {
   const organizationForDelete = organizations && organizations.find((t) => t.id === deleteId);
   const organizationForChat = organizations && organizations.find((t) => t.id === chatId);
   const { search } = useUsers();
-  import_react52.useEffect(() => {
+  import_react53.useEffect(() => {
     const fetchData = async () => {
       const foundMembers = await search({ searchQuery });
       const searchOptions2 = foundMembers && foundMembers.length > 0 ? foundMembers.filter((fm) => !organizationForEdit?.members.map((m) => m.id).includes(fm.id)).map((m) => ({
@@ -39624,28 +39719,28 @@ var OrganizationPage = () => {
   const handleSuccess = () => {
     refetchOrganizations();
   };
-  return /* @__PURE__ */ import_react52.default.createElement(Layout, {
+  return /* @__PURE__ */ import_react53.default.createElement(Layout, {
     title: "Organization List"
-  }, /* @__PURE__ */ import_react52.default.createElement(ErrorMessage, null, error?.message ?? ""), /* @__PURE__ */ import_react52.default.createElement("div", {
+  }, /* @__PURE__ */ import_react53.default.createElement(ErrorMessage, null, error?.message ?? ""), /* @__PURE__ */ import_react53.default.createElement("div", {
     className: "mb-4"
-  }, /* @__PURE__ */ import_react52.default.createElement(Form, {
+  }, /* @__PURE__ */ import_react53.default.createElement(Form, {
     inputs: [{ type: "text", name: "name", placeholder: "Add a new organization..." }],
     validationSchema: createValidationSchema,
     onSubmit: onCreate,
     onSuccess: handleSuccess,
     submitButtonText: "Add",
     showCancelButton: true
-  })), isPending && "Loading...", /* @__PURE__ */ import_react52.default.createElement(CardGrid, null, organizations && organizations.map((organization) => /* @__PURE__ */ import_react52.default.createElement(OrganizationCard, {
+  })), isPending && "Loading...", /* @__PURE__ */ import_react53.default.createElement(CardGrid, null, organizations && organizations.map((organization) => /* @__PURE__ */ import_react53.default.createElement(OrganizationCard, {
     key: organization.id,
     organization,
     onChat: handleChat,
     onEdit: handleEdit,
     onDelete: handleDelete
-  }))), /* @__PURE__ */ import_react52.default.createElement(Modal, {
+  }))), /* @__PURE__ */ import_react53.default.createElement(Modal, {
     title: "Editing an Organization",
     isOpen: isEditModelOpen && !!organizationForEdit,
     onClose: handleCloseEditModal
-  }, /* @__PURE__ */ import_react52.default.createElement(Form, {
+  }, /* @__PURE__ */ import_react53.default.createElement(Form, {
     inputs: [
       {
         type: "hidden",
@@ -39669,22 +39764,22 @@ var OrganizationPage = () => {
     onCancel: handleCloseEditModal,
     submitButtonText: "Edit",
     showCancelButton: true,
-    secondaryButtons: /* @__PURE__ */ import_react52.default.createElement("div", {
+    secondaryButtons: /* @__PURE__ */ import_react53.default.createElement("div", {
       className: "w-auto"
-    }, /* @__PURE__ */ import_react52.default.createElement(Button, {
+    }, /* @__PURE__ */ import_react53.default.createElement(Button, {
       mode: "delete" /* DELETE */,
       onClick: (event) => {
         event.preventDefault();
         handleDelete(organizationForEdit.id);
       }
     }, "Delete"))
-  }), /* @__PURE__ */ import_react52.default.createElement("div", {
+  }), /* @__PURE__ */ import_react53.default.createElement("div", {
     className: "mb-0 mt-5 flex items-end justify-between"
-  }, /* @__PURE__ */ import_react52.default.createElement("div", {
+  }, /* @__PURE__ */ import_react53.default.createElement("div", {
     className: "flex:none mr-4 w-full"
-  }, /* @__PURE__ */ import_react52.default.createElement(Label, {
+  }, /* @__PURE__ */ import_react53.default.createElement(Label, {
     htmlFor: "members"
-  }, "Add Members"), !selectedMemberId && /* @__PURE__ */ import_react52.default.createElement(TypeAheadSearchInput, {
+  }, "Add Members"), !selectedMemberId && /* @__PURE__ */ import_react53.default.createElement(TypeAheadSearchInput, {
     name: "members",
     placeholder: "Search for members...",
     options: searchOptions,
@@ -39692,15 +39787,15 @@ var OrganizationPage = () => {
     onSelect: (value) => {
       setSelectedMemberId(value);
     }
-  }), selectedMemberId && /* @__PURE__ */ import_react52.default.createElement("div", {
+  }), selectedMemberId && /* @__PURE__ */ import_react53.default.createElement("div", {
     className: "flex w-full items-end justify-between rounded border border-gray-800 p-2 pl-4"
-  }, searchOptions.find((o) => o.value === selectedMemberId)?.label, " ", /* @__PURE__ */ import_react52.default.createElement(CloseIconButton, {
+  }, searchOptions.find((o) => o.value === selectedMemberId)?.label, " ", /* @__PURE__ */ import_react53.default.createElement(CloseIconButton, {
     onClick: () => {
       setSelectedMemberId(undefined);
     }
-  }))), /* @__PURE__ */ import_react52.default.createElement("div", {
+  }))), /* @__PURE__ */ import_react53.default.createElement("div", {
     className: "max-h-10"
-  }, /* @__PURE__ */ import_react52.default.createElement(Button, {
+  }, /* @__PURE__ */ import_react53.default.createElement(Button, {
     mode: "secondary" /* SECONDARY */,
     disabled: !selectedMemberId,
     onClick: async () => {
@@ -39711,9 +39806,9 @@ var OrganizationPage = () => {
       setSelectedMemberId(undefined);
       setSearchQuery(undefined);
     }
-  }, "Add"))), organizationForEdit && organizationForEdit.members && /* @__PURE__ */ import_react52.default.createElement("div", {
+  }, "Add"))), organizationForEdit && organizationForEdit.members && /* @__PURE__ */ import_react53.default.createElement("div", {
     className: "relative mt-4 flex items-center"
-  }, organizationForEdit.members.filter((m) => m.id !== organizationForEdit?.createdBy?.id).map((m) => /* @__PURE__ */ import_react52.default.createElement(Pill, {
+  }, organizationForEdit.members.filter((m) => m.id !== organizationForEdit?.createdBy?.id).map((m) => /* @__PURE__ */ import_react53.default.createElement(Pill, {
     key: m.id,
     value: m.username,
     onRemove: async () => {
@@ -39722,15 +39817,15 @@ var OrganizationPage = () => {
         organizationId: organizationForEdit.id
       });
     }
-  }))), /* @__PURE__ */ import_react52.default.createElement("p", {
+  }))), /* @__PURE__ */ import_react53.default.createElement("p", {
     className: "mt-4 text-sm text-gray-600"
-  }, "Created by: ", /* @__PURE__ */ import_react52.default.createElement("span", {
+  }, "Created by: ", /* @__PURE__ */ import_react53.default.createElement("span", {
     className: "font-medium"
-  }, organizationForEdit?.createdBy?.username)), organizationForEdit?.updatedBy && /* @__PURE__ */ import_react52.default.createElement("p", {
+  }, organizationForEdit?.createdBy?.username)), organizationForEdit?.updatedBy && /* @__PURE__ */ import_react53.default.createElement("p", {
     className: "mt-2 text-sm text-gray-600"
-  }, "Last updated by: ", /* @__PURE__ */ import_react52.default.createElement("span", {
+  }, "Last updated by: ", /* @__PURE__ */ import_react53.default.createElement("span", {
     className: "font-medium"
-  }, organizationForEdit?.updatedBy?.username))), /* @__PURE__ */ import_react52.default.createElement(DeleteModal, {
+  }, organizationForEdit?.updatedBy?.username))), /* @__PURE__ */ import_react53.default.createElement(DeleteModal, {
     title: "Deleting a Organization",
     itemName: organizationForDelete?.name,
     isOpen: isDeleteModelOpen && !!organizationForDelete,
@@ -39742,22 +39837,22 @@ var OrganizationPage = () => {
       deleted && handleCloseEditModal();
       deleted && handleCloseDeleteModal();
     }
-  }, /* @__PURE__ */ import_react52.default.createElement("i", {
+  }, /* @__PURE__ */ import_react53.default.createElement("i", {
     className: "text-red-800"
-  }, "Note: This will delete all teams & todos for this organization")), organizationForChat && /* @__PURE__ */ import_react52.default.createElement(PopOutChatWrapper, {
+  }, "Note: This will delete all teams & todos for this organization")), organizationForChat && /* @__PURE__ */ import_react53.default.createElement(PopOutChatWrapper, {
     organization: organizationForChat,
     channel: "organization-chat" /* ORGANIZATION_CHAT */,
     onClose: handleCloseChat
   }));
 };
 // src/react/pages/Register/RegisterPage.tsx
-var import_react53 = __toESM(require_react(), 1);
+var import_react54 = __toESM(require_react(), 1);
 var RegisterPage = () => {
   const { validationSchema, onRegister, onSuccess } = useAuthRegister();
-  return /* @__PURE__ */ import_react53.default.createElement(Layout, {
+  return /* @__PURE__ */ import_react54.default.createElement(Layout, {
     type: "AUTH" /* AUTH */,
     title: "Register"
-  }, /* @__PURE__ */ import_react53.default.createElement(Form, {
+  }, /* @__PURE__ */ import_react54.default.createElement(Form, {
     inputs: [
       {
         type: "text",
@@ -39788,43 +39883,43 @@ var RegisterPage = () => {
     onSubmit: onRegister,
     onSuccess,
     submitButtonText: "Register",
-    secondaryButtons: /* @__PURE__ */ import_react53.default.createElement(LinkButton, {
+    secondaryButtons: /* @__PURE__ */ import_react54.default.createElement(LinkButton, {
       to: `/${loginRoute}`
     }, "Already a member?")
   }));
 };
 // src/react/pages/Team/TeamPage.tsx
-var import_react55 = __toESM(require_react(), 1);
+var import_react56 = __toESM(require_react(), 1);
 
 // src/react/pages/Team/TeamCard.tsx
-var import_react54 = __toESM(require_react(), 1);
+var import_react55 = __toESM(require_react(), 1);
 var TeamCard = ({ team, onChat, onEdit, onDelete, children }) => {
-  return /* @__PURE__ */ import_react54.default.createElement(CardBase, null, /* @__PURE__ */ import_react54.default.createElement("div", {
+  return /* @__PURE__ */ import_react55.default.createElement(CardBase, null, /* @__PURE__ */ import_react55.default.createElement("div", {
     className: "flex items-center justify-between"
-  }, /* @__PURE__ */ import_react54.default.createElement("h3", {
+  }, /* @__PURE__ */ import_react55.default.createElement("h3", {
     className: "flex justify-start text-lg font-semibold text-gray-800"
-  }, team.name), /* @__PURE__ */ import_react54.default.createElement("div", {
+  }, team.name), /* @__PURE__ */ import_react55.default.createElement("div", {
     className: "flex justify-end space-x-2"
-  }, /* @__PURE__ */ import_react54.default.createElement(ChatIconButton, {
+  }, /* @__PURE__ */ import_react55.default.createElement(ChatIconButton, {
     onClick: () => onChat(team.id)
-  }), /* @__PURE__ */ import_react54.default.createElement(EditIconButton, {
+  }), /* @__PURE__ */ import_react55.default.createElement(EditIconButton, {
     onClick: () => onEdit(team.id)
-  }), /* @__PURE__ */ import_react54.default.createElement(DeleteIconButton, {
+  }), /* @__PURE__ */ import_react55.default.createElement(DeleteIconButton, {
     onClick: () => onDelete(team.id)
-  }))), /* @__PURE__ */ import_react54.default.createElement("div", {
+  }))), /* @__PURE__ */ import_react55.default.createElement("div", {
     className: "text-sm text-gray-500"
-  }, team.todosCount, " todo", team.todosCount > 1 ? "s" : ""), /* @__PURE__ */ import_react54.default.createElement("div", {
+  }, team.todosCount, " todo", team.todosCount > 1 ? "s" : ""), /* @__PURE__ */ import_react55.default.createElement("div", {
     title: team.members.map((m) => m.username).join(", "),
     className: "text-sm text-gray-500"
-  }, team.members.length, " member", team.members.length > 1 ? "s" : "", ":", team.members.length > 0 && /* @__PURE__ */ import_react54.default.createElement("span", {
+  }, team.members.length, " member", team.members.length > 1 ? "s" : "", ":", team.members.length > 0 && /* @__PURE__ */ import_react55.default.createElement("span", {
     className: "ml-1 text-xs text-gray-400"
-  }, team.members.slice(0, 3).map((m) => m.username).join(", "), team.members.length > 3 && " & more")), children, /* @__PURE__ */ import_react54.default.createElement("p", {
+  }, team.members.slice(0, 3).map((m) => m.username).join(", "), team.members.length > 3 && " & more")), children, /* @__PURE__ */ import_react55.default.createElement("p", {
     className: "mt-1 text-sm text-gray-600"
-  }, "Created by: ", /* @__PURE__ */ import_react54.default.createElement("span", {
+  }, "Created by: ", /* @__PURE__ */ import_react55.default.createElement("span", {
     className: "font-medium"
-  }, team.createdBy?.username)), team.updatedBy && /* @__PURE__ */ import_react54.default.createElement("p", {
+  }, team.createdBy?.username)), team.updatedBy && /* @__PURE__ */ import_react55.default.createElement("p", {
     className: "mt-1 text-sm text-gray-600"
-  }, "Last updated by: ", /* @__PURE__ */ import_react54.default.createElement("span", {
+  }, "Last updated by: ", /* @__PURE__ */ import_react55.default.createElement("span", {
     className: "font-medium"
   }, team.updatedBy?.username)));
 };
@@ -39832,15 +39927,15 @@ var TeamCard = ({ team, onChat, onEdit, onDelete, children }) => {
 // src/react/pages/Team/TeamPage.tsx
 var TeamPage = () => {
   useAuthCheck();
-  const [isEditModelOpen, setIsEditModalOpen] = import_react55.useState(false);
-  const [editId, setEditId] = import_react55.useState(undefined);
-  const [isDeleteModelOpen, setIsDeleteModalOpen] = import_react55.useState(false);
-  const [deleteId, setDeleteId] = import_react55.useState(undefined);
-  const [searchQuery, setSearchQuery] = import_react55.useState(undefined);
-  const [searchOptions, setSearchOptions] = import_react55.useState([]);
-  const [selectedMemberId, setSelectedMemberId] = import_react55.useState(undefined);
-  const [selectedOrganizationId, setSelectedOrganizationId] = import_react55.useState(undefined);
-  const [chatId, setChatId] = import_react55.useState(undefined);
+  const [isEditModelOpen, setIsEditModalOpen] = import_react56.useState(false);
+  const [editId, setEditId] = import_react56.useState(undefined);
+  const [isDeleteModelOpen, setIsDeleteModalOpen] = import_react56.useState(false);
+  const [deleteId, setDeleteId] = import_react56.useState(undefined);
+  const [searchQuery, setSearchQuery] = import_react56.useState(undefined);
+  const [searchOptions, setSearchOptions] = import_react56.useState([]);
+  const [selectedMemberId, setSelectedMemberId] = import_react56.useState(undefined);
+  const [selectedOrganizationId, setSelectedOrganizationId] = import_react56.useState(undefined);
+  const [chatId, setChatId] = import_react56.useState(undefined);
   const {
     getData: getTeams,
     createValidationSchema,
@@ -39863,7 +39958,7 @@ var TeamPage = () => {
     value: t.id
   })) : [];
   const { search, invalidate: invalidateSearch } = useUsers();
-  import_react55.useEffect(() => {
+  import_react56.useEffect(() => {
     const fetchData = async () => {
       const foundMembers = await search({ organizationId: teamForEdit?.organizationId, searchQuery });
       const searchOptions2 = foundMembers && foundMembers.length > 0 ? foundMembers.filter((fm) => !teamForEdit?.members.map((m) => m.id).includes(fm.id)).map((m) => ({
@@ -39901,11 +39996,11 @@ var TeamPage = () => {
     refetchOrganizations();
     refetchTeams();
   };
-  return /* @__PURE__ */ import_react55.default.createElement(Layout, {
+  return /* @__PURE__ */ import_react56.default.createElement(Layout, {
     title: "Team List"
-  }, /* @__PURE__ */ import_react55.default.createElement(ErrorMessage, null, error?.message ?? ""), /* @__PURE__ */ import_react55.default.createElement("div", {
+  }, /* @__PURE__ */ import_react56.default.createElement(ErrorMessage, null, error?.message ?? ""), /* @__PURE__ */ import_react56.default.createElement("div", {
     className: "mb-4"
-  }, /* @__PURE__ */ import_react55.default.createElement(Form, {
+  }, /* @__PURE__ */ import_react56.default.createElement(Form, {
     inputs: [
       {
         type: "hidden",
@@ -39920,9 +40015,9 @@ var TeamPage = () => {
     onSuccess: handleSuccess,
     submitButtonText: "Add",
     showCancelButton: true,
-    secondaryButtons: /* @__PURE__ */ import_react55.default.createElement(import_react55.default.Fragment, null, /* @__PURE__ */ import_react55.default.createElement("div", {
+    secondaryButtons: /* @__PURE__ */ import_react56.default.createElement(import_react56.default.Fragment, null, /* @__PURE__ */ import_react56.default.createElement("div", {
       className: "w-3/11"
-    }, /* @__PURE__ */ import_react55.default.createElement(DropDownInput, {
+    }, /* @__PURE__ */ import_react56.default.createElement(DropDownInput, {
       type: "select",
       name: "organization",
       value: selectedOrganizationId,
@@ -39932,17 +40027,17 @@ var TeamPage = () => {
         setSelectedOrganizationId(value);
       }
     })))
-  })), isPending && "Loading...", /* @__PURE__ */ import_react55.default.createElement(CardGrid, null, teams && teams.map((team) => /* @__PURE__ */ import_react55.default.createElement(TeamCard, {
+  })), isPending && "Loading...", /* @__PURE__ */ import_react56.default.createElement(CardGrid, null, teams && teams.map((team) => /* @__PURE__ */ import_react56.default.createElement(TeamCard, {
     key: team.id,
     team,
     onChat: handleChat,
     onEdit: handleEdit,
     onDelete: handleDelete
-  }))), /* @__PURE__ */ import_react55.default.createElement(Modal, {
+  }))), /* @__PURE__ */ import_react56.default.createElement(Modal, {
     title: "Editing a Team",
     isOpen: isEditModelOpen && !!teamForEdit,
     onClose: handleCloseEditModal
-  }, /* @__PURE__ */ import_react55.default.createElement(Form, {
+  }, /* @__PURE__ */ import_react56.default.createElement(Form, {
     inputs: [
       {
         type: "hidden",
@@ -39966,22 +40061,22 @@ var TeamPage = () => {
     onCancel: handleCloseEditModal,
     submitButtonText: "Edit",
     showCancelButton: true,
-    secondaryButtons: /* @__PURE__ */ import_react55.default.createElement("div", {
+    secondaryButtons: /* @__PURE__ */ import_react56.default.createElement("div", {
       className: "w-auto"
-    }, /* @__PURE__ */ import_react55.default.createElement(Button, {
+    }, /* @__PURE__ */ import_react56.default.createElement(Button, {
       mode: "delete" /* DELETE */,
       onClick: (event) => {
         event.preventDefault();
         handleDelete(teamForEdit.id);
       }
     }, "Delete"))
-  }), /* @__PURE__ */ import_react55.default.createElement("div", {
+  }), /* @__PURE__ */ import_react56.default.createElement("div", {
     className: "mb-0 mt-5 flex items-end justify-between"
-  }, /* @__PURE__ */ import_react55.default.createElement("div", {
+  }, /* @__PURE__ */ import_react56.default.createElement("div", {
     className: "flex:none mr-4 w-full"
-  }, /* @__PURE__ */ import_react55.default.createElement(Label, {
+  }, /* @__PURE__ */ import_react56.default.createElement(Label, {
     htmlFor: "members"
-  }, "Add Members"), !selectedMemberId && /* @__PURE__ */ import_react55.default.createElement(TypeAheadSearchInput, {
+  }, "Add Members"), !selectedMemberId && /* @__PURE__ */ import_react56.default.createElement(TypeAheadSearchInput, {
     name: "members",
     placeholder: "Search for members...",
     options: searchOptions,
@@ -39989,15 +40084,15 @@ var TeamPage = () => {
     onSelect: (value) => {
       setSelectedMemberId(value);
     }
-  }), selectedMemberId && /* @__PURE__ */ import_react55.default.createElement("div", {
+  }), selectedMemberId && /* @__PURE__ */ import_react56.default.createElement("div", {
     className: "flex w-full items-end justify-between rounded border border-gray-800 p-2 pl-4"
-  }, searchOptions.find((o) => o.value === selectedMemberId)?.label, " ", /* @__PURE__ */ import_react55.default.createElement(CloseIconButton, {
+  }, searchOptions.find((o) => o.value === selectedMemberId)?.label, " ", /* @__PURE__ */ import_react56.default.createElement(CloseIconButton, {
     onClick: () => {
       setSelectedMemberId(undefined);
     }
-  }))), /* @__PURE__ */ import_react55.default.createElement("div", {
+  }))), /* @__PURE__ */ import_react56.default.createElement("div", {
     className: "max-h-10"
-  }, /* @__PURE__ */ import_react55.default.createElement(Button, {
+  }, /* @__PURE__ */ import_react56.default.createElement(Button, {
     mode: "secondary" /* SECONDARY */,
     disabled: !selectedMemberId,
     onClick: async () => {
@@ -40009,9 +40104,9 @@ var TeamPage = () => {
       setSearchQuery(undefined);
       handleSuccess();
     }
-  }, "Add"))), teamForEdit && teamForEdit.members && /* @__PURE__ */ import_react55.default.createElement("div", {
+  }, "Add"))), teamForEdit && teamForEdit.members && /* @__PURE__ */ import_react56.default.createElement("div", {
     className: "relative mt-4 flex items-center"
-  }, teamForEdit.members.filter((m) => m.id !== teamForEdit?.createdBy?.id).map((m) => /* @__PURE__ */ import_react55.default.createElement(Pill, {
+  }, teamForEdit.members.filter((m) => m.id !== teamForEdit?.createdBy?.id).map((m) => /* @__PURE__ */ import_react56.default.createElement(Pill, {
     key: m.id,
     value: m.username,
     onRemove: async () => {
@@ -40020,15 +40115,15 @@ var TeamPage = () => {
         teamId: teamForEdit.id
       });
     }
-  }))), /* @__PURE__ */ import_react55.default.createElement("p", {
+  }))), /* @__PURE__ */ import_react56.default.createElement("p", {
     className: "mt-4 text-sm text-gray-600"
-  }, "Created by: ", /* @__PURE__ */ import_react55.default.createElement("span", {
+  }, "Created by: ", /* @__PURE__ */ import_react56.default.createElement("span", {
     className: "font-medium"
-  }, teamForEdit?.createdBy?.username)), teamForEdit?.updatedBy && /* @__PURE__ */ import_react55.default.createElement("p", {
+  }, teamForEdit?.createdBy?.username)), teamForEdit?.updatedBy && /* @__PURE__ */ import_react56.default.createElement("p", {
     className: "mt-2 text-sm text-gray-600"
-  }, "Last updated by: ", /* @__PURE__ */ import_react55.default.createElement("span", {
+  }, "Last updated by: ", /* @__PURE__ */ import_react56.default.createElement("span", {
     className: "font-medium"
-  }, teamForEdit?.updatedBy?.username))), /* @__PURE__ */ import_react55.default.createElement(DeleteModal, {
+  }, teamForEdit?.updatedBy?.username))), /* @__PURE__ */ import_react56.default.createElement(DeleteModal, {
     title: "Deleting a Team",
     itemName: teamForDelete?.name,
     isOpen: isDeleteModelOpen && !!teamForDelete,
@@ -40040,41 +40135,41 @@ var TeamPage = () => {
       deleted && handleCloseEditModal();
       deleted && handleCloseDeleteModal();
     }
-  }, /* @__PURE__ */ import_react55.default.createElement("i", {
+  }, /* @__PURE__ */ import_react56.default.createElement("i", {
     className: "text-red-800"
-  }, "Note: This will delete all todos for this team")), teamForChat && /* @__PURE__ */ import_react55.default.createElement(PopOutChatWrapper, {
+  }, "Note: This will delete all todos for this team")), teamForChat && /* @__PURE__ */ import_react56.default.createElement(PopOutChatWrapper, {
     team: teamForChat,
     channel: "team-chat" /* TEAM_CHAT */,
     onClose: handleCloseChat
   }));
 };
 // src/react/pages/Todo/TodoPage.tsx
-var import_react57 = __toESM(require_react(), 1);
+var import_react58 = __toESM(require_react(), 1);
 
 // src/react/pages/Todo/TodoCard.tsx
-var import_react56 = __toESM(require_react(), 1);
+var import_react57 = __toESM(require_react(), 1);
 var TodoCard = ({ todo, onDelete, onEdit, children }) => {
-  return /* @__PURE__ */ import_react56.default.createElement(CardBase, null, /* @__PURE__ */ import_react56.default.createElement(import_react56.default.Fragment, null, /* @__PURE__ */ import_react56.default.createElement("div", {
+  return /* @__PURE__ */ import_react57.default.createElement(CardBase, null, /* @__PURE__ */ import_react57.default.createElement(import_react57.default.Fragment, null, /* @__PURE__ */ import_react57.default.createElement("div", {
     className: "flex items-center justify-between"
-  }, /* @__PURE__ */ import_react56.default.createElement("h3", {
+  }, /* @__PURE__ */ import_react57.default.createElement("h3", {
     className: "flex justify-start text-lg font-semibold text-gray-800"
-  }, todo.title), /* @__PURE__ */ import_react56.default.createElement("div", {
+  }, todo.title), /* @__PURE__ */ import_react57.default.createElement("div", {
     className: "flex justify-end space-x-2"
-  }, /* @__PURE__ */ import_react56.default.createElement(EditIconButton, {
+  }, /* @__PURE__ */ import_react57.default.createElement(EditIconButton, {
     onClick: () => onEdit(todo.id)
-  }), /* @__PURE__ */ import_react56.default.createElement(DeleteIconButton, {
+  }), /* @__PURE__ */ import_react57.default.createElement(DeleteIconButton, {
     onClick: () => onDelete(todo.id)
-  }))), todo.description && /* @__PURE__ */ import_react56.default.createElement("p", {
+  }))), todo.description && /* @__PURE__ */ import_react57.default.createElement("p", {
     className: "mt-1 justify-start text-sm text-gray-600"
-  }, todo.description), !todo.description && /* @__PURE__ */ import_react56.default.createElement("p", {
+  }, todo.description), !todo.description && /* @__PURE__ */ import_react57.default.createElement("p", {
     className: "mt-1 justify-start text-sm text-gray-300"
-  }, "No description"), /* @__PURE__ */ import_react56.default.createElement("p", {
+  }, "No description"), /* @__PURE__ */ import_react57.default.createElement("p", {
     className: "mt-1 text-sm text-gray-600"
-  }, "Created by: ", /* @__PURE__ */ import_react56.default.createElement("span", {
+  }, "Created by: ", /* @__PURE__ */ import_react57.default.createElement("span", {
     className: "font-medium"
-  }, todo.createdBy?.username)), todo.updatedBy && /* @__PURE__ */ import_react56.default.createElement("p", {
+  }, todo.createdBy?.username)), todo.updatedBy && /* @__PURE__ */ import_react57.default.createElement("p", {
     className: "mt-1 text-sm text-gray-600"
-  }, "Last updated by: ", /* @__PURE__ */ import_react56.default.createElement("span", {
+  }, "Last updated by: ", /* @__PURE__ */ import_react57.default.createElement("span", {
     className: "font-medium"
   }, todo.updatedBy.username))), children);
 };
@@ -40082,12 +40177,12 @@ var TodoCard = ({ todo, onDelete, onEdit, children }) => {
 // src/react/pages/Todo/TodoPage.tsx
 var TodoPage = () => {
   useAuthCheck();
-  const [isEditModelOpen, setIsEditModalOpen] = import_react57.useState(false);
-  const [editId, setEditId] = import_react57.useState(undefined);
-  const [isDeleteModelOpen, setIsDeleteModalOpen] = import_react57.useState(false);
-  const [deleteId, setDeleteId] = import_react57.useState(undefined);
-  const [selectedOrganizationId, setSelectedOrganizationId] = import_react57.useState(undefined);
-  const [selectedTeamId, setSelectedTeamId] = import_react57.useState(undefined);
+  const [isEditModelOpen, setIsEditModalOpen] = import_react58.useState(false);
+  const [editId, setEditId] = import_react58.useState(undefined);
+  const [isDeleteModelOpen, setIsDeleteModalOpen] = import_react58.useState(false);
+  const [deleteId, setDeleteId] = import_react58.useState(undefined);
+  const [selectedOrganizationId, setSelectedOrganizationId] = import_react58.useState(undefined);
+  const [selectedTeamId, setSelectedTeamId] = import_react58.useState(undefined);
   const {
     getData: getTodos,
     createValidationSchema,
@@ -40141,13 +40236,13 @@ var TodoPage = () => {
     label: `${t.name} (${t.todosCount} todo${t.todosCount > 0 ? "s" : ""})`,
     value: t.id
   })) : [];
-  return /* @__PURE__ */ import_react57.default.createElement(Layout, {
+  return /* @__PURE__ */ import_react58.default.createElement(Layout, {
     title: "Todo List"
-  }, /* @__PURE__ */ import_react57.default.createElement(ErrorMessage, null, error?.message ?? ""), /* @__PURE__ */ import_react57.default.createElement("div", {
+  }, /* @__PURE__ */ import_react58.default.createElement(ErrorMessage, null, error?.message ?? ""), /* @__PURE__ */ import_react58.default.createElement("div", {
     className: "mb-4"
-  }, /* @__PURE__ */ import_react57.default.createElement(Form, {
+  }, /* @__PURE__ */ import_react58.default.createElement(Form, {
     inputs: [
-      { type: "hidden", name: "organizatinId", value: selectedOrganizationId },
+      { type: "hidden", name: "organizationId", value: selectedOrganizationId },
       { type: "hidden", name: "teamId", value: selectedTeamId },
       { type: "text", name: "title", placeholder: "Add a new todo..." }
     ],
@@ -40156,9 +40251,9 @@ var TodoPage = () => {
     onSuccess: handleSuccess,
     submitButtonText: "Add",
     showCancelButton: true,
-    secondaryButtons: /* @__PURE__ */ import_react57.default.createElement(import_react57.default.Fragment, null, /* @__PURE__ */ import_react57.default.createElement("div", {
+    secondaryButtons: /* @__PURE__ */ import_react58.default.createElement(import_react58.default.Fragment, null, /* @__PURE__ */ import_react58.default.createElement("div", {
       className: "w-3/11"
-    }, /* @__PURE__ */ import_react57.default.createElement(DropDownInput, {
+    }, /* @__PURE__ */ import_react58.default.createElement(DropDownInput, {
       type: "select",
       name: "organization",
       value: selectedOrganizationId,
@@ -40167,9 +40262,9 @@ var TodoPage = () => {
         handleSuccess();
         setSelectedOrganizationId(value);
       }
-    })), selectedOrganization && /* @__PURE__ */ import_react57.default.createElement("div", {
+    })), selectedOrganization && /* @__PURE__ */ import_react58.default.createElement("div", {
       className: "w-3/11"
-    }, /* @__PURE__ */ import_react57.default.createElement(DropDownInput, {
+    }, /* @__PURE__ */ import_react58.default.createElement(DropDownInput, {
       type: "select",
       name: "team",
       value: selectedTeamId,
@@ -40182,21 +40277,26 @@ var TodoPage = () => {
         setSelectedTeamId(value);
       }
     })))
-  })), isPending && "Loading...", /* @__PURE__ */ import_react57.default.createElement(CardGrid, null, todos && todos.map((todo) => /* @__PURE__ */ import_react57.default.createElement(TodoCard, {
+  })), isPending && "Loading...", /* @__PURE__ */ import_react58.default.createElement(CardGrid, null, todos && todos.map((todo) => /* @__PURE__ */ import_react58.default.createElement(TodoCard, {
     key: todo.id,
     onEdit: handleEdit,
     onDelete: handleDelete,
     todo
-  }))), /* @__PURE__ */ import_react57.default.createElement(Modal, {
+  }))), /* @__PURE__ */ import_react58.default.createElement(Modal, {
     title: "Editing a Todo Item",
     isOpen: isEditModelOpen && !!todoForEdit,
     onClose: handleCloseEditModal
-  }, /* @__PURE__ */ import_react57.default.createElement(Form, {
+  }, /* @__PURE__ */ import_react58.default.createElement(Form, {
     inputs: [
       {
         type: "hidden",
         name: "id",
         value: todoForEdit?.id
+      },
+      {
+        type: "hidden",
+        name: "organizationId",
+        value: selectedOrganizationId
       },
       {
         type: "hidden",
@@ -40227,16 +40327,16 @@ var TodoPage = () => {
     onCancel: handleCloseEditModal,
     submitButtonText: "Edit",
     showCancelButton: true,
-    secondaryButtons: /* @__PURE__ */ import_react57.default.createElement("div", {
+    secondaryButtons: /* @__PURE__ */ import_react58.default.createElement("div", {
       className: "w-auto"
-    }, /* @__PURE__ */ import_react57.default.createElement(Button, {
+    }, /* @__PURE__ */ import_react58.default.createElement(Button, {
       mode: "delete" /* DELETE */,
       onClick: (event) => {
         event.preventDefault();
         handleDelete(todoForEdit.id);
       }
     }, "Delete"))
-  })), /* @__PURE__ */ import_react57.default.createElement(DeleteModal, {
+  })), /* @__PURE__ */ import_react58.default.createElement(DeleteModal, {
     title: "Deleting a Todo Item",
     itemName: todoForDelete?.title,
     isOpen: isDeleteModelOpen && !!todoForDelete,
@@ -40261,60 +40361,60 @@ var App = ({ dehydratedState, user }) => {
       }
     }
   });
-  return /* @__PURE__ */ import_react58.default.createElement("html", null, /* @__PURE__ */ import_react58.default.createElement("head", null, /* @__PURE__ */ import_react58.default.createElement("meta", {
+  return /* @__PURE__ */ import_react59.default.createElement("html", null, /* @__PURE__ */ import_react59.default.createElement("head", null, /* @__PURE__ */ import_react59.default.createElement("meta", {
     charSet: "utf-8"
-  }), /* @__PURE__ */ import_react58.default.createElement("title", null, "Bun, Elysia & React"), /* @__PURE__ */ import_react58.default.createElement("meta", {
+  }), /* @__PURE__ */ import_react59.default.createElement("title", null, "Bun, Elysia & React"), /* @__PURE__ */ import_react59.default.createElement("meta", {
     name: "description",
     content: "Bun, Elysia & React"
-  }), /* @__PURE__ */ import_react58.default.createElement("meta", {
+  }), /* @__PURE__ */ import_react59.default.createElement("meta", {
     name: "viewport",
     content: "width=device-width, initial-scale=1"
-  }), /* @__PURE__ */ import_react58.default.createElement("script", {
+  }), /* @__PURE__ */ import_react59.default.createElement("script", {
     src: "/public/index.js",
     type: "module",
     defer: true
-  }), /* @__PURE__ */ import_react58.default.createElement("link", {
+  }), /* @__PURE__ */ import_react59.default.createElement("link", {
     rel: "stylesheet",
     type: "text/css",
     href: "/public/index.css"
-  }), /* @__PURE__ */ import_react58.default.createElement("script", {
+  }), /* @__PURE__ */ import_react59.default.createElement("script", {
     src: "https://unpkg.com/@tailwindcss/browser@4"
-  }), /* @__PURE__ */ import_react58.default.createElement("link", {
+  }), /* @__PURE__ */ import_react59.default.createElement("link", {
     rel: "icon",
     type: "image/x-icon",
     href: "/public/favicon.ico"
-  })), /* @__PURE__ */ import_react58.default.createElement("body", null, /* @__PURE__ */ import_react58.default.createElement(QueryClientProvider, {
+  })), /* @__PURE__ */ import_react59.default.createElement("body", null, /* @__PURE__ */ import_react59.default.createElement(QueryClientProvider, {
     client: queryClient
-  }, /* @__PURE__ */ import_react58.default.createElement(HydrationBoundary, {
+  }, /* @__PURE__ */ import_react59.default.createElement(HydrationBoundary, {
     state: dehydratedState
-  }, /* @__PURE__ */ import_react58.default.createElement(UserProvider, {
+  }, /* @__PURE__ */ import_react59.default.createElement(UserProvider, {
     value: user
-  }, /* @__PURE__ */ import_react58.default.createElement(SocketProvider, null, /* @__PURE__ */ import_react58.default.createElement(Nav, null), /* @__PURE__ */ import_react58.default.createElement(MessageBars, null), /* @__PURE__ */ import_react58.default.createElement(Toasts, null), /* @__PURE__ */ import_react58.default.createElement(import_react_router_dom2.Outlet, null), /* @__PURE__ */ import_react58.default.createElement(import_react_router_dom2.Routes, {
+  }, /* @__PURE__ */ import_react59.default.createElement(SocketProvider, null, /* @__PURE__ */ import_react59.default.createElement(Nav, null), /* @__PURE__ */ import_react59.default.createElement(MessageBars, null), /* @__PURE__ */ import_react59.default.createElement(Toasts, null), /* @__PURE__ */ import_react59.default.createElement(import_react_router_dom2.Outlet, null), /* @__PURE__ */ import_react59.default.createElement(import_react_router_dom2.Routes, {
     location: location2
-  }, /* @__PURE__ */ import_react58.default.createElement(import_react_router_dom2.Route, {
+  }, /* @__PURE__ */ import_react59.default.createElement(import_react_router_dom2.Route, {
     path: "/",
-    element: /* @__PURE__ */ import_react58.default.createElement(HomePage, null)
-  }), /* @__PURE__ */ import_react58.default.createElement(import_react_router_dom2.Route, {
+    element: /* @__PURE__ */ import_react59.default.createElement(HomePage, null)
+  }), /* @__PURE__ */ import_react59.default.createElement(import_react_router_dom2.Route, {
     path: todoRoute,
-    element: user.id ? /* @__PURE__ */ import_react58.default.createElement(TodoPage, null) : /* @__PURE__ */ import_react58.default.createElement(ForbiddenPage, null)
-  }), /* @__PURE__ */ import_react58.default.createElement(import_react_router_dom2.Route, {
+    element: user.id ? /* @__PURE__ */ import_react59.default.createElement(TodoPage, null) : /* @__PURE__ */ import_react59.default.createElement(ForbiddenPage, null)
+  }), /* @__PURE__ */ import_react59.default.createElement(import_react_router_dom2.Route, {
     path: organizationRoute,
-    element: user.id ? /* @__PURE__ */ import_react58.default.createElement(OrganizationPage, null) : /* @__PURE__ */ import_react58.default.createElement(ForbiddenPage, null)
-  }), /* @__PURE__ */ import_react58.default.createElement(import_react_router_dom2.Route, {
+    element: user.id ? /* @__PURE__ */ import_react59.default.createElement(OrganizationPage, null) : /* @__PURE__ */ import_react59.default.createElement(ForbiddenPage, null)
+  }), /* @__PURE__ */ import_react59.default.createElement(import_react_router_dom2.Route, {
     path: teamRoute,
-    element: user.id ? /* @__PURE__ */ import_react58.default.createElement(TeamPage, null) : /* @__PURE__ */ import_react58.default.createElement(ForbiddenPage, null)
-  }), /* @__PURE__ */ import_react58.default.createElement(import_react_router_dom2.Route, {
+    element: user.id ? /* @__PURE__ */ import_react59.default.createElement(TeamPage, null) : /* @__PURE__ */ import_react59.default.createElement(ForbiddenPage, null)
+  }), /* @__PURE__ */ import_react59.default.createElement(import_react_router_dom2.Route, {
     path: chatsRoute,
-    element: user.id ? /* @__PURE__ */ import_react58.default.createElement(Chats, null) : /* @__PURE__ */ import_react58.default.createElement(ForbiddenPage, null)
-  }), /* @__PURE__ */ import_react58.default.createElement(import_react_router_dom2.Route, {
+    element: user.id ? /* @__PURE__ */ import_react59.default.createElement(Chats, null) : /* @__PURE__ */ import_react59.default.createElement(ForbiddenPage, null)
+  }), /* @__PURE__ */ import_react59.default.createElement(import_react_router_dom2.Route, {
     path: loginRoute,
-    element: /* @__PURE__ */ import_react58.default.createElement(LoginPage, null)
-  }), /* @__PURE__ */ import_react58.default.createElement(import_react_router_dom2.Route, {
+    element: /* @__PURE__ */ import_react59.default.createElement(LoginPage, null)
+  }), /* @__PURE__ */ import_react59.default.createElement(import_react_router_dom2.Route, {
     path: registerRoute,
-    element: /* @__PURE__ */ import_react58.default.createElement(RegisterPage, null)
-  }), /* @__PURE__ */ import_react58.default.createElement(import_react_router_dom2.Route, {
+    element: /* @__PURE__ */ import_react59.default.createElement(RegisterPage, null)
+  }), /* @__PURE__ */ import_react59.default.createElement(import_react_router_dom2.Route, {
     path: "*",
-    element: /* @__PURE__ */ import_react58.default.createElement(NotFoundPage, null)
+    element: /* @__PURE__ */ import_react59.default.createElement(NotFoundPage, null)
   }))))))));
 };
 var App_default = App;
@@ -40324,9 +40424,9 @@ var dehydratedState = window.__QUERY_STATE__;
 delete window.__QUERY_STATE__;
 var userDTO = window.__USER_DATA__;
 delete window.__USER_DATA__;
-import_client.hydrateRoot(document, /* @__PURE__ */ import_react59.default.createElement(import_react_router2.BrowserRouter, null, /* @__PURE__ */ import_react59.default.createElement(App_default, {
+import_client.hydrateRoot(document, /* @__PURE__ */ import_react60.default.createElement(import_react_router2.BrowserRouter, null, /* @__PURE__ */ import_react60.default.createElement(App_default, {
   dehydratedState,
   user: userDTO
 })));
 
-//# debugId=B0C909736E1DF45664756E2164756E21
+//# debugId=12344B251D3A9AF364756E2164756E21

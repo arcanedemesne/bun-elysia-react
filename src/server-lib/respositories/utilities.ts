@@ -39,13 +39,13 @@ const userDTOcolumns = {
 };
 
 export const withRelations = {
-  user: {
+  userAudits: {
     createdBy: true,
     updatedBy: true,
     deletedBy: true,
   },
 
-  userDTO: {
+  userAuditsDTO: {
     createdBy: userDTOcolumns,
     updatedBy: userDTOcolumns,
     deletedBy: userDTOcolumns,

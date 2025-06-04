@@ -1,44 +1,58 @@
-import { BaseEntityActive, BaseEntityId, BaseEntityTimeStamps } from "../BaseEntity";
-import { User, UserDTO } from "../User";
+import { BaseEntity, BaseEntityDTO, IBaseEntityDTO, IBaseEntityId } from "../BaseEntity";
+import { IOrganization } from "../Organization";
+import { ITodo } from "../Todo";
+import { IUser, UserDTO } from "../User";
 import { ITeam } from "./ITeam";
 
-export interface TeamDTO extends BaseEntityId, BaseEntityTimeStamps, BaseEntityActive {
+export interface ITeamDTO extends IBaseEntityDTO {
   organizationId: string;
   name: string;
   members: UserDTO[];
   todosCount: number;
-  createdBy?: UserDTO;
-  updatedBy?: UserDTO;
-  deletedBy?: UserDTO;
 }
 
-export interface TeamSocketDTO extends BaseEntityId {
+export class TeamDTO extends BaseEntityDTO implements ITeamDTO {
+  organizationId: string;
+  name: string;
+  members: UserDTO[];
+  todosCount: number;
+
+  constructor(team: ITeam) {
+    super(team);
+
+    this.organizationId = team.organizationId;
+    this.name = team.name;
+    this.members = team.members.map((x) => new UserDTO(x));
+    this.todosCount = team.todos.length;
+  }
+}
+
+export interface ITeamSocketDTO extends IBaseEntityId {
   organizationId: string;
   name: string;
 }
 
-export type TeamMemberDTO = {
+export type ITeamMemberDTO = {
   userId: string;
   teamId: string;
 };
 
-export class Team {
-  constructor(public team: ITeam) {}
+export class Team extends BaseEntity implements ITeam {
+  organizationId: string;
+  organization: IOrganization;
+  name: string;
+  members: IUser[];
+  todos: ITodo[];
 
-  toDTO = () => {
-    return {
-      id: this.team.id,
-      organizationId: this.team.organiztionId,
-      name: this.team.name,
-      members: this.team.members.length > 0 ? this.team.members.map((x) => new User(x).toDTO()) : [],
-      todosCount: this.team.todos.length,
-      createdAt: this.team.createdAt,
-      updatedAt: this.team.updatedAt,
-      deletedAt: this.team.deletedAt,
-      createdBy: this.team.createdBy ? new User(this.team.createdBy).toDTO() : null,
-      updatedBy: this.team.updatedBy ? new User(this.team.updatedBy).toDTO() : null,
-      deletedBy: this.team.deletedBy ? new User(this.team.deletedBy).toDTO() : null,
-      active: this.team.active,
-    } as TeamDTO;
-  };
+  constructor(public team: ITeam) {
+    super(team);
+
+    this.organizationId = team.organizationId;
+    this.organization = team.organization;
+    this.name = team.name;
+    this.members = team.members;
+    this.todos = team.todos;
+  }
+
+  toDTO = () => new TeamDTO(this);
 }

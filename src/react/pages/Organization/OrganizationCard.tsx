@@ -1,12 +1,12 @@
 import React, { ReactNode } from "react";
 
 import { ChatIconButton, DeleteIconButton, EditIconButton } from "@/lib/components";
-import { OrganizationDTO } from "@/lib/models";
+import { IOrganizationDTO } from "@/lib/models";
 
 import { CardBase } from "@/components";
 
 type OrganizationCardProps = {
-  organization: OrganizationDTO;
+  organization: IOrganizationDTO;
   onChat: (id: string) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;

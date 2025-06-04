@@ -1,4 +1,3 @@
-import { relations } from "drizzle-orm";
 import { index, primaryKey, uuid } from "drizzle-orm/pg-core";
 
 import { schema } from "./config";
@@ -19,23 +18,14 @@ export const usersToOrganizations = schema.table(
       .references(() => organizations.id, {
         onDelete: "cascade",
       }),
-    ...trackableEntity.UserInfo,
+    ...trackableEntity.UserAudits,
     ...trackableEntity.TimeStamps,
   },
   (table) => [
     primaryKey({ columns: [table.userId, table.organizationId] }),
     index().on(table.organizationId),
     index().on(table.userId),
+    index().on(table.createdAt),
+    index().on(table.createdById),
   ],
 );
-
-export const usersToOrganizationsRelations = relations(usersToOrganizations, ({ one }) => ({
-  user: one(users, {
-    fields: [usersToOrganizations.userId],
-    references: [users.id],
-  }),
-  organization: one(organizations, {
-    fields: [usersToOrganizations.organizationId],
-    references: [organizations.id],
-  }),
-}));

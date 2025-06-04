@@ -1,4 +1,5 @@
-export * from "./IRepository";
+export * from "./BaseRepository";
+export * from "./IBaseRepository";
 export * from "./OrganizationRepository";
 export * from "./TeamRepository";
 export * from "./TodoRepository";

@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import React, { ReactNode, useActionState, useRef, useState } from "react";
+import React, { KeyboardEvent, ReactNode, useActionState, useRef, useState } from "react";
 
 import { z } from "zod";
 
@@ -19,7 +19,7 @@ import { FieldErrors, validateForm } from "@/lib/validation";
 import { usePersistentForm } from "@/hooks";
 
 type FormProps<T> = {
-  inputs: InputProps[];
+  inputs: (InputProps & { textAreaSubmitOnEnter?: boolean })[];
   validationSchema: z.Schema;
   onSubmit: (formData: T) => Promise<T>;
   onSuccess?: (data?: any) => void;
@@ -134,6 +134,14 @@ export const Form = <T,>({
                 errors={validationErrors[input.name]}
                 onChange={(event) => {
                   setInputValues((prev) => new Map(prev).set(input.name, event.target.value));
+                }}
+                onKeyDown={(event: KeyboardEvent<HTMLTextAreaElement>) => {
+                  if (input.textAreaSubmitOnEnter && event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    if (formRef.current) {
+                      formRef.current.requestSubmit();
+                    }
+                  }
                 }}
               />
             );

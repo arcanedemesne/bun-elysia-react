@@ -96,7 +96,7 @@ export const TodoPage = () => {
       <div className="mb-4">
         <Form<ITodoInsert>
           inputs={[
-            { type: "hidden", name: "organizatinId", value: selectedOrganizationId },
+            { type: "hidden", name: "organizationId", value: selectedOrganizationId },
             { type: "hidden", name: "teamId", value: selectedTeamId },
             { type: "text", name: "title", placeholder: "Add a new todo..." },
           ]}
@@ -155,6 +155,11 @@ export const TodoPage = () => {
               type: "hidden",
               name: "id",
               value: todoForEdit?.id,
+            },
+            {
+              type: "hidden",
+              name: "organizationId",
+              value: selectedOrganizationId,
             },
             {
               type: "hidden",

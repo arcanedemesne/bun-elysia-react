@@ -1,35 +1,35 @@
 import { IUser, IUserInsert, IUserUpdate, User, UserDTO } from "@/lib/models";
 
-import { BaseService } from ".";
 import { UserRepository } from "../respositories";
+import { BaseService } from "../services/BaseService";
 
 export class UserService extends BaseService<IUser, IUserInsert, IUserUpdate> {
-  repo: UserRepository;
+  userRepo: UserRepository;
 
-  constructor() {
-    const repo = new UserRepository();
-    super(repo);
-    this.repo = repo;
+  constructor(userId?: string) {
+    const userRepo = new UserRepository(userId);
+    super(userRepo);
+    this.userRepo = userRepo;
   }
 
-  async search(organizationId: string, query: string): Promise<UserDTO[]> {
-    const users = await this.repo.search(organizationId, query);
+  async search({ searchQuery, organizationId }: { searchQuery: string; organizationId?: string }): Promise<UserDTO[]> {
+    const users = await this.userRepo.search({ searchQuery, organizationId });
     return users.map((x) => new User(x).toDTO());
   }
 
   async getByUsername(username: string): Promise<IUser | null> {
-    return await this.repo.getByProperty("username", username);
+    return await this.userRepo.getByProperty("username", username);
   }
 
   async getByEmail(email: string): Promise<IUser | null> {
-    return await this.repo.getByProperty("email", email);
+    return await this.userRepo.getByProperty("email", email);
   }
 
   async getByTeamIds(teamIds: string[]): Promise<string[]> {
-    return await this.repo.getByTeamIds(teamIds);
+    return await this.userRepo.getByTeamIds(teamIds);
   }
 
   async getByOrganizationIds(organizationIds: string[]): Promise<string[]> {
-    return await this.repo.getByOrganizationIds(organizationIds);
+    return await this.userRepo.getByOrganizationIds(organizationIds);
   }
 }

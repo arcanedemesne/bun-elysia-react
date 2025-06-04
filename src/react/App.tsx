@@ -4,7 +4,7 @@ import { Outlet, Route, Routes, useLocation } from "react-router-dom";
 
 import { MessageBars, Toasts } from "@/lib/components";
 import { chatsRoute, loginRoute, organizationRoute, registerRoute, teamRoute, todoRoute } from "@/lib/constants";
-import { UserDTO } from "@/lib/models";
+import { IUserDTO } from "@/lib/models";
 
 import { Nav } from "./components/Nav";
 import {
@@ -20,7 +20,7 @@ import {
 } from "./pages";
 import { SocketProvider, UserProvider } from "./providers";
 
-const App = ({ dehydratedState, user }: { dehydratedState: DehydratedState; user: UserDTO }) => {
+const App = ({ dehydratedState, user }: { dehydratedState: DehydratedState; user: IUserDTO }) => {
   const location = useLocation();
 
   const queryClient = new QueryClient({

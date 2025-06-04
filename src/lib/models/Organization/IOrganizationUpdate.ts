@@ -1,6 +1,6 @@
-import { BaseEntityActive, BaseEntityId, BaseEntityTimeStamps, BaseEntityUserId } from "../BaseEntity";
+import { IUpdateEntity } from "../BaseEntity";
 
-export interface IOrganizationUpdate extends BaseEntityId, BaseEntityUserId, BaseEntityTimeStamps, BaseEntityActive {
+export interface IOrganizationUpdate extends IUpdateEntity {
   name?: string;
   description?: string;
 }

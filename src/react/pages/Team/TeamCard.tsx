@@ -1,12 +1,12 @@
 import React, { ReactNode } from "react";
 
 import { ChatIconButton, DeleteIconButton, EditIconButton } from "@/lib/components";
-import { TeamDTO } from "@/lib/models";
+import { ITeamDTO } from "@/lib/models";
 
 import { CardBase } from "@/components";
 
 type TeamCardProps = {
-  team: TeamDTO;
+  team: ITeamDTO;
   onChat: (id: string) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;

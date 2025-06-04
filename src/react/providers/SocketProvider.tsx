@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-import { UserDTO } from "@/lib/models";
+import { IUserDTO } from "@/lib/models";
 import { showMessage, showToast } from "@/lib/services";
 import { ChannelTypes, MessageTypes, PublishMessagePayload } from "@/lib/types";
 
@@ -16,7 +16,7 @@ const SocketContext = createContext<
   | undefined
 >(undefined);
 
-const getSocketUri = (user: UserDTO | undefined) => {
+const getSocketUri = (user: IUserDTO | undefined) => {
   let host, port;
   try {
     host = process.env.HOST;

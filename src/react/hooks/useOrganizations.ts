@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { apiPrefix, memberRoute, organizationRoute } from "@/lib/constants";
-import { IOrganizationInsert, IOrganizationUpdate, OrganizationDTO, OrganizationMemberDTO } from "@/lib/models";
+import { IOrganizationDTO, IOrganizationInsert, IOrganizationMemberDTO, IOrganizationUpdate } from "@/lib/models";
 import { ApiService } from "@/lib/services/ApiService";
 import { organizationNameSchema, uuidSchema } from "@/lib/validation";
 
@@ -18,9 +18,9 @@ export const useOrganizations = () => {
   const GetData = () => {
     const endpoint = `user/${user?.id}`;
 
-    return useQuery<OrganizationDTO[]>({
+    return useQuery<IOrganizationDTO[]>({
       queryKey: ["organizationData", endpoint],
-      queryFn: async () => await apiService.get<OrganizationDTO[]>(`/${apiPrefix}/${organizationRoute}/${endpoint}`),
+      queryFn: async () => await apiService.get<IOrganizationDTO[]>(`/${apiPrefix}/${organizationRoute}/${endpoint}`),
     });
   };
 
@@ -35,10 +35,12 @@ export const useOrganizations = () => {
   });
 
   const onCreate = async (request: IOrganizationInsert) => {
+    ("use server");
     return await apiService.post(`/${apiPrefix}/${organizationRoute}`, request);
   };
 
   const onEdit = async (request: IOrganizationUpdate) => {
+    ("use server");
     return await apiService.put(`/${apiPrefix}/${organizationRoute}/${request.id}`, request);
   };
 
@@ -60,7 +62,7 @@ export const useOrganizations = () => {
     queryClient.refetchQueries({ queryKey: ["organizationData"] });
   };
 
-  const onAddMember = async (organizationMember: OrganizationMemberDTO) => {
+  const onAddMember = async (organizationMember: IOrganizationMemberDTO) => {
     ("use server");
 
     const response = await apiService.post(`/${apiPrefix}/${organizationRoute}/${memberRoute}`, organizationMember);
@@ -70,7 +72,7 @@ export const useOrganizations = () => {
     }
   };
 
-  const onRemoveMember = async (organizationMember: OrganizationMemberDTO) => {
+  const onRemoveMember = async (organizationMember: IOrganizationMemberDTO) => {
     ("use server");
 
     const response = await apiService.delete(`/${apiPrefix}/${organizationRoute}/${memberRoute}`, organizationMember);

@@ -1,5 +1,5 @@
-import { BaseEntityActive, BaseEntityId, BaseEntityTimeStamps, BaseEntityUserId } from "../BaseEntity";
+import { IUpdateEntity } from "../BaseEntity";
 
-export interface ITeamUpdate extends BaseEntityId, BaseEntityUserId, BaseEntityTimeStamps, BaseEntityActive {
+export interface ITeamUpdate extends IUpdateEntity {
   name?: string;
 }

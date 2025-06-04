@@ -9,41 +9,43 @@ interface SeedUser {
   username: string;
   email: string;
   password: string;
+  createdById?: string;
 }
 
-const createUser = ({ username, email, password }: SeedUser) => {
+const createUser = ({ username, email, password, createdById }: SeedUser) => {
   return {
     username,
     email,
     password,
+    createdById,
   };
 };
 
 interface SeedOrganization {
   name: string;
   description: string;
-  createdBy: string;
+  createdById: string;
 }
 
-const createOrganization = ({ name, description, createdBy }: SeedOrganization) => {
+const createOrganization = ({ name, description, createdById }: SeedOrganization) => {
   return {
     name,
     description,
-    createdBy,
+    createdById,
   };
 };
 
 interface SeedTeam {
   name: string;
   organizationId: string;
-  createdBy: string;
+  createdById: string;
 }
 
-const createTeam = ({ name, organizationId, createdBy }: SeedTeam) => {
+const createTeam = ({ name, organizationId, createdById }: SeedTeam) => {
   return {
     name,
     organizationId,
-    createdBy,
+    createdById,
   };
 };
 
@@ -108,6 +110,7 @@ const seedDatabase = async () => {
             throw new Error("Failed to insert user");
           }
           userId = insertedUsers[0].id;
+          tx.update(users).set({ createdById: userId }).where(eq(users.id, userId)).returning();
           console.log(`User ${seedUser.username} created with ID: ${userId}`);
         }
 
@@ -119,7 +122,7 @@ const seedDatabase = async () => {
               channel: ChannelTypes.ORGANIZATION_CHAT,
               message: "This is a private chate!",
               recipient: lastUserId,
-              createdBy: userId,
+              createdById: userId,
             })
             .returning();
           console.log("Private message inserted", insertedPrivateMessage);
@@ -132,7 +135,7 @@ const seedDatabase = async () => {
           .values({
             title: "This is an example todo item",
             description: "This is an example description",
-            createdBy: userId,
+            createdById: userId,
           })
           .returning();
         console.log("User todo inserted", insertedTodo);
@@ -140,7 +143,7 @@ const seedDatabase = async () => {
         const seedOrganization: SeedOrganization = createOrganization({
           name: "JennyBot Inc.",
           description: "Example Organization #1",
-          createdBy: userId,
+          createdById: userId,
         });
 
         // 4. Insert or Update the Organization
@@ -158,7 +161,7 @@ const seedDatabase = async () => {
             .set({
               name: seedOrganization.name,
               description: seedOrganization.description,
-              updatedBy: userId,
+              updatedById: userId,
               updatedAt: new Date(),
             })
             .where(eq(organizations.name, seedOrganization.name))
@@ -172,7 +175,7 @@ const seedDatabase = async () => {
             .values({
               name: seedOrganization.name,
               description: seedOrganization.description,
-              createdBy: seedOrganization.createdBy,
+              createdById: seedOrganization.createdById,
             })
             .returning({
               id: organizations.id,
@@ -188,7 +191,7 @@ const seedDatabase = async () => {
         // 5. Insert a connection between seed user and seed organization
         const insertedUserOrganization = await tx
           .insert(usersToOrganizations)
-          .values({ userId, organizationId, createdBy: userId })
+          .values({ userId, organizationId, createdById: userId })
           .returning();
         console.log("User-Organization connection inserted", insertedUserOrganization);
 
@@ -199,7 +202,7 @@ const seedDatabase = async () => {
             channel: ChannelTypes.ORGANIZATION_CHAT,
             message: "We're at the same organization!",
             organizationId,
-            createdBy: userId,
+            createdById: userId,
           })
           .returning();
         console.log("Organization message inserted", insertedOrganizationMessage);
@@ -209,12 +212,12 @@ const seedDatabase = async () => {
           createTeam({
             name: "Seed Team #1",
             organizationId,
-            createdBy: userId,
+            createdById: userId,
           }),
           createTeam({
             name: "Seed Team #2",
             organizationId,
-            createdBy: userId,
+            createdById: userId,
           }),
         );
 
@@ -226,7 +229,7 @@ const seedDatabase = async () => {
             // Update existing team
             const updatedTeam = await tx
               .update(teams)
-              .set({ updatedBy: userId })
+              .set({ updatedById: userId })
               .where(eq(teams.name, seedTeam.name))
               .returning({ id: teams.id });
             teamId = updatedTeam[0].id;
@@ -237,7 +240,7 @@ const seedDatabase = async () => {
               .values({
                 name: seedTeam.name,
                 organizationId,
-                createdBy: userId,
+                createdById: userId,
               })
               .returning({
                 id: teams.id,
@@ -252,7 +255,7 @@ const seedDatabase = async () => {
           // 8. Insert a connection between seed user and seed team
           const insertedUserTeam = await tx
             .insert(usersToTeams)
-            .values({ userId: userId, teamId: teamId, createdBy: userId })
+            .values({ userId: userId, teamId: teamId, createdById: userId })
             .returning();
           console.log("User-Team connection inserted", insertedUserTeam);
 
@@ -264,7 +267,7 @@ const seedDatabase = async () => {
               description: "This is a team example description",
               organizationId,
               teamId,
-              createdBy: userId,
+              createdById: userId,
             })
             .returning();
           console.log("Team todo inserted", insertedTeamTodo);
@@ -277,7 +280,7 @@ const seedDatabase = async () => {
               message: "We're on the same team!",
               organizationId,
               teamId,
-              createdBy: userId,
+              createdById: userId,
             })
             .returning();
           console.log("Team message inserted", insertedTeamMessage);

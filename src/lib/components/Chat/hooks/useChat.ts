@@ -2,15 +2,15 @@ import { useEffect, useState } from "react";
 
 import { z } from "zod";
 
-import { OrganizationDTO, OrganizationSocketDTO, TeamDTO, TeamSocketDTO } from "@/lib/models";
+import { IOrganizationDTO, IOrganizationSocketDTO, ITeamDTO, ITeamSocketDTO } from "@/lib/models";
 import { ChannelTypes, MessageTypes, PublishMessagePayload } from "@/lib/types";
 
 import { useSocketContext } from "@/providers";
 
 type useChatProps = {
   channel?: ChannelTypes;
-  organization?: OrganizationDTO;
-  team?: TeamDTO;
+  organization?: IOrganizationDTO;
+  team?: ITeamDTO;
 };
 
 export const useChat = ({ organization, team, channel }: useChatProps) => {
@@ -47,14 +47,14 @@ export const useChat = ({ organization, team, channel }: useChatProps) => {
     ? ({
         id: organization?.id,
         name: organization?.name,
-      } as OrganizationSocketDTO)
+      } as IOrganizationSocketDTO)
     : null;
 
   const teamSocketDTO = team
     ? ({
         id: team?.id,
         name: team?.name,
-      } as TeamSocketDTO)
+      } as ITeamSocketDTO)
     : null;
 
   const sendMessage = async ({ message }: { message: string }): Promise<{ message: string }> => {

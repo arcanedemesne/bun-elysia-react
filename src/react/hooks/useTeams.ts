@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { apiPrefix, memberRoute, teamRoute } from "@/lib/constants";
-import { ITeamInsert, ITeamUpdate, TeamDTO, TeamMemberDTO } from "@/lib/models";
+import { ITeamDTO, ITeamInsert, ITeamMemberDTO, ITeamUpdate } from "@/lib/models";
 import { ApiService } from "@/lib/services/ApiService";
 import { teamNameSchema, uuidSchema } from "@/lib/validation";
 
@@ -19,9 +19,9 @@ export const useTeams = () => {
     let endpoint = `user/${user?.id}`;
     if (organizationId) endpoint = `organization/${organizationId}`;
 
-    return useQuery<TeamDTO[]>({
+    return useQuery<ITeamDTO[]>({
       queryKey: ["teamData", endpoint],
-      queryFn: async () => await apiService.get<TeamDTO[]>(`/${apiPrefix}/${teamRoute}/${endpoint}`),
+      queryFn: async () => await apiService.get<ITeamDTO[]>(`/${apiPrefix}/${teamRoute}/${endpoint}`),
     });
   };
 
@@ -36,10 +36,12 @@ export const useTeams = () => {
   });
 
   const onCreate = async (request: ITeamInsert) => {
+    ("use server");
     return await apiService.post(`/${apiPrefix}/${teamRoute}`, request);
   };
 
   const onEdit = async (request: ITeamUpdate) => {
+    ("use server");
     return await apiService.put(`/${apiPrefix}/${teamRoute}/${request.id}`, request);
   };
 
@@ -61,7 +63,7 @@ export const useTeams = () => {
     queryClient.refetchQueries({ queryKey: ["teamData"] });
   };
 
-  const onAddMember = async (teamMember: TeamMemberDTO) => {
+  const onAddMember = async (teamMember: ITeamMemberDTO) => {
     ("use server");
 
     const response = await apiService.post(`/${apiPrefix}/${teamRoute}/${memberRoute}`, teamMember);
@@ -71,7 +73,7 @@ export const useTeams = () => {
     }
   };
 
-  const onRemoveMember = async (teamMember: TeamMemberDTO) => {
+  const onRemoveMember = async (teamMember: ITeamMemberDTO) => {
     ("use server");
 
     const response = await apiService.delete(`/${apiPrefix}/${teamRoute}/${memberRoute}`, teamMember);

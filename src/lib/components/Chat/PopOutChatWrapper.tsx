@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { OrganizationDTO, TeamDTO } from "@/lib/models";
+import { IOrganizationDTO, ITeamDTO } from "@/lib/models";
 import { ChannelTypes } from "@/lib/types";
 
 import { CloseIconButton, MaximizeIconButton, MinimizeIconButton } from "../Buttons";
@@ -8,8 +8,8 @@ import { ChatForm } from "./ChatForm";
 
 type PopOutChatWrapperProps = {
   channel: ChannelTypes;
-  organization?: OrganizationDTO;
-  team?: TeamDTO;
+  organization?: IOrganizationDTO;
+  team?: ITeamDTO;
   onClose: (id: string) => void;
 };
 

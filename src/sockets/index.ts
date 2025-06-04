@@ -5,17 +5,17 @@ import { OrganizationService, UserService } from "@/server-lib/services";
 
 import { WebSocket } from "ws";
 
-import { OrganizationSocketDTO, User, UserSocketDTO } from "@/lib/models";
+import { IOrganizationSocketDTO, IUserSocketDTO, User } from "@/lib/models";
 import { ChannelTypes, Message, PublishMessagePayload } from "@/lib/types";
 
 export interface AppState {
   channels: Map<string, Set<WebSocket>>;
-  users: Map<string, UserSocketDTO>;
+  users: Map<string, IUserSocketDTO>;
 }
 
 const publish = async (payload: PublishMessagePayload, ws: any) => {
   const store = sockets.store as AppState;
-  const userService = new UserService();
+  const userService = new UserService(payload.user.id);
 
   const requiresOrganization = payload.organization ?? false;
   const requiresTeam = payload.team ?? false;
@@ -48,7 +48,7 @@ const publish = async (payload: PublishMessagePayload, ws: any) => {
   }
 };
 
-const subscribe = (user: UserSocketDTO, channel: string, ws: any) => {
+const subscribe = (user: IUserSocketDTO, channel: string, ws: any) => {
   const store = sockets.store as AppState;
 
   if (!store.users.has(ws.id)) {
@@ -90,13 +90,13 @@ const unsubscribe = (ws: any) => {
 
 const sockets = new Elysia()
   .state("channels", new Map<string, Set<WebSocket>>())
-  .state("users", new Map<string, UserSocketDTO>())
+  .state("users", new Map<string, IUserSocketDTO>())
   .ws("/ws", {
     open: async (ws) => {
       try {
         const { userId, sessionId } = ws.data.query;
         if (userId && sessionId) {
-          const userService = new UserService();
+          const userService = new UserService(userId);
           const user = await userService.getById(userId);
           if (user?.sessionId !== sessionId) {
             // is logged out
@@ -122,7 +122,7 @@ const sockets = new Elysia()
                     organization: {
                       id: organization.id,
                       name: organization.name,
-                    } as OrganizationSocketDTO,
+                    } as IOrganizationSocketDTO,
                     isOnline: true,
                   } as PublishMessagePayload,
                   ws,
@@ -157,7 +157,7 @@ const sockets = new Elysia()
                 user: {
                   id: user.id,
                   username: user.username,
-                } as UserSocketDTO,
+                } as IUserSocketDTO,
                 createdAt: new Date(),
               } as PublishMessagePayload,
               ws,
@@ -184,7 +184,7 @@ const sockets = new Elysia()
           user: {
             id: user?.id,
             username: user?.username,
-          } as UserSocketDTO,
+          } as IUserSocketDTO,
         } as PublishMessagePayload,
         ws,
       );

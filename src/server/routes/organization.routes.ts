@@ -5,7 +5,7 @@ import { OrganizationService } from "@/server-lib/services";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 import { apiPrefix, memberRoute, organizationRoute } from "@/lib/constants";
-import { IOrganizationInsert, IOrganizationUpdate, IUser, OrganizationMemberDTO } from "@/lib/models";
+import { IOrganizationInsert, IOrganizationMemberDTO, IOrganizationUpdate, IUser } from "@/lib/models";
 import { JwtContext, ResponseError } from "@/lib/types";
 
 export const organizationRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
@@ -32,7 +32,7 @@ export const organizationRoutes = (app: Elysia<any, any, any, any, JwtContext>) 
         return entity;
       })
       .post(`/${memberRoute}`, async ({ user, body }: { user: IUser; body: any }) => {
-        const parsed = JSON.parse(body as string) as OrganizationMemberDTO;
+        const parsed = JSON.parse(body as string) as IOrganizationMemberDTO;
         const service = new OrganizationService(user.id);
         const entity = await service.addMember(parsed);
         if (!entity) {
@@ -45,7 +45,7 @@ export const organizationRoutes = (app: Elysia<any, any, any, any, JwtContext>) 
         return entity;
       })
       .delete(`/${memberRoute}`, async ({ user, body }: { user: IUser; body: any }) => {
-        const parsed = JSON.parse(body as string) as OrganizationMemberDTO;
+        const parsed = JSON.parse(body as string) as IOrganizationMemberDTO;
         const service = new OrganizationService(user.id);
         const success = await service.removeMember(parsed);
         if (!success) {
@@ -65,6 +65,15 @@ export const organizationRoutes = (app: Elysia<any, any, any, any, JwtContext>) 
             status: StatusCodes.CONFLICT,
             statusText: ReasonPhrases.CONFLICT,
             message: `Organization with name ${parsed.name} could not be created`,
+          });
+        }
+        const member = await service.addMember({ userId: user.id, organizationId: entity?.id });
+        if (!member) {
+          await service.delete(entity?.id);
+          return ResponseError.throw({
+            status: StatusCodes.CONFLICT,
+            statusText: ReasonPhrases.CONFLICT,
+            message: `User ${user.username} could not be added to Organization ${parsed.name}`,
           });
         }
         return entity;

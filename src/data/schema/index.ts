@@ -10,3 +10,5 @@ export * from "./usersToTeams";
 
 export * from "./messages";
 export * from "./todos";
+
+export * from "./relations";

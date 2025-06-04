@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
-import { OrganizationDTO, TeamDTO } from "@/lib/models";
+import { IOrganizationDTO, ITeamDTO } from "@/lib/models";
 import { ChannelTypes, PublishMessagePayload } from "@/lib/types";
 
+import { CheckBox } from "../Inputs";
 import { ChatMessage } from "./ChatMessage";
 import { useChat } from "./hooks/useChat";
 import { Form } from "@/components";
@@ -10,8 +11,8 @@ import { useUserContext } from "@/providers";
 
 export type ChatFormProps = {
   channel: ChannelTypes;
-  organization?: OrganizationDTO;
-  team?: TeamDTO;
+  organization?: IOrganizationDTO;
+  team?: ITeamDTO;
 };
 
 export const ChatForm = (props: ChatFormProps) => {
@@ -19,11 +20,17 @@ export const ChatForm = (props: ChatFormProps) => {
   const { validationSchema, socket, sendMessage, messages } = useChat(props);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  const [textAreaSubmitOnEnter, setTextAreaSubmitOnEnter] = useState(true);
+
   useEffect(() => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const handleSubmitOnEnterCheckChanged = () => {
+    setTextAreaSubmitOnEnter((prev) => !prev);
+  };
 
   return (
     <>
@@ -46,11 +53,22 @@ export const ChatForm = (props: ChatFormProps) => {
               name: "message",
               label: "Chat Message",
               placeholder: "Type your message...",
+              textAreaSubmitOnEnter,
             },
           ]}
           validationSchema={validationSchema}
           onSubmit={sendMessage}
           showCancelButton
+          secondaryButtons={
+            <div style={{ width: "auto" }}>
+              <CheckBox
+                name="submitOnEnter"
+                checked={textAreaSubmitOnEnter}
+                onChange={handleSubmitOnEnterCheckChanged}
+                label="Submit on enter"
+              />
+            </div>
+          }
           disabled={!socket || socket.readyState !== WebSocket.OPEN}
         />
       </div>

@@ -3,9 +3,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { apiPrefix, todoRoute } from "@/lib/constants";
-import { ITodoInsert, ITodoUpdate, TodoDTO } from "@/lib/models";
+import { ITodoDTO, ITodoInsert, ITodoUpdate } from "@/lib/models";
 import { ApiService } from "@/lib/services/ApiService";
-import { optionalTeamIdSchema, todoTitleSchema, uuidSchema } from "@/lib/validation";
+import { optionalUuidSchema, todoTitleSchema, uuidSchema } from "@/lib/validation";
 
 import { useUserContext } from "@/providers";
 
@@ -18,28 +18,31 @@ export const useTodos = () => {
   const GetData = ({ organizationId, teamId }: { organizationId?: string | null; teamId?: string | null }) => {
     let endpoint = `user/${user?.id}`;
     if (organizationId) endpoint = `organization/${organizationId}`;
-    if (teamId) endpoint = `team/${teamId}`;
+    if (organizationId && teamId) endpoint = `team/${teamId}`;
 
-    return useQuery<TodoDTO[]>({
+    return useQuery<ITodoDTO[]>({
       queryKey: ["todoData", endpoint],
-      queryFn: async () => await apiService.get<TodoDTO[]>(`/${apiPrefix}/${todoRoute}/${endpoint}`),
+      queryFn: async () => await apiService.get<ITodoDTO[]>(`/${apiPrefix}/${todoRoute}/${endpoint}`),
       enabled: !!endpoint,
     });
   };
 
   const createValidationSchema = z.object({
     title: todoTitleSchema,
-    teamId: optionalTeamIdSchema,
+    teamId: optionalUuidSchema,
+    organizationId: optionalUuidSchema,
   });
 
   const editValidationSchema = z.object({
     id: uuidSchema,
     title: todoTitleSchema,
-    teamId: optionalTeamIdSchema,
+    teamId: optionalUuidSchema,
+    organizationId: optionalUuidSchema,
     description: z.string().optional().nullable(),
   });
 
   const onCreate = async (request: ITodoInsert) => {
+    ("use server");
     if (request.organizationId === "") {
       delete request.organizationId;
     }
@@ -50,6 +53,7 @@ export const useTodos = () => {
   };
 
   const onEdit = async (request: ITodoUpdate) => {
+    ("use server");
     if (request.teamId === "") {
       delete request.teamId;
     }

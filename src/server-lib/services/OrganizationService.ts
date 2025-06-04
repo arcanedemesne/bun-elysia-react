@@ -1,14 +1,14 @@
 import {
   IOrganization,
+  IOrganizationDTO,
   IOrganizationInsert,
+  IOrganizationMemberDTO,
   IOrganizationUpdate,
   Organization,
-  OrganizationDTO,
-  OrganizationMemberDTO,
 } from "@/lib/models";
 
-import { BaseService } from ".";
 import { OrganizationRepository } from "../respositories";
+import { BaseService } from "./BaseService";
 
 export class OrganizationService extends BaseService<IOrganization, IOrganizationInsert, IOrganizationUpdate> {
   repo: OrganizationRepository;
@@ -19,16 +19,16 @@ export class OrganizationService extends BaseService<IOrganization, IOrganizatio
     this.repo = repo;
   }
 
-  async getByUserId(userId: string): Promise<OrganizationDTO[]> {
+  async getByUserId(userId: string): Promise<IOrganizationDTO[]> {
     const entities = await this.repo.getByUserId(userId);
     return entities.map((x) => new Organization(x).toDTO());
   }
 
-  async addMember(member: OrganizationMemberDTO): Promise<OrganizationMemberDTO | null> {
+  async addMember(member: IOrganizationMemberDTO): Promise<IOrganizationMemberDTO | null> {
     return await this.repo.addMember(member);
   }
 
-  async removeMember(member: OrganizationMemberDTO): Promise<boolean> {
+  async removeMember(member: IOrganizationMemberDTO): Promise<boolean> {
     return await this.repo.removeMember(member);
   }
 }

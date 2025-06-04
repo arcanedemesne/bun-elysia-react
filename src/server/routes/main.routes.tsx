@@ -9,7 +9,7 @@ import { renderToReadableStream } from "react-dom/server";
 import { StaticRouter } from "react-router";
 
 import { apiPrefix, todoRoute } from "@/lib/constants";
-import { User, UserDTO } from "@/lib/models";
+import { IUserDTO, User } from "@/lib/models";
 import { JwtContext } from "@/lib/types";
 
 import ScriptInjectionStream from "../scriptInjectionStream";
@@ -46,7 +46,7 @@ export const mainRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
     const dehydratedState = dehydrate(queryClient);
     const dehydratedString = JSON.stringify(dehydratedState);
 
-    let userDTO = { id: "", username: "" } as UserDTO;
+    let userDTO = { id: "", username: "" } as IUserDTO;
     if (accessToken.value) {
       const jwtPayload = await jwt.verify(accessToken.value);
       if (jwtPayload) {
