@@ -17,7 +17,7 @@ import ScriptInjectionStream from "../scriptInjectionStream";
 export const MainController = (app: Elysia<any, any, any, any, JwtContext>) => {
   const apiHost = `${app.server?.hostname}:${app.server?.port}`;
 
-  const getService = (userId?: string) => new UserService();
+  const getService = (userId?: string) => new UserService(userId);
 
   async function fetchData(queryClient: QueryClient, url: string, userId: string) {
     // TODO: Prefetch teams?
