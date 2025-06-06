@@ -23,12 +23,14 @@ const getExpTimestamp = (secondsFromNow: number) => {
 };
 
 export const AuthController = (app: Elysia<any, any, any, any, JwtContext>) => {
+  const getService = (userId?: string) => new UserService(userId);
+
   return app.group(`/${apiPrefix}/${authPrefix}`, (group) =>
     group
       // LOGIN
       .post(`/${loginRoute}`, async ({ body, jwt, cookie: { accessToken, refreshToken }, set }) => {
         const loginInfo = JSON.parse(body as string) as LoginRequest;
-        const service = new UserService();
+        const service = getService();
 
         const user = await service.getByUsername(loginInfo.username);
         if (!user) {
@@ -89,7 +91,7 @@ export const AuthController = (app: Elysia<any, any, any, any, JwtContext>) => {
       // REGISTER
       .post(`/${registerRoute}`, async ({ body, jwt, cookie: { accessToken, refreshToken }, set }) => {
         const registerInfo = JSON.parse(body as string) as RegisterRequest;
-        const service = new UserService();
+        const service = getService();
 
         let user = await service.getByUsername(registerInfo.username);
 
@@ -178,7 +180,7 @@ export const AuthController = (app: Elysia<any, any, any, any, JwtContext>) => {
 
       // REFRESH
       .post(`/${refreshRoute}`, async ({ cookie: { accessToken, refreshToken }, jwt, set }) => {
-        const service = new UserService();
+        const service = getService();
         if (!refreshToken.value) {
           // handle error for refresh token is not available
           set.status = StatusCodes.UNAUTHORIZED;
@@ -260,7 +262,7 @@ export const AuthController = (app: Elysia<any, any, any, any, JwtContext>) => {
 
       // CHECK AUTH
       .get(`/${checkRoute}`, async ({ cookie: { accessToken }, jwt }) => {
-        const service = new UserService();
+        const service = getService();
         if (!accessToken) {
           return ResponseError.throw({
             status: StatusCodes.UNAUTHORIZED,
@@ -304,7 +306,7 @@ export const AuthController = (app: Elysia<any, any, any, any, JwtContext>) => {
 
       // LOGOUT
       .post(`/${logoutRoute}`, async ({ cookie: { accessToken, refreshToken }, set, jwt }) => {
-        const service = new UserService();
+        const service = getService();
         const jwtPayload = await jwt.verify(accessToken.value);
         if (jwtPayload) {
           // verify user exists or not

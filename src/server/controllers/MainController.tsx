@@ -17,6 +17,8 @@ import ScriptInjectionStream from "../scriptInjectionStream";
 export const MainController = (app: Elysia<any, any, any, any, JwtContext>) => {
   const apiHost = `${app.server?.hostname}:${app.server?.port}`;
 
+  const getService = (userId?: string) => new UserService();
+
   async function fetchData(queryClient: QueryClient, url: string, userId: string) {
     // TODO: Prefetch teams?
     if (url === "/todos") {
@@ -51,7 +53,7 @@ export const MainController = (app: Elysia<any, any, any, any, JwtContext>) => {
       const jwtPayload = await jwt.verify(accessToken.value);
       if (jwtPayload) {
         const userId = jwtPayload.sub;
-        const user = await new UserService().getById(userId!);
+        const user = await getService().getById(userId!);
         if (user?.isOnline) {
           userDTO = new User(user).toDTO(true);
         }

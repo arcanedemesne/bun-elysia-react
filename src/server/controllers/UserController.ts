@@ -15,7 +15,7 @@ export const UserController = (app: Elysia<any, any, any, any, JwtContext>) => {
 
   app.group(`/${apiPrefix}/${userRoute}`, (group) =>
     group.get(`/search`, async ({ user, query }: { user: IUser; query: { searchQuery: string } }) => {
-      const service = new UserService(user.id);
+      const service = getService(user.id);
       if (query.searchQuery) {
         return await service.search(query);
       }
