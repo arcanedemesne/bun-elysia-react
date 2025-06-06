@@ -23,3 +23,8 @@ export const todoTitleSchema = z.string().min(6, { message: "Must be at least 6 
 export const teamNameSchema = z.string().min(6, { message: "Must be at least 6 characters long." });
 
 export const organizationNameSchema = z.string().min(6, { message: "Must be at least 6 characters long." });
+
+export const chatMessageSchema = z
+  .string()
+  .min(1, { message: "Must be at least 1 character long." })
+  .max(120, "Cannot be more than 120 characters long.");

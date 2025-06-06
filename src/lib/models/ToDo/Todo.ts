@@ -30,7 +30,7 @@ export class Todo extends BaseEntity implements ITodo {
   organizationId?: string;
   teamId?: string;
 
-  constructor(public todo: ITodo) {
+  constructor(todo: ITodo) {
     super(todo);
 
     this.title = todo.title;

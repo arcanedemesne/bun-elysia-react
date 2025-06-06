@@ -1,4 +1,6 @@
 export interface IBaseService<IEntity, IInsert, IUpdate> {
+  entityTypeName: string;
+
   getAll: () => Promise<Array<IEntity>>;
   getById: (id: string) => Promise<IEntity | null>;
   insert: (payload: IInsert) => Promise<IEntity | null>;

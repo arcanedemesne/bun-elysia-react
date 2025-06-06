@@ -10,7 +10,7 @@ export class BaseRepository<IEntity, IInsert, IUpdate> implements IBaseRepositor
 
   constructor(
     protected table: PgTable,
-    protected entityTypeName: string,
+    public entityTypeName: string,
     protected userId?: string,
     protected defaultWith?: any,
     protected transform?: <T>(entities: any[]) => T,

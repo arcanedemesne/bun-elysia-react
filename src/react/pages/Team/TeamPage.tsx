@@ -166,7 +166,14 @@ export const TeamPage = () => {
       <CardGrid>
         {teams &&
           teams.map((team) => (
-            <TeamCard key={team.id} team={team} onChat={handleChat} onEdit={handleEdit} onDelete={handleDelete} />
+            <TeamCard
+              key={team.id}
+              showChat={!!selectedOrganizationId}
+              team={team}
+              onChat={handleChat}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
           ))}
       </CardGrid>
 
@@ -296,8 +303,13 @@ export const TeamPage = () => {
         <i className="text-red-800">Note: This will delete all todos for this team</i>
       </DeleteModal>
 
-      {teamForChat && (
-        <PopOutChatWrapper team={teamForChat} channel={ChannelTypes.TEAM_CHAT} onClose={handleCloseChat} />
+      {selectedOrganizationId && teamForChat && (
+        <PopOutChatWrapper
+          organization={teamForChat.organization}
+          team={teamForChat}
+          channel={ChannelTypes.TEAM_CHAT}
+          onClose={handleCloseChat}
+        />
       )}
     </Layout>
   );

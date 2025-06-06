@@ -25,7 +25,7 @@ export const Nav = () => {
 
     const response = await apiService.post(`${apiPrefix}/${authPrefix}/${logoutRoute}`);
 
-    if (response.status === 200) {
+    if (response) {
       location.href = `${loginRoute}`; // should navigate, but there's a race condition with user state in server
       //navigate(`${loginRoute}`);
     } else {

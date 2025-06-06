@@ -53,9 +53,9 @@ const apiFetch = async <T>(url: string, options: RequestInit = {}): Promise<T | 
     throw new ApiError(errorData);
   }
 
-  if (options.method === "POST" || options.method === "DELETE") return response;
+  if (options.method === "DELETE") return response;
 
-  return await response.json();
+  return response.json && (await response.json());
 };
 
 const refreshToken = async (): Promise<void> => {

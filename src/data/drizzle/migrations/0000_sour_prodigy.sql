@@ -75,7 +75,7 @@ CREATE TABLE "bun_elysia_react"."messages" (
 	"message" varchar(255) NOT NULL,
 	"organization_id" uuid,
 	"team_id" uuid,
-	"recipient" uuid,
+	"recipient_id" uuid,
 	"created_by_id" uuid,
 	"updated_by_id" uuid,
 	"deleted_by_id" uuid,
@@ -107,7 +107,7 @@ ALTER TABLE "bun_elysia_react"."users_to_teams" ADD CONSTRAINT "users_to_teams_u
 ALTER TABLE "bun_elysia_react"."users_to_teams" ADD CONSTRAINT "users_to_teams_team_id_teams_id_fk" FOREIGN KEY ("team_id") REFERENCES "bun_elysia_react"."teams"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "bun_elysia_react"."messages" ADD CONSTRAINT "messages_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "bun_elysia_react"."organizations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "bun_elysia_react"."messages" ADD CONSTRAINT "messages_team_id_teams_id_fk" FOREIGN KEY ("team_id") REFERENCES "bun_elysia_react"."teams"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "bun_elysia_react"."messages" ADD CONSTRAINT "messages_recipient_users_id_fk" FOREIGN KEY ("recipient") REFERENCES "bun_elysia_react"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bun_elysia_react"."messages" ADD CONSTRAINT "messages_recipient_id_users_id_fk" FOREIGN KEY ("recipient_id") REFERENCES "bun_elysia_react"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "bun_elysia_react"."todos" ADD CONSTRAINT "todos_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "bun_elysia_react"."organizations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "bun_elysia_react"."todos" ADD CONSTRAINT "todos_team_id_teams_id_fk" FOREIGN KEY ("team_id") REFERENCES "bun_elysia_react"."teams"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "users_username_index" ON "bun_elysia_react"."users" USING btree ("username");--> statement-breakpoint
@@ -133,6 +133,7 @@ CREATE INDEX "users_to_teams_created_at_index" ON "bun_elysia_react"."users_to_t
 CREATE INDEX "users_to_teams_created_by_id_index" ON "bun_elysia_react"."users_to_teams" USING btree ("created_by_id");--> statement-breakpoint
 CREATE INDEX "messages_organization_id_index" ON "bun_elysia_react"."messages" USING btree ("organization_id");--> statement-breakpoint
 CREATE INDEX "messages_team_id_index" ON "bun_elysia_react"."messages" USING btree ("team_id");--> statement-breakpoint
+CREATE INDEX "messages_recipient_id_index" ON "bun_elysia_react"."messages" USING btree ("recipient_id");--> statement-breakpoint
 CREATE INDEX "messages_created_at_index" ON "bun_elysia_react"."messages" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "messages_created_by_id_index" ON "bun_elysia_react"."messages" USING btree ("created_by_id");--> statement-breakpoint
 CREATE INDEX "messages_active_index" ON "bun_elysia_react"."messages" USING btree ("active");--> statement-breakpoint

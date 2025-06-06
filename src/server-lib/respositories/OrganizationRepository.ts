@@ -38,7 +38,7 @@ const transform = <T>(entities: any[]): T => {
 
 export class OrganizationRepository extends BaseRepository<IOrganization, IOrganizationInsert, IOrganizationUpdate> {
   constructor(userId: string) {
-    super(organizations, "IOrganization", userId, defaultWith, transform);
+    super(organizations, "Organization", userId, defaultWith, transform);
   }
 
   async hasUser(organizationId: string, userId: string): Promise<boolean> {

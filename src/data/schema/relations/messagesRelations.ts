@@ -29,4 +29,8 @@ export const messagesRelations = relations(messages, ({ one }) => ({
     fields: [messages.teamId],
     references: [teams.id],
   }),
+  recipient: one(users, {
+    fields: [messages.recipientId],
+    references: [users.id],
+  }),
 }));

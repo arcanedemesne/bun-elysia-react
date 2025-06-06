@@ -68,7 +68,7 @@ export const useTeams = () => {
 
     const response = await apiService.post(`/${apiPrefix}/${teamRoute}/${memberRoute}`, teamMember);
 
-    if (response.status === 200) {
+    if (response) {
       refetch();
     }
   };
@@ -78,7 +78,7 @@ export const useTeams = () => {
 
     const response = await apiService.delete(`/${apiPrefix}/${teamRoute}/${memberRoute}`, teamMember);
 
-    if (response.status === 200) {
+    if (response) {
       refetch();
     }
   };

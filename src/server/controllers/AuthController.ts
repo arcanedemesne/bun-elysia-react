@@ -22,7 +22,7 @@ const getExpTimestamp = (secondsFromNow: number) => {
   return Math.floor(Date.now() / 1000) + secondsFromNow;
 };
 
-export const authRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
+export const AuthController = (app: Elysia<any, any, any, any, JwtContext>) => {
   return app.group(`/${apiPrefix}/${authPrefix}`, (group) =>
     group
       // LOGIN

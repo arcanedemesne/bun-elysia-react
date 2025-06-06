@@ -67,7 +67,7 @@ export const useOrganizations = () => {
 
     const response = await apiService.post(`/${apiPrefix}/${organizationRoute}/${memberRoute}`, organizationMember);
 
-    if (response.status === 200) {
+    if (response) {
       refetch();
     }
   };
@@ -77,7 +77,7 @@ export const useOrganizations = () => {
 
     const response = await apiService.delete(`/${apiPrefix}/${organizationRoute}/${memberRoute}`, organizationMember);
 
-    if (response.status === 200) {
+    if (response) {
       refetch();
     }
   };

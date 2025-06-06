@@ -22,7 +22,7 @@ export class UserDTO extends BaseEntityDTO implements IUserDTO {
   }
 }
 
-export interface IUserSocketDTO extends IBaseEntityId {
+export interface IUserMinimalDTO extends IBaseEntityId {
   username: string;
 }
 
@@ -34,7 +34,7 @@ export class User extends BaseEntity implements IUser {
   sessionId: string | null;
   refreshToken: string | null;
 
-  constructor(public user: IUser) {
+  constructor(user: IUser) {
     super(user);
 
     this.username = user.username;

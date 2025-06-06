@@ -2,7 +2,11 @@ import { IBaseRepository } from "../respositories";
 import { IBaseService } from "./IBaseService";
 
 export class BaseService<IEntity, IInsert, IUpdate> implements IBaseService<IEntity, IInsert, IUpdate> {
-  constructor(private baseRepo: IBaseRepository<IEntity, IInsert, IUpdate>) {}
+  public entityTypeName: string;
+
+  constructor(private baseRepo: IBaseRepository<IEntity, IInsert, IUpdate>) {
+    this.entityTypeName = baseRepo.entityTypeName;
+  }
 
   async getAll(): Promise<Array<IEntity>> {
     return this.baseRepo.getAll();

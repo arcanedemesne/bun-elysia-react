@@ -14,7 +14,7 @@ import { JwtContext } from "@/lib/types";
 
 import ScriptInjectionStream from "../scriptInjectionStream";
 
-export const mainRoutes = (app: Elysia<any, any, any, any, JwtContext>) => {
+export const MainController = (app: Elysia<any, any, any, any, JwtContext>) => {
   const apiHost = `${app.server?.hostname}:${app.server?.port}`;
 
   async function fetchData(queryClient: QueryClient, url: string, userId: string) {

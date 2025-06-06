@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { IOrganizationDTO, ITeamDTO } from "@/lib/models";
+import { IOrganizationMinimalDTO, ITeamMinimalDTO } from "@/lib/models";
 import { ChannelTypes } from "@/lib/types";
 
 import { CloseIconButton, MaximizeIconButton, MinimizeIconButton } from "../Buttons";
@@ -8,8 +8,8 @@ import { ChatForm } from "./ChatForm";
 
 type PopOutChatWrapperProps = {
   channel: ChannelTypes;
-  organization?: IOrganizationDTO;
-  team?: ITeamDTO;
+  organization?: IOrganizationMinimalDTO;
+  team?: ITeamMinimalDTO;
   onClose: (id: string) => void;
 };
 
@@ -21,7 +21,7 @@ export const PopOutChatWrapper = ({ channel, organization, team, onClose }: PopO
     .map((x) => x[0].toLocaleUpperCase() + x.slice(1, x.length).toLocaleLowerCase())
     .join(" ");
 
-  const subChannelName = organization?.name ?? team?.name;
+  const subChannelName = team?.name ?? organization?.name;
 
   return (
     <div

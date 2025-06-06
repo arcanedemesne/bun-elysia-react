@@ -7,19 +7,20 @@ import { CardBase } from "@/components";
 
 type TeamCardProps = {
   team: ITeamDTO;
+  showChat?: boolean;
   onChat: (id: string) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   children?: ReactNode;
 };
 
-export const TeamCard = ({ team, onChat, onEdit, onDelete, children }: TeamCardProps) => {
+export const TeamCard = ({ team, showChat = false, onChat, onEdit, onDelete, children }: TeamCardProps) => {
   return (
     <CardBase>
       <div className="flex items-center justify-between">
         <h3 className="flex justify-start text-lg font-semibold text-gray-800">{team.name}</h3>
         <div className="flex justify-end space-x-2">
-          <ChatIconButton onClick={() => onChat(team.id)} />
+          {showChat && <ChatIconButton onClick={() => onChat(team.id)} />}
           <EditIconButton onClick={() => onEdit(team.id)} />
           <DeleteIconButton onClick={() => onDelete(team.id)} />
         </div>

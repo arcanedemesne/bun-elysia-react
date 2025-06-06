@@ -9,8 +9,16 @@ import { StatusCodes } from "http-status-codes";
 
 import { ResponseError } from "@/lib/types";
 
+import {
+  AuthController,
+  MainController,
+  MessageController,
+  OrganizationController,
+  TeamController,
+  TodoController,
+  UserController,
+} from "./controllers";
 import { deriveUser } from "./deriveUser";
-import { authRoutes, mainRoutes, organizationRoutes, teamRoutes, todoRoutes, userRoutes } from "./routes";
 
 await Bun.build({
   entrypoints: ["./src/react/index.tsx"],
@@ -36,25 +44,30 @@ const app = new Elysia()
   )
 
   // MAIN ROUTE
-  .use(mainRoutes)
+  .use(MainController)
 
   // DERIVE (get user during request)
   .use(deriveUser)
 
   // USERS
-  .use(userRoutes)
+  .use(UserController)
 
   // TODOS
-  .use(todoRoutes)
+  .use(TodoController)
+
+  // MESSAGES
+  .use(MessageController)
 
   // ORGANIZATIONS
-  .use(organizationRoutes)
+  .use(OrganizationController)
 
   // TEAMS
-  .use(teamRoutes)
+  .use(TeamController)
 
   // AUTH
-  .use(authRoutes)
+  .use(AuthController)
+
+  // ERROR
   .onError(({ error, set }) => {
     if (error instanceof ResponseError) {
       set.status = error.status;
@@ -77,6 +90,8 @@ const app = new Elysia()
     };
   })
 
+  // LISTEN
   .listen(Number(process.env.HOST_PORT));
 
+// SERVER INFORMATION
 console.log(`🦊 Elysia server is running at ${app.server?.hostname}:${app.server?.port}`);

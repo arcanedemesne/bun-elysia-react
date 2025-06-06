@@ -33715,6 +33715,7 @@ var checkRoute = "check";
 var loginRoute = "login";
 var logoutRoute = "logout";
 var memberRoute = "members";
+var messageRoute = "messages";
 var organizationRoute = "organizations";
 var refreshRoute = "refresh";
 var registerRoute = "register";
@@ -33782,9 +33783,9 @@ var apiFetch = async (url, options = {}) => {
     console.error(errorData);
     throw new ApiError(errorData);
   }
-  if (options.method === "POST" || options.method === "DELETE")
+  if (options.method === "DELETE")
     return response;
-  return await response.json();
+  return response.json && await response.json();
 };
 var refreshToken = async () => {
   const response = await fetch(`${apiPrefix}/${authPrefix}/${refreshRoute}`, {
@@ -38333,6 +38334,7 @@ var passwordSchema = z.string().min(6, { message: "Must be at least 6 characters
 var todoTitleSchema = z.string().min(6, { message: "Must be at least 6 characters long." });
 var teamNameSchema = z.string().min(6, { message: "Must be at least 6 characters long." });
 var organizationNameSchema = z.string().min(6, { message: "Must be at least 6 characters long." });
+var chatMessageSchema = z.string().min(1, { message: "Must be at least 1 character long." }).max(120, "Cannot be more than 120 characters long.");
 // src/lib/validation/validateForm.ts
 var validateForm = (formData, validationSchema) => {
   const formDataObject = {};
@@ -38570,14 +38572,14 @@ var useOrganizations = () => {
   const onAddMember = async (organizationMember) => {
     "use server";
     const response = await apiService.post(`/${apiPrefix}/${organizationRoute}/${memberRoute}`, organizationMember);
-    if (response.status === 200) {
+    if (response) {
       refetch();
     }
   };
   const onRemoveMember = async (organizationMember) => {
     "use server";
     const response = await apiService.delete(`/${apiPrefix}/${organizationRoute}/${memberRoute}`, organizationMember);
-    if (response.status === 200) {
+    if (response) {
       refetch();
     }
   };
@@ -38658,14 +38660,14 @@ var useTeams = () => {
   const onAddMember = async (teamMember) => {
     "use server";
     const response = await apiService.post(`/${apiPrefix}/${teamRoute}/${memberRoute}`, teamMember);
-    if (response.status === 200) {
+    if (response) {
       refetch();
     }
   };
   const onRemoveMember = async (teamMember) => {
     "use server";
     const response = await apiService.delete(`/${apiPrefix}/${teamRoute}/${memberRoute}`, teamMember);
-    if (response.status === 200) {
+    if (response) {
       refetch();
     }
   };
@@ -38700,14 +38702,14 @@ var useTodos = () => {
   };
   const createValidationSchema = z.object({
     title: todoTitleSchema,
-    teamId: optionalUuidSchema,
-    organizationId: optionalUuidSchema
+    organizationId: optionalUuidSchema,
+    teamId: optionalUuidSchema
   });
   const editValidationSchema = z.object({
     id: uuidSchema,
     title: todoTitleSchema,
-    teamId: optionalUuidSchema,
     organizationId: optionalUuidSchema,
+    teamId: optionalUuidSchema,
     description: z.string().optional().nullable()
   });
   const onCreate = async (request) => {
@@ -38722,6 +38724,9 @@ var useTodos = () => {
   };
   const onEdit = async (request) => {
     "use server";
+    if (request.organizationId === "") {
+      delete request.organizationId;
+    }
     if (request.teamId === "") {
       delete request.teamId;
     }
@@ -38932,26 +38937,33 @@ var ChatMessage = ({ message, username, timestamp, isCurrentUser = false }) => {
 };
 // src/lib/components/Chat/hooks/useChat.ts
 var import_react26 = __toESM(require_react(), 1);
-var useChat = ({ organization, team, channel }) => {
+var useChat = ({ channel, organization, team, recipient }) => {
+  const { user } = useUserContext();
   const { socket, publish, channelPayloads } = useSocketContext();
   const [messages, setMessages] = import_react26.useState([]);
   import_react26.useEffect(() => {
     if (channel) {
       const channelMessages = channelPayloads.get(channel) ?? [];
       let filteredMessages = [];
-      if (organization) {
-        filteredMessages = channelMessages?.filter((x) => x.organization?.id === organization.id);
-      } else if (team) {
-        filteredMessages = channelMessages?.filter((x) => x.team?.id === team.id);
-      } else {
-        filteredMessages = channelMessages;
+      switch (channel) {
+        case "organization-chat" /* ORGANIZATION_CHAT */:
+          filteredMessages = channelMessages?.filter((x) => x.channel === "organization-chat" /* ORGANIZATION_CHAT */ && organization && x.organization?.id === organization.id);
+          break;
+        case "team-chat" /* TEAM_CHAT */:
+          filteredMessages = channelMessages?.filter((x) => x.channel === "team-chat" /* TEAM_CHAT */ && team && x.team?.id === team.id);
+          break;
+        case "private-chat" /* PRIVATE_CHAT */:
+          filteredMessages = channelMessages?.filter((x) => x.channel === "private-chat" /* PRIVATE_CHAT */ && user && x.recipient?.id === user?.id);
+          break;
+        case "public-chat" /* PUBLIC_CHAT */:
+          filteredMessages = channelMessages?.filter((x) => x.channel === "public-chat" /* PUBLIC_CHAT */);
+          break;
+        default:
+          throw new Error(`nvalid channel ${channel}`);
       }
       setMessages(filteredMessages);
     }
-  }, [channel, organization, team, channelPayloads]);
-  const validationSchema = z.object({
-    message: z.string().min(1, { message: "Must be at least 1 character long." }).max(120, { message: "Cannot be more than 120 characters long" })
-  });
+  }, [channel, organization, team, user, channelPayloads]);
   const organizationSocketDTO = organization ? {
     id: organization?.id,
     name: organization?.name
@@ -38959,6 +38971,11 @@ var useChat = ({ organization, team, channel }) => {
   const teamSocketDTO = team ? {
     id: team?.id,
     name: team?.name
+  } : null;
+  const userSocketDTO = recipient ? {
+    id: recipient?.id,
+    username: recipient?.username,
+    isOnline: recipient?.isOnline
   } : null;
   const sendMessage = async ({ message }) => {
     return await new Promise((resolve) => {
@@ -38968,6 +38985,7 @@ var useChat = ({ organization, team, channel }) => {
           channel,
           organization: organizationSocketDTO,
           team: teamSocketDTO,
+          recipient: userSocketDTO,
           message
         }
       });
@@ -38975,10 +38993,65 @@ var useChat = ({ organization, team, channel }) => {
     });
   };
   return {
-    validationSchema,
     socket,
     sendMessage,
     messages
+  };
+};
+
+// src/lib/components/Chat/hooks/useMessages.ts
+var useMessages = ({ channel, organization, team, recipient }) => {
+  const { user } = useUserContext();
+  const queryClient = useQueryClient();
+  const apiService = new ApiService;
+  const GetData = ({ organizationId, teamId }) => {
+    let entityId = user?.id;
+    if (organizationId)
+      entityId = organizationId;
+    if (organizationId && teamId)
+      entityId = teamId;
+    return useQuery({
+      queryKey: ["storedMessagesData", channel, entityId],
+      queryFn: async () => await apiService.get(`/${apiPrefix}/${messageRoute}/channel/${channel}/${entityId}`),
+      enabled: !!channel && !!entityId
+    });
+  };
+  const createValidationSchema = z.object({
+    message: chatMessageSchema
+  });
+  const editValidationSchema = z.object({
+    id: uuidSchema,
+    message: chatMessageSchema
+  });
+  const onCreate = async (request) => {
+    "use server";
+    request = { ...request, channel, organizationId: organization?.id, teamId: team?.id, recipientId: recipient?.id };
+    return await apiService.post(`/${apiPrefix}/${messageRoute}`, request);
+  };
+  const onEdit = async (request) => {
+    "use server";
+    request = { ...request, channel, organizationId: organization?.id, teamId: team?.id, recipientId: recipient?.id };
+    return await apiService.put(`/${apiPrefix}/${messageRoute}/${request.id}`, request);
+  };
+  const onDelete = async (id) => {
+    "use server";
+    const response = await apiService.delete(`/${apiPrefix}/${messageRoute}/${id}`);
+    if (response.status === 200) {
+      refetch();
+    }
+  };
+  const refetch = () => {
+    queryClient.invalidateQueries({ queryKey: ["todoData"] });
+    queryClient.refetchQueries({ queryKey: ["todoData"] });
+  };
+  return {
+    getData: channel !== "public-chat" /* PUBLIC_CHAT */ ? GetData : () => ({ data: [], isLoading: false }),
+    createValidationSchema,
+    editValidationSchema,
+    onCreate,
+    onEdit,
+    onDelete,
+    refetch
   };
 };
 
@@ -39200,7 +39273,7 @@ var Nav = () => {
   const handleLogout = async () => {
     "use server";
     const response = await apiService.post(`${apiPrefix}/${authPrefix}/${logoutRoute}`);
-    if (response.status === 200) {
+    if (response) {
       location.href = `${loginRoute}`;
     } else {
       alert("error");
@@ -39247,29 +39320,54 @@ var Nav = () => {
   }, user.username))));
 };
 // src/lib/components/Chat/ChatForm.tsx
-var ChatForm = (props) => {
+var ChatForm = ({ channel, organization, team }) => {
   const { user } = useUserContext();
-  const { validationSchema, socket, sendMessage, messages } = useChat(props);
+  const { socket, sendMessage, messages } = useChat({ channel, organization, team });
+  const { createValidationSchema, getData, onCreate } = useMessages({ channel, organization, team });
+  const { data: storedMessages, isLoading } = getData({
+    organizationId: organization?.id,
+    teamId: team?.id
+  });
   const scrollContainerRef = import_react35.useRef(null);
+  const endOfContentRef = import_react35.useRef(null);
   const [textAreaSubmitOnEnter, setTextAreaSubmitOnEnter] = import_react35.useState(true);
   import_react35.useEffect(() => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
-    }
-  }, [messages]);
+    setTimeout(() => {
+      if (scrollContainerRef.current) {
+        const { scrollHeight, clientHeight } = scrollContainerRef.current;
+        const maxScrollTop = scrollHeight - clientHeight;
+        scrollContainerRef.current?.scrollTo({
+          top: maxScrollTop,
+          behavior: "smooth"
+        });
+      }
+    }, 100);
+  }, [storedMessages, messages]);
   const handleSubmitOnEnterCheckChanged = () => {
     setTextAreaSubmitOnEnter((prev) => !prev);
+  };
+  const handleSuccess = async (response) => {
+    sendMessage(response);
   };
   return /* @__PURE__ */ import_react35.default.createElement(import_react35.default.Fragment, null, /* @__PURE__ */ import_react35.default.createElement("div", {
     ref: scrollContainerRef,
     className: "h-full flex-1 overflow-y-auto p-2"
-  }, messages.map((payload, index) => /* @__PURE__ */ import_react35.default.createElement(ChatMessage, {
-    key: index,
+  }, isLoading && /* @__PURE__ */ import_react35.default.createElement(import_react35.default.Fragment, null, "Loading previous messages..."), storedMessages?.map((message, index) => /* @__PURE__ */ import_react35.default.createElement(ChatMessage, {
+    key: `stored-messages-${index}`,
+    message: message.message ?? "",
+    username: message.createdBy?.username ?? "unkown person",
+    timestamp: message.createdAt,
+    isCurrentUser: message.createdBy?.id === user?.id
+  })), messages.map((payload, index) => /* @__PURE__ */ import_react35.default.createElement(ChatMessage, {
+    key: `chat-messages-${index}`,
     message: payload.message ?? "",
     username: payload.user.username,
     timestamp: payload.createdAt,
     isCurrentUser: payload.user.id === user?.id
-  }))), /* @__PURE__ */ import_react35.default.createElement("div", {
+  })), /* @__PURE__ */ import_react35.default.createElement("div", {
+    ref: endOfContentRef,
+    style: { height: "0px", overflow: "hidden" }
+  })), /* @__PURE__ */ import_react35.default.createElement("div", {
     className: "mt-4"
   }, /* @__PURE__ */ import_react35.default.createElement(Form, {
     inputs: [
@@ -39281,8 +39379,9 @@ var ChatForm = (props) => {
         textAreaSubmitOnEnter
       }
     ],
-    validationSchema,
-    onSubmit: sendMessage,
+    validationSchema: createValidationSchema,
+    onSubmit: onCreate,
+    onSuccess: handleSuccess,
     showCancelButton: true,
     secondaryButtons: /* @__PURE__ */ import_react35.default.createElement("div", {
       style: { width: "auto" }
@@ -39604,7 +39703,7 @@ var import_react51 = __toESM(require_react(), 1);
 var PopOutChatWrapper = ({ channel, organization, team, onClose }) => {
   const [isMinimized, setIsMinimized] = import_react51.useState(false);
   const channelName = channel.split("-").map((x) => x[0].toLocaleUpperCase() + x.slice(1, x.length).toLocaleLowerCase()).join(" ");
-  const subChannelName = organization?.name ?? team?.name;
+  const subChannelName = team?.name ?? organization?.name;
   return /* @__PURE__ */ import_react51.default.createElement("div", {
     className: `border-1 fixed bottom-0 flex h-${isMinimized ? "18" : "[calc(50%)]"} w-${isMinimized ? "100" : "[calc(50%)]"} flex-col justify-center rounded-t-2xl border-gray-200 bg-gray-50 p-4 shadow-md hover:border-gray-400`
   }, /* @__PURE__ */ import_react51.default.createElement("h4", {
@@ -39893,14 +39992,14 @@ var import_react56 = __toESM(require_react(), 1);
 
 // src/react/pages/Team/TeamCard.tsx
 var import_react55 = __toESM(require_react(), 1);
-var TeamCard = ({ team, onChat, onEdit, onDelete, children }) => {
+var TeamCard = ({ team, showChat = false, onChat, onEdit, onDelete, children }) => {
   return /* @__PURE__ */ import_react55.default.createElement(CardBase, null, /* @__PURE__ */ import_react55.default.createElement("div", {
     className: "flex items-center justify-between"
   }, /* @__PURE__ */ import_react55.default.createElement("h3", {
     className: "flex justify-start text-lg font-semibold text-gray-800"
   }, team.name), /* @__PURE__ */ import_react55.default.createElement("div", {
     className: "flex justify-end space-x-2"
-  }, /* @__PURE__ */ import_react55.default.createElement(ChatIconButton, {
+  }, showChat && /* @__PURE__ */ import_react55.default.createElement(ChatIconButton, {
     onClick: () => onChat(team.id)
   }), /* @__PURE__ */ import_react55.default.createElement(EditIconButton, {
     onClick: () => onEdit(team.id)
@@ -40029,6 +40128,7 @@ var TeamPage = () => {
     })))
   })), isPending && "Loading...", /* @__PURE__ */ import_react56.default.createElement(CardGrid, null, teams && teams.map((team) => /* @__PURE__ */ import_react56.default.createElement(TeamCard, {
     key: team.id,
+    showChat: !!selectedOrganizationId,
     team,
     onChat: handleChat,
     onEdit: handleEdit,
@@ -40137,7 +40237,8 @@ var TeamPage = () => {
     }
   }, /* @__PURE__ */ import_react56.default.createElement("i", {
     className: "text-red-800"
-  }, "Note: This will delete all todos for this team")), teamForChat && /* @__PURE__ */ import_react56.default.createElement(PopOutChatWrapper, {
+  }, "Note: This will delete all todos for this team")), selectedOrganizationId && teamForChat && /* @__PURE__ */ import_react56.default.createElement(PopOutChatWrapper, {
+    organization: teamForChat.organization,
     team: teamForChat,
     channel: "team-chat" /* TEAM_CHAT */,
     onClose: handleCloseChat
@@ -40429,4 +40530,4 @@ import_client.hydrateRoot(document, /* @__PURE__ */ import_react60.default.creat
   user: userDTO
 })));
 
-//# debugId=12344B251D3A9AF364756E2164756E21
+//# debugId=F29A16261947C50E64756E2164756E21

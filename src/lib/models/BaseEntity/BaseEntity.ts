@@ -35,6 +35,9 @@ export class BaseEntityDTO implements IBaseEntityDTO {
     this.createdBy = entity.createdBy ? buildUserAuditsDTO(entity.createdBy) : undefined;
     this.updatedBy = entity.updatedBy ? buildUserAuditsDTO(entity.updatedBy) : undefined;
     this.deletedBy = entity.deletedBy ? buildUserAuditsDTO(entity.deletedBy) : undefined;
+    this.createdAt = entity.createdAt;
+    this.updatedAt = entity.updatedAt;
+    this.deletedAt = entity.deletedAt;
     this.active = entity.active;
   }
 }

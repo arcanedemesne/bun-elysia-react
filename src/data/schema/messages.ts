@@ -18,7 +18,7 @@ export const messages = schema.table(
     teamId: uuid().references(() => teams.id, {
       onDelete: "cascade",
     }),
-    recipient: uuid().references(() => users.id, {
+    recipientId: uuid().references(() => users.id, {
       onDelete: "cascade",
     }),
     ...trackableEntity.UserAudits,
@@ -28,6 +28,7 @@ export const messages = schema.table(
   (table) => [
     index().on(table.organizationId),
     index().on(table.teamId),
+    index().on(table.recipientId),
     index().on(table.createdAt),
     index().on(table.createdById),
     index().on(table.active),

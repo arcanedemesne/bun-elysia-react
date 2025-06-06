@@ -1,33 +1,36 @@
 import { BaseEntity, BaseEntityDTO, IBaseEntityDTO, IBaseEntityId } from "../BaseEntity";
-import { IOrganization } from "../Organization";
+import { IOrganization, IOrganizationMinimalDTO } from "../Organization";
 import { ITodo } from "../Todo";
-import { IUser, UserDTO } from "../User";
+import { IUser, IUserDTO, UserDTO } from "../User";
 import { ITeam } from "./ITeam";
 
 export interface ITeamDTO extends IBaseEntityDTO {
   organizationId: string;
+  organization: IOrganizationMinimalDTO;
   name: string;
-  members: UserDTO[];
+  members: IUserDTO[];
   todosCount: number;
 }
 
 export class TeamDTO extends BaseEntityDTO implements ITeamDTO {
   organizationId: string;
+  organization: IOrganizationMinimalDTO;
   name: string;
-  members: UserDTO[];
+  members: IUserDTO[];
   todosCount: number;
 
   constructor(team: ITeam) {
     super(team);
 
     this.organizationId = team.organizationId;
+    this.organization = team.organization;
     this.name = team.name;
     this.members = team.members.map((x) => new UserDTO(x));
     this.todosCount = team.todos.length;
   }
 }
 
-export interface ITeamSocketDTO extends IBaseEntityId {
+export interface ITeamMinimalDTO extends IBaseEntityId {
   organizationId: string;
   name: string;
 }
@@ -44,7 +47,7 @@ export class Team extends BaseEntity implements ITeam {
   members: IUser[];
   todos: ITodo[];
 
-  constructor(public team: ITeam) {
+  constructor(team: ITeam) {
     super(team);
 
     this.organizationId = team.organizationId;

@@ -30,7 +30,7 @@ export class OrganizationDTO extends BaseEntityDTO implements IOrganizationDTO {
   }
 }
 
-export interface IOrganizationSocketDTO extends IBaseEntityId {
+export interface IOrganizationMinimalDTO extends IBaseEntityId {
   name: string;
 }
 
@@ -46,7 +46,7 @@ export class Organization extends BaseEntity implements IOrganization {
   todos: ITodo[];
   teams: ITeam[];
 
-  constructor(public organization: IOrganization) {
+  constructor(organization: IOrganization) {
     super(organization);
 
     this.name = organization.name;

@@ -11,7 +11,7 @@ const defaultWith = { ...withRelations.userAudits };
 
 export class UserRepository extends BaseRepository<IUser, IUserInsert, IUserUpdate> {
   constructor(public userId?: string) {
-    super(users, "IUser", userId, defaultWith);
+    super(users, "User", userId, defaultWith);
   }
 
   async search({ searchQuery, organizationId }: { searchQuery: string; organizationId?: string }): Promise<IUser[]> {

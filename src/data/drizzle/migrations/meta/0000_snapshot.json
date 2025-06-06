@@ -1,5 +1,5 @@
 {
-  "id": "4f3a0c69-580e-4872-97a5-1ab928c8727a",
+  "id": "c1cd70d4-cf87-4ed0-8db3-9e5e1f6a60e9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -856,8 +856,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "recipient": {
-          "name": "recipient",
+        "recipient_id": {
+          "name": "recipient_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
@@ -928,6 +928,21 @@
           "columns": [
             {
               "expression": "team_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "messages_recipient_id_index": {
+          "name": "messages_recipient_id_index",
+          "columns": [
+            {
+              "expression": "recipient_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1013,13 +1028,13 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "messages_recipient_users_id_fk": {
-          "name": "messages_recipient_users_id_fk",
+        "messages_recipient_id_users_id_fk": {
+          "name": "messages_recipient_id_users_id_fk",
           "tableFrom": "messages",
           "tableTo": "users",
           "schemaTo": "bun_elysia_react",
           "columnsFrom": [
-            "recipient"
+            "recipient_id"
           ],
           "columnsTo": [
             "id"

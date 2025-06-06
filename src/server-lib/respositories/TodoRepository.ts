@@ -19,7 +19,7 @@ const defaultWith = {
 
 export class TodoRepository extends BaseRepository<ITodo, ITodoInsert, ITodoUpdate> {
   constructor(public userId: string) {
-    super(todos, "ITodo", userId, defaultWith);
+    super(todos, "Todo", userId, defaultWith);
   }
 
   async getByUserId(userId: string): Promise<ITodo[]> {

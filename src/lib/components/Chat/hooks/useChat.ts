@@ -1,19 +1,20 @@
 import { useEffect, useState } from "react";
 
-import { z } from "zod";
-
-import { IOrganizationDTO, IOrganizationSocketDTO, ITeamDTO, ITeamSocketDTO } from "@/lib/models";
+import { IOrganizationMinimalDTO, ITeamMinimalDTO, IUserDTO } from "@/lib/models";
 import { ChannelTypes, MessageTypes, PublishMessagePayload } from "@/lib/types";
 
-import { useSocketContext } from "@/providers";
+import { useSocketContext, useUserContext } from "@/providers";
 
 type useChatProps = {
-  channel?: ChannelTypes;
-  organization?: IOrganizationDTO;
-  team?: ITeamDTO;
+  channel: ChannelTypes;
+  organization?: IOrganizationMinimalDTO;
+  team?: ITeamMinimalDTO;
+  recipient?: IUserDTO;
 };
 
-export const useChat = ({ organization, team, channel }: useChatProps) => {
+export const useChat = ({ channel, organization, team, recipient }: useChatProps) => {
+  const { user } = useUserContext();
+
   const { socket, publish, channelPayloads } = useSocketContext();
 
   const [messages, setMessages] = useState<PublishMessagePayload[]>([]);
@@ -22,39 +23,53 @@ export const useChat = ({ organization, team, channel }: useChatProps) => {
     if (channel) {
       const channelMessages = channelPayloads.get(channel) ?? [];
       let filteredMessages: PublishMessagePayload[] = [];
-      if (organization) {
-        // Organization messages
-        filteredMessages = channelMessages?.filter((x) => x.organization?.id === organization.id);
-      } else if (team) {
-        // Team messages
-        filteredMessages = channelMessages?.filter((x) => x.team?.id === team.id);
-      } else {
-        // Public messages (or Private messages, soon?)
-        filteredMessages = channelMessages;
+      switch (channel) {
+        case ChannelTypes.ORGANIZATION_CHAT:
+          filteredMessages = channelMessages?.filter(
+            (x) =>
+              x.channel === ChannelTypes.ORGANIZATION_CHAT && organization && x.organization?.id === organization.id,
+          );
+          break;
+        case ChannelTypes.TEAM_CHAT:
+          filteredMessages = channelMessages?.filter(
+            (x) => x.channel === ChannelTypes.TEAM_CHAT && team && x.team?.id === team.id,
+          );
+          break;
+        case ChannelTypes.PRIVATE_CHAT:
+          filteredMessages = channelMessages?.filter(
+            (x) => x.channel === ChannelTypes.PRIVATE_CHAT && user && x.recipient?.id === user?.id,
+          );
+          break;
+        case ChannelTypes.PUBLIC_CHAT:
+          filteredMessages = channelMessages?.filter((x) => x.channel === ChannelTypes.PUBLIC_CHAT);
+          break;
+        default:
+          throw new Error(`nvalid channel ${channel}`);
       }
       setMessages(filteredMessages);
     }
-  }, [channel, organization, team, channelPayloads]);
-
-  const validationSchema = z.object({
-    message: z
-      .string()
-      .min(1, { message: "Must be at least 1 character long." })
-      .max(120, { message: "Cannot be more than 120 characters long" }),
-  });
+  }, [channel, organization, team, user, channelPayloads]);
 
   const organizationSocketDTO = organization
     ? ({
         id: organization?.id,
         name: organization?.name,
-      } as IOrganizationSocketDTO)
+      } as IOrganizationMinimalDTO)
     : null;
 
   const teamSocketDTO = team
     ? ({
         id: team?.id,
         name: team?.name,
-      } as ITeamSocketDTO)
+      } as ITeamMinimalDTO)
+    : null;
+
+  const userSocketDTO = recipient
+    ? ({
+        id: recipient?.id,
+        username: recipient?.username,
+        isOnline: recipient?.isOnline,
+      } as IUserDTO)
     : null;
 
   const sendMessage = async ({ message }: { message: string }): Promise<{ message: string }> => {
@@ -65,6 +80,7 @@ export const useChat = ({ organization, team, channel }: useChatProps) => {
           channel,
           organization: organizationSocketDTO,
           team: teamSocketDTO,
+          recipient: userSocketDTO,
           message,
         } as PublishMessagePayload,
       });
@@ -73,7 +89,6 @@ export const useChat = ({ organization, team, channel }: useChatProps) => {
   };
 
   return {
-    validationSchema,
     socket,
     sendMessage,
     messages,

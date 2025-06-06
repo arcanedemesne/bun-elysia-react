@@ -5,6 +5,7 @@ export const checkRoute = "check";
 export const loginRoute = "login";
 export const logoutRoute = "logout";
 export const memberRoute = "members";
+export const messageRoute = "messages";
 export const organizationRoute = "organizations";
 export const refreshRoute = "refresh";
 export const registerRoute = "register";

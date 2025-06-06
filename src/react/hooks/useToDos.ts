@@ -29,15 +29,15 @@ export const useTodos = () => {
 
   const createValidationSchema = z.object({
     title: todoTitleSchema,
-    teamId: optionalUuidSchema,
     organizationId: optionalUuidSchema,
+    teamId: optionalUuidSchema,
   });
 
   const editValidationSchema = z.object({
     id: uuidSchema,
     title: todoTitleSchema,
-    teamId: optionalUuidSchema,
     organizationId: optionalUuidSchema,
+    teamId: optionalUuidSchema,
     description: z.string().optional().nullable(),
   });
 
@@ -54,6 +54,9 @@ export const useTodos = () => {
 
   const onEdit = async (request: ITodoUpdate) => {
     ("use server");
+    if (request.organizationId === "") {
+      delete request.organizationId;
+    }
     if (request.teamId === "") {
       delete request.teamId;
     }

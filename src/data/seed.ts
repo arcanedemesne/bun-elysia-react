@@ -119,9 +119,9 @@ const seedDatabase = async () => {
           const insertedPrivateMessage = await tx
             .insert(messages)
             .values({
-              channel: ChannelTypes.ORGANIZATION_CHAT,
-              message: "This is a private chate!",
-              recipient: lastUserId,
+              channel: ChannelTypes.PRIVATE_CHAT,
+              message: "This is a private chat!",
+              recipientId: lastUserId,
               createdById: userId,
             })
             .returning();
