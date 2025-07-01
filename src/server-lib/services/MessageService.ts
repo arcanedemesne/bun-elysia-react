@@ -1,5 +1,4 @@
-import { IMessage, IMessageDTO, IMessageInsert, IMessageUpdate, Message } from "@/lib/models";
-import { ChannelTypes } from "@/lib/types";
+import { IMessage, IMessageDTO, IMessageInsert, IMessageUpdate, MessageDTO } from "@/lib/models";
 
 import { BaseService } from ".";
 import { MessageRepository } from "../respositories";
@@ -13,39 +12,24 @@ export class MessageService extends BaseService<IMessage, IMessageInsert, IMessa
     this.repo = repo;
   }
 
-  async getByChannel(channel: string, entityId: string): Promise<IMessageDTO[]> {
-    let response: IMessageDTO[] = [];
-
-    switch (channel) {
-      case ChannelTypes.ORGANIZATION_CHAT:
-        response = await this.getByOrganizationId(entityId);
-        break;
-      case ChannelTypes.TEAM_CHAT:
-        response = await this.getByTeamId(entityId);
-        break;
-      case ChannelTypes.PRIVATE_CHAT:
-        response = await this.getByUserId(entityId);
-        break;
-      case ChannelTypes.PUBLIC_CHAT:
-      default:
-        throw new Error(`Invalid channel ${channel}.`);
-    }
-
-    return response;
+  override async insert(payload: IMessageInsert): Promise<IMessage | null> {
+    const entity = await this.repo.insert(payload);
+    let result = entity ? new MessageDTO(entity) : null;
+    return { ...result } as IMessage;
   }
 
-  async getByUserId(userId: string, asRecipient: boolean = true): Promise<IMessageDTO[]> {
-    const entities = await this.repo.getByUserId(userId, asRecipient);
-    return entities.map((x) => new Message(x).toDTO());
+  override async update(payload: IMessageUpdate): Promise<IMessage | null> {
+    let entity = await this.repo.update(payload);
+    let result = entity ? new MessageDTO(entity) : null;
+    return { ...result } as IMessage;
   }
 
-  private async getByOrganizationId(organizationId: string): Promise<IMessageDTO[]> {
-    const entities = await this.repo.getByOrganizationId(organizationId);
-    return entities.map((x) => new Message(x).toDTO());
+  async getByChannel(channel: string, entityId: string, before?: Date): Promise<IMessageDTO[]> {
+    let entities = await this.repo.getByChannel(channel, entityId, before);
+    return entities.map((x) => new MessageDTO(x)) as IMessage[];
   }
 
-  private async getByTeamId(teamId: string): Promise<IMessageDTO[]> {
-    const entities = await this.repo.getByTeamId(teamId);
-    return entities.map((x) => new Message(x).toDTO());
+  async markAllAsRead(channel: string, entityId: string, before?: Date): Promise<boolean> {
+    return await this.repo.markAllAsRead(channel, entityId, before);
   }
 }

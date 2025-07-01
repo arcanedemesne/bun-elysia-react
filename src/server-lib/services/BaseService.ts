@@ -9,22 +9,22 @@ export class BaseService<IEntity, IInsert, IUpdate> implements IBaseService<IEnt
   }
 
   async getAll(): Promise<Array<IEntity>> {
-    return this.baseRepo.getAll();
+    return await this.baseRepo.getAll();
   }
 
   async getById(id: string): Promise<IEntity | null> {
-    return this.baseRepo.getById(id);
+    return await this.baseRepo.getById(id);
   }
 
   async insert(payload: IInsert): Promise<IEntity | null> {
-    return this.baseRepo.insert(payload);
+    return await this.baseRepo.insert(payload);
   }
 
   async update(payload: IUpdate): Promise<IEntity | null> {
-    return this.baseRepo.update(payload);
+    return await this.baseRepo.update(payload);
   }
 
   async delete(id: string): Promise<boolean> {
-    return this.baseRepo.delete(id);
+    return await this.baseRepo.delete(id);
   }
 }

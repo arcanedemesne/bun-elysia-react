@@ -1,4 +1,4 @@
-import { IUser, IUserInsert, IUserUpdate, User, UserDTO } from "@/lib/models";
+import { IUser, IUserInsert, IUserUpdate, UserDTO } from "@/lib/models";
 
 import { UserRepository } from "../respositories";
 import { BaseService } from "../services/BaseService";
@@ -14,7 +14,7 @@ export class UserService extends BaseService<IUser, IUserInsert, IUserUpdate> {
 
   async search({ searchQuery, organizationId }: { searchQuery: string; organizationId?: string }): Promise<UserDTO[]> {
     const users = await this.userRepo.search({ searchQuery, organizationId });
-    return users.map((x) => new User(x).toDTO());
+    return users.map((x) => new UserDTO(x));
   }
 
   async getByUsername(username: string): Promise<IUser | null> {

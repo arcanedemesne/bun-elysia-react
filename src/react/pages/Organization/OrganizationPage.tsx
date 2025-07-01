@@ -6,6 +6,7 @@ import {
   CloseIconButton,
   DeleteModal,
   ErrorMessage,
+  Form,
   Label,
   Modal,
   Pill,
@@ -17,7 +18,7 @@ import { IOrganizationInsert, IOrganizationUpdate } from "@/lib/models";
 import { ChannelTypes } from "@/lib/types";
 
 import { OrganizationCard } from "./OrganizationCard";
-import { CardGrid, Form, Layout } from "@/components";
+import { CardGrid, Layout } from "@/components";
 import { useAuthCheck, useOrganizations, useUsers } from "@/hooks";
 
 export const OrganizationPage = () => {
@@ -108,7 +109,7 @@ export const OrganizationPage = () => {
   };
 
   return (
-    <Layout title="Organization List">
+    <Layout title="Organizations">
       <ErrorMessage>{error?.message ?? ""}</ErrorMessage>
 
       <div className="mb-4">
@@ -266,12 +267,16 @@ export const OrganizationPage = () => {
         <i className="text-red-800">Note: This will delete all teams & todos for this organization</i>
       </DeleteModal>
 
-      {organizationForChat && (
-        <PopOutChatWrapper
-          organization={organizationForChat}
-          channel={ChannelTypes.ORGANIZATION_CHAT}
-          onClose={handleCloseChat}
-        />
+      {organizations?.map(
+        (organization) =>
+          organization.id === organizationForChat?.id && (
+            <PopOutChatWrapper
+              key={organization.id}
+              organization={organizationForChat}
+              channel={ChannelTypes.ORGANIZATION_CHAT}
+              onClose={handleCloseChat}
+            />
+          ),
       )}
     </Layout>
   );

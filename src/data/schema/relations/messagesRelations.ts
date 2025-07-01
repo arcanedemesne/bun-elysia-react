@@ -4,6 +4,7 @@ import { messages } from "../messages";
 import { organizations } from "../organizations";
 import { teams } from "../teams";
 import { users } from "../users";
+import { usersToMessages } from "../usersToMessages";
 
 export const messagesUserAduitsRelations = relations(messages, ({ one }) => ({
   createdBy: one(users, {
@@ -20,17 +21,14 @@ export const messagesUserAduitsRelations = relations(messages, ({ one }) => ({
   }),
 }));
 
-export const messagesRelations = relations(messages, ({ one }) => ({
+export const messagesRelations = relations(messages, ({ one, many }) => ({
   organization: one(organizations, {
-    fields: [messages.teamId],
+    fields: [messages.organizationId],
     references: [organizations.id],
   }),
   team: one(teams, {
     fields: [messages.teamId],
     references: [teams.id],
   }),
-  recipient: one(users, {
-    fields: [messages.recipientId],
-    references: [users.id],
-  }),
+  usersToMessages: many(usersToMessages),
 }));

@@ -1,4 +1,4 @@
-import { ITeam, ITeamInsert, ITeamMemberDTO, ITeamUpdate, Team, TeamDTO } from "@/lib/models";
+import { ITeam, ITeamInsert, ITeamMemberDTO, ITeamUpdate, TeamDTO } from "@/lib/models";
 
 import { BaseService } from ".";
 import { TeamRepository } from "../respositories";
@@ -14,12 +14,12 @@ export class TeamService extends BaseService<ITeam, ITeamInsert, ITeamUpdate> {
 
   async getByOrganizationId(organizationId: string): Promise<TeamDTO[]> {
     const entities = await this.repo.getByOrganizationId(organizationId);
-    return entities.map((x) => new Team(x).toDTO());
+    return entities.map((x) => new TeamDTO(x));
   }
 
   async getByUserId(userId: string): Promise<TeamDTO[]> {
     const entities = await this.repo.getByUserId(userId);
-    return entities.map((x) => new Team(x).toDTO());
+    return entities.map((x) => new TeamDTO(x));
   }
 
   async addMember(member: ITeamMemberDTO): Promise<ITeamMemberDTO | null> {

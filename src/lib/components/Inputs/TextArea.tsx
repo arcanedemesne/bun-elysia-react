@@ -16,6 +16,7 @@ export const TextArea = ({
   className,
   errors,
   onChange,
+  onFocus,
   onKeyDown,
 }: TextAreaProps) => {
   const error = errors?.map((e) => <p key={e}>{e}</p>);
@@ -34,6 +35,7 @@ export const TextArea = ({
         name={name}
         value={value ?? ""}
         onChange={onChange}
+        onFocus={onFocus}
         onKeyDown={onKeyDown}
         placeholder={placeholder}
         className={finalClassName}

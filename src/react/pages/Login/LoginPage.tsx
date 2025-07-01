@@ -1,10 +1,10 @@
 import React from "react";
 
-import { LinkButton } from "@/lib/components";
+import { Form, LinkButton } from "@/lib/components";
 import { registerRoute } from "@/lib/constants";
 import { LoginRequest } from "@/lib/types";
 
-import { Form, Layout, LayoutTypes } from "@/components";
+import { Layout, LayoutTypes } from "@/components";
 import { useAuthLogin } from "@/hooks";
 
 export const LoginPage = () => {

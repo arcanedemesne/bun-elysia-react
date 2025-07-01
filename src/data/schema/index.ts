@@ -9,6 +9,8 @@ export * from "./teams";
 export * from "./usersToTeams";
 
 export * from "./messages";
+export * from "./usersToMessages";
+
 export * from "./todos";
 
 export * from "./relations";

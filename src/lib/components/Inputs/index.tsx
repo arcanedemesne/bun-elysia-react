@@ -8,6 +8,7 @@ export type InputProps = {
   value?: ValueType;
   className?: string;
   autoComplete?: string;
+  onFocus?: () => void;
 };
 
 export const textInputDefaultClassName =

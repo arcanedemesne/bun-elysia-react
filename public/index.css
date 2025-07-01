@@ -1,2 +1,14 @@
 /* src/react/App.css */
+@keyframes pulse-text-color {
+  0% {
+    color: #9ca3af;
+  }
 
+  50% {
+    color: #4b5563;
+  }
+
+  100% {
+    color: #9ca3af;
+  }
+}

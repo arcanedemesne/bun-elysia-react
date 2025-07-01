@@ -4,5 +4,7 @@ export * from "./Chat";
 export * from "./ErrorMessage";
 export * from "./Icons";
 export * from "./Inputs";
+export * from "./Form";
 export * from "./Modals";
 export * from "./Pill";
+export * from "./Tooltip";

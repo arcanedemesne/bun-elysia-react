@@ -1,5 +1,5 @@
 {
-  "id": "c1cd70d4-cf87-4ed0-8db3-9e5e1f6a60e9",
+  "id": "a910e6a6-0b33-423e-b6a5-0d14db2af2c8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -81,7 +81,8 @@
           "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "null"
         },
         "deleted_at": {
           "name": "deleted_at",
@@ -248,7 +249,8 @@
           "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "null"
         },
         "deleted_at": {
           "name": "deleted_at",
@@ -386,7 +388,8 @@
           "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "null"
         },
         "deleted_at": {
           "name": "deleted_at",
@@ -553,7 +556,8 @@
           "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "null"
         },
         "deleted_at": {
           "name": "deleted_at",
@@ -706,7 +710,8 @@
           "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "null"
         },
         "deleted_at": {
           "name": "deleted_at",
@@ -856,12 +861,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "recipient_id": {
-          "name": "recipient_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_by_id": {
           "name": "created_by_id",
           "type": "uuid",
@@ -891,7 +890,8 @@
           "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "null"
         },
         "deleted_at": {
           "name": "deleted_at",
@@ -908,6 +908,21 @@
         }
       },
       "indexes": {
+        "messages_created_at_index": {
+          "name": "messages_created_at_index",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "messages_organization_id_index": {
           "name": "messages_organization_id_index",
           "columns": [
@@ -928,36 +943,6 @@
           "columns": [
             {
               "expression": "team_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "messages_recipient_id_index": {
-          "name": "messages_recipient_id_index",
-          "columns": [
-            {
-              "expression": "recipient_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "messages_created_at_index": {
-          "name": "messages_created_at_index",
-          "columns": [
-            {
-              "expression": "created_at",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1027,14 +1012,92 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "bun_elysia_react.users_to_messages": {
+      "name": "users_to_messages",
+      "schema": "bun_elysia_react",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
         },
-        "messages_recipient_id_users_id_fk": {
-          "name": "messages_recipient_id_users_id_fk",
-          "tableFrom": "messages",
+        "message_id": {
+          "name": "message_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_read": {
+          "name": "is_read",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        }
+      },
+      "indexes": {
+        "users_to_messages_user_id_index": {
+          "name": "users_to_messages_user_id_index",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "users_to_messages_message_id_index": {
+          "name": "users_to_messages_message_id_index",
+          "columns": [
+            {
+              "expression": "message_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "users_to_messages_user_id_users_id_fk": {
+          "name": "users_to_messages_user_id_users_id_fk",
+          "tableFrom": "users_to_messages",
           "tableTo": "users",
           "schemaTo": "bun_elysia_react",
           "columnsFrom": [
-            "recipient_id"
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "users_to_messages_message_id_messages_id_fk": {
+          "name": "users_to_messages_message_id_messages_id_fk",
+          "tableFrom": "users_to_messages",
+          "tableTo": "messages",
+          "schemaTo": "bun_elysia_react",
+          "columnsFrom": [
+            "message_id"
           ],
           "columnsTo": [
             "id"
@@ -1043,7 +1106,15 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "users_to_messages_user_id_message_id_pk": {
+          "name": "users_to_messages_user_id_message_id_pk",
+          "columns": [
+            "user_id",
+            "message_id"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
@@ -1113,7 +1184,8 @@
           "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "null"
         },
         "deleted_at": {
           "name": "deleted_at",

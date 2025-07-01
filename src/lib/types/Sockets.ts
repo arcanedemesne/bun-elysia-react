@@ -1,4 +1,4 @@
-import { IOrganizationMinimalDTO, ITeamMinimalDTO, IUserDTO } from "../models";
+import { IMessageDTO } from "../models";
 
 export enum ChannelTypes {
   ONLINE_STATUS = "online-status",
@@ -8,23 +8,12 @@ export enum ChannelTypes {
   PRIVATE_CHAT = "private-chat",
 }
 
-export interface PublishMessagePayload {
-  channel: string;
-  user: IUserDTO;
-  organization?: IOrganizationMinimalDTO;
-  team?: ITeamMinimalDTO;
-  recipient: IUserDTO;
-  message?: string;
-  createdAt?: Date;
-  isOnline?: boolean;
-}
-
-export enum MessageTypes {
+export enum SocketRequestTypes {
   PUBLISH = "publish",
   SUBSCRIBE = "subscribe",
 }
 
-export interface Message {
-  method: MessageTypes.PUBLISH | MessageTypes.SUBSCRIBE;
-  payload: PublishMessagePayload;
+export interface ISocketRequest {
+  type: SocketRequestTypes;
+  payload: IMessageDTO;
 }

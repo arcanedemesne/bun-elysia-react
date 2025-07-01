@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { ChannelTypes } from "../lib";
 import { db } from "./db";
 import { messages, organizations, teams, todos, users, usersToOrganizations, usersToTeams } from "./schema";
+import { usersToMessages } from "./schema/usersToMessages";
 
 interface SeedUser {
   username: string;
@@ -24,7 +25,7 @@ const createUser = ({ username, email, password, createdById }: SeedUser) => {
 interface SeedOrganization {
   name: string;
   description: string;
-  createdById: string;
+  createdById?: string;
 }
 
 const createOrganization = ({ name, description, createdById }: SeedOrganization) => {
@@ -55,6 +56,8 @@ const seedDatabase = async () => {
       await tx.delete(teams);
       await tx.delete(usersToTeams);
       await tx.delete(todos);
+      await tx.delete(messages);
+      await tx.delete(usersToMessages);
       await tx.delete(organizations);
       await tx.delete(usersToOrganizations);
       await tx.delete(users);
@@ -74,7 +77,8 @@ const seedDatabase = async () => {
         }),
       );
 
-      let lastUserId: string | undefined = undefined;
+      let firstUserId: string | undefined = undefined;
+      let secondUserId: string | undefined = undefined;
       for (const seedUser of seedUsers) {
         // 1. Insert or Update the user
         const existingUser = await tx
@@ -110,40 +114,62 @@ const seedDatabase = async () => {
             throw new Error("Failed to insert user");
           }
           userId = insertedUsers[0].id;
-          tx.update(users).set({ createdById: userId }).where(eq(users.id, userId)).returning();
+
+          if (firstUserId) {
+            secondUserId = userId;
+          } else {
+            firstUserId = userId;
+          }
+
           console.log(`User ${seedUser.username} created with ID: ${userId}`);
         }
+      }
 
-        // 2. Insert a private message for the seed user
-        if (lastUserId) {
-          const insertedPrivateMessage = await tx
-            .insert(messages)
-            .values({
-              channel: ChannelTypes.PRIVATE_CHAT,
-              message: "This is a private chat!",
-              recipientId: lastUserId,
-              createdById: userId,
-            })
-            .returning();
-          console.log("Private message inserted", insertedPrivateMessage);
-        }
-        lastUserId = userId;
-
-        // 3. Insert a todo for the seed user
-        const insertedTodo = await tx
-          .insert(todos)
+      // 2. Insert a private message for the seed user
+      if (firstUserId && secondUserId) {
+        const insertedPrivateMessage = await tx
+          .insert(messages)
           .values({
-            title: "This is an example todo item",
-            description: "This is an example description",
-            createdById: userId,
+            channel: ChannelTypes.PRIVATE_CHAT,
+            message: "This is a private chat!",
+            createdById: firstUserId,
           })
           .returning();
-        console.log("User todo inserted", insertedTodo);
+        await tx
+          .insert(usersToMessages)
+          .values({ userId: firstUserId, messageId: insertedPrivateMessage[0].id })
+          .returning();
+        await tx
+          .insert(usersToMessages)
+          .values({ userId: secondUserId, messageId: insertedPrivateMessage[0].id })
+          .returning();
+        console.log("Private message inserted", insertedPrivateMessage);
+
+        // 3. Insert a todo for the seed users
+        const insertedTodo1 = await tx
+          .insert(todos)
+          .values({
+            title: "This is an example personal todo item",
+            description: "This is an example description",
+            createdById: firstUserId,
+          })
+          .returning();
+        console.log("User todo inserted", insertedTodo1);
+
+        const insertedTodo2 = await tx
+          .insert(todos)
+          .values({
+            title: "This is an example personal todo item",
+            description: "This is an example description",
+            createdById: secondUserId,
+          })
+          .returning();
+        console.log("User todo inserted", insertedTodo2);
 
         const seedOrganization: SeedOrganization = createOrganization({
           name: "JennyBot Inc.",
           description: "Example Organization #1",
-          createdById: userId,
+          createdById: firstUserId,
         });
 
         // 4. Insert or Update the Organization
@@ -161,13 +187,13 @@ const seedDatabase = async () => {
             .set({
               name: seedOrganization.name,
               description: seedOrganization.description,
-              updatedById: userId,
+              updatedById: firstUserId,
               updatedAt: new Date(),
             })
             .where(eq(organizations.name, seedOrganization.name))
             .returning({ id: organizations.id });
           organizationId = updatedOrganization[0].id;
-          console.log(`User ${seedUser.username} updated`);
+          console.log(`Organization ${seedOrganization.name} updated`);
         } else {
           // Insert a seed organization
           const insertedOrganizations = await tx
@@ -188,12 +214,18 @@ const seedDatabase = async () => {
           console.log(`Organization ${seedOrganization.name} created with ID: ${organizationId}`);
         }
 
-        // 5. Insert a connection between seed user and seed organization
-        const insertedUserOrganization = await tx
+        // 5. Insert a connection between seed users and seed organization
+        const insertedUserOrganization1 = await tx
           .insert(usersToOrganizations)
-          .values({ userId, organizationId, createdById: userId })
+          .values({ userId: firstUserId, organizationId, createdById: firstUserId })
           .returning();
-        console.log("User-Organization connection inserted", insertedUserOrganization);
+        console.log("User-Organization connection inserted", insertedUserOrganization1);
+
+        const insertedUserOrganization2 = await tx
+          .insert(usersToOrganizations)
+          .values({ userId: secondUserId, organizationId, createdById: secondUserId })
+          .returning();
+        console.log("User-Organization connection inserted", insertedUserOrganization2);
 
         // 6. Insert a message for the seed organization
         const insertedOrganizationMessage = await tx
@@ -202,8 +234,16 @@ const seedDatabase = async () => {
             channel: ChannelTypes.ORGANIZATION_CHAT,
             message: "We're at the same organization!",
             organizationId,
-            createdById: userId,
+            createdById: firstUserId,
           })
+          .returning();
+        await tx
+          .insert(usersToMessages)
+          .values({ userId: firstUserId, messageId: insertedOrganizationMessage[0].id })
+          .returning();
+        await tx
+          .insert(usersToMessages)
+          .values({ userId: secondUserId, messageId: insertedOrganizationMessage[0].id })
           .returning();
         console.log("Organization message inserted", insertedOrganizationMessage);
 
@@ -212,12 +252,12 @@ const seedDatabase = async () => {
           createTeam({
             name: "Seed Team #1",
             organizationId,
-            createdById: userId,
+            createdById: firstUserId,
           }),
           createTeam({
             name: "Seed Team #2",
             organizationId,
-            createdById: userId,
+            createdById: secondUserId,
           }),
         );
 
@@ -229,7 +269,7 @@ const seedDatabase = async () => {
             // Update existing team
             const updatedTeam = await tx
               .update(teams)
-              .set({ updatedById: userId })
+              .set({ updatedById: firstUserId })
               .where(eq(teams.name, seedTeam.name))
               .returning({ id: teams.id });
             teamId = updatedTeam[0].id;
@@ -240,7 +280,7 @@ const seedDatabase = async () => {
               .values({
                 name: seedTeam.name,
                 organizationId,
-                createdById: userId,
+                createdById: firstUserId,
               })
               .returning({
                 id: teams.id,
@@ -252,22 +292,28 @@ const seedDatabase = async () => {
             console.log(`Team "${seedTeam.name}" inserted with ID: ${teamId}`);
           }
 
-          // 8. Insert a connection between seed user and seed team
-          const insertedUserTeam = await tx
+          // 8. Insert connections between seed users and seed teams
+          const insertedUserTeam1 = await tx
             .insert(usersToTeams)
-            .values({ userId: userId, teamId: teamId, createdById: userId })
+            .values({ userId: firstUserId, teamId: teamId, createdById: firstUserId })
             .returning();
-          console.log("User-Team connection inserted", insertedUserTeam);
+          console.log("User-Team connection inserted", insertedUserTeam1);
+
+          const insertedUserTeam2 = await tx
+            .insert(usersToTeams)
+            .values({ userId: secondUserId, teamId: teamId, createdById: secondUserId })
+            .returning();
+          console.log("User-Team connection inserted", insertedUserTeam2);
 
           // 9. Insert a todo for the seed team
           const insertedTeamTodo = await tx
             .insert(todos)
             .values({
-              title: "This is a team example todo item",
+              title: "This is a team example team todo item",
               description: "This is a team example description",
               organizationId,
               teamId,
-              createdById: userId,
+              createdById: firstUserId,
             })
             .returning();
           console.log("Team todo inserted", insertedTeamTodo);
@@ -280,8 +326,16 @@ const seedDatabase = async () => {
               message: "We're on the same team!",
               organizationId,
               teamId,
-              createdById: userId,
+              createdById: firstUserId,
             })
+            .returning();
+          await tx
+            .insert(usersToMessages)
+            .values({ userId: firstUserId, messageId: insertedTeamMessage[0].id })
+            .returning();
+          await tx
+            .insert(usersToMessages)
+            .values({ userId: secondUserId, messageId: insertedTeamMessage[0].id })
             .returning();
           console.log("Team message inserted", insertedTeamMessage);
         }

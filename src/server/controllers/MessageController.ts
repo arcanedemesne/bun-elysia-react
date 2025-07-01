@@ -15,29 +15,42 @@ export const MessageController = (app: Elysia<any, any, any, any, JwtContext>) =
 
   app.group(`/${apiPrefix}/${messageRoute}`, (group) =>
     group
-      .get(`/createdBy/:userId`, async ({ user, params: { userId } }: { user: IUser; params: { userId: string } }) => {
-        const service = getService(user.id);
-        if (userId) {
-          return await service.getByUserId(userId, false);
-        }
-        return ResponseError.throw({
-          status: StatusCodes.BAD_REQUEST,
-          statusText: ReasonPhrases.BAD_REQUEST,
-          message: `Invalid user id`,
-        });
-      })
       .get(
         `/channel/:channel/:entityId`,
         async ({
           user,
           params: { channel, entityId },
+          query,
         }: {
           user: IUser;
           params: { channel: string; entityId: string };
+          query: any;
         }) => {
           const service = getService(user.id);
           if (channel && entityId) {
-            return await service.getByChannel(channel, entityId);
+            return await service.getByChannel(channel, entityId, query?.before);
+          }
+          return ResponseError.throw({
+            status: StatusCodes.BAD_REQUEST,
+            statusText: ReasonPhrases.BAD_REQUEST,
+            message: `Invalid channel or entity id`,
+          });
+        },
+      )
+      .put(
+        `/channel/:channel/:entityId/markAllAsRead`,
+        async ({
+          user,
+          params: { channel, entityId },
+          query,
+        }: {
+          user: IUser;
+          params: { channel: string; entityId: string };
+          query: any;
+        }) => {
+          const service = getService(user.id);
+          if (channel && entityId) {
+            return await service.markAllAsRead(channel, entityId, query?.before);
           }
           return ResponseError.throw({
             status: StatusCodes.BAD_REQUEST,

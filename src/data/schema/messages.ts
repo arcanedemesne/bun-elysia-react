@@ -4,7 +4,6 @@ import { schema } from "./config";
 import { organizations } from "./organizations";
 import { teams } from "./teams";
 import { trackableEntity } from "./trackableEntity";
-import { users } from "./users";
 
 export const messages = schema.table(
   "messages",
@@ -18,18 +17,14 @@ export const messages = schema.table(
     teamId: uuid().references(() => teams.id, {
       onDelete: "cascade",
     }),
-    recipientId: uuid().references(() => users.id, {
-      onDelete: "cascade",
-    }),
     ...trackableEntity.UserAudits,
     ...trackableEntity.TimeStamps,
     ...trackableEntity.Active,
   },
   (table) => [
+    index().on(table.createdAt),
     index().on(table.organizationId),
     index().on(table.teamId),
-    index().on(table.recipientId),
-    index().on(table.createdAt),
     index().on(table.createdById),
     index().on(table.active),
   ],

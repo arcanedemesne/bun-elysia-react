@@ -19,6 +19,7 @@ const nukeFromSpace = async () => {
 
     console.log(`Dropping existing tables from schema "${schemaName}"...`);
     await client.query(`DROP TABLE IF EXISTS "${schemaName}".messages CASCADE`);
+    await client.query(`DROP TABLE IF EXISTS "${schemaName}".users_to_messages CASCADE`);
     await client.query(`DROP TABLE IF EXISTS "${schemaName}".todos CASCADE`);
     await client.query(`DROP TABLE IF EXISTS "${schemaName}".organizations CASCADE`);
     await client.query(`DROP TABLE IF EXISTS "${schemaName}".users_to_organizations CASCADE`);

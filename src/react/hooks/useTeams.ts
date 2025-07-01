@@ -4,10 +4,9 @@ import { z } from "zod";
 
 import { apiPrefix, memberRoute, teamRoute } from "@/lib/constants";
 import { ITeamDTO, ITeamInsert, ITeamMemberDTO, ITeamUpdate } from "@/lib/models";
+import { useUserContext } from "@/lib/providers";
 import { ApiService } from "@/lib/services/ApiService";
 import { teamNameSchema, uuidSchema } from "@/lib/validation";
-
-import { useUserContext } from "@/providers";
 
 export const useTeams = () => {
   const apiService = new ApiService();

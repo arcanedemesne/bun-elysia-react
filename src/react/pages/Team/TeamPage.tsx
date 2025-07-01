@@ -7,6 +7,7 @@ import {
   DeleteModal,
   DropDownInput,
   ErrorMessage,
+  Form,
   Label,
   Modal,
   Pill,
@@ -18,7 +19,7 @@ import { ITeamInsert, ITeamUpdate } from "@/lib/models";
 import { ChannelTypes } from "@/lib/types";
 
 import { TeamCard } from "./TeamCard";
-import { CardGrid, Form, Layout } from "@/components";
+import { CardGrid, Layout } from "@/components";
 import { useAuthCheck, useOrganizations, useTeams, useUsers } from "@/hooks";
 
 export const TeamPage = () => {
@@ -61,7 +62,7 @@ export const TeamPage = () => {
 
   const organizationOptions = organizations
     ? organizations.map((t) => ({
-        label: `${t.name} (${t.teamsCount} team${t.teamsCount > 0 ? "s" : ""})`,
+        label: `${t.name} (${t.teams.length} team${t.teams.length > 0 ? "s" : ""})`,
         value: t.id,
       }))
     : [];
@@ -123,7 +124,7 @@ export const TeamPage = () => {
   };
 
   return (
-    <Layout title="Team List">
+    <Layout title="Teams">
       <ErrorMessage>{error?.message ?? ""}</ErrorMessage>
 
       <div className="mb-4">
@@ -166,14 +167,7 @@ export const TeamPage = () => {
       <CardGrid>
         {teams &&
           teams.map((team) => (
-            <TeamCard
-              key={team.id}
-              showChat={!!selectedOrganizationId}
-              team={team}
-              onChat={handleChat}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
+            <TeamCard key={team.id} team={team} onChat={handleChat} onEdit={handleEdit} onDelete={handleDelete} />
           ))}
       </CardGrid>
 
@@ -303,13 +297,17 @@ export const TeamPage = () => {
         <i className="text-red-800">Note: This will delete all todos for this team</i>
       </DeleteModal>
 
-      {selectedOrganizationId && teamForChat && (
-        <PopOutChatWrapper
-          organization={teamForChat.organization}
-          team={teamForChat}
-          channel={ChannelTypes.TEAM_CHAT}
-          onClose={handleCloseChat}
-        />
+      {teams?.map(
+        (team) =>
+          team.id === teamForChat?.id && (
+            <PopOutChatWrapper
+              key={team.id}
+              organization={teamForChat.organization}
+              team={teamForChat}
+              channel={ChannelTypes.TEAM_CHAT}
+              onClose={handleCloseChat}
+            />
+          ),
       )}
     </Layout>
   );

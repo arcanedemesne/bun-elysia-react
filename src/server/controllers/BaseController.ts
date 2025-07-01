@@ -15,10 +15,10 @@ export const BaseController = <IEntity, IInsert, IUpdate>(
 ) => {
   return app.group(`/${apiPrefix}/${routePrefix}`, (group) =>
     group
-      .get(``, async ({ user }: { user: IUser }) => {
+      .get(``, async ({ user }: { user: IUser }): Promise<IEntity[]> => {
         return await getService(user.id).getAll();
       })
-      .get(`/:id`, async ({ user, params: { id } }: { user: IUser; params: { id: string } }) => {
+      .get(`/:id`, async ({ user, params: { id } }: { user: IUser; params: { id: string } }): Promise<IEntity> => {
         const service = getService(user.id);
         const message = await service.getById(id);
         if (!message) {
@@ -30,7 +30,7 @@ export const BaseController = <IEntity, IInsert, IUpdate>(
         }
         return message;
       })
-      .post(``, async ({ user, body }: { user: IUser; body: any }) => {
+      .post(``, async ({ user, body }: { user: IUser; body: any }): Promise<IEntity> => {
         const parsed = JSON.parse(body as string) as IInsert;
         const service = getService(user.id);
         const entity = await service.insert(parsed);
@@ -43,28 +43,39 @@ export const BaseController = <IEntity, IInsert, IUpdate>(
         }
         return entity;
       })
-      .put(`/:id`, async ({ user, params: { id }, body }: { user: IUser; params: { id: string }; body: any }) => {
-        const parsed = JSON.parse(body as string) as IUpdateEntity;
-        const service = getService(user.id);
+      .put(
+        `/:id`,
+        async ({
+          user,
+          params: { id },
+          body,
+        }: {
+          user: IUser;
+          params: { id: string };
+          body: any;
+        }): Promise<IEntity> => {
+          const parsed = JSON.parse(body as string) as IUpdateEntity;
+          const service = getService(user.id);
 
-        if (id !== parsed.id) {
-          return ResponseError.throw({
-            status: StatusCodes.CONFLICT,
-            statusText: ReasonPhrases.CONFLICT,
-            message: `${service.entityTypeName} with id ${parsed.id} did not match route id ${id}`,
-          });
-        }
+          if (id !== parsed.id) {
+            return ResponseError.throw({
+              status: StatusCodes.CONFLICT,
+              statusText: ReasonPhrases.CONFLICT,
+              message: `${service.entityTypeName} with id ${parsed.id} did not match route id ${id}`,
+            });
+          }
 
-        const entity = await service.update(parsed as IUpdate);
-        if (!entity) {
-          return ResponseError.throw({
-            status: StatusCodes.CONFLICT,
-            statusText: ReasonPhrases.CONFLICT,
-            message: `${service.entityTypeName} with id ${parsed.id} could not be updated`,
-          });
-        }
-        return entity;
-      })
+          const entity = await service.update(parsed as IUpdate);
+          if (!entity) {
+            return ResponseError.throw({
+              status: StatusCodes.CONFLICT,
+              statusText: ReasonPhrases.CONFLICT,
+              message: `${service.entityTypeName} with id ${parsed.id} could not be updated`,
+            });
+          }
+          return entity;
+        },
+      )
       .delete(`/:id`, async ({ user, params: { id } }: { user: IUser; params: { id: string } }) => {
         const service = getService(user.id);
         const success = await service.delete(id);

@@ -4,7 +4,7 @@ import {
   IOrganizationInsert,
   IOrganizationMemberDTO,
   IOrganizationUpdate,
-  Organization,
+  OrganizationDTO,
 } from "@/lib/models";
 
 import { OrganizationRepository } from "../respositories";
@@ -21,7 +21,7 @@ export class OrganizationService extends BaseService<IOrganization, IOrganizatio
 
   async getByUserId(userId: string): Promise<IOrganizationDTO[]> {
     const entities = await this.repo.getByUserId(userId);
-    return entities.map((x) => new Organization(x).toDTO());
+    return entities.map((x) => new OrganizationDTO(x));
   }
 
   async addMember(member: IOrganizationMemberDTO): Promise<IOrganizationMemberDTO | null> {

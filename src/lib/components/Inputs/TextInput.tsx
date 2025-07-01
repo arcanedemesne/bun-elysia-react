@@ -28,6 +28,7 @@ export const TextInput = ({
   errors,
   ref,
   onChange,
+  onFocus,
   onClear,
 }: TextInputProps) => {
   const error = errors?.map((e) => <p key={e}>{e}</p>);
@@ -55,6 +56,7 @@ export const TextInput = ({
         name={name}
         value={value ?? ""}
         onChange={onChange}
+        onFocus={onFocus}
         placeholder={placeholder}
         className={finalClassName}
         autoComplete={autoComplete}

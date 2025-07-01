@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { boolean, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const trackableEntity: any = {
@@ -6,7 +7,9 @@ export const trackableEntity: any = {
   },
   TimeStamps: {
     createdAt: timestamp().defaultNow().notNull(),
-    updatedAt: timestamp().$onUpdate(() => new Date()),
+    updatedAt: timestamp()
+      .default(sql`null`)
+      .$onUpdate(() => new Date()),
     deletedAt: timestamp(),
   },
   UserAudits: {

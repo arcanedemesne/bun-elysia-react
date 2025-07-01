@@ -87,7 +87,9 @@ export class BaseRepository<IEntity, IInsert, IUpdate> implements IBaseRepositor
       if (entities.length === 0) {
         throw new Error(`Could not insert ${this.entityTypeName}`);
       }
-      return entities[0] as IEntity;
+
+      const { id } = entities[0];
+      return await this.getById(id as string);
     } catch (error) {
       return throwDbError(`Error inserting ${this.entityTypeName}`, error);
     }
@@ -105,7 +107,9 @@ export class BaseRepository<IEntity, IInsert, IUpdate> implements IBaseRepositor
       if (entities.length === 0) {
         throw new Error(`Could not update ${this.entityTypeName} with id ${(payload as any).id}`);
       }
-      return entities[0] as IEntity;
+
+      const { id } = entities[0];
+      return await this.getById(id as string);
     } catch (error) {
       return throwDbError(`Error updating ${this.entityTypeName}`, error);
     }

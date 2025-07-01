@@ -15,6 +15,7 @@ type TypeAheadSearchInputProps = {
   placeholder?: string;
   options: TypeAheadSearchOption[];
   onChange?: (value: string) => void;
+  onFocus?: () => void;
   onSelect: (value: string) => void;
   errors?: string[] | undefined;
 };
@@ -25,6 +26,7 @@ export const TypeAheadSearchInput = ({
   placeholder,
   options,
   onChange,
+  onFocus,
   onSelect,
   errors,
 }: TypeAheadSearchInputProps) => {
@@ -88,6 +90,7 @@ export const TypeAheadSearchInput = ({
         placeholder={placeholder}
         value={searchTerm}
         onChange={handleInputChange}
+        onFocus={onFocus}
         onClear={() => {
           setSearchTerm("");
         }}

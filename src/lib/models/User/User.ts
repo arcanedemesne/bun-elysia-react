@@ -20,10 +20,19 @@ export class UserDTO extends BaseEntityDTO implements IUserDTO {
     this.isOnline = user.isOnline;
     this.sessionId = user.sessionId;
   }
+
+  toMinimalDTO = (): IUserMinimalDTO => {
+    return {
+      id: this.id,
+      username: this.username,
+      isOnline: this.isOnline,
+    } as IUserMinimalDTO;
+  };
 }
 
 export interface IUserMinimalDTO extends IBaseEntityId {
   username: string;
+  isOnline: boolean;
 }
 
 export class User extends BaseEntity implements IUser {
@@ -48,5 +57,9 @@ export class User extends BaseEntity implements IUser {
   toDTO = (sessionId?: boolean): UserDTO => {
     const values = sessionId ? this : { ...this, sessionId: null };
     return new UserDTO(values);
+  };
+
+  toMinimalDTO = () => {
+    return new UserDTO(this).toMinimalDTO();
   };
 }

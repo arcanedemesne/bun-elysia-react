@@ -1,8 +1,8 @@
 import { relations } from "drizzle-orm";
 
-import { messages } from "../messages";
 import { todos } from "../todos";
 import { users } from "../users";
+import { usersToMessages } from "../usersToMessages";
 import { usersToOrganizations } from "../usersToOrganizations";
 import { usersToTeams } from "../usersToTeams";
 
@@ -26,6 +26,6 @@ export const usersRelations = relations(users, ({ many }) => ({
     relationName: "usersToOrganizations",
   }),
   usersToTeams: many(usersToTeams),
+  usersToMessages: many(usersToMessages),
   todos: many(todos),
-  messages: many(messages),
 }));

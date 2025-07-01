@@ -1,7 +1,6 @@
 export interface IMessageInsert {
-  message: string;
   channel: string;
+  message: string;
   organizationId?: string;
   teamId?: string;
-  recipientId?: string;
 }

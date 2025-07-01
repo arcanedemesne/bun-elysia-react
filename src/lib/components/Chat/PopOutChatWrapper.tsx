@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { IOrganizationMinimalDTO, ITeamMinimalDTO } from "@/lib/models";
 import { ChannelTypes } from "@/lib/types";
 
-import { CloseIconButton, MaximizeIconButton, MinimizeIconButton } from "../Buttons";
+import { CloseIconButton } from "../Buttons";
 import { ChatForm } from "./ChatForm";
 
 type PopOutChatWrapperProps = {
@@ -14,7 +14,7 @@ type PopOutChatWrapperProps = {
 };
 
 export const PopOutChatWrapper = ({ channel, organization, team, onClose }: PopOutChatWrapperProps) => {
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [hasNewMessages, setHasNewMessages] = useState(false);
 
   const channelName = channel
     .split("-")
@@ -22,23 +22,28 @@ export const PopOutChatWrapper = ({ channel, organization, team, onClose }: PopO
     .join(" ");
 
   const subChannelName = team?.name ?? organization?.name;
+  const pulseAnimation = "[animation:pulse-text-color_2s_infinite_ease-in-out]";
 
   return (
     <div
-      className={`border-1 fixed bottom-0 flex h-${isMinimized ? "18" : "[calc(50%)]"} w-${isMinimized ? "100" : "[calc(50%)]"} flex-col justify-center rounded-t-2xl border-gray-200 bg-gray-50 p-4 shadow-md hover:border-gray-400`}
+      className={`border-1 fixed bottom-0 flex h-[calc(50%)] w-[calc(50%)] flex-col justify-center rounded-t-2xl border-gray-200 bg-gray-50 p-4 shadow-md hover:border-gray-400`}
     >
       <h4 className="mb-4 border-b border-gray-200 pb-2 text-sm font-semibold text-gray-600">
-        {channelName} - {subChannelName}
+        {channelName} - {subChannelName}{" "}
+        {hasNewMessages && <span className={pulseAnimation + " ml-2"}>New Messages!</span>}
       </h4>
       <div>
-        {isMinimized && <MaximizeIconButton className="absolute mr-9 mt-1" onClick={() => setIsMinimized(false)} />}
-        {!isMinimized && <MinimizeIconButton className="absolute mr-9 mt-2.5" onClick={() => setIsMinimized(true)} />}
         <CloseIconButton
           className="absolute mr-2 mt-1"
           onClick={() => (organization && onClose(organization.id)) || (team && onClose(team?.id))}
         />
       </div>
-      {!isMinimized && <ChatForm {...{ channel, organization, team }} />}
+      <ChatForm
+        channel={channel}
+        organizationId={organization?.id}
+        teamId={team?.id}
+        setHasNewMessages={setHasNewMessages}
+      />
     </div>
   );
 };

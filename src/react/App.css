@@ -1,0 +1,11 @@
+@keyframes pulse-text-color {
+  0% {
+    color: #9CA3AF; /* Tailwind gray-400 */
+  }
+  50% {
+    color: #4B5563; /* Tailwind gray-600 */
+  }
+  100% {
+    color: #9CA3AF; /* Tailwind gray-400 */
+  }
+}

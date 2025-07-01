@@ -4,10 +4,9 @@ import { z } from "zod";
 
 import { apiPrefix, todoRoute } from "@/lib/constants";
 import { ITodoDTO, ITodoInsert, ITodoUpdate } from "@/lib/models";
+import { useUserContext } from "@/lib/providers";
 import { ApiService } from "@/lib/services/ApiService";
 import { optionalUuidSchema, todoTitleSchema, uuidSchema } from "@/lib/validation";
-
-import { useUserContext } from "@/providers";
 
 export const useTodos = () => {
   const apiService = new ApiService();

@@ -1,10 +1,10 @@
 import React, { MouseEvent, useState } from "react";
 
-import { Button, ButtonModes, DeleteModal, DropDownInput, ErrorMessage, Modal } from "@/lib/components";
+import { Button, ButtonModes, DeleteModal, DropDownInput, ErrorMessage, Form, Modal } from "@/lib/components";
 import { ITodoInsert, ITodoUpdate } from "@/lib/models";
 
 import { TodoCard } from "./TodoCard";
-import { CardGrid, Form, Layout } from "@/components";
+import { CardGrid, Layout } from "@/components";
 import { useAuthCheck, useOrganizations, useTeams, useTodos } from "@/hooks";
 
 export const TodoPage = () => {
@@ -77,7 +77,7 @@ export const TodoPage = () => {
 
   const organizationOptions = organizations
     ? organizations.map((t) => ({
-        label: `${t.name} (${t.teamsCount} team${t.teamsCount > 0 ? "s" : ""})`,
+        label: `${t.name} (${t.teams.length} team${t.teams.length > 0 ? "s" : ""})`,
         value: t.id,
       }))
     : [];
@@ -90,7 +90,7 @@ export const TodoPage = () => {
     : [];
 
   return (
-    <Layout title="Todo List">
+    <Layout title="Todos">
       <ErrorMessage>{error?.message ?? ""}</ErrorMessage>
 
       <div className="mb-4">

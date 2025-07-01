@@ -4,10 +4,9 @@ import { z } from "zod";
 
 import { apiPrefix, memberRoute, organizationRoute } from "@/lib/constants";
 import { IOrganizationDTO, IOrganizationInsert, IOrganizationMemberDTO, IOrganizationUpdate } from "@/lib/models";
+import { useUserContext } from "@/lib/providers";
 import { ApiService } from "@/lib/services/ApiService";
 import { organizationNameSchema, uuidSchema } from "@/lib/validation";
-
-import { useUserContext } from "@/providers";
 
 export const useOrganizations = () => {
   const apiService = new ApiService();

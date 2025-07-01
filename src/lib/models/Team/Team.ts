@@ -1,5 +1,5 @@
 import { BaseEntity, BaseEntityDTO, IBaseEntityDTO, IBaseEntityId } from "../BaseEntity";
-import { IOrganization, IOrganizationMinimalDTO } from "../Organization";
+import { IOrganization, IOrganizationMinimalDTO, OrganizationDTO } from "../Organization";
 import { ITodo } from "../Todo";
 import { IUser, IUserDTO, UserDTO } from "../User";
 import { ITeam } from "./ITeam";
@@ -23,11 +23,19 @@ export class TeamDTO extends BaseEntityDTO implements ITeamDTO {
     super(team);
 
     this.organizationId = team.organizationId;
-    this.organization = team.organization;
+    this.organization = team.organization && new OrganizationDTO(team.organization).toMinimalDTO();
     this.name = team.name;
-    this.members = team.members.map((x) => new UserDTO(x));
-    this.todosCount = team.todos.length;
+    this.members = team.members ? team.members.map((x) => new UserDTO(x)) : [];
+    this.todosCount = team.todos ? team.todos.length : 0;
   }
+
+  toMinimalDTO = () => {
+    return {
+      id: this.id,
+      name: this.name,
+      organizationId: this.organizationId,
+    };
+  };
 }
 
 export interface ITeamMinimalDTO extends IBaseEntityId {
@@ -58,4 +66,6 @@ export class Team extends BaseEntity implements ITeam {
   }
 
   toDTO = () => new TeamDTO(this);
+
+  toMinimalDTO = () => new TeamDTO(this).toMinimalDTO();
 }

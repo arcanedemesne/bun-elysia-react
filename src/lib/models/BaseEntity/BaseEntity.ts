@@ -6,7 +6,7 @@ import {
   IBaseEntityUserAuditsDTO,
 } from "./IBaseEntity";
 
-// mimic the IUserDTO so that we don't have a circular dependency
+// mimic the IUserMinimalDTO so that we don't have a circular dependency
 export const buildUserAuditsDTO = (
   user: any,
 ): IBaseEntityId & {

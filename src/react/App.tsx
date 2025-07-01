@@ -6,6 +6,8 @@ import { MessageBars, Toasts } from "@/lib/components";
 import { chatsRoute, loginRoute, organizationRoute, registerRoute, teamRoute, todoRoute } from "@/lib/constants";
 import { IUserDTO } from "@/lib/models";
 
+import { SocketProvider, UserProvider } from "../lib/providers";
+import "./App.css";
 import { Nav } from "./components/Nav";
 import {
   Chats,
@@ -18,7 +20,6 @@ import {
   TeamPage,
   TodoPage,
 } from "./pages";
-import { SocketProvider, UserProvider } from "./providers";
 
 const App = ({ dehydratedState, user }: { dehydratedState: DehydratedState; user: IUserDTO }) => {
   const location = useLocation();
